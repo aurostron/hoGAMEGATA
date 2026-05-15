@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Game {
+  id            String         @id @default(cuid())
+  igdbId        Int?           @unique
+  title         String
+  slug          String         @unique
+  summary       String?        @db.Text
+  storyline     String?        @db.Text
+  releaseDate   DateTime?
+  status        String?        // e.g., "released", "upcoming", "beta"
+  coverUrl      String?
+  rating        Float?
+  trailerUrl    String?        // YouTube/Twitch URL
+  screenshots   String[]       // PostgreSQL string array for screenshot URLs
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Many-to-many relationships
+  genres        Genre[]
+  tags          Tag[]
+  developers    Developer[]
+  publishers    Publisher[]
+  platforms     Platform[]
+
+  // One-to-many relationships
+  purchaseLinks PurchaseLink[]
+  wishlists     Wishlist[]
+  collections   Collection[]
+}
+
+model Developer {
+  id        String   @id @default(cuid())
+  igdbId    Int?     @unique
+  name      String   @unique
+  slug      String   @unique
+  games     Game[]
+}
+
+model Publisher {
+  id        String   @id @default(cuid())
+  igdbId    Int?     @unique
+  name      String   @unique
+  slug      String   @unique
+  games     Game[]
+}
+
+model Genre {
+  id        String   @id @default(cuid())
+  igdbId    Int?     @unique
+  name      String   @unique
+  slug      String   @unique
+  games     Game[]
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  games     Game[]
+}
+
+model Platform {
+  id        String   @id @default(cuid())
+  igdbId    Int?     @unique
+  name      String
+  slug      String   @unique
+  games     Game[]
+}
+
+model PurchaseLink {
+  id        String   @id @default(cuid())
+  storeName String   // e.g., "Steam", "GOG", "Epic Games Store"
+  url       String
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id          String       @id // Maps to Supabase auth.users UUID
+  email       String       @unique
+  createdAt   DateTime     @default(now())
+  wishlists   Wishlist[]
+  collections Collection[]
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, gameId])
+}
+
+enum CollectionStatus {
+  OWNED
+  PLAYING
+  COMPLETED
+  WANT_TO_PLAY
+}
+
+model Collection {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId    String
+  game      Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  status    CollectionStatus
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([userId, gameId])
+}
+
