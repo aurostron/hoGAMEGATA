@@ -12,6 +12,24 @@ interface GamePageProps {
   }>;
 }
 
+// Enable ISR: Revalidate pages at most once every hour
+export const revalidate = 3600;
+
+// Pre-render game profiles at build time
+export async function generateStaticParams() {
+  try {
+    const games = await db.game.findMany({
+      select: { slug: true },
+    });
+    return games.map((game) => ({
+      slug: game.slug,
+    }));
+  } catch (error) {
+    console.error("⚠️ generateStaticParams failed:", error);
+    return [];
+  }
+}
+
 export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;

@@ -42,3 +42,7 @@ yarn-error.log*
 
 # project documents
 *.docx
+
+# ingest checkpoints
+ingest_cursor.json
+

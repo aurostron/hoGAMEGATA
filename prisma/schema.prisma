@@ -36,6 +36,10 @@ model Game {
   purchaseLinks PurchaseLink[]
   wishlists     Wishlist[]
   collections   Collection[]
+
+  @@index([releaseDate])
+  @@index([rating])
+  @@index([status])
 }
 
 model Developer {
