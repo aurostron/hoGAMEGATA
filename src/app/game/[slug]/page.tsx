@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield } from "lucide-react";
 import { db } from "@/lib/db";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
@@ -29,7 +29,91 @@ export async function generateStaticParams() {
     return [];
   }
 }
+const getCategoryBadge = (category: number | null): string | null => {
+  if (category === 1) return "DLC";
+  if (category === 2) return "Expansion";
+  if (category === 4) return "Standalone";
+  if (category === 8) return "Remake";
+  if (category === 9) return "Remaster";
+  return null;
+};
 
+function cleanRequirementsText(text: string): string {
+  return text
+    .replace(/^(Minimum|Recommended|Minimum Requirements|Recommended Requirements):\s*/i, "")
+    .trim();
+}
+
+async function getOrFetchSystemRequirements(game: any) {
+  // Check if PC is in platforms
+  const isPC = game.platforms.some((p: any) => p.slug === "pc" || p.name.toLowerCase().includes("pc"));
+  if (!isPC) return { min: null, rec: null };
+
+  if (game.minRequirements || game.recRequirements) {
+    return { min: game.minRequirements, rec: game.recRequirements };
+  }
+
+  const apiKey = process.env.RAWG_API_KEY;
+  if (!apiKey) return { min: null, rec: null };
+
+  const rawgSlug = game.rawgSlug || game.slug;
+  try {
+    const url = `https://api.rawg.io/api/games/${rawgSlug}?key=${apiKey}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      // Try title search fallback
+      const searchUrl = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(game.title)}&page_size=1`;
+      const searchRes = await fetch(searchUrl);
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        const bestMatch = searchData.results?.[0];
+        if (bestMatch) {
+          const detailUrl = `https://api.rawg.io/api/games/${bestMatch.id}?key=${apiKey}`;
+          const detailRes = await fetch(detailUrl);
+          if (detailRes.ok) {
+            const detailData = await detailRes.json();
+            return await saveRequirements(game.id, detailData);
+          }
+        }
+      }
+      return { min: null, rec: null };
+    }
+
+    const data = await response.json();
+    return await saveRequirements(game.id, data);
+  } catch (error) {
+    console.error(`⚠️ Failed to lazy-load system requirements for ${game.title}:`, error);
+  }
+
+  return { min: null, rec: null };
+}
+
+async function saveRequirements(gameId: string, data: any) {
+  const pcPlatform = data.platforms?.find((p: any) => p.platform?.slug === "pc");
+  const requirements = pcPlatform?.requirements_en || null;
+  
+  if (requirements) {
+    const min = requirements.minimum || null;
+    const rec = requirements.recommended || null;
+
+    if (min || rec) {
+      try {
+        await db.game.update({
+          where: { id: gameId },
+          data: {
+            minRequirements: min,
+            recRequirements: rec,
+          }
+        });
+        console.log(`💾 System requirements cached for game ID: ${gameId}`);
+      } catch (dbErr) {
+        console.error("Failed to save requirements to DB:", dbErr);
+      }
+      return { min, rec };
+    }
+  }
+  return { min: null, rec: null };
+}
 export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
@@ -49,6 +133,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
   if (!game) {
     notFound();
   }
+
+  // Fetch PC requirements lazily on server side
+  const requirements = await getOrFetchSystemRequirements(game);
 
   // Format rating display
   const ratingDisplay = game.rating ? `${game.rating.toFixed(1)} / 100` : "No rating yet";
@@ -169,7 +256,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           
           {/* Left Column: Cover & Quick Stats */}
           <div className="md:col-span-1 space-y-6">
-            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0">
+            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative">
               {game.coverUrl ? (
                 <img 
                   src={game.coverUrl} 
@@ -180,6 +267,12 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 <div className="aspect-[3/4] w-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center border border-white">
                   <span className="font-mono text-xs uppercase tracking-widest text-white">No Cover Art</span>
                 </div>
+              )}
+              {/* Category Tag */}
+              {getCategoryBadge(game.category) && (
+                <span className="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                  {getCategoryBadge(game.category)}
+                </span>
               )}
             </div>
 
@@ -205,6 +298,39 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   {game.platforms.map(p => p.name).join(", ")}
                 </span>
               </div>
+
+              {game.playtime !== null && game.playtime > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-white flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Playtime:</span>
+                  <span className="text-white font-black">{game.playtime} hrs</span>
+                </div>
+              )}
+
+              {game.esrbRating && (
+                <div className="flex justify-between items-center">
+                  <span className="text-white flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> ESRB:</span>
+                  <span className="text-white font-black">{game.esrbRating}</span>
+                </div>
+              )}
+
+              {game.metacritic !== null && (
+                <div className="flex justify-between items-center">
+                  <span className="text-white flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> Metacritic:</span>
+                  {game.metacriticUrl ? (
+                    <a 
+                      href={game.metacriticUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:underline font-black flex items-center gap-1 group/meta"
+                    >
+                      <span>{game.metacritic} / 100</span>
+                      <ExternalLink className="w-2.5 h-2.5 opacity-65 group-hover/meta:opacity-100" />
+                    </a>
+                  ) : (
+                    <span className="text-white font-black">{game.metacritic} / 100</span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -270,11 +396,12 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               </div>
             </div>
 
-            {/* Purchase Outlinks */}
-            {game.purchaseLinks.length > 0 && (
+            {/* Outlinks & Documentation */}
+            {(game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
               <div className="border-t border-white pt-6 space-y-4">
-                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Developer Outlinks</span>
+                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Outlinks & Documentation</span>
                 <div className="flex flex-wrap gap-3">
+                  {/* Purchase/Store Outlinks */}
                   {game.purchaseLinks.map(link => (
                     <a
                       key={link.id}
@@ -287,6 +414,45 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                       <span>Support Creator ({link.storeName})</span>
                     </a>
                   ))}
+
+                  {/* Official Website */}
+                  {game.websiteUrl && (
+                    <a
+                      href={game.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    >
+                      <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                      <span>Official Website</span>
+                    </a>
+                  )}
+
+                  {/* Reddit Community */}
+                  {game.redditUrl && (
+                    <a
+                      href={game.redditUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    >
+                      <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                      <span>Reddit Community</span>
+                    </a>
+                  )}
+
+                  {/* RAWG Profile Attribution Link */}
+                  {game.rawgSlug && (
+                    <a
+                      href={`https://rawg.io/games/${game.rawgSlug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
+                    >
+                      <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
+                      <span>RAWG Profile</span>
+                    </a>
+                  )}
                 </div>
               </div>
             )}
@@ -324,6 +490,31 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 allowFullScreen
                 className="w-full h-full border border-white"
               ></iframe>
+            </div>
+          </section>
+        )}
+
+        {/* PC System Requirements */}
+        {(requirements.min || requirements.rec) && (
+          <section className="border-t border-white pt-12 space-y-6">
+            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black font-bold">PC System Specifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {requirements.min && (
+                <div className="border border-white/20 bg-neutral-950 p-6 space-y-3 rounded-none">
+                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block font-bold">Minimum Requirements</span>
+                  <div className="text-xs text-white/80 leading-relaxed whitespace-pre-line font-medium font-sans">
+                    {cleanRequirementsText(requirements.min)}
+                  </div>
+                </div>
+              )}
+              {requirements.rec && (
+                <div className="border border-white/20 bg-neutral-950 p-6 space-y-3 rounded-none">
+                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block font-bold">Recommended Requirements</span>
+                  <div className="text-xs text-white/80 leading-relaxed whitespace-pre-line font-medium font-sans">
+                    {cleanRequirementsText(requirements.rec)}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )}

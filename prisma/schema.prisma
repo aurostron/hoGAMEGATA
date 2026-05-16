@@ -25,6 +25,22 @@ model Game {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  // Secondary metadata from RAWG API
+  metacritic    Int?
+  metacriticUrl String?
+  playtime      Int?           // Average playtime in hours
+  esrbRating    String?        // e.g., "Mature", "Teen"
+  redditUrl     String?
+  websiteUrl    String?
+  rawgRating    Float?
+  rawgSlug      String?
+
+  // Additional metadata & categorizations
+  category      Int?           // IGDB Game Category (0 = Main, 1 = DLC, 2 = Expansion, etc.)
+  minRequirements String?      @db.Text
+  recRequirements String?      @db.Text
+
+
   // Many-to-many relationships
   genres        Genre[]
   tags          Tag[]
