@@ -46,3 +46,7 @@ yarn-error.log*
 # ingest checkpoints
 ingest_cursor.json
 
+# planning folder
+/planning/
+
+
