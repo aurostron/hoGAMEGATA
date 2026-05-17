@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search")?.trim() || "";
     const tag = searchParams.get("tag")?.trim() || "";
     const cursor = searchParams.get("cursor")?.trim() || "";
+    const sort = searchParams.get("sort")?.trim() || "latest"; // "latest" | "trending" | "random"
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? parseInt(limitParam, 10) : 20;
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     let matchedIds: string[] = [];
 
-    // 2. Server-side Search across title, summary and denormalized relation strings using pg_trgm similarity
+    // 2. Server-side Search or Random filtering
     if (search) {
       const rawMatches = await db.$queryRaw<{ id: string }[]>(
         Prisma.sql`
@@ -42,12 +43,36 @@ export async function GET(request: NextRequest) {
       );
       matchedIds = rawMatches.map(m => m.id);
       where.id = { in: matchedIds };
+    } else if (sort === "random") {
+      let rawMatches;
+      if (tag) {
+        rawMatches = await db.$queryRaw<{ id: string }[]>(
+          Prisma.sql`
+            SELECT g.id FROM "Game" g
+            JOIN "_GameToTag" gt ON g.id = gt."A"
+            JOIN "Tag" t ON gt."B" = t.id
+            WHERE t.slug = ${tag}
+            ORDER BY random()
+            LIMIT ${limit};
+          `
+        );
+      } else {
+        rawMatches = await db.$queryRaw<{ id: string }[]>(
+          Prisma.sql`
+            SELECT id FROM "Game"
+            ORDER BY random()
+            LIMIT ${limit};
+          `
+        );
+      }
+      matchedIds = rawMatches.map(m => m.id);
+      where.id = { in: matchedIds };
     }
 
     // 3. Query Execution with Cursor Pagination
     const games = await db.game.findMany({
-      take: limit + 1, // Fetch limit + 1 items
-      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+      take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
+      ...(!search && sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       where,
       include: {
         developers: true,
@@ -57,18 +82,25 @@ export async function GET(request: NextRequest) {
         platforms: true,
         purchaseLinks: true,
       },
-      orderBy: {
-        releaseDate: "desc",
-      },
+      orderBy: sort === "trending"
+        ? [
+            { rating: { sort: "desc", nulls: "last" } },
+            { id: "desc" }
+          ]
+        : {
+            releaseDate: "desc",
+          },
     });
 
-    // If searching, sort in-memory to preserve relevance order from the raw similarity query
-    if (search && matchedIds.length > 0) {
+    // If searching or random, sort in-memory to preserve similarity/random query order
+    if ((search || sort === "random") && matchedIds.length > 0) {
       games.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
     }
 
     let nextCursor: string | null = null;
-    if (games.length > limit) {
+    if (sort === "random") {
+      nextCursor = "more-random";
+    } else if (games.length > limit) {
       const nextItem = games.pop(); // Pop the extra element and set as next cursor
       nextCursor = nextItem ? nextItem.id : null;
     }

@@ -30,6 +30,7 @@ model Game {
   metacriticUrl String?
   playtime      Int?           // Average playtime in hours
   esrbRating    String?        // e.g., "Mature", "Teen"
+  pegiRating    String?        // e.g., "18", "16"
   redditUrl     String?
   websiteUrl    String?
   rawgRating    Float?
@@ -61,6 +62,7 @@ model Game {
   purchaseLinks PurchaseLink[]
   wishlists     Wishlist[]
   collections   Collection[]
+  priceSnapshots PriceSnapshot[]
 
   @@index([releaseDate])
   @@index([rating])
@@ -153,4 +155,19 @@ model Collection {
 
   @@unique([userId, gameId])
 }
+
+model PriceSnapshot {
+  id              String   @id @default(cuid())
+  gameId          String
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  storeName       String   // e.g., "Steam", "GOG", "Fanatical"
+  dealPrice       Float
+  retailPrice     Float
+  discountPercent Float
+  dealUrl         String   // Outlink redirecting to deal
+  updatedAt       DateTime @default(now())
+
+  @@unique([gameId, storeName])
+}
+
 

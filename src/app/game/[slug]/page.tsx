@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield } from "lucide-react";
 import { db } from "@/lib/db";
+import { lazyGetPrices } from "@/lib/priceEngine";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
 import { getServerUser } from "@/lib/serverAuth";
@@ -163,6 +164,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
   if (!game) {
     notFound();
   }
+
+  // Lazy get prices from CheapShark (cached)
+  const deals = await lazyGetPrices(game.id, game.title, game.purchaseLinks);
 
   // Lazy enrich RAWG metadata on server side
   const requirements = await lazyEnrichRawgMetadata(game);
@@ -448,10 +452,81 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               </div>
             </div>
 
+            {/* Cheapest Deals Comparison Engine */}
+            <div className="border-t border-white pt-6 space-y-4">
+              <div className="flex items-center gap-2">
+          
+                <span className="font-mono text-[12px] text-white uppercase tracking-widest font-black">Cheapest Deals</span>
+              </div>
+              
+              {deals && deals.length > 0 ? (
+                <div className="border border-white bg-black divide-y divide-white/20">
+                  {deals.map((deal, idx) => {
+                    const isCheapest = idx === 0;
+                    return (
+                      <div 
+                        key={idx}
+                        className={`flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 gap-3 transition-colors duration-150 ${
+                          isCheapest ? "bg-white/5 border-l-4 border-emerald-500" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono text-sm font-black uppercase text-white">
+                            {deal.storeName}
+                          </span>
+                          {isCheapest && (
+                            <span className="font-mono text-[10px] bg-emerald-500 text-black px-1.5 py-0.5 font-black uppercase tracking-wider animate-pulse">
+                              Best Value
+                            </span>
+                          )}
+                          {deal.discountPercent > 0 && (
+                            <span className="font-mono text-[10px] bg-white text-black px-1.5 py-0.5 font-bold uppercase">
+                              -{deal.discountPercent}% OFF
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+                          <div className="flex items-baseline gap-2 font-mono">
+                            {deal.discountPercent > 0 && (
+                              <span className="text-[12px] text-white/50 line-through">
+                                ${deal.retailPrice.toFixed(2)}
+                              </span>
+                            )}
+                            <span className={`text-base font-black ${isCheapest ? "text-emerald-400" : "text-white"}`}>
+                              ${deal.dealPrice.toFixed(2)}
+                            </span>
+                          </div>
+                          
+                          <a
+                            href={deal.dealUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`font-mono text-[11px] uppercase tracking-wider transition-all duration-150 px-3 py-1.5 font-black flex items-center gap-1 border ${
+                              isCheapest 
+                                ? "bg-emerald-500 text-black border-emerald-500 hover:bg-transparent hover:text-emerald-400 hover:border-emerald-400" 
+                                : "bg-transparent text-white border-white hover:bg-white hover:text-black"
+                            }`}
+                          >
+                            <span>Go to Deal</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="border border-white/20 bg-neutral-950 p-4 font-mono text-sm text-white/50 text-center uppercase tracking-wide">
+                  No active digital store deals found. Try checking the support links below.
+                </div>
+              )}
+            </div>
+
             {/* Outlinks & Documentation */}
             {(game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
               <div className="border-t border-white pt-6 space-y-4">
-                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Buy the game</span>
+                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
                 <div className="flex flex-wrap gap-3">
                   {/* Purchase/Store Outlinks */}
                   {game.purchaseLinks.map(link => (

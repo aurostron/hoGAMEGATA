@@ -15,6 +15,8 @@ interface GameData {
   coverUrl: string | null;
   rating: number | null;
   category: number | null;
+  esrbRating: string | null;
+  pegiRating: string | null;
   developers: Array<{ name: string; slug: string }>;
   genres: Array<{ name: string; slug: string }>;
   tags: Array<{ name: string; slug: string }>;
@@ -47,6 +49,18 @@ const getCategoryBadge = (category: number | null): string | null => {
   return null;
 };
 
+const getShortEsrbRating = (rating: string | null): string | null => {
+  if (!rating) return null;
+  const lower = rating.toLowerCase();
+  if (lower.includes("everyone 10")) return "E10+";
+  if (lower.includes("everyone")) return "E";
+  if (lower.includes("teen")) return "T";
+  if (lower.includes("mature")) return "M";
+  if (lower.includes("adult")) return "AO";
+  if (lower.includes("pending")) return "RP";
+  return rating.substring(0, 3).toUpperCase();
+};
+
 export default function Home() {
   const [games, setGames] = useState<GameData[]>([]);
   const [totalGames, setTotalGames] = useState<number | null>(null);
@@ -56,6 +70,12 @@ export default function Home() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"latest" | "trending" | "random">("latest");
+  const [shuffleTrigger, setShuffleTrigger] = useState(0);
+
+  const triggerShuffle = () => {
+    setShuffleTrigger((prev) => prev + 1);
+  };
 
   // Debounce search query to avoid spamming the database FTS index on every keystroke
   useEffect(() => {
@@ -76,6 +96,7 @@ export default function Home() {
         const queryParams = new URLSearchParams();
         if (debouncedSearch) queryParams.set("search", debouncedSearch);
         if (selectedTag) queryParams.set("tag", selectedTag);
+        if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
         queryParams.set("limit", "20");
 
         const response = await fetch(`/api/games?${queryParams.toString()}`);
@@ -92,7 +113,7 @@ export default function Home() {
       }
     }
     fetchInitialGames();
-  }, [debouncedSearch, selectedTag]);
+  }, [debouncedSearch, selectedTag, sortBy, shuffleTrigger]);
 
   // Load subsequent pages (Load More / Infinite scroll chunks)
   async function loadMoreGames() {
@@ -102,6 +123,7 @@ export default function Home() {
       const queryParams = new URLSearchParams();
       if (debouncedSearch) queryParams.set("search", debouncedSearch);
       if (selectedTag) queryParams.set("tag", selectedTag);
+      if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
       queryParams.set("cursor", nextCursor);
       queryParams.set("limit", "20");
 
@@ -222,6 +244,51 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Sorting and Mode Tabs */}
+          {!debouncedSearch ? (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-mono text-[10px] tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-white/50 font-medium">Sort by:</span>
+                <button
+                  onClick={() => setSortBy("latest")}
+                  className={`px-3 py-1 border transition-all duration-150 rounded-none cursor-pointer ${
+                    sortBy === "latest" ? "bg-white text-black border-white" : "border-white/30 text-white hover:border-white"
+                  }`}
+                >
+                  [ Latest ]
+                </button>
+                <button
+                  onClick={() => setSortBy("trending")}
+                  className={`px-3 py-1 border transition-all duration-150 rounded-none cursor-pointer ${
+                    sortBy === "trending" ? "bg-white text-black border-white" : "border-white/30 text-white hover:border-white"
+                  }`}
+                >
+                  [ Trending ]
+                </button>
+                <button
+                  onClick={() => setSortBy("random")}
+                  className={`px-3 py-1 border transition-all duration-150 rounded-none cursor-pointer ${
+                    sortBy === "random" ? "bg-white text-black border-white" : "border-white/30 text-white hover:border-white"
+                  }`}
+                >
+                  [ Random Shuffle ]
+                </button>
+              </div>
+              {sortBy === "random" && (
+                <button
+                  onClick={triggerShuffle}
+                  className="px-3 py-1 border border-white text-white hover:bg-white hover:text-black transition-all duration-150 rounded-none flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3" /> Shuffle Again
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="font-mono text-[10px] tracking-wider uppercase text-white/50 font-bold border-b border-white/20 pb-4">
+              Search Results: [ Sorted by Relevance ]
+            </div>
+          )}
+
           {loading ? (
             /* Loading Skeleton */
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -274,6 +341,12 @@ export default function Home() {
                           {game.tags[0].name}
                         </span>
                       )}
+                      {/* Age Rating Badge */}
+                      {(game.esrbRating || game.pegiRating) && (
+                        <span className="absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
+                          {game.esrbRating ? getShortEsrbRating(game.esrbRating) : game.pegiRating}
+                        </span>
+                      )}
                     </div>
                     
                     {/* Game Details */}
@@ -308,7 +381,7 @@ export default function Home() {
                     disabled={loadingMore}
                     className="font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-6 py-3 rounded-none font-bold disabled:opacity-50"
                   >
-                    {loadingMore ? "[ Loading Page... ]" : "[ Load More Software ]"}
+                    {loadingMore ? "[ Hang On... ]" : "[ Load More ]"}
                   </button>
                 </div>
               )}
