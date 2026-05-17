@@ -1,0 +1,32 @@
+"use client";
+
+import Link from "next/link";
+import { useSciFiScramble } from "@/hooks/useSciFiScramble";
+
+interface SciFiLogoProps {
+  withLink?: boolean;
+}
+
+export default function SciFiLogo({ withLink = true }: SciFiLogoProps) {
+  const { displayText: logoText, startScramble: scrambleLogo } = useSciFiScramble("hoGAMEGATA.");
+
+  const headerContent = (
+    <h1
+      onMouseEnter={scrambleLogo}
+      className="text-2xl md:text-3xl font-black text-white tracking-tight cursor-pointer select-none"
+    >
+      <span className="italic">{logoText.substring(0, 2)}</span>
+      {logoText.substring(2)}
+    </h1>
+  );
+
+  if (withLink) {
+    return (
+      <Link href="/" className="hover:opacity-85 block focus:outline-none">
+        {headerContent}
+      </Link>
+    );
+  }
+
+  return headerContent;
+}
