@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
 import { getServerUser } from "@/lib/serverAuth";
+import ScreenshotGallery from "@/components/ScreenshotGallery";
+import { getHighResCoverUrl } from "@/lib/utils";
 
 interface GamePageProps {
   params: Promise<{
@@ -12,8 +14,8 @@ interface GamePageProps {
   }>;
 }
 
-// Enable ISR: Revalidate pages at most once every hour
-export const revalidate = 3600;
+// Enable ISR: Revalidate pages at most once every 24 hours
+export const revalidate = 86400;
 
 // Pre-render game profiles at build time
 export async function generateStaticParams() {
@@ -47,6 +49,12 @@ function cleanRequirementsText(text: string): string {
 async function lazyEnrichRawgMetadata(game: any) {
   // If already enriched, return cached system requirements immediately
   if (game.rawgEnriched) {
+    return { min: game.minRequirements, rec: game.recRequirements };
+  }
+
+  // Bypass RAWG enrichment during Next.js build phase to prevent build-time network requests
+  // and database connection exhaustion. Pages will be lazily enriched at runtime.
+  if (process.env.NEXT_PHASE === "phase-production-build") {
     return { min: game.minRequirements, rec: game.recRequirements };
   }
 
@@ -146,6 +154,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
       developers: true,
       publishers: true,
       genres: true,
+      tags: true,
       platforms: true,
       purchaseLinks: true,
     },
@@ -217,6 +226,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     include: {
       developers: true,
       genres: true,
+      tags: true,
       platforms: true,
     },
   });
@@ -235,6 +245,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
       include: {
         developers: true,
         genres: true,
+        tags: true,
         platforms: true,
       },
     });
@@ -281,10 +292,10 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           
           {/* Left Column: Cover & Quick Stats */}
           <div className="md:col-span-1 space-y-6">
-            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative">
+            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0">
               {game.coverUrl ? (
                 <img 
-                  src={game.coverUrl} 
+                  src={getHighResCoverUrl(game.coverUrl) || ""} 
                   alt={game.title} 
                   className="w-full h-auto object-cover border border-white"
                 />
@@ -407,14 +418,30 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               )}
             </div>
 
-            {/* Genre & Tag badging */}
+            {/* Mood Profile tag badging */}
+            {game.tags && game.tags.length > 0 && (
+              <div className="border-t border-white pt-6 flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
+                  <Tag className="w-3.5 h-3.5" /> Mood/Genre
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {game.tags.map(t => (
+                    <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
+                      {t.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Genre badging */}
             <div className="border-t border-white pt-6 flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-                <Tag className="w-3.5 h-3.5" /> Genres:
+              <div className="flex items-center gap-1.5 font-mono text-[10px] text-white/60 uppercase tracking-widest font-bold">
+                Genres:
               </div>
               <div className="flex flex-wrap gap-2">
                 {game.genres.map(genre => (
-                  <span key={genre.slug} className="border border-white text-white font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 font-bold">
+                  <span key={genre.slug} className="border border-white/40 text-white/70 font-mono text-[9px] uppercase tracking-wider px-2 py-0.5">
                     {genre.name}
                   </span>
                 ))}
@@ -488,18 +515,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         {game.screenshots.length > 0 && (
           <section className="border-t border-white pt-12 space-y-6">
             <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Screenshots Spec</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {game.screenshots.map((url, i) => (
-                <div key={i} className="border border-white bg-black p-1 hover:bg-white transition-colors duration-150">
-                  <img
-                    src={url}
-                    alt={`${game.title} screenshot ${i + 1}`}
-                    className="w-full h-auto object-cover border border-white hover:opacity-95 transition-opacity"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
+            <ScreenshotGallery screenshots={game.screenshots} title={game.title} />
           </section>
         )}
 
@@ -549,7 +565,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           <section className="border-t border-white pt-12 space-y-6">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-white" />
-              <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Related Specifications</h3>
+              <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">More game like this</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {relatedGames.map((relatedGame) => (
@@ -559,23 +575,29 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
                 >
                   {/* Cover Image */}
-                  <div className="h-48 bg-black relative border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="aspect-[3/4] relative w-full bg-black border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                     {relatedGame.coverUrl ? (
-                      <img
-                        src={relatedGame.coverUrl}
-                        alt={relatedGame.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                       <img
+                         src={getHighResCoverUrl(relatedGame.coverUrl) || ""}
+                         alt={relatedGame.title}
+                         className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                         loading="lazy"
+                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
                         <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
                       </div>
                     )}
-                    {/* Primary Genre Tag */}
-                    <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
-                      {relatedGame.genres[0]?.name || "Horror"}
-                    </span>
+                    {/* Primary Mood Tag */}
+                    {relatedGame.tags && relatedGame.tags.length > 0 ? (
+                      <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                        {relatedGame.tags[0].name}
+                      </span>
+                    ) : (
+                      <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                        {relatedGame.genres[0]?.name || "Horror"}
+                      </span>
+                    )}
                   </div>
 
                   {/* Game Details */}

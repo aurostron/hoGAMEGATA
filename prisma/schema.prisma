@@ -43,6 +43,11 @@ model Game {
   category      Int?           // IGDB Game Category (0 = Main, 1 = DLC, 2 = Expansion, etc.)
   minRequirements String?      @db.Text
   recRequirements String?      @db.Text
+  popularity      Float?
+  developerNames  String?      @db.Text
+  genreNames      String?      @db.Text
+  platformNames   String?      @db.Text
+
 
 
   // Many-to-many relationships
@@ -60,6 +65,7 @@ model Game {
   @@index([releaseDate])
   @@index([rating])
   @@index([status])
+  @@index([popularity])
 }
 
 model Developer {

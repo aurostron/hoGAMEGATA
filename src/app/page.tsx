@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import MiniSearch from "minisearch";
 import { Search, Compass, Calendar, Sparkles, BookOpen } from "lucide-react";
 import AuthButton from "@/components/AuthButton";
 import { getHighResCoverUrl } from "@/lib/utils";
@@ -18,8 +17,26 @@ interface GameData {
   category: number | null;
   developers: Array<{ name: string; slug: string }>;
   genres: Array<{ name: string; slug: string }>;
+  tags: Array<{ name: string; slug: string }>;
   platforms: Array<{ name: string; slug: string }>;
 }
+
+const MOOD_FILTERS = [
+  { name: "Dread & Psych", slug: "dread-psychological" },
+  { name: "Survival Horror", slug: "survival-horror" },
+  { name: "Cosmic Horror", slug: "cosmic-horror" },
+  { name: "Body Horror", slug: "body-horror" },
+  { name: "Liminal & Surreal", slug: "liminal-surreal" },
+  { name: "Folk Horror", slug: "folk-horror" },
+  { name: "Found Footage", slug: "found-footage-analog" },
+  { name: "Retro PS1", slug: "retro-ps1-vibe" },
+  { name: "Mascot Horror", slug: "mascot-horror" },
+  { name: "Sci-Fi Horror", slug: "sci-fi-cyber" },
+  { name: "Slasher", slug: "slasher-splatter" },
+  { name: "Stealth", slug: "no-combat-stealth" },
+  { name: "Story-Heavy", slug: "walking-sim-story" },
+  { name: "Supernatural", slug: "gothic-supernatural" }
+];
 
 const getCategoryBadge = (category: number | null): string | null => {
   if (category === 1) return "DLC";
@@ -32,18 +49,41 @@ const getCategoryBadge = (category: number | null): string | null => {
 
 export default function Home() {
   const [games, setGames] = useState<GameData[]>([]);
+  const [totalGames, setTotalGames] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
 
-  // Fetch games on mount
+  // Debounce search query to avoid spamming the database FTS index on every keystroke
   useEffect(() => {
-    async function fetchGames() {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  // Load initial page of games when filters or search terms change
+  useEffect(() => {
+    async function fetchInitialGames() {
+      setLoading(true);
       try {
-        const response = await fetch("/api/games");
+        const queryParams = new URLSearchParams();
+        if (debouncedSearch) queryParams.set("search", debouncedSearch);
+        if (selectedTag) queryParams.set("tag", selectedTag);
+        queryParams.set("limit", "20");
+
+        const response = await fetch(`/api/games?${queryParams.toString()}`);
         if (response.ok) {
           const data = await response.json();
-          setGames(data);
+          setGames(data.games || []);
+          setNextCursor(data.nextCursor || null);
+          setTotalGames(data.totalCount ?? null);
         }
       } catch (err) {
         console.error("❌ Error fetching catalog:", err);
@@ -51,59 +91,32 @@ export default function Home() {
         setLoading(false);
       }
     }
-    fetchGames();
-  }, []);
+    fetchInitialGames();
+  }, [debouncedSearch, selectedTag]);
 
-  // Initialize and populate MiniSearch index memoized
-  const miniSearch = useMemo(() => {
-    if (games.length === 0) return null;
+  // Load subsequent pages (Load More / Infinite scroll chunks)
+  async function loadMoreGames() {
+    if (!nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const queryParams = new URLSearchParams();
+      if (debouncedSearch) queryParams.set("search", debouncedSearch);
+      if (selectedTag) queryParams.set("tag", selectedTag);
+      queryParams.set("cursor", nextCursor);
+      queryParams.set("limit", "20");
 
-    const ms = new MiniSearch({
-      fields: ["title", "developerNames", "genreNames", "platformNames"],
-      storeFields: ["id"],
-      searchOptions: {
-        prefix: true,
-        fuzzy: 0.2,
-      },
-    });
-
-    // Map relations for search indexing
-    const documents = games.map((g) => ({
-      id: g.id,
-      title: g.title,
-      developerNames: g.developers.map((d) => d.name).join(" "),
-      genreNames: g.genres.map((gen) => gen.name).join(" "),
-      platformNames: g.platforms.map((p) => p.name).join(" "),
-    }));
-
-    ms.addAll(documents);
-    return ms;
-  }, [games]);
-
-  // Compute filtered games list
-  const filteredGames = useMemo(() => {
-    let resultList = games;
-
-    // Apply search query via MiniSearch if active
-    if (searchQuery.trim() !== "" && miniSearch) {
-      const searchResults = miniSearch.search(searchQuery);
-      const matchedIds = new Set(searchResults.map((r) => r.id));
-      resultList = games.filter((g) => matchedIds.has(g.id));
+      const response = await fetch(`/api/games?${queryParams.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        setGames((prev) => [...prev, ...(data.games || [])]);
+        setNextCursor(data.nextCursor || null);
+      }
+    } catch (err) {
+      console.error("❌ Error fetching next page:", err);
+    } finally {
+      setLoadingMore(false);
     }
-
-    // Apply selected genre filter tag
-    if (selectedGenre) {
-      resultList = resultList.filter((g) =>
-        g.genres.some((genre) =>
-          genre.name.toLowerCase().includes(selectedGenre.toLowerCase())
-        )
-      );
-    }
-
-    return resultList;
-  }, [games, searchQuery, selectedGenre, miniSearch]);
-
-
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black pb-24">
@@ -117,7 +130,7 @@ export default function Home() {
             <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white uppercase font-bold">
               <span>Game Mega Metadata</span>
               <span className="text-white font-black">•</span>
-              <span>{loading ? "HORROR DATABASE" : `${games.length} GAMES ON OUR DATABASE`}</span>
+              <span>{loading || totalGames === null ? "HORROR DATABASE" : `${totalGames} GAMES ON OUR DATABASE`}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -142,7 +155,7 @@ export default function Home() {
             Discover Horror Games Instantly.
           </h2>
           <p className="text-sm text-white font-medium leading-relaxed">
-            "Fast, Minimal and Useful. No comments, reviews, likes, feeds, or unnecessary social clutter. Minimalistic video game discovery and metadata preservation wesbite."
+            "Fast, Minimal and Useful. No comments, reviews, likes, feeds, or unnecessary social clutter. Minimalistic video game discovery and metadata preservation website."
           </p>
         </section>
 
@@ -162,64 +175,27 @@ export default function Home() {
           </div>
           
           {/* Quick Filter Tags */}
-          <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-[10px] tracking-wider uppercase text-white font-bold">
-            <span className="text-white font-black">Filters:</span>
+          <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-[9px] tracking-wider uppercase text-white font-bold">
+            <span className="text-white font-black">Moods:</span>
             <button 
-              onClick={() => setSelectedGenre(null)}
+              onClick={() => setSelectedTag(null)}
               className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === null ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+                selectedTag === null ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
               }`}
             >
               All
             </button>
-            <button 
-              onClick={() => setSelectedGenre("Adventure")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Adventure" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Adventure
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Indie")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Indie" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Indie
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Shooter")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Shooter" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Shooter
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Puzzle")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Puzzle" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Puzzle
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("RPG")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "RPG" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              RPG
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Simulator")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Simulator" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Simulator
-            </button>
+            {MOOD_FILTERS.map((mood) => (
+              <button 
+                key={mood.slug}
+                onClick={() => setSelectedTag(mood.slug)}
+                className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
+                  selectedTag === mood.slug ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+                }`}
+              >
+                {mood.name}
+              </button>
+            ))}
           </div>
         </section>
 
@@ -228,18 +204,20 @@ export default function Home() {
           <div className="flex items-center justify-between border-b border-white pb-3">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-white" />
-              <h3 className="text-sm font-mono uppercase tracking-widest text-white font-bold">Catalog Mapping</h3>
+              <h3 className="text-sm font-mono uppercase tracking-widest text-white font-bold">browse the catalog</h3>
             </div>
             <div className="flex items-center gap-4 text-[10px] font-mono text-white font-bold">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> 
-                {games.filter(g => g.status === "upcoming").length} Upcoming
-              </span>
+              <Link 
+                href="/upcoming"
+                className="flex items-center gap-1 hover:underline text-white font-black"
+              >
+                <Calendar className="w-3 h-3" /> UPCOMING
+              </Link>
               <Link 
                 href="/random"
                 className="flex items-center gap-1 hover:underline text-white font-black"
               >
-                <Sparkles className="w-3 h-3" /> Random Play
+                <Sparkles className="w-3 h-3" /> RANDOM
               </Link>
             </div>
           </div>
@@ -255,68 +233,85 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          ) : filteredGames.length === 0 ? (
+          ) : games.length === 0 ? (
             /* No Results */
             <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold">
               [ No horror titles match your current criteria ]
             </div>
           ) : (
             /* Game Grid */
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {filteredGames.map((game) => (
-                <Link 
-                  key={game.slug} 
-                  href={`/game/${game.slug}`}
-                  className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
-                >
-                  {/* Cover Image */}
-                  <div className="aspect-[3/4] relative w-full bg-black border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
-                    {game.coverUrl ? (
-                      <img
-                        src={getHighResCoverUrl(game.coverUrl) || ""}
-                        alt={game.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
-                        <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {games.map((game) => (
+                  <Link 
+                    key={game.slug} 
+                    href={`/game/${game.slug}`}
+                    className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
+                  >
+                    {/* Cover Image */}
+                    <div className="aspect-[3/4] relative w-full bg-black border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                      {game.coverUrl ? (
+                        <img
+                          src={getHighResCoverUrl(game.coverUrl) || ""}
+                          alt={game.title}
+                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
+                          <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
+                        </div>
+                      )}
+                      {/* Category Tag */}
+                      {getCategoryBadge(game.category) && (
+                        <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                          {getCategoryBadge(game.category)}
+                        </span>
+                      )}
+                      {/* Primary Mood Tag */}
+                      {game.tags && game.tags.length > 0 && (
+                        <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                          {game.tags[0].name}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Game Details */}
+                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                      <div>
+                        <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
+                          {game.title}
+                        </h4>
+                        <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
+                          by {game.developers[0]?.name || "Unknown Dev"}
+                        </span>
                       </div>
-                    )}
-                    {/* Category Tag */}
-                    {getCategoryBadge(game.category) && (
-                      <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
-                        {getCategoryBadge(game.category)}
-                      </span>
-                    )}
-                    {/* Primary Genre Tag */}
-                    <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
-                      {game.genres[0]?.name || "Horror"}
-                    </span>
-                  </div>
-                  
-                  {/* Game Details */}
-                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                      <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
-                        {game.title}
-                      </h4>
-                      <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
-                        by {game.developers[0]?.name || "Unknown Dev"}
-                      </span>
-                    </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                      <span className="text-white group-hover:text-black font-bold truncate max-w-[120px]">
-                        {game.platforms.map(p => p.name).slice(0, 2).join(", ")}
-                      </span>
-                      <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
-                        {game.status}
-                      </span>
+                      <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
+                        <span className="text-white group-hover:text-black font-bold truncate max-w-[120px]">
+                          {game.platforms.map(p => p.name).slice(0, 2).join(", ")}
+                        </span>
+                        <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
+                          {game.status}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {nextCursor && (
+                <div className="flex justify-center pt-8">
+                  <button
+                    onClick={loadMoreGames}
+                    disabled={loadingMore}
+                    className="font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-6 py-3 rounded-none font-bold disabled:opacity-50"
+                  >
+                    {loadingMore ? "[ Loading Page... ]" : "[ Load More Software ]"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -324,13 +319,16 @@ export default function Home() {
         {/* Feature Index Navigation */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-white pt-12">
           {/* Upcoming releases list link */}
-          <div className="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150 space-y-2">
+          <Link
+            href="/upcoming"
+            className="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150 space-y-2 text-left block"
+          >
             <span className="font-mono text-[9px] text-white group-hover:text-black uppercase tracking-widest block font-bold">Feature Matrix</span>
             <h4 className="text-white group-hover:text-black text-base font-bold">Release Calendar</h4>
             <p className="text-xs text-white group-hover:text-black leading-relaxed font-medium">
               Track emerging horror titles, release timelines, and official store page links without marketing fluff.
             </p>
-          </div>
+          </Link>
 
           {/* Randomizer route spec */}
           <Link
@@ -345,13 +343,16 @@ export default function Home() {
           </Link>
 
           {/* Tracking user profile lists */}
-          <div className="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150 space-y-2">
+          <Link
+            href="/dashboard"
+            className="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150 space-y-2 text-left block"
+          >
             <span className="font-mono text-[9px] text-white group-hover:text-black uppercase tracking-widest block font-bold">User System</span>
             <h4 className="text-white group-hover:text-black text-base font-bold">Private Dashboards</h4>
             <p className="text-xs text-white group-hover:text-black leading-relaxed font-medium">
               Manage your personal wishlist and track owned, playing, and completed games via Supabase auth.
             </p>
-          </div>
+          </Link>
         </section>
 
       </main>
