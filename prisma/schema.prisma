@@ -40,6 +40,11 @@ model Game {
   lastRawgSync  DateTime?
   rawgMetadataHash String?
 
+  // Steam metadata
+  steamRating     Float?
+  steamRatingDesc String?
+  lastSteamSync   DateTime?
+
   // Additional metadata & categorizations
   category      Int?           // IGDB Game Category (0 = Main, 1 = DLC, 2 = Expansion, etc.)
   minRequirements String?      @db.Text
@@ -63,6 +68,7 @@ model Game {
   wishlists     Wishlist[]
   collections   Collection[]
   priceSnapshots PriceSnapshot[]
+  referralClicks ReferralClick[]
 
   @@index([releaseDate])
   @@index([rating])
@@ -169,5 +175,16 @@ model PriceSnapshot {
 
   @@unique([gameId, storeName])
 }
+
+model ReferralClick {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  storeName String   // e.g., "Humble Store", "Fanatical"
+  targetUrl String   // Final redirection destination
+  userId    String?  // Optional tracking of logged in users
+  createdAt DateTime @default(now())
+}
+
 
 

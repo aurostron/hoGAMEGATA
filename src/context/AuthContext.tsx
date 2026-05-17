@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Mock login: Generate a deterministic mock user ID based on email
         const mockId = "mock-" + Math.abs(email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)).toString(16);
         const cookieVal = encodeURIComponent(`${mockId}:${email}`);
-        document.cookie = `gamegata-session=${cookieVal}; path=/; max-age=31536000; SameSite=Lax`;
+        document.cookie = `gamegata-session=${cookieVal}; path=/; max-age=31536000; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
         
         // Synchronously call API to ensure user exists in the local DB
         await fetch("/api/user/sync", {

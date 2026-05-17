@@ -35,8 +35,33 @@ function getPrismaClient(): PrismaClient {
       cachedPrisma = new PrismaClient({ accelerateUrl: connectionString });
     } else {
       const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1") || connectionString.includes("::1");
+      
+      // Restrict each worker to 1 connection during production builds ONLY if we are
+      // using direct session mode (non-pooled) to avoid exceeding the 15-connection server limit.
+      // If we are using PgBouncer/transaction pooler (port 6543), allow parallel connections per worker.
+      let maxConnections = 10;
+      const isTransactionPooler = connectionString.includes(":6543") || connectionString.includes("pgbouncer=true");
+      
+      if (process.env.NEXT_PHASE === "phase-production-build" && !isTransactionPooler) {
+        maxConnections = 1;
+      } else {
+        try {
+          const parsedUrl = new URL(connectionString.replace("postgresql://", "http://"));
+          const limitParam = parsedUrl.searchParams.get("connection_limit");
+          if (limitParam) {
+            maxConnections = parseInt(limitParam, 10);
+          }
+        } catch (err) {
+          console.warn("Failed to parse connection_limit from DATABASE_URL:", err);
+        }
+      }
+
       const pool = new Pool({
         connectionString,
+        max: maxConnections,
+        // TODO: Enable certificate verification in production (rejectUnauthorized: true)
+        // Current setting disables SSL cert verification, which is vulnerable to MITM attacks.
+        // For Supabase: their pooler endpoints have valid SSL certs that support verification.
         ssl: isLocal ? undefined : { rejectUnauthorized: false },
       });
       const adapter = new PrismaPg(pool);

@@ -133,6 +133,7 @@ async function runIngestion() {
     const args = process.argv.slice(2);
     const reset = args.includes("--reset");
     const sync = args.includes("--sync");
+    let startOffset = 0;
 
     if (reset) {
       console.log("🧹 --reset flag passed. Starting ingestion from scratch.");

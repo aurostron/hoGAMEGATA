@@ -49,4 +49,8 @@ ingest_cursor.json
 # planning folder
 /planning/
 
+# cloudflare
+/.open-next/
+/.wrangler/
+
 

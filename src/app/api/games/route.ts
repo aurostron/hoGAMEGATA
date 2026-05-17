@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const cursor = searchParams.get("cursor")?.trim() || "";
     const sort = searchParams.get("sort")?.trim() || "latest"; // "latest" | "trending" | "random"
     const limitParam = searchParams.get("limit");
-    const limit = limitParam ? parseInt(limitParam, 10) : 20;
+    const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
 
     const where: Prisma.GameWhereInput = {};
 
@@ -71,27 +71,30 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Query Execution with Cursor Pagination
-    const games = await db.game.findMany({
-      take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
-      ...(!search && sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-      where,
-      include: {
-        developers: true,
-        publishers: true,
-        genres: true,
-        tags: true,
-        platforms: true,
-        purchaseLinks: true,
-      },
-      orderBy: sort === "trending"
-        ? [
-            { rating: { sort: "desc", nulls: "last" } },
-            { id: "desc" }
-          ]
-        : {
-            releaseDate: "desc",
-          },
-    });
+    const [games, totalCount] = await Promise.all([
+      db.game.findMany({
+        take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
+        ...(!search && sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+        where,
+        include: {
+          developers: true,
+          publishers: true,
+          genres: true,
+          tags: true,
+          platforms: true,
+          purchaseLinks: true,
+        },
+        orderBy: sort === "trending"
+          ? [
+              { rating: { sort: "desc", nulls: "last" } },
+              { id: "desc" }
+            ]
+          : {
+              releaseDate: "desc",
+            },
+      }),
+      db.game.count()
+    ]);
 
     // If searching or random, sort in-memory to preserve similarity/random query order
     if ((search || sort === "random") && matchedIds.length > 0) {
@@ -106,15 +109,13 @@ export async function GET(request: NextRequest) {
       nextCursor = nextItem ? nextItem.id : null;
     }
 
-    const totalCount = await db.game.count();
-
     return NextResponse.json({
       games,
       nextCursor,
       totalCount
     });
   } catch (error) {
-    console.error("❌ Failed to fetch games from database:", error);
+    console.error("❌ Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch games from database" },
       { status: 500 }
