@@ -77,12 +77,7 @@ export async function GET(request: NextRequest) {
         ...(!search && sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
         where,
         include: {
-          developers: true,
-          publishers: true,
-          genres: true,
           tags: true,
-          platforms: true,
-          purchaseLinks: true,
         },
         orderBy: sort === "trending"
           ? [

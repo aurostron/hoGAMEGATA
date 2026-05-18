@@ -21,10 +21,7 @@ export default async function UpcomingPage() {
       releaseDate: "asc" // Closest release first
     },
     include: {
-      developers: true,
-      genres: true,
       tags: true,
-      platforms: true,
       purchaseLinks: true
     }
   });
@@ -141,7 +138,7 @@ export default async function UpcomingPage() {
                           </div>
                           
                           <span className="font-mono text-[9px] text-white/60 block font-bold">
-                            by {game.developers[0]?.name || "Unknown Developer"}
+                            by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
                           </span>
 
                           <div className="flex flex-wrap gap-1.5 pt-1">
@@ -215,7 +212,7 @@ export default async function UpcomingPage() {
                             </h4>
                           </Link>
                           <span className="font-mono text-[9px] text-white/60 block font-bold">
-                            by {game.developers[0]?.name || "Unknown Developer"}
+                            by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
                           </span>
                           <div className="flex flex-wrap gap-1.5 pt-1">
                             {game.tags.slice(0, 2).map((t) => (

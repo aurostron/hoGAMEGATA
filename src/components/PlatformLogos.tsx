@@ -8,59 +8,63 @@ interface Platform {
 }
 
 interface PlatformLogosProps {
-  platforms: Platform[];
+  platforms?: Platform[];
+  platformNames?: string | null;
   className?: string;
   solid?: boolean;
 }
 
 export default function PlatformLogos({
   platforms,
+  platformNames,
   className = "flex items-center gap-2.5 transition-colors",
   solid = false
 }: PlatformLogosProps) {
   
+  const lowerNames = platformNames?.toLowerCase() || "";
+
   // Find which icons are needed based on matching string content in names/slugs
-  const showPC = platforms.some(p => {
+  const showPC = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("win") || s.includes("pc") || n.includes("windows") || n.includes("pc");
-  });
+  })) || lowerNames.includes("win") || lowerNames.includes("pc") || lowerNames.includes("windows");
   
-  const showPlaystation = platforms.some(p => {
+  const showPlaystation = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("playstation") || s.includes("ps") || n.includes("playstation") || n.includes("ps");
-  });
+  })) || lowerNames.includes("playstation") || lowerNames.includes("ps");
 
-  const showXbox = platforms.some(p => {
+  const showXbox = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("xbox") || n.includes("xbox");
-  });
+  })) || lowerNames.includes("xbox");
 
-  const showNintendo = platforms.some(p => {
+  const showNintendo = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("switch") || s.includes("nintendo") || n.includes("switch") || n.includes("nintendo");
-  });
+  })) || lowerNames.includes("switch") || lowerNames.includes("nintendo");
 
-  const showMac = platforms.some(p => {
+  const showMac = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("mac") || s.includes("osx") || s.includes("os-x") || n.includes("macos") || n.includes("mac");
-  });
+  })) || lowerNames.includes("mac") || lowerNames.includes("osx") || lowerNames.includes("os-x") || lowerNames.includes("macos");
 
-  const showLinux = platforms.some(p => {
+  const showLinux = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("linux") || n.includes("linux");
-  });
+  })) || lowerNames.includes("linux");
 
-  const showMobile = platforms.some(p => {
+  const showMobile = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
     return s.includes("android") || s.includes("ios") || s.includes("phone") || n.includes("android") || n.includes("ios");
-  });
+  })) || lowerNames.includes("android") || lowerNames.includes("ios") || lowerNames.includes("phone");
 
   // filter: brightness(0) invert(1) makes the SVG completely solid white.
   // When card is hovered (group), we cancel invert (invert-0), making it solid black.

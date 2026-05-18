@@ -19,10 +19,10 @@ interface GameData {
   category: number | null;
   esrbRating: string | null;
   pegiRating: string | null;
-  developers: Array<{ name: string; slug: string }>;
-  genres: Array<{ name: string; slug: string }>;
+  developerNames: string | null;
+  genreNames: string | null;
+  platformNames: string | null;
   tags: Array<{ name: string; slug: string }>;
-  platforms: Array<{ name: string; slug: string }>;
 }
 
 const MOOD_FILTERS = [
@@ -356,12 +356,12 @@ export default function Home() {
                           {game.title}
                         </h4>
                         <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
-                          by {game.developers[0]?.name || "Unknown Dev"}
+                          by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                        <PlatformLogos platforms={game.platforms} />
+                        <PlatformLogos platformNames={game.platformNames} />
                         <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
                           {game.status}
                         </span>

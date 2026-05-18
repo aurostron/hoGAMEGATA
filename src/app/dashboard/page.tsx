@@ -18,13 +18,7 @@ export default async function DashboardPage() {
   const wishlistItems = await db.wishlist.findMany({
     where: { userId: user.id },
     include: {
-      game: {
-        include: {
-          developers: true,
-          genres: true,
-          platforms: true,
-        },
-      },
+      game: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -35,13 +29,7 @@ export default async function DashboardPage() {
   const collectionItems = await db.collection.findMany({
     where: { userId: user.id },
     include: {
-      game: {
-        include: {
-          developers: true,
-          genres: true,
-          platforms: true,
-        },
-      },
+      game: true,
     },
     orderBy: {
       updatedAt: "desc",
