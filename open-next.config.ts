@@ -7,6 +7,6 @@ config.default = {
   minify: true,
 };
 
-config.buildCommand = "npx prisma generate && npx next build --webpack";
+config.buildCommand = "npx prisma generate && npx next build";
 
 export default config;
