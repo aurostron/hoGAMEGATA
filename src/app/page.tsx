@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { useSearchParams, usePathname } from "next/navigation";
 import { Search, Compass, Calendar, Sparkles, BookOpen } from "lucide-react";
 import AuthButton from "@/components/AuthButton";
 import { getHighResCoverUrl } from "@/lib/utils";
@@ -63,21 +65,54 @@ const getShortEsrbRating = (rating: string | null): string | null => {
   return rating.substring(0, 3).toUpperCase();
 };
 
-export default function Home() {
+function GameCatalogHome() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // Initialize state from URL query parameters
+  const initialSearch = searchParams.get("search") || "";
+  const initialTag = searchParams.get("tag") || null;
+  const initialSort = (searchParams.get("sort") as "latest" | "trending" | "random") || "latest";
+
   const [games, setGames] = useState<GameData[]>([]);
   const [totalGames, setTotalGames] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+  const [selectedTag, setSelectedTag] = useState<string | null>(initialTag);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"latest" | "trending" | "random">("latest");
+  const [sortBy, setSortBy] = useState<"latest" | "trending" | "random">(initialSort);
   const [shuffleTrigger, setShuffleTrigger] = useState(0);
 
   const triggerShuffle = () => {
     setShuffleTrigger((prev) => prev + 1);
   };
+
+  // Sync states with browser URL search parameters dynamically
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (selectedTag) params.set("tag", selectedTag);
+    if (!debouncedSearch && sortBy && sortBy !== "latest") params.set("sort", sortBy);
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    
+    window.history.replaceState(null, "", newUrl);
+  }, [debouncedSearch, selectedTag, sortBy, pathname]);
+
+  // Sync state if browser back/forward navigation triggers URL search parameters update
+  useEffect(() => {
+    const query = searchParams.get("search") || "";
+    const tag = searchParams.get("tag") || null;
+    const sort = (searchParams.get("sort") as "latest" | "trending" | "random") || "latest";
+
+    setSearchQuery(query);
+    setDebouncedSearch(query);
+    setSelectedTag(tag);
+    setSortBy(sort);
+  }, [searchParams]);
 
   // Debounce search query to avoid spamming the database FTS index on every keystroke
   useEffect(() => {
@@ -309,20 +344,23 @@ export default function Home() {
             /* Game Grid */
             <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {games.map((game) => (
+                {games.map((game, index) => (
                   <Link 
                     key={game.slug} 
                     href={`/game/${game.slug}`}
                     className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
                   >
                     {/* Cover Image */}
-                    <div className="aspect-[3/4] relative w-full bg-black border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                       {game.coverUrl ? (
-                        <img
+                        <Image
                           src={getHighResCoverUrl(game.coverUrl) || ""}
                           alt={game.title}
-                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                          loading="lazy"
+                          fill={true}
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                          loading={index < 4 ? undefined : "lazy"}
+                          priority={index < 4}
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
@@ -428,5 +466,13 @@ export default function Home() {
 
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white font-mono flex items-center justify-center">[ INITIALIZING SYSTEMS... ]</div>}>
+      <GameCatalogHome />
+    </Suspense>
   );
 }
