@@ -12,9 +12,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  outputFileTracingIncludes: {
-    "**/*": ["node_modules/pg-cloudflare/**/*"],
-  },
   async headers() {
     return [
       {

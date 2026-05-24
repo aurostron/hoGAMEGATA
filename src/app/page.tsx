@@ -346,7 +346,7 @@ function GameCatalogHome() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {games.map((game, index) => (
                   <Link 
-                    key={game.slug} 
+                    key={game.id} 
                     href={`/game/${game.slug}`}
                     className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
                   >

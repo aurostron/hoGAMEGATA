@@ -95,7 +95,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {activeList.map((game) => (
               <Link
-                key={game.slug}
+                key={game.id}
                 href={`/game/${game.slug}`}
                 className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
               >
