@@ -167,7 +167,12 @@ function GameCatalogHome() {
       const response = await fetch(`/api/games?${queryParams.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setGames((prev) => [...prev, ...(data.games || [])]);
+        setGames((prev: GameData[]) => {
+          const incoming: GameData[] = data.games || [];
+          const existingIds = new Set(prev.map((g: GameData) => g.id));
+          const filteredIncoming = incoming.filter((g: GameData) => !existingIds.has(g.id));
+          return [...prev, ...filteredIncoming];
+        });
         setNextCursor(data.nextCursor || null);
       }
     } catch (err) {

@@ -84,37 +84,75 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Query Execution with Cursor Pagination
-    const [games, totalCount] = await Promise.all([
-      db.game.findMany({
-        take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
-        ...(!search && sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-        where,
-        include: {
-          tags: true,
-        },
-        orderBy: sort === "trending"
-          ? [
-              { rating: { sort: "desc", nulls: "last" } },
-              { id: "desc" }
-            ]
-          : {
-              releaseDate: "desc",
-            },
-      }),
-      db.game.count()
-    ]);
-
-    // If searching or random, sort in-memory to preserve similarity/random query order
-    if ((search || sort === "random") && matchedIds.length > 0) {
-      games.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
-    }
-
+    let games: any[] = [];
     let nextCursor: string | null = null;
-    if (sort === "random") {
-      nextCursor = "more-random";
-    } else if (games.length > limit) {
-      const nextItem = games.pop(); // Pop the extra element and set as next cursor
-      nextCursor = nextItem ? nextItem.id : null;
+    let totalCount = 0;
+
+    if (search) {
+      const [allSearchGames, count] = await Promise.all([
+        db.game.findMany({
+          where,
+          include: {
+            tags: true,
+          },
+        }),
+        db.game.count()
+      ]);
+      totalCount = count;
+
+      // Sort by similarity order
+      if (matchedIds.length > 0) {
+        allSearchGames.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
+      }
+
+      // Paginate in memory
+      let paginatedGames = allSearchGames;
+      if (cursor) {
+        const cursorIndex = allSearchGames.findIndex(g => g.id === cursor);
+        if (cursorIndex !== -1) {
+          paginatedGames = allSearchGames.slice(cursorIndex + 1);
+        }
+      }
+
+      games = paginatedGames.slice(0, limit);
+      if (paginatedGames.length > limit) {
+        nextCursor = games[games.length - 1].id;
+      }
+    } else {
+      const [fetchedGames, count] = await Promise.all([
+        db.game.findMany({
+          take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
+          ...(sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+          where,
+          include: {
+            tags: true,
+          },
+          orderBy: sort === "trending"
+            ? [
+                { rating: { sort: "desc", nulls: "last" } },
+                { id: "desc" }
+              ]
+            : {
+                releaseDate: "desc",
+              },
+        }),
+        db.game.count()
+      ]);
+      totalCount = count;
+
+      if (sort === "random") {
+        nextCursor = "more-random";
+        games = fetchedGames;
+        if (matchedIds.length > 0) {
+          games.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
+        }
+      } else {
+        if (fetchedGames.length > limit) {
+          const nextItem = fetchedGames.pop();
+          nextCursor = nextItem ? nextItem.id : null;
+        }
+        games = fetchedGames;
+      }
     }
 
     const responseData = {
