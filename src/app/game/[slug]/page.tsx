@@ -348,9 +348,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 </div>
               )}
               {/* Category Tag */}
-              {getCategoryBadge(game.category) && (
+              {getCategoryBadge(game.category, game.title) && (
                 <span className="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
-                  {getCategoryBadge(game.category)}
+                  {getCategoryBadge(game.category, game.title)}
                 </span>
               )}
               {/* itch.io Badge */}
@@ -430,9 +430,16 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           <div className="md:col-span-2 space-y-8">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
-                  {game.status}
-                </span>
+                {game.status && game.status.trim() !== "" && (
+                  <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
+                    {game.status}
+                  </span>
+                )}
+                {getCategoryBadge(game.category, game.title) && (
+                  <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-[#7f1d1d] px-2 py-0.5 font-bold bg-[#7f1d1d] text-[#fca5a5] w-fit block">
+                    {getCategoryBadge(game.category, game.title)}
+                  </span>
+                )}
                 {game.slug.startsWith("itch-") && (
                   <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
                     itch.io

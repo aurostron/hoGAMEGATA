@@ -128,9 +128,9 @@ export default async function UpcomingPage() {
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
                         )}
                         {/* Category Tag */}
-                        {getCategoryBadge(game.category) && (
+                        {getCategoryBadge(game.category, game.title) && (
                           <span className="absolute top-1 left-1 font-mono text-[7px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.2 z-10">
-                            {getCategoryBadge(game.category)}
+                            {getCategoryBadge(game.category, game.title)}
                           </span>
                         )}
                         {/* itch.io Badge */}
@@ -219,9 +219,9 @@ export default async function UpcomingPage() {
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
                         )}
                         {/* Category Tag */}
-                        {getCategoryBadge(game.category) && (
+                        {getCategoryBadge(game.category, game.title) && (
                           <span className="absolute top-1 left-1 font-mono text-[7px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.2 z-10">
-                            {getCategoryBadge(game.category)}
+                            {getCategoryBadge(game.category, game.title)}
                           </span>
                         )}
                         {/* itch.io Badge */}
