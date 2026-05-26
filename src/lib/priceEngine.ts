@@ -57,9 +57,17 @@ export interface PriceDeal {
 }
 
 // Resilient fetch with exponential backoff and cooldown tracking for 429 rate limits
+// Resilient fetch with exponential backoff and cooldown tracking for 429 rate limits
 async function fetchWithBackoff(url: string, init?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5 seconds timeout limit
+
   try {
-    const response = await fetch(url, init);
+    const response = await fetch(url, {
+      ...init,
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
     
     if (response.status === 429) {
       const cooldownPeriod = 5 * 60 * 1000; // 5 minutes cooldown
@@ -83,6 +91,11 @@ async function fetchWithBackoff(url: string, init?: RequestInit, retries = 3, de
     }
     return response;
   } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      console.warn(`⚠️ Request to ${url} timed out after 4500ms.`);
+      throw new Error(`Timeout fetching from external source: ${url}`);
+    }
     if (retries > 0) {
       console.warn(`⚠️ Network error requesting ${url}. Retrying in ${delay}ms... (${retries} left)`, error);
       await new Promise((resolve) => setTimeout(resolve, delay));

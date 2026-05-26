@@ -22,6 +22,7 @@ model Game {
   rating        Float?
   trailerUrl    String?        // YouTube/Twitch URL
   screenshots   String[]       // PostgreSQL string array for screenshot URLs
+  isTrending    Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 

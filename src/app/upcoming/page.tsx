@@ -3,7 +3,7 @@ import Image from "next/image";
 import { db } from "@/lib/db";
 import AuthButton from "@/components/AuthButton";
 import { ArrowLeft, Calendar, ExternalLink, Tag, Monitor } from "lucide-react";
-import { getHighResCoverUrl } from "@/lib/utils";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +117,7 @@ export default async function UpcomingPage() {
                       <div className="w-24 h-32 relative bg-neutral-900 border border-white shrink-0 flex items-center justify-center overflow-hidden">
                         {game.coverUrl ? (
                           <Image
-                            src={getHighResCoverUrl(game.coverUrl) || ""}
+                            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                             alt={game.title}
                             fill={true}
                             sizes="96px"
@@ -126,6 +126,12 @@ export default async function UpcomingPage() {
                           />
                         ) : (
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
+                        )}
+                        {/* Category Tag */}
+                        {getCategoryBadge(game.category) && (
+                          <span className="absolute top-1 left-1 font-mono text-[7px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.2 z-10">
+                            {getCategoryBadge(game.category)}
+                          </span>
                         )}
                         {/* itch.io Badge */}
                         {game.slug.startsWith("itch-") && (
@@ -202,7 +208,7 @@ export default async function UpcomingPage() {
                       <div className="w-24 h-32 relative bg-neutral-900 border border-white shrink-0 flex items-center justify-center overflow-hidden">
                         {game.coverUrl ? (
                           <Image
-                            src={getHighResCoverUrl(game.coverUrl) || ""}
+                            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                             alt={game.title}
                             fill={true}
                             sizes="96px"
@@ -211,6 +217,12 @@ export default async function UpcomingPage() {
                           />
                         ) : (
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
+                        )}
+                        {/* Category Tag */}
+                        {getCategoryBadge(game.category) && (
+                          <span className="absolute top-1 left-1 font-mono text-[7px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.2 z-10">
+                            {getCategoryBadge(game.category)}
+                          </span>
                         )}
                         {/* itch.io Badge */}
                         {game.slug.startsWith("itch-") && (
