@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/db";
 import AuthButton from "@/components/AuthButton";
 import { ArrowLeft, Calendar, ExternalLink, Tag, Monitor } from "lucide-react";
@@ -115,14 +116,22 @@ export default async function UpcomingPage() {
                       {/* Image Block */}
                       <div className="w-24 h-32 relative bg-neutral-900 border border-white shrink-0 flex items-center justify-center overflow-hidden">
                         {game.coverUrl ? (
-                          <img
+                          <Image
                             src={getHighResCoverUrl(game.coverUrl) || ""}
                             alt={game.title}
-                            className="w-full h-full object-cover"
+                            fill={true}
+                            sizes="96px"
+                            className="object-cover"
                             loading="lazy"
                           />
                         ) : (
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
+                        )}
+                        {/* itch.io Badge */}
+                        {game.slug.startsWith("itch-") && (
+                          <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                            itch.io
+                          </span>
                         )}
                       </div>
 
@@ -192,14 +201,22 @@ export default async function UpcomingPage() {
                       {/* Image Block */}
                       <div className="w-24 h-32 relative bg-neutral-900 border border-white shrink-0 flex items-center justify-center overflow-hidden">
                         {game.coverUrl ? (
-                          <img
+                          <Image
                             src={getHighResCoverUrl(game.coverUrl) || ""}
                             alt={game.title}
-                            className="w-full h-full object-cover"
+                            fill={true}
+                            sizes="96px"
+                            className="object-cover"
                             loading="lazy"
                           />
                         ) : (
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
+                        )}
+                        {/* itch.io Badge */}
+                        {game.slug.startsWith("itch-") && (
+                          <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                            itch.io
+                          </span>
                         )}
                       </div>
 

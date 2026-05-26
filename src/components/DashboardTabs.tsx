@@ -115,6 +115,12 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                       <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
                     </div>
                   )}
+                  {/* itch.io Badge */}
+                  {game.slug.startsWith("itch-") && (
+                    <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                      itch.io
+                    </span>
+                  )}
                   {/* Primary Genre Tag */}
                   <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
                     {game.genreNames ? game.genreNames.split(", ")[0] : "Horror"}
