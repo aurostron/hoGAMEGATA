@@ -94,9 +94,18 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="border border-white bg-black p-4 space-y-4 animate-pulse">
-              <div className="h-40 bg-white/10 w-full"></div>
-              <div className="h-4 bg-white/10 w-3/4"></div>
+            <div key={i} className="border border-white bg-black rounded-none overflow-hidden flex flex-col h-full animate-pulse">
+              <div className="aspect-[3/4] w-full bg-white/10 border-b border-white shrink-0"></div>
+              <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div>
+                  <div className="h-4 bg-white/10 w-3/4 rounded-none"></div>
+                  <div className="h-3 bg-white/10 w-1/2 rounded-none mt-2"></div>
+                </div>
+                <div className="pt-2 border-t border-white/20 flex justify-between items-center">
+                  <div className="h-3 bg-white/10 w-16 rounded-none"></div>
+                  <div className="h-4 bg-white/10 w-12 rounded-none"></div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -149,7 +158,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
               )}
               {/* itch.io Badge */}
               {game.slug.startsWith("itch-") && (
-                <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                   itch.io
                 </span>
               )}

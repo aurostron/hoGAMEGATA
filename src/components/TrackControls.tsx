@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { Heart } from "lucide-react";
@@ -8,15 +8,15 @@ import { Heart } from "lucide-react";
 interface TrackControlsProps {
   gameId: string;
   gameSlug: string;
-  initialWishlisted: boolean;
-  initialCollectionStatus: string | null;
+  initialWishlisted?: boolean;
+  initialCollectionStatus?: string | null;
 }
 
 export default function TrackControls({
   gameId,
   gameSlug,
-  initialWishlisted,
-  initialCollectionStatus,
+  initialWishlisted = false,
+  initialCollectionStatus = null,
 }: TrackControlsProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -24,6 +24,31 @@ export default function TrackControls({
   const [wishlisted, setWishlisted] = useState(initialWishlisted);
   const [collectionStatus, setCollectionStatus] = useState<string | null>(initialCollectionStatus);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlisted(false);
+      setCollectionStatus(null);
+      return;
+    }
+
+    async function fetchStatus() {
+      try {
+        const response = await fetch(`/api/user/game-status?gameId=${gameId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.loggedIn) {
+            setWishlisted(data.wishlisted);
+            setCollectionStatus(data.collectionStatus);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch game user status:", err);
+      }
+    }
+
+    fetchStatus();
+  }, [gameId, user]);
 
   const handleAuthRedirect = () => {
     router.push(`/login?redirect=${encodeURIComponent(`/game/${gameSlug}`)}`);

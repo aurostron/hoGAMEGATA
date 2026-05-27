@@ -125,7 +125,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                   )}
                   {/* itch.io Badge */}
                   {game.slug.startsWith("itch-") && (
-                    <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                    <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                       itch.io
                     </span>
                   )}
