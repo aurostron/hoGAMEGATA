@@ -60,11 +60,17 @@ export default function PlatformLogos({
     return s.includes("linux") || n.includes("linux");
   })) || lowerNames.includes("linux");
 
-  const showMobile = (platforms && platforms.some(p => {
+  const showAndroid = (platforms && platforms.some(p => {
     const s = p.slug.toLowerCase();
     const n = p.name.toLowerCase();
-    return s.includes("android") || s.includes("ios") || s.includes("phone") || n.includes("android") || n.includes("ios");
-  })) || lowerNames.includes("android") || lowerNames.includes("ios") || lowerNames.includes("phone");
+    return s.includes("android") || n.includes("android");
+  })) || lowerNames.includes("android");
+
+  const showIOS = (platforms && platforms.some(p => {
+    const s = p.slug.toLowerCase();
+    const n = p.name.toLowerCase();
+    return s.includes("ios") || s.includes("ipad") || s.includes("iphone") || n.includes("ios") || n.includes("ipad") || n.includes("iphone");
+  })) || lowerNames.includes("ios") || lowerNames.includes("ipad") || lowerNames.includes("iphone");
 
   // filter: brightness(0) invert(1) makes the SVG completely solid white.
   // When card is hovered (group), we cancel invert (invert-0), making it solid black.
@@ -122,11 +128,19 @@ export default function PlatformLogos({
           className={imgClass}
         />
       )}
-      {showMobile && (
+      {showIOS && (
+        <img
+          src="/platforms/apple.svg"
+          alt="iOS / iPadOS"
+          title="iOS / iPadOS"
+          className={imgClass}
+        />
+      )}
+      {showAndroid && (
         <img
           src="/platforms/android.svg"
-          alt="Mobile"
-          title="Mobile"
+          alt="Android"
+          title="Android"
           className={imgClass}
         />
       )}

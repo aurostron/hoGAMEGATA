@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev-gui": "tsx scripts/gui-server.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -12,10 +13,14 @@
     "enrich": "tsx scripts/enrich.ts",
     "enrich-itch": "tsx scripts/enrich-itch.ts",
     "sync-prices": "tsx scripts/sync-prices.ts",
-    "flag-trending": "tsx scripts/flag-trending.ts"
+    "flag-trending": "tsx scripts/flag-trending.ts",
+    "console": "tsx scripts/dev-tools.ts",
+    "dev-tools": "tsx scripts/dev-tools.ts",
+    "scare": "tsx scripts/enrich-scare.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
+    "@google/genai": "^2.8.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@supabase/ssr": "^0.10.3",

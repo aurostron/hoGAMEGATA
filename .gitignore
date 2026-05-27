@@ -52,4 +52,5 @@ ingest_cursor.json
 # performance traces
 /performance/
 
-
+# Local Dev GUI
+/scripts/gui-server.ts
