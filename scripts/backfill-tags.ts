@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import * as dotenv from "dotenv";
-import { MOODS, getMoodTagsForGame } from "./mood-rules";
+import { HORROR_TAXONOMY, getTaxonomyTagsForGame } from "./mood-rules";
 
 dotenv.config();
 
@@ -14,8 +14,16 @@ if (!connectionString) {
 
 let prisma: PrismaClient;
 const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1") || connectionString.includes("::1");
+
+// Connect via session port 5432 for faster batch operations if requested
+let targetConnectionString = connectionString;
+if (connectionString.includes(":6543")) {
+  console.log("🔗 Redirecting database queries to direct session port 5432 for faster backfill execution.");
+  targetConnectionString = connectionString.replace(":6543", ":5432");
+}
+
 const pool = new Pool({ 
-  connectionString,
+  connectionString: targetConnectionString,
   connectionTimeoutMillis: 60000,
   max: 10,
   ssl: isLocal ? undefined : { rejectUnauthorized: false }
@@ -24,6 +32,66 @@ const adapter = new PrismaPg(pool);
 prisma = new PrismaClient({ adapter });
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Helper to safely transition a tag slug and name without unique constraint errors
+async function transitionTag(oldSlug: string, newSlug: string, newName: string) {
+  const oldTag = await prisma.tag.findUnique({ where: { slug: oldSlug } });
+  const newTag = await prisma.tag.findUnique({ where: { slug: newSlug } });
+
+  if (oldTag && newTag) {
+    console.log(`  Merging duplicate tags: "${oldSlug}" -> "${newSlug}"`);
+    // Connect games from oldTag to newTag, then disconnect oldTag
+    const gamesWithOldTag = await prisma.game.findMany({
+      where: { tags: { some: { id: oldTag.id } } },
+      select: { id: true }
+    });
+    for (const game of gamesWithOldTag) {
+      await prisma.game.update({
+        where: { id: game.id },
+        data: {
+          tags: {
+            connect: { id: newTag.id },
+            disconnect: { id: oldTag.id }
+          }
+        }
+      });
+    }
+    await prisma.tag.delete({ where: { id: oldTag.id } });
+  } else if (oldTag) {
+    console.log(`  Updating tag in-place: "${oldSlug}" -> "${newSlug}" ("${newName}")`);
+    const tagWithName = await prisma.tag.findUnique({ where: { name: newName } });
+    if (tagWithName && tagWithName.id !== oldTag.id) {
+      console.log(`  Name collision! Merging tag "${oldTag.slug}" into "${tagWithName.slug}"`);
+      const gamesWithOldTag = await prisma.game.findMany({
+        where: { tags: { some: { id: oldTag.id } } },
+        select: { id: true }
+      });
+      for (const game of gamesWithOldTag) {
+        await prisma.game.update({
+          where: { id: game.id },
+          data: {
+            tags: {
+              connect: { id: tagWithName.id },
+              disconnect: { id: oldTag.id }
+            }
+          }
+        });
+      }
+      await prisma.tag.delete({ where: { id: oldTag.id } });
+    } else {
+      await prisma.tag.update({
+        where: { id: oldTag.id },
+        data: { slug: newSlug, name: newName }
+      });
+    }
+  } else if (newTag) {
+    // Ensure name is correct
+    await prisma.tag.update({
+      where: { id: newTag.id },
+      data: { name: newName }
+    });
+  }
+}
 
 async function runBackfill() {
   const twitchId = process.env.TWITCH_CLIENT_ID;
@@ -47,18 +115,39 @@ async function runBackfill() {
   const { access_token } = await tokenResponse.json() as { access_token: string };
   console.log("✅ Authenticated successfully!");
 
-  // 1. Pre-upsert all MOOD tags
-  console.log("🏷️  Pre-upserting all curated mood tags in database...");
-  const moodTagMap = new Map<string, string>();
-  for (const mood of MOODS) {
-    const dbTag = await prisma.tag.upsert({
-      where: { slug: mood.slug },
-      update: { name: mood.name },
-      create: { name: mood.name, slug: mood.slug }
-    });
-    moodTagMap.set(mood.slug, dbTag.id);
+  // Transition and merge clashing old tag structures to the new taxonomy first
+  console.log("🔄 Resolving tag collisions and database constraints...");
+  const migrationRules = [
+    { oldSlug: "psychological-horror", newSlug: "psychological", newName: "Psychological Horror" },
+    { oldSlug: "point---click", newSlug: "point-click", newName: "Point & Click" },
+    { oldSlug: "co-op-social", newSlug: "co-op", newName: "Co-op" },
+    { oldSlug: "retro-ps1-vibe", newSlug: "retro-ps1", newName: "PS1 / Low Poly" },
+    { oldSlug: "slasher-splatter", newSlug: "slasher", newName: "Slasher Horror" },
+    { oldSlug: "gothic-supernatural", newSlug: "supernatural", newName: "Supernatural Horror" },
+    { oldSlug: "no-combat-stealth", newSlug: "stealth-no-combat", newName: "Stealth & Hide" },
+    { oldSlug: "walking-sim-story", newSlug: "walking-sim", newName: "Walking Simulator" },
+    { oldSlug: "found-footage-analog", newSlug: "vhs-analog", newName: "VHS / Analog" },
+    { oldSlug: "combat-heavy", newSlug: "action-horror", newName: "Action Horror" },
+    { oldSlug: "sci-fi-cyber", newSlug: "setting-sci-fi", newName: "Sci-Fi Horror" }
+  ];
+
+  for (const rule of migrationRules) {
+    await transitionTag(rule.oldSlug, rule.newSlug, rule.newName);
   }
-  console.log("✅ Curated tags populated!");
+  console.log("✅ Tag transitions and merges completed!");
+
+  // 1. Pre-upsert all Curated Tags
+  console.log("🏷️  Pre-upserting all 54 curated taxonomy tags in database...");
+  const tagMap = new Map<string, string>();
+  for (const tag of HORROR_TAXONOMY) {
+    const dbTag = await prisma.tag.upsert({
+      where: { slug: tag.slug },
+      update: { name: tag.name },
+      create: { name: tag.name, slug: tag.slug }
+    });
+    tagMap.set(tag.slug, dbTag.id);
+  }
+  console.log("✅ Curated taxonomy tags populated in Tag table!");
 
   // 2. Fetch all games from DB
   console.log("🔍 Fetching all games from database to resolve keywords...");
@@ -125,7 +214,7 @@ async function runBackfill() {
     await sleep(300);
   }
 
-  console.log(`\n🏷️  Applying taxonomy rules and writing tags to ${totalGames} games...`);
+  console.log(`\n🏷️  Applying taxonomy rules and writing tags/scores to ${totalGames} games...`);
 
   // Helper batch writer with concurrency limit
   let processed = 0;
@@ -136,7 +225,7 @@ async function runBackfill() {
 
     await Promise.all(chunk.map(async (game) => {
       const igdbKeywords = game.igdbId ? keywordMap.get(game.igdbId) || [] : [];
-      const matchedMoods = getMoodTagsForGame({
+      const { tags: matchedTags, scores } = getTaxonomyTagsForGame({
         title: game.title,
         summary: game.summary,
         storyline: game.storyline,
@@ -144,9 +233,9 @@ async function runBackfill() {
         keywords: igdbKeywords
       });
 
-      const tagConnects = matchedMoods
-        .map(mood => {
-          const tid = moodTagMap.get(mood.slug);
+      const tagConnects = matchedTags
+        .map(tag => {
+          const tid = tagMap.get(tag.slug);
           return tid ? { id: tid } : null;
         })
         .filter((t): t is { id: string } => t !== null);
@@ -156,7 +245,8 @@ async function runBackfill() {
         data: {
           tags: {
             set: tagConnects
-          }
+          },
+          taxonomyScores: scores
         }
       });
     }));

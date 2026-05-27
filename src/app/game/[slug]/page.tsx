@@ -4,17 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield } from "lucide-react";
 import { db } from "@/lib/db";
-import PriceComparison from "@/components/PriceComparison";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
 import VibeTracker from "@/components/VibeTracker";
 
-import ScreenshotGallery from "@/components/ScreenshotGallery";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
 import ReturnButton from "@/components/ReturnButton";
-import CreatorGames from "@/components/CreatorGames";
+import dynamic from "next/dynamic";
+
+const PriceComparison = dynamic(() => import("@/components/PriceComparison"));
+const ScreenshotGallery = dynamic(() => import("@/components/ScreenshotGallery"));
+const CreatorGames = dynamic(() => import("@/components/CreatorGames"));
 
 interface GamePageProps {
   params: Promise<{
@@ -227,6 +229,95 @@ async function lazyEnrichSteamMetadata(game: any) {
   }
 }
 
+async function lazyEnrichProtonDbMetadata(game: any) {
+  // If the game has already been synced within the last 7 days, return immediately
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  if (
+    game.protonDbTier !== null && 
+    game.lastProtonDbSync && 
+    game.lastProtonDbSync > sevenDaysAgo
+  ) {
+    return;
+  }
+
+  // Bypass requests during Next.js build phase
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return;
+  }
+
+  // Find the Steam purchase link from purchaseLinks relation
+  const steamLink = game.purchaseLinks?.find((link: any) => 
+    link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
+  );
+
+  if (!steamLink) {
+    return;
+  }
+
+  // Extract Steam AppID using regex
+  const match = steamLink.url.match(/\/app\/(\d+)/);
+  const steamAppId = match ? match[1] : null;
+
+  if (!steamAppId) {
+    return;
+  }
+
+  try {
+    const url = `https://www.protondb.com/api/v1/reports/summaries/${steamAppId}.json`;
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 hoGAMEGATA/1.0"
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Update local memory reference
+      game.protonDbTier = data.tier || null;
+      game.protonDbConfidence = data.confidence || null;
+      game.protonDbScore = data.score !== undefined ? data.score : null;
+      game.protonDbTotalReports = data.total !== undefined ? data.total : null;
+      game.lastProtonDbSync = new Date();
+
+      // Update database asynchronously
+      try {
+        await db.game.update({
+          where: { id: game.id },
+          data: {
+            protonDbTier: game.protonDbTier,
+            protonDbConfidence: game.protonDbConfidence,
+            protonDbScore: game.protonDbScore,
+            protonDbTotalReports: game.protonDbTotalReports,
+            lastProtonDbSync: game.lastProtonDbSync
+          }
+        });
+        console.log(`💾 ProtonDB metadata lazy-enriched and cached for game ID: ${game.id}`);
+      } catch (dbErr) {
+        console.error("Failed to save lazy-enriched ProtonDB metadata to DB:", dbErr);
+      }
+    } else if (response.status === 404) {
+      // Game not found on ProtonDB (e.g. unreviewed or not a Steam game)
+      game.protonDbTier = "unknown";
+      game.lastProtonDbSync = new Date();
+      try {
+        await db.game.update({
+          where: { id: game.id },
+          data: {
+            protonDbTier: "unknown",
+            lastProtonDbSync: game.lastProtonDbSync
+          }
+        });
+        console.log(`💾 Cached unknown ProtonDB status for game ID: ${game.id}`);
+      } catch (dbErr) {
+        console.error("Failed to cache unknown ProtonDB status to DB:", dbErr);
+      }
+    }
+  } catch (error) {
+    console.error(`⚠️ Failed to lazy-load ProtonDB reviews for ${game.title}:`, error);
+  }
+}
+
 export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
@@ -248,6 +339,12 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     notFound();
   }
 
+  // Extract Steam AppID if available
+  const steamLink = game.purchaseLinks?.find((link: any) => 
+    link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
+  );
+  const steamAppId = steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null;
+
 
 
   // Retrieve cached system requirements from the database object
@@ -255,15 +352,16 @@ export default async function GameProfilePage({ params }: GamePageProps) {
 
   // Schedule RAWG and Steam metadata lazy enrichment in the background (Non-blocking Stale-While-Revalidate)
   after(async () => {
+    const gameClone = { ...game };
     if (process.env.NODE_ENV === "development") {
+      lazyEnrichProtonDbMetadata(gameClone);
       return; // Skip background API queries to RAWG and Steam in dev mode to prevent blocking the local socket
     }
     try {
-      // Create a fresh clone/copy of game properties needed for background functions to prevent mutation conflicts
-      const gameClone = { ...game };
       await Promise.all([
         lazyEnrichRawgMetadata(gameClone),
-        lazyEnrichSteamMetadata(gameClone)
+        lazyEnrichSteamMetadata(gameClone),
+        lazyEnrichProtonDbMetadata(gameClone)
       ]);
     } catch (err) {
       console.error(`⚠️ Background enrichment failed for game ${game.title}:`, err);
@@ -367,6 +465,50 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 <span className="text-white flex items-center gap-1.5 shrink-0"><Monitor className="w-3.5 h-3.5" /> Platforms:</span>
                 <PlatformLogos platforms={game.platforms} className="flex flex-wrap justify-end gap-2" solid={true} />
               </div>
+
+              {steamAppId && (
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-white flex items-center gap-1.5 shrink-0">
+                    <Monitor className="w-3.5 h-3.5" /> Linux/Deck:
+                  </span>
+                  <div className="text-right">
+                    {game.protonDbTier ? (
+                      <a
+                        href={`https://www.protondb.com/app/${steamAppId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex flex-col items-end gap-1"
+                        title={
+                          game.protonDbConfidence && game.protonDbTotalReports
+                            ? `${game.protonDbConfidence} confidence rating based on ${game.protonDbTotalReports} report(s)`
+                            : "View detailed Linux compatibility reports on ProtonDB"
+                        }
+                      >
+                        <span className={`font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 ${
+                          game.protonDbTier === "native" || game.protonDbTier === "platinum"
+                            ? "bg-emerald-500 text-black font-black"
+                            : game.protonDbTier === "gold"
+                            ? "bg-white text-black font-black"
+                            : game.protonDbTier === "silver"
+                            ? "border border-white text-white font-bold"
+                            : game.protonDbTier === "bronze" || game.protonDbTier === "borked"
+                            ? "border border-red-500 text-red-500 line-through font-bold"
+                            : "border border-white/20 text-white/40 font-bold"
+                        }`}>
+                          {game.protonDbTier}
+                        </span>
+                        {game.protonDbTotalReports !== null && game.protonDbTotalReports > 0 && (
+                          <span className="text-[9px] text-white/50 font-bold tracking-tight lowercase">
+                            ({game.protonDbTotalReports} reports)
+                          </span>
+                        )}
+                      </a>
+                    ) : (
+                      <span className="text-white/30 font-mono italic">[ Syncing ]</span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {game.playtime !== null && game.playtime > 0 && (
                 <div className="flex justify-between items-center">

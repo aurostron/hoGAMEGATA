@@ -25,7 +25,12 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
+    const tagsParam = searchParams.get("tags")?.trim() || "";
     const tag = searchParams.get("tag")?.trim() || "";
+    const activeTagsString = tagsParam || tag;
+    const selectedTags = activeTagsString
+      ? activeTagsString.split(",").map(t => t.trim()).filter(Boolean)
+      : [];
     const cursor = searchParams.get("cursor")?.trim() || "";
     const sort = searchParams.get("sort")?.trim() || "latest"; // "latest" | "trending" | "random"
     const creatorIdsParam = searchParams.get("creatorIds")?.trim() || "";
@@ -50,12 +55,14 @@ export async function GET(request: NextRequest) {
     }
 
     // 1. Tag Filtering (Filter by Mood Tag slug)
-    if (tag) {
-      where.tags = {
-        some: {
-          slug: tag
+    if (selectedTags.length > 0) {
+      where.AND = selectedTags.map(tagSlug => ({
+        tags: {
+          some: {
+            slug: tagSlug
+          }
         }
-      };
+      }));
     }
 
     let matchedIds: string[] = [];
@@ -83,13 +90,15 @@ export async function GET(request: NextRequest) {
         : { in: matchedIds };
     } else if (sort === "random") {
       let rawMatches;
-      if (tag) {
+      if (selectedTags.length > 0) {
         rawMatches = await db.$queryRaw<{ id: string }[]>(
           Prisma.sql`
             SELECT g.id FROM "Game" g
             JOIN "_GameToTag" gt ON g.id = gt."A"
             JOIN "Tag" t ON gt."B" = t.id
-            WHERE t.slug = ${tag}
+            WHERE t.slug IN (${Prisma.join(selectedTags)})
+            GROUP BY g.id
+            HAVING COUNT(DISTINCT t.slug) = ${selectedTags.length}
             ORDER BY random()
             LIMIT ${limit};
           `

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
+    "tag-moods": "tsx scripts/tag-moods.ts",
     "enrich": "tsx scripts/enrich.ts",
     "enrich-itch": "tsx scripts/enrich-itch.ts",
     "sync-prices": "tsx scripts/sync-prices.ts",

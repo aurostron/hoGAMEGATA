@@ -40,7 +40,12 @@ export async function GET(request: NextRequest) {
         if (topTags.length > 0) {
           // Find a highly rated game matching their favorite vibe to use as the semantic seed
           const seedCandidate = await db.game.findFirst({
-            where: { tags: { some: { slug: topTags[0] } } },
+            where: {
+              OR: [
+                { tags: { some: { slug: topTags[0] } } },
+                { genres: { some: { slug: topTags[0] } } }
+              ]
+            },
             orderBy: { rating: 'desc' },
           });
           
@@ -60,15 +65,39 @@ export async function GET(request: NextRequest) {
 
     // 4. Perform AI Vector Search using pgvector
     // We find games whose embeddings are geometrically closest to our seed game's embedding.
-    const vectorResults = await db.$queryRaw<{ id: string }[]>`
-      SELECT id
-      FROM "Game"
-      WHERE id != ${seedGameId}
-        AND embedding IS NOT NULL
-        ${excludeGameIds.length > 0 ? Prisma.sql`AND id NOT IN (${Prisma.join(excludeGameIds)})` : Prisma.empty}
-      ORDER BY embedding <-> (SELECT embedding FROM "Game" WHERE id = ${seedGameId})
-      LIMIT ${limit}
-    `;
+    // Ensure we only recommend games that actually belong to the targeted genre/vibe.
+    let vectorResults;
+    
+    if (searchParams.get("tags") && !user) {
+      // If filtering by specific vibes, explicitly join and enforce the tag/genre
+      const topTag = searchParams.get("tags")!.split(",")[0].trim();
+      vectorResults = await db.$queryRaw<{ id: string }[]>`
+        SELECT g.id
+        FROM "Game" g
+        LEFT JOIN "_GameToTag" gtt ON g.id = gtt."A"
+        LEFT JOIN "Tag" t ON gtt."B" = t.id
+        LEFT JOIN "_GameToGenre" gtg ON g.id = gtg."A"
+        LEFT JOIN "Genre" gen ON gtg."B" = gen.id
+        WHERE g.id != ${seedGameId}
+          AND (t.slug = ${topTag} OR gen.slug = ${topTag})
+          AND g.embedding IS NOT NULL
+          ${excludeGameIds.length > 0 ? Prisma.sql`AND g.id NOT IN (${Prisma.join(excludeGameIds)})` : Prisma.empty}
+        GROUP BY g.id, g.embedding
+        ORDER BY g.embedding <-> (SELECT embedding FROM "Game" WHERE id = ${seedGameId})
+        LIMIT ${limit}
+      `;
+    } else {
+      // If personalized for the user generally, no strict tag constraint
+      vectorResults = await db.$queryRaw<{ id: string }[]>`
+        SELECT id
+        FROM "Game"
+        WHERE id != ${seedGameId}
+          AND embedding IS NOT NULL
+          ${excludeGameIds.length > 0 ? Prisma.sql`AND id NOT IN (${Prisma.join(excludeGameIds)})` : Prisma.empty}
+        ORDER BY embedding <-> (SELECT embedding FROM "Game" WHERE id = ${seedGameId})
+        LIMIT ${limit}
+      `;
+    }
 
     const recommendedIds = vectorResults.map(v => v.id);
 

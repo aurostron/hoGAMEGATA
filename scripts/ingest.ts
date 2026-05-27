@@ -100,10 +100,6 @@ async function fetchRawgGameDetails(
 }
 
 async function runIngestion() {
-  console.log("Loading AI embedding model...");
-  extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
-  console.log("Model loaded successfully.");
-
   const twitchId = process.env.TWITCH_CLIENT_ID;
   const twitchSecret = process.env.TWITCH_CLIENT_SECRET;
   const rawgApiKey = process.env.RAWG_API_KEY;
@@ -246,6 +242,7 @@ async function runIngestion() {
       platforms?: Array<{ name: string; slug: string }>;
       genres?: Array<{ id: number; name: string; slug: string }>;
       keywords?: Array<{ id: number; name: string; slug: string }>;
+      player_perspectives?: Array<{ id: number; name: string; slug: string }>;
       websites?: Array<{ url: string; category: number }>;
       category?: number;
     }
@@ -273,6 +270,7 @@ async function runIngestion() {
           platforms.name, platforms.slug,
           genres.name, genres.slug,
           keywords.name, keywords.slug,
+          player_perspectives.name, player_perspectives.slug,
           websites.url, websites.category, category;
         where ${whereClause};
         sort total_rating desc;
@@ -512,12 +510,25 @@ async function runIngestion() {
           gameGenreIds.push(horrorGenreId);
         }
 
-        // Map mood tags for game
-        const moodTags = getMoodTagsForGame(g);
+        // Map mood tags for game (using fast keyword matches)
+        const moodTags = await getMoodTagsForGame(g);
         const tagIds: string[] = [];
         for (const t of moodTags) {
           const tid = moodTagMap.get(t.slug);
           if (tid) tagIds.push(tid);
+        }
+
+        // Map native IGDB player perspectives directly to curated DB tags
+        if (g.player_perspectives) {
+          for (const pp of g.player_perspectives) {
+            let slug = pp.slug;
+            // Map IGDB slugs to our curated taxonomy slugs if they differ
+            if (slug === "bird-view-slash-isometric") slug = "isometric";
+            const tid = moodTagMap.get(slug);
+            if (tid && !tagIds.includes(tid)) {
+              tagIds.push(tid);
+            }
+          }
         }
 
         // Calculate denormalized relation name strings
