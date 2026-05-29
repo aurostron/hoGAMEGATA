@@ -11,7 +11,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, purchaseLinks } = body;
+    const { title, purchaseLinks, country } = body;
 
     if (!id || !title || !Array.isArray(purchaseLinks)) {
       return NextResponse.json(
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const deals = await lazyGetPrices(id, title, purchaseLinks);
+    const deals = await lazyGetPrices(id, title, purchaseLinks, country);
     return NextResponse.json({ deals });
   } catch (error) {
     console.error(`[Pricing API Error] Failed to fetch prices for game:`, error);

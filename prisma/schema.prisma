@@ -187,9 +187,11 @@ model PriceSnapshot {
   retailPrice     Float
   discountPercent Float
   dealUrl         String   // Outlink redirecting to deal
+  currency        String   @default("USD")
+  country         String   @default("US")
   updatedAt       DateTime @default(now())
 
-  @@unique([gameId, storeName])
+  @@unique([gameId, storeName, country])
 }
 
 model ReferralClick {

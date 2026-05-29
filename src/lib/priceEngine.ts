@@ -54,6 +54,7 @@ export interface PriceDeal {
   retailPrice: number;
   discountPercent: number;
   dealUrl: string;
+  currency: string;
 }
 
 // Resilient fetch with exponential backoff and cooldown tracking for 429 rate limits
@@ -162,6 +163,7 @@ export async function fetchCheapSharkDeals(steamId: string | null, title: string
         retailPrice,
         discountPercent: Math.round(discountPercent),
         dealUrl,
+        currency: "USD"
       };
     });
 
@@ -202,11 +204,11 @@ async function fetchItadGameId(apiKey: string, steamId: string | null, title: st
   return null;
 }
 
-async function fetchItadPrices(apiKey: string, itadId: string): Promise<PriceDeal[]> {
+async function fetchItadPrices(apiKey: string, itadId: string, country: string): Promise<PriceDeal[]> {
   if (Date.now() < itadCoolDownUntil) return [];
 
   try {
-    const url = `https://api.isthereanydeal.com/games/prices/v3?key=${apiKey}&country=US&deals=true`;
+    const url = `https://api.isthereanydeal.com/games/prices/v3?key=${apiKey}&country=${country}&deals=true`;
     const res = await fetchWithBackoff(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -228,13 +230,15 @@ async function fetchItadPrices(apiKey: string, itadId: string): Promise<PriceDea
       const discountPercent = cut > 0 && cut <= 1 ? cut * 100 : cut;
       const storeName = normalizeStoreName(deal.shop?.name || "Unknown Store");
       const dealUrl = deal.url || "";
+      const currency = deal.price?.currency || "USD";
 
       return {
         storeName,
         dealPrice,
         retailPrice,
         discountPercent: Math.round(discountPercent),
-        dealUrl
+        dealUrl,
+        currency
       };
     });
 
@@ -246,17 +250,20 @@ async function fetchItadPrices(apiKey: string, itadId: string): Promise<PriceDea
 }
 
 // 3. Dynamic Aggregated Fetcher
-export async function fetchAggregatedDeals(steamId: string | null, title: string): Promise<PriceDeal[]> {
+export async function fetchAggregatedDeals(steamId: string | null, title: string, country: string = "US"): Promise<PriceDeal[]> {
   const itadApiKey = process.env.ITAD_API_KEY;
+  const upperCountry = (country || "US").toUpperCase();
 
-  const fetchPromises: Promise<PriceDeal[]>[] = [
-    fetchCheapSharkDeals(steamId, title)
-  ];
+  const fetchPromises: Promise<PriceDeal[]>[] = [];
+
+  if (upperCountry === "US") {
+    fetchPromises.push(fetchCheapSharkDeals(steamId, title));
+  }
 
   if (itadApiKey) {
     const itadIdPromise = fetchItadGameId(itadApiKey, steamId, title).then((itadId) => {
       if (itadId) {
-        return fetchItadPrices(itadApiKey, itadId);
+        return fetchItadPrices(itadApiKey, itadId, upperCountry);
       }
       return [];
     });
@@ -290,14 +297,16 @@ export async function fetchAggregatedDeals(steamId: string | null, title: string
 export async function lazyGetPrices(
   gameId: string,
   title: string,
-  purchaseLinks: { storeName: string; url: string }[]
+  purchaseLinks: { storeName: string; url: string }[],
+  country: string = "US"
 ): Promise<PriceDeal[]> {
+  const upperCountry = (country || "US").toUpperCase();
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   try {
     // A. Check database cache
     const cached = await db.priceSnapshot.findMany({
-      where: { gameId },
+      where: { gameId, country: upperCountry },
       orderBy: { dealPrice: "asc" }
     });
 
@@ -308,7 +317,8 @@ export async function lazyGetPrices(
         dealPrice: c.dealPrice,
         retailPrice: c.retailPrice,
         discountPercent: c.discountPercent,
-        dealUrl: c.dealUrl
+        dealUrl: c.dealUrl,
+        currency: c.currency
       }));
     }
 
@@ -322,7 +332,8 @@ export async function lazyGetPrices(
           dealPrice: c.dealPrice,
           retailPrice: c.retailPrice,
           discountPercent: c.discountPercent,
-          dealUrl: c.dealUrl
+          dealUrl: c.dealUrl,
+          currency: c.currency
         }));
       }
     }
@@ -338,12 +349,12 @@ export async function lazyGetPrices(
     }
 
     // C. Fetch aggregated deals
-    const freshDeals = await fetchAggregatedDeals(steamId, title);
+    const freshDeals = await fetchAggregatedDeals(steamId, title, upperCountry);
 
     if (freshDeals.length > 0) {
       // D. Transaction to update local cached data
       await db.$transaction([
-        db.priceSnapshot.deleteMany({ where: { gameId } }),
+        db.priceSnapshot.deleteMany({ where: { gameId, country: upperCountry } }),
         db.priceSnapshot.createMany({
           data: freshDeals.map(deal => ({
             gameId,
@@ -352,6 +363,8 @@ export async function lazyGetPrices(
             retailPrice: deal.retailPrice,
             discountPercent: deal.discountPercent,
             dealUrl: deal.dealUrl,
+            currency: deal.currency,
+            country: upperCountry,
             updatedAt: new Date()
           }))
         })
@@ -364,7 +377,8 @@ export async function lazyGetPrices(
         dealPrice: c.dealPrice,
         retailPrice: c.retailPrice,
         discountPercent: c.discountPercent,
-        dealUrl: c.dealUrl
+        dealUrl: c.dealUrl,
+        currency: c.currency
       }));
     }
 
