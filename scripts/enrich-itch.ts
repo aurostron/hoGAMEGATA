@@ -131,6 +131,11 @@ async function enrichGameDetails(gameId: string, title: string, url: string): Pr
   const html = await fetchHtmlWithBackoff(url);
   if (!html) {
     console.log(`  ❌ Failed to fetch HTML for ${title}. Skipping.`);
+    // Update lastRawgSync on failure to prevent repeated runs on same failing game
+    await prisma.game.update({
+      where: { id: gameId },
+      data: { lastRawgSync: new Date() }
+    }).catch(e => console.error(`Failed to update lastRawgSync on scrape failure for ${title}:`, e));
     return false;
   }
 
@@ -242,6 +247,9 @@ async function addAndEnrichCustomGame(title: string, url: string) {
 }
 
 async function runEnrichmentBatch(batchLimit: number) {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   console.log(`🧹 Querying database for up to ${batchLimit} unenriched itch.io games...`);
   
   const purchaseLinks = await prisma.purchaseLink.findMany({
@@ -249,7 +257,11 @@ async function runEnrichmentBatch(batchLimit: number) {
       storeName: 'itch.io',
       game: {
         rawgEnriched: false,
-        slug: { startsWith: 'itch-' }
+        slug: { startsWith: 'itch-' },
+        OR: [
+          { lastRawgSync: null },
+          { lastRawgSync: { lt: thirtyDaysAgo } }
+        ]
       }
     },
     include: { game: true },
