@@ -13,12 +13,10 @@ export async function GET(request: NextRequest) {
   const cacheKey = request.url;
   const cached = apiCache.get(cacheKey);
   if (cached && Date.now() < cached.expiry) {
-    return new NextResponse(JSON.stringify(cached.data), {
-      status: 200,
+    return NextResponse.json(cached.data, {
       headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600"
-      }
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
     });
   }
 
@@ -37,6 +35,28 @@ export async function GET(request: NextRequest) {
     const excludeId = searchParams.get("excludeId")?.trim() || "";
     const limitParam = searchParams.get("limit");
     const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
+
+    const gameSelect = {
+      id: true,
+      title: true,
+      slug: true,
+      status: true,
+      coverUrl: true,
+      isTrending: true,
+      rating: true,
+      category: true,
+      esrbRating: true,
+      developerNames: true,
+      genreNames: true,
+      platformNames: true,
+      releaseDate: true,
+      tags: {
+        select: {
+          name: true,
+          slug: true,
+        }
+      }
+    };
 
     const where: Prisma.GameWhereInput = {};
 
@@ -74,12 +94,12 @@ export async function GET(request: NextRequest) {
           SELECT id FROM "Game"
           WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${search}))
              OR similarity(title, ${search}) > 0.18
-             OR similarity(coalesce("developerNames", ''), ${search}) > 0.2
-             OR similarity(coalesce("genreNames", ''), ${search}) > 0.2
-             OR similarity(coalesce("platformNames", ''), ${search}) > 0.2
+             OR similarity(coalece("developerNames", ''), ${search}) > 0.2
+             OR similarity(coalece("genreNames", ''), ${search}) > 0.2
+             OR similarity(coalece("platformNames", ''), ${search}) > 0.2
           ORDER BY GREATEST(
             similarity(title, ${search}),
-            similarity(coalesce("developerNames", ''), ${search})
+            similarity(coalece("developerNames", ''), ${search})
           ) DESC
           LIMIT 100;
         `
@@ -127,12 +147,7 @@ export async function GET(request: NextRequest) {
       const [allSearchGames, count] = await Promise.all([
         db.game.findMany({
           where,
-          include: {
-            tags: true,
-            developers: true,
-            platforms: true,
-            genres: true,
-          },
+          select: gameSelect,
         }),
         db.game.count()
       ]);
@@ -162,12 +177,7 @@ export async function GET(request: NextRequest) {
           take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
           ...(sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
           where,
-          include: {
-            tags: true,
-            developers: true,
-            platforms: true,
-            genres: true,
-          },
+          select: gameSelect,
           orderBy: sort === "trending"
             ? [
                 { rating: { sort: "desc", nulls: "last" } },
@@ -207,12 +217,10 @@ export async function GET(request: NextRequest) {
       expiry: Date.now() + CACHE_TTL_MS
     });
 
-    return new NextResponse(JSON.stringify(responseData), {
-      status: 200,
+    return NextResponse.json(responseData, {
       headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600"
-      }
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
     });
   } catch (error) {
     console.error("❌ Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");

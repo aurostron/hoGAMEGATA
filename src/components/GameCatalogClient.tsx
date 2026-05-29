@@ -26,6 +26,15 @@ export interface GameData {
   genreNames: string | null;
   platformNames: string | null;
   tags: Array<{ name: string; slug: string }>;
+  priceSnapshots?: Array<{
+    storeName: string;
+    dealPrice: number;
+    retailPrice: number;
+    discountPercent: number;
+    dealUrl: string;
+    currency: string;
+    country: string;
+  }>;
 }
 
 const getShortEsrbRating = (rating: string | null): string | null => {
@@ -39,6 +48,200 @@ const getShortEsrbRating = (rating: string | null): string | null => {
   if (lower.includes("pending")) return "RP";
   return rating.substring(0, 3).toUpperCase();
 };
+
+interface GameCardProps {
+  game: GameData;
+  index: number;
+  activeRegion: string;
+  findCheapestDeal: (game: GameData) => any;
+}
+
+function GameCard({ game, index, activeRegion, findCheapestDeal }: GameCardProps) {
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [resolvedDeal, setResolvedDeal] = useState<any>(null);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowPrompt(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowPrompt(false);
+  };
+
+  const triggerPriceFetch = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowPrompt(false);
+
+    // 1. First check if we already have it in the initial cached snapshots
+    const preExistingDeal = findCheapestDeal(game);
+    if (preExistingDeal) {
+      setResolvedDeal(preExistingDeal);
+      return;
+    }
+
+    // 2. Fetch dynamically if not cached in snapshots
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/games/${game.id}/prices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: game.title,
+          purchaseLinks: [], // Let backend resolve
+          country: activeRegion
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.deals && data.deals.length > 0) {
+          setResolvedDeal(data.deals[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch price on demand:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const finalDeal = resolvedDeal || findCheapestDeal(game);
+  const hasItchBadge = game.slug.startsWith("itch-");
+
+  return (
+    <Link 
+      href={`/game/${game.slug}`}
+      onContextMenu={handleContextMenu}
+      onMouseLeave={handleMouseLeave}
+      className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full relative select-none"
+    >
+      {/* Cover Image */}
+      <div className={`relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center ${
+        game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"
+      }`}>
+        {game.coverUrl ? (
+          <Image
+            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
+            alt={game.title}
+            fill={true}
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            loading={index < 4 ? undefined : "lazy"}
+            priority={index < 4}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
+            <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
+          </div>
+        )}
+        {/* Category Tag */}
+        {(() => {
+          const badge = getCategoryBadge(game.category, game.title);
+          if (!badge) return null;
+          const isVN = badge === "Visual Novel";
+          const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
+          return (
+            <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
+              {badge}
+            </span>
+          );
+        })()}
+        {/* itch.io Badge */}
+        {hasItchBadge && (
+          <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+            itch.io
+          </span>
+        )}
+        {/* Primary Mood Tag */}
+        {game.tags && game.tags.length > 0 && (
+          <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+            {game.tags[0].name}
+          </span>
+        )}
+        {/* Age Rating Badge */}
+        {(game.esrbRating || game.pegiRating) && (
+          <span className="absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
+            {game.esrbRating ? getShortEsrbRating(game.esrbRating) : game.pegiRating}
+          </span>
+        )}
+        
+        {/* Right-click Trigger Prompt */}
+        {showPrompt && !loading && (
+          <span 
+            onClick={triggerPriceFetch}
+            className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 z-30 cursor-pointer select-none"
+          >
+            <span className="font-mono text-[10px] text-emerald-400 font-extrabold uppercase px-2 py-1.5 border border-emerald-400 bg-black tracking-wide hover:bg-white hover:text-black transition-colors duration-150">
+              [ GET CHEAPEST PRICE? ]
+            </span>
+          </span>
+        )}
+
+        {/* Loading Spinner / Fetch state */}
+        {loading && (
+          <span className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 z-30 select-none">
+            <span className="font-mono text-[9px] text-white/50 animate-pulse">[ FETCHING... ]</span>
+          </span>
+        )}
+      </div>
+      
+      {/* Game Details */}
+      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+        <div className="flex justify-between items-stretch gap-3 min-h-[32px]">
+          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+            <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none">
+              {cleanTitle(game.title)}
+            </h4>
+            <span className="font-mono text-[9px] text-white/60 group-hover:text-black/60 block font-bold mt-1 leading-none">
+              by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
+            </span>
+          </div>
+
+          {finalDeal && (() => {
+            const formatPrice = (amount: number, currencyCode: string) => {
+              try {
+                return new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: currencyCode,
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2
+                }).format(amount);
+              } catch (e) {
+                return `$${amount}`;
+              }
+            };
+            
+            const storeKey = finalDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const dealUrl = `/re/${game.slug}/${storeKey}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(finalDeal.dealUrl)}`;
+            
+            return (
+              <span 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(dealUrl, "_blank", "noopener,noreferrer");
+                }}
+                className="px-2 border border-emerald-400 bg-emerald-950 text-emerald-400 font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center shrink-0 h-full select-none transition-all duration-150 group-hover:border-black group-hover:bg-emerald-500 group-hover:text-black hover:!bg-black hover:!text-emerald-400 hover:!border-emerald-400 cursor-pointer"
+                title={`Get on ${finalDeal.storeName} (${formatPrice(finalDeal.dealPrice, finalDeal.currency)})`}
+              >
+                {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
+              </span>
+            );
+          })()}
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
+          <PlatformLogos platformNames={game.platformNames} />
+          <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
+            {game.status}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 interface GameCatalogClientProps {
   initialGames: GameData[];
@@ -63,6 +266,19 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
   const [sortBy, setSortBy] = useState<"latest" | "trending">(initialSort);
   const [hasInitialFetchRun, setHasInitialFetchRun] = useState(false);
+  const [activeRegion, setActiveRegion] = useState("US");
+
+  // Load and listen to persisted region setting
+  useEffect(() => {
+    const r = localStorage.getItem("gamegata_currency_region") || "US";
+    setActiveRegion(r);
+    
+    const handleUpdate = () => {
+      setActiveRegion(localStorage.getItem("gamegata_currency_region") || "US");
+    };
+    window.addEventListener("gamegata_currency_updated", handleUpdate);
+    return () => window.removeEventListener("gamegata_currency_updated", handleUpdate);
+  }, []);
 
   const { vibes: explicitVibes, isLoaded: prefsLoaded } = usePreferences();
 
@@ -155,6 +371,27 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       setLoadingMore(false);
     }
   }
+
+  const findCheapestDeal = (game: GameData) => {
+    if (!game.priceSnapshots || game.priceSnapshots.length === 0) return null;
+    
+    // Filter by the current active region first
+    let regional = game.priceSnapshots.filter(p => p.country === activeRegion);
+    
+    // Fallback to US if regional snaps aren't cached yet
+    if (regional.length === 0) {
+      regional = game.priceSnapshots.filter(p => p.country === "US");
+    }
+    if (regional.length === 0) {
+      regional = game.priceSnapshots;
+    }
+    
+    if (regional.length === 0) return null;
+    
+    // Sort ascending by price
+    const sorted = [...regional].sort((a, b) => a.dealPrice - b.dealPrice);
+    return sorted[0];
+  };
 
   return (
     <>
@@ -263,81 +500,13 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
             <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {games.map((game, index) => (
-                  <Link 
-                    key={game.id} 
-                    href={`/game/${game.slug}`}
-                    className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
-                  >
-                    {/* Cover Image */}
-                    <div className={`relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center ${
-                      game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"
-                    }`}>
-                      {game.coverUrl ? (
-                        <Image
-                          src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
-                          alt={game.title}
-                          fill={true}
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
-                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                          loading={index < 4 ? undefined : "lazy"}
-                          priority={index < 4}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
-                          <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
-                        </div>
-                      )}
-                      {/* Category Tag */}
-                      {(() => {
-                        const badge = getCategoryBadge(game.category, game.title);
-                        if (!badge) return null;
-                        const isVN = badge === "Visual Novel";
-                        const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
-                        return (
-                          <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
-                            {badge}
-                          </span>
-                        );
-                      })()}
-                      {/* itch.io Badge */}
-                      {game.slug.startsWith("itch-") && (
-                        <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
-                          itch.io
-                        </span>
-                      )}
-                      {/* Primary Mood Tag */}
-                      {game.tags && game.tags.length > 0 && (
-                        <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
-                          {game.tags[0].name}
-                        </span>
-                      )}
-                      {/* Age Rating Badge */}
-                      {(game.esrbRating || game.pegiRating) && (
-                        <span className="absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
-                          {game.esrbRating ? getShortEsrbRating(game.esrbRating) : game.pegiRating}
-                        </span>
-                      )}
-                    </div>
-                    
-                    {/* Game Details */}
-                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
-                          {cleanTitle(game.title)}
-                        </h4>
-                        <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
-                          by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                        <PlatformLogos platformNames={game.platformNames} />
-                        <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
-                          {game.status}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
+                  <GameCard
+                    key={game.id}
+                    game={game}
+                    index={index}
+                    activeRegion={activeRegion}
+                    findCheapestDeal={findCheapestDeal}
+                  />
                 ))}
               </div>
 

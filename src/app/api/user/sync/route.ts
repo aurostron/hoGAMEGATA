@@ -35,6 +35,18 @@ export async function POST(request: Request) {
       }
     }
 
+    // Enforce 10,000 user limit checks before inserting
+    const count = await db.user.count();
+    if (count >= 10000) {
+      const existing = await db.user.findUnique({ where: { id } });
+      if (!existing) {
+        return NextResponse.json(
+          { error: "Registration limit of 10,000 users has been reached." },
+          { status: 403 }
+        );
+      }
+    }
+
     const user = await db.user.upsert({
       where: { id },
       update: { email },

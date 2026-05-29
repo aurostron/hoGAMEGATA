@@ -5,7 +5,7 @@ import AuthButton from "@/components/AuthButton";
 import { ArrowLeft, Calendar, ExternalLink, Tag, Monitor } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function UpcomingPage() {
   const now = new Date();
@@ -21,9 +21,28 @@ export default async function UpcomingPage() {
     orderBy: {
       releaseDate: "asc" // Closest release first
     },
-    include: {
-      tags: true,
-      purchaseLinks: true
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      coverUrl: true,
+      isTrending: true,
+      category: true,
+      developerNames: true,
+      releaseDate: true,
+      status: true,
+      tags: {
+        select: {
+          slug: true,
+          name: true,
+        }
+      },
+      purchaseLinks: {
+        select: {
+          url: true,
+          storeName: true,
+        }
+      }
     }
   });
 

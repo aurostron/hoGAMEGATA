@@ -35,11 +35,15 @@ export async function getServerUser() {
       const { data: { user } } = await supabaseServer.auth.getUser();
       if (user) {
         // Sync user to local DB
-        await db.user.upsert({
-          where: { id: user.id },
-          update: { email: user.email || "" },
-          create: { id: user.id, email: user.email || "" },
-        });
+        try {
+          await db.user.upsert({
+            where: { id: user.id },
+            update: { email: user.email || "" },
+            create: { id: user.id, email: user.email || "" },
+          });
+        } catch (upsertErr) {
+          console.warn("User sync upsert failed (likely email constraint), ignoring:", upsertErr instanceof Error ? upsertErr.message : String(upsertErr));
+        }
         return { id: user.id, email: user.email || "" };
       }
     } catch (err) {

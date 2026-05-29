@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev-gui": "tsx scripts/gui-server.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -16,7 +15,10 @@
     "flag-trending": "tsx scripts/flag-trending.ts",
     "console": "tsx scripts/dev-tools.ts",
     "dev-tools": "tsx scripts/dev-tools.ts",
-    "scare": "tsx scripts/enrich-scare.ts"
+    "dev-gui": "tsx scripts/dev-gui.ts",
+    "scare": "tsx scripts/enrich-scare.ts",
+    "pipeline:run": "tsx scripts/run-pipeline.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

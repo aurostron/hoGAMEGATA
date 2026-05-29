@@ -54,3 +54,4 @@ ingest_cursor.json
 
 # Local Dev GUI
 /scripts/gui-server.ts
+/logs/
