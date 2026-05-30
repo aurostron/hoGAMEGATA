@@ -9,7 +9,7 @@ let status: "idle" | "running" = "idle";
 let logBuffer: string = "";
 const sseClients: Set<http.ServerResponse> = new Set();
 
-const PORT = 4000;
+const PORT = parseInt(process.env.PORT || "4000", 10);
 
 // Cron Scheduler Setup
 interface CronJob {
