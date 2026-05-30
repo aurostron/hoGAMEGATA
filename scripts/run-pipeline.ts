@@ -174,7 +174,11 @@ async function main() {
 
     // Pass down limit if applicable
     if (stage.defaultLimit !== undefined) {
-      const limitToUse = customLimit !== null ? customLimit : stage.defaultLimit;
+      let limitToUse = customLimit !== null ? customLimit : stage.defaultLimit;
+      // Cap CPU-heavy local NLP Mood Tagging to keep runs fast in cloud environments
+      if (stage.name === "Mood Tagging") {
+        limitToUse = Math.min(limitToUse, 30);
+      }
       args.push("--limit", limitToUse.toString());
     }
 
