@@ -92,10 +92,23 @@ function killCurrentProcess() {
         currentProcess.kill("SIGKILL");
       }
     } else {
-      currentProcess.kill("SIGINT");
-      setTimeout(() => {
-        if (currentProcess) currentProcess.kill("SIGKILL");
-      }, 1000);
+      try {
+        // Send signal to the process group (minus sign before PID) to kill parent and all child processes
+        process.kill(-currentProcess.pid!, "SIGINT");
+        setTimeout(() => {
+          if (currentProcess) {
+            try {
+              process.kill(-currentProcess.pid!, "SIGKILL");
+            } catch (e) {}
+          }
+        }, 1000);
+      } catch (err) {
+        // Fallback to killing just the parent process
+        currentProcess.kill("SIGINT");
+        setTimeout(() => {
+          if (currentProcess) currentProcess.kill("SIGKILL");
+        }, 1000);
+      }
     }
   }
 }
@@ -124,6 +137,7 @@ function startScript(scriptPath: string, args: string[], displayCommand: string,
     child = spawn("git", args, {
       shell: isWindows,
       env,
+      detached: !isWindows, // Start in a new process group on Linux/macOS
     });
   } else {
     broadcastLog(`\n==================================================\n`);
@@ -132,6 +146,7 @@ function startScript(scriptPath: string, args: string[], displayCommand: string,
     child = spawn("npx", ["tsx", scriptPath, ...args], {
       shell: isWindows,
       env,
+      detached: !isWindows, // Start in a new process group on Linux/macOS
     });
   }
 
