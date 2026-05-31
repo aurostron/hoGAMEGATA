@@ -75,6 +75,7 @@ interface ScrapedMetadata {
   summaryHtml: string | null;
   coverUrl: string | null;
   extractedTags: string[];
+  developerName: string | null;
 }
 
 function parseItchPage(html: string): ScrapedMetadata {

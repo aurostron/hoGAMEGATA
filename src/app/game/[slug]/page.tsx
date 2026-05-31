@@ -398,6 +398,145 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
 
 
 
+  const isItchGame = game.slug.startsWith("itch-");
+
+  const descriptionSection = (
+    <div className="pt-6 space-y-4 select-none">
+      <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</span>
+      {game.summary ? (
+        <div 
+          className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: game.summary }}
+        />
+      ) : (
+        <p className="text-sm text-white font-medium leading-relaxed font-sans">
+          No overview available for this title.
+        </p>
+      )}
+      {game.storyline && (
+        <div className="mt-4 pt-4 border-t border-white/20">
+          <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
+          <p className="text-xs text-white leading-relaxed font-sans font-medium">
+            {game.storyline}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+
+  const moodSection = game.tags && game.tags.length > 0 && (
+    <div className="pt-6 flex flex-wrap gap-4 items-center">
+      <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
+        <Tag className="w-3.5 h-3.5" /> Mood/Genre
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {game.tags.map(t => (
+          <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
+            {t.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+
+  const scareSection = game.scareRating !== null && game.scareProfile && (
+    <div className="pt-6">
+      <ScareMeter 
+        scareRating={game.scareRating} 
+        scareProfile={game.scareProfile as any} 
+        reviewCount={game.scareReviewCount}
+      />
+    </div>
+  );
+
+  const priceSection = (
+    <PriceComparison
+      gameId={game.id}
+      gameSlug={game.slug}
+      gameTitle={game.title}
+      purchaseLinks={game.purchaseLinks}
+      country={country}
+    />
+  );
+
+  const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
+    <div className="pt-6 space-y-4">
+      <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
+      <div className="flex flex-wrap gap-3">
+        {/* Purchase/Store Outlinks */}
+        {game.purchaseLinks.map(link => (
+          <a
+            key={link.id}
+            href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+          >
+            <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+            <span>Support Creator ({link.storeName})</span>
+          </a>
+        ))}
+
+        {/* Official Website */}
+        {game.websiteUrl && (
+          <a
+            href={game.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+          >
+            <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+            <span>Official Website</span>
+          </a>
+        )}
+
+        {/* Reddit Community */}
+        {game.redditUrl && (
+          <a
+            href={game.redditUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+          >
+            <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+            <span>Reddit Community</span>
+          </a>
+        )}
+
+        {/* RAWG Profile Attribution Link */}
+        {game.rawgSlug && (
+          <a
+            href={`https://rawg.io/games/${game.rawgSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
+          >
+            <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
+            <span>RAWG Profile</span>
+          </a>
+        )}
+      </div>
+    </div>
+  );
+
+  const detailsContent = isItchGame ? (
+    <>
+      {moodSection}
+      {priceSection}
+      {linksSection}
+      {descriptionSection}
+      {scareSection}
+    </>
+  ) : (
+    <>
+      {descriptionSection}
+      {moodSection}
+      {scareSection}
+      {priceSection}
+      {linksSection}
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black pb-24">
       {/* Top Sticky Header */}
@@ -629,137 +768,263 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
             {/* Background Vibe Tracking */}
             <VibeTracker tags={game.tags} genres={game.genres} />
 
-            {/* Description Paragraph */}
-            <div className="border-t border-white pt-6 space-y-4 select-none">
-              <div className="flex items-center gap-2">
-                <Compass className="w-4 h-4 text-white" />
-                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Description & Overview</span>
-              </div>
-              {game.summary ? (
-                <div 
-                  className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: game.summary }}
-                />
-              ) : (
-                <p className="text-sm text-white font-medium leading-relaxed font-sans">
-                  No overview available for this title.
-                </p>
-              )}
-              {game.storyline && (
-                <div className="mt-4 pt-4 border-t border-white/20">
-                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
-                  <p className="text-xs text-white leading-relaxed font-sans font-medium">
-                    {game.storyline}
-                  </p>
-                </div>
-              )}
-            </div>
+            {(() => {
+               const isItchGame = game.slug.startsWith("itch-");
 
-            {/* Mood Profile tag badging */}
-            {game.tags && game.tags.length > 0 && (
-              <div className="border-t border-white pt-6 flex flex-wrap gap-4 items-center">
-                <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-                  <Tag className="w-3.5 h-3.5" /> Mood/Genre
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {game.tags.map(t => (
-                    <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
-                      {t.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+               const descriptionSection = (
+                 <div className="pt-6 space-y-4 select-none">
+                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</span>
+                   {game.summary ? (
+                     <div 
+                       className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
+                       dangerouslySetInnerHTML={{ __html: game.summary }}
+                     />
+                   ) : (
+                     <p className="text-sm text-white font-medium leading-relaxed font-sans">
+                       No overview available for this title.
+                     </p>
+                   )}
+                   {game.storyline && (
+                     <div className="mt-4 pt-4 border-t border-white/20">
+                       <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
+                       <p className="text-xs text-white leading-relaxed font-sans font-medium">
+                         {game.storyline}
+                       </p>
+                     </div>
+                   )}
+                 </div>
+               );
 
-            {/* Scare Meter Profile */}
-            {game.scareRating !== null && game.scareProfile && (
-              <div className="pt-6">
-                <ScareMeter 
-                  scareRating={game.scareRating} 
-                  scareProfile={game.scareProfile as any} 
-                  reviewCount={game.scareReviewCount}
-                />
-              </div>
-            )}
+               const moodSection = game.tags && game.tags.length > 0 && (
+                 <div className="pt-6 flex flex-wrap gap-4 items-center">
+                   <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
+                     <Tag className="w-3.5 h-3.5" /> Mood/Genre
+                   </div>
+                   <div className="flex flex-wrap gap-2">
+                     {game.tags.map(t => (
+                       <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
+                         {t.name}
+                       </span>
+                     ))}
+                   </div>
+                 </div>
+               );
 
+               const scareSection = game.scareRating !== null && game.scareProfile && (
+                 <div className="pt-6">
+                   <ScareMeter 
+                     scareRating={game.scareRating} 
+                     scareProfile={game.scareProfile as any} 
+                     reviewCount={game.scareReviewCount}
+                   />
+                 </div>
+               );
 
+               const priceSection = (
+                 <PriceComparison
+                   gameId={game.id}
+                   gameSlug={game.slug}
+                   gameTitle={game.title}
+                   purchaseLinks={game.purchaseLinks}
+                   country={country}
+                 />
+               );
 
-            {/* Cheapest Deals Comparison Engine (Client-Side Asynchronous Load) */}
-            <PriceComparison
-              gameId={game.id}
-              gameSlug={game.slug}
-              gameTitle={game.title}
-              purchaseLinks={game.purchaseLinks}
-              country={country}
-            />
+               const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
+                 <div className="pt-6 space-y-4">
+                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
+                   <div className="flex flex-wrap gap-3">
+                     {/* Purchase/Store Outlinks */}
+                     {game.purchaseLinks.map(link => (
+                       <a
+                         key={link.id}
+                         href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                       >
+                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                         <span>Support Creator ({link.storeName})</span>
+                       </a>
+                     ))}
 
-            {/* Outlinks & Documentation */}
-            {(game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
-              <div className="border-t border-white pt-6 space-y-4">
-                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
-                <div className="flex flex-wrap gap-3">
-                  {/* Purchase/Store Outlinks */}
-                  {game.purchaseLinks.map(link => (
-                    <a
-                      key={link.id}
-                      href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
-                    >
-                      <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                      <span>Support Creator ({link.storeName})</span>
-                    </a>
-                  ))}
+                     {/* Official Website */}
+                     {game.websiteUrl && (
+                       <a
+                         href={game.websiteUrl}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                       >
+                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                         <span>Official Website</span>
+                       </a>
+                     )}
 
-                  {/* Official Website */}
-                  {game.websiteUrl && (
-                    <a
-                      href={game.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
-                    >
-                      <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                      <span>Official Website</span>
-                    </a>
-                  )}
+                     {/* Reddit Community */}
+                     {game.redditUrl && (
+                       <a
+                         href={game.redditUrl}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                       >
+                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                         <span>Reddit Community</span>
+                       </a>
+                     )}
 
-                  {/* Reddit Community */}
-                  {game.redditUrl && (
-                    <a
-                      href={game.redditUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
-                    >
-                      <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                      <span>Reddit Community</span>
-                    </a>
-                  )}
+                     {/* RAWG Profile Attribution Link */}
+                     {game.rawgSlug && (
+                       <a
+                         href={`https://rawg.io/games/${game.rawgSlug}`}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
+                       >
+                         <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
+                         <span>RAWG Profile</span>
+                       </a>
+                     )}
+                   </div>
+                 </div>
+               );
 
-                  {/* RAWG Profile Attribution Link */}
-                  {game.rawgSlug && (
-                    <a
-                      href={`https://rawg.io/games/${game.rawgSlug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
-                    >
-                      <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
-                      <span>RAWG Profile</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
+               const detailsContent = (
+                 <>
+                   {descriptionSection}
+                   {moodSection}
+                   {scareSection}
+                   {priceSection}
+                   {linksSection}
+                 </>
+               );
+
+               if (isItchGame) {
+                 return (
+                   <>
+                     {!isItchGame && detailsContent}
+                   </>
+                 );
+               } else {
+                 return (
+                   <>
+                     {detailsContent}
+                   </>
+                 );
+               }
+             })()}
+
           </div>
         </div>
+
+        {game.slug.startsWith("itch-") && (
+          <div className="space-y-8 mt-12">
+            {/* Re-rendering details for Itch layout logic */}
+            {(() => {
+               const descriptionSection = (
+                 <div className="pt-6 space-y-4 select-none">
+                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</span>
+                   {game.summary ? (
+                     <div 
+                       className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
+                       dangerouslySetInnerHTML={{ __html: game.summary }}
+                     />
+                   ) : (
+                     <p className="text-sm text-white font-medium leading-relaxed font-sans">
+                       No overview available for this title.
+                     </p>
+                   )}
+                   {game.storyline && (
+                     <div className="mt-4 pt-4 border-t border-white/20">
+                       <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
+                       <p className="text-xs text-white leading-relaxed font-sans font-medium">
+                         {game.storyline}
+                       </p>
+                     </div>
+                   )}
+                 </div>
+               );
+               const moodSection = game.tags && game.tags.length > 0 && (
+                 <div className="pt-6 flex flex-wrap gap-4 items-center">
+                   <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
+                     <Tag className="w-3.5 h-3.5" /> Mood/Genre
+                   </div>
+                   <div className="flex flex-wrap gap-2">
+                     {game.tags.map(t => (
+                       <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
+                         {t.name}
+                       </span>
+                     ))}
+                   </div>
+                 </div>
+               );
+               const scareSection = game.scareRating !== null && game.scareProfile && (
+                 <div className="pt-6">
+                   <ScareMeter 
+                     scareRating={game.scareRating} 
+                     scareProfile={game.scareProfile as any} 
+                     reviewCount={game.scareReviewCount}
+                   />
+                 </div>
+               );
+               const priceSection = (
+                 <PriceComparison
+                   gameId={game.id}
+                   gameSlug={game.slug}
+                   gameTitle={game.title}
+                   purchaseLinks={game.purchaseLinks}
+                   country={country}
+                 />
+               );
+               const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
+                 <div className="pt-6 space-y-4">
+                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
+                   <div className="flex flex-wrap gap-3">
+                     {game.purchaseLinks.map(link => (
+                       <a key={link.id} href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold">
+                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                         <span>Support Creator ({link.storeName})</span>
+                       </a>
+                     ))}
+                     {game.websiteUrl && (
+                       <a href={game.websiteUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold">
+                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                         <span>Official Website</span>
+                       </a>
+                     )}
+                     {game.redditUrl && (
+                       <a href={game.redditUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold">
+                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
+                         <span>Reddit Community</span>
+                       </a>
+                     )}
+                     {game.rawgSlug && (
+                       <a href={`https://rawg.io/games/${game.rawgSlug}`} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold">
+                         <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
+                         <span>RAWG Profile</span>
+                       </a>
+                     )}
+                   </div>
+                 </div>
+               );
+               return (
+                 <>
+                   {moodSection}
+                   {priceSection}
+                   {linksSection}
+                   {descriptionSection}
+                   {scareSection}
+                 </>
+               );
+            })()}
+          </div>
+        )}
 
         {/* Screenshots Gallery (If available) */}
         {game.screenshots.length > 0 && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Screenshots</h3>
+            <h3 className="font-mono text-xs text-white uppercase tracking-widest font-black">Screenshots</h3>
             <ScreenshotGallery screenshots={game.screenshots.map(url => getCloudinaryFetchUrl(url, game.isTrending) || url)} title={game.title} />
           </section>
         )}
@@ -767,7 +1032,7 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
         {/* Embedded Trailer Video (If available) */}
         {game.trailerUrl && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Game trailers and videos</h3>
+            <h3 className="font-mono text-xs text-white uppercase tracking-widest font-black">Game trailers and videos</h3>
             <div className="border border-white bg-black p-1 aspect-video w-full max-w-3xl mx-auto">
               <iframe
                 src={game.trailerUrl}

@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useSearchParams, usePathname } from "next/navigation";
 import { Search, Calendar, Sparkles } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
-import { usePreferences } from "@/hooks/usePreferences";
 import PlatformLogos from "@/components/PlatformLogos";
 
 export interface GameData {
@@ -54,9 +53,10 @@ interface GameCardProps {
   index: number;
   activeRegion: string;
   findCheapestDeal: (game: GameData) => any;
+  mobileLayout?: "grid" | "list";
 }
 
-function GameCard({ game, index, activeRegion, findCheapestDeal }: GameCardProps) {
+function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = "grid" }: GameCardProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resolvedDeal, setResolvedDeal] = useState<any>(null);
@@ -115,11 +115,17 @@ function GameCard({ game, index, activeRegion, findCheapestDeal }: GameCardProps
       href={`/game/${game.slug}`}
       onContextMenu={handleContextMenu}
       onMouseLeave={handleMouseLeave}
-      className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full relative select-none"
+      className={`border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
+        mobileLayout === "list"
+          ? "flex-row h-28 md:flex-col md:h-full"
+          : "flex-col h-full"
+      }`}
     >
       {/* Cover Image */}
-      <div className={`relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center ${
-        game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"
+      <div className={`relative bg-neutral-900 overflow-hidden shrink-0 flex items-center justify-center ${
+        mobileLayout === "list"
+          ? "w-24 border-r border-b-0 h-full md:w-full md:border-b md:border-r-0 md:h-auto " + (game.slug.startsWith("itch-") ? "md:aspect-[5/4]" : "md:aspect-[3/4]")
+          : "w-full border-b border-white " + (game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]")
       }`}>
         {game.coverUrl ? (
           <Image
@@ -143,26 +149,34 @@ function GameCard({ game, index, activeRegion, findCheapestDeal }: GameCardProps
           const isVN = badge === "Visual Novel";
           const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
           return (
-            <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
+            <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${
+              mobileLayout === "list" ? "hidden md:inline-block" : ""
+            } ${bgClass}`}>
               {badge}
             </span>
           );
         })()}
         {/* itch.io Badge */}
         {hasItchBadge && (
-          <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+          <span className={`absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10 ${
+            mobileLayout === "list" ? "hidden md:inline-block" : ""
+          }`}>
             itch.io
           </span>
         )}
         {/* Primary Mood Tag */}
         {game.tags && game.tags.length > 0 && (
-          <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+          <span className={`absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5 ${
+            mobileLayout === "list" ? "hidden md:inline-block" : ""
+          }`}>
             {game.tags[0].name}
           </span>
         )}
         {/* Age Rating Badge */}
         {(game.esrbRating || game.pegiRating) && (
-          <span className="absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
+          <span className={`absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150 ${
+            mobileLayout === "list" ? "hidden md:inline-block" : ""
+          }`}>
             {game.esrbRating ? getShortEsrbRating(game.esrbRating) : game.pegiRating}
           </span>
         )}
@@ -188,7 +202,9 @@ function GameCard({ game, index, activeRegion, findCheapestDeal }: GameCardProps
       </div>
       
       {/* Game Details */}
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+      <div className={`flex-1 flex flex-col justify-between ${
+        mobileLayout === "list" ? "p-3 md:p-4 space-y-2 md:space-y-3" : "p-4 space-y-3"
+      }`}>
         <div className="flex justify-between items-stretch gap-3 min-h-[32px]">
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
             <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none">
@@ -255,7 +271,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
 
   const initialSearch = searchParams.get("search") || "";
   const initialTagsParam = searchParams.get("tags") || searchParams.get("tag") || "";
-  const initialSort = (searchParams.get("sort") as "latest" | "trending") || "latest";
+  const initialSort = (searchParams.get("sort") as "latest" | "trending" | "top-rated") || "latest";
 
   const [games, setGames] = useState<GameData[]>(initialGames);
   const [totalGames, setTotalGames] = useState<number | null>(initialTotalGames);
@@ -264,9 +280,25 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
-  const [sortBy, setSortBy] = useState<"latest" | "trending">(initialSort);
+  const [sortBy, setSortBy] = useState<"latest" | "trending" | "top-rated">(initialSort);
   const [hasInitialFetchRun, setHasInitialFetchRun] = useState(false);
   const [activeRegion, setActiveRegion] = useState("US");
+  const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
+  const [sortOpen, setSortOpen] = useState(false);
+  const [layoutOpen, setLayoutOpen] = useState(false);
+
+  // Load layout setting from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("gata-mobile-layout");
+    if (saved === "list" || saved === "grid") {
+      setMobileLayout(saved);
+    }
+  }, []);
+
+  const toggleMobileLayout = (layout: "grid" | "list") => {
+    setMobileLayout(layout);
+    localStorage.setItem("gata-mobile-layout", layout);
+  };
 
   // Load and listen to persisted region setting
   useEffect(() => {
@@ -279,8 +311,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     window.addEventListener("gamegata_currency_updated", handleUpdate);
     return () => window.removeEventListener("gamegata_currency_updated", handleUpdate);
   }, []);
-
-  const { vibes: explicitVibes, isLoaded: prefsLoaded } = usePreferences();
 
   // Sync states with browser URL search parameters dynamically
   useEffect(() => {
@@ -315,7 +345,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
 
   useEffect(() => {
     async function fetchInitialGames() {
-      if (!hasInitialFetchRun && !debouncedSearch && (!explicitVibes || explicitVibes.length === 0) && sortBy === "latest") {
+      if (!hasInitialFetchRun && !debouncedSearch && sortBy === "latest") {
         setHasInitialFetchRun(true);
         return; // initial data is enough
       }
@@ -323,7 +353,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       try {
         const queryParams = new URLSearchParams();
         if (debouncedSearch) queryParams.set("search", debouncedSearch);
-        if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) queryParams.set("tags", explicitVibes.join(","));
         if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
         queryParams.set("limit", "20");
 
@@ -341,7 +370,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       }
     }
     fetchInitialGames();
-  }, [debouncedSearch, explicitVibes, sortBy, hasInitialFetchRun]);
+  }, [debouncedSearch, sortBy, hasInitialFetchRun]);
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
@@ -349,7 +378,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     try {
       const queryParams = new URLSearchParams();
       if (debouncedSearch) queryParams.set("search", debouncedSearch);
-      if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) queryParams.set("tags", explicitVibes.join(","));
       if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
       queryParams.set("cursor", nextCursor);
       queryParams.set("limit", "20");
@@ -422,71 +450,138 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         <section className="space-y-6">
           <div className="flex flex-col gap-3">
             {/* Top row: title + nav links */}
-            {/* Personalization signal */}
-            {prefsLoaded && explicitVibes.length > 0 && !debouncedSearch && (
-              <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest flex-wrap">
-                <span className="text-white/55">Showing results for:</span>
-                {explicitVibes.slice(0, 5).map((v) => (
-                  <span key={v} className="bg-white/15 border border-white/35 text-white/90 px-2 py-0.5 font-black">
-                    {v.replace(/-/g, " ")}
-                  </span>
-                ))}
-                <span className="text-white/50">— tuned to your preferences</span>
-              </div>
-            )}
-          </div>
+                    {/* Sorting and Mode Tabs */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[10px] tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
+            {/* Left side: Sort by and Layout dropdowns adjacent to each other */}
+            <div className="flex items-center gap-4 flex-wrap">
+              {!debouncedSearch ? (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setSortOpen(!sortOpen);
+                      setLayoutOpen(false);
+                    }}
+                    className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
+                  >
+                    SORT: {sortBy} <span className="text-[8px]">▼</span>
+                  </button>
+                  {sortOpen && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setSortOpen(false)} />
+                      <div className="absolute left-0 mt-1.5 w-32 bg-black border border-white z-40 flex flex-col divide-y divide-white/25">
+                        <button
+                          onClick={() => {
+                            setSortBy("latest");
+                            setSortOpen(false);
+                          }}
+                          className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                            sortBy === "latest" ? "bg-white/10 text-white" : "text-white"
+                          }`}
+                        >
+                          [ LATEST ]
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy("trending");
+                            setSortOpen(false);
+                          }}
+                          className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                            sortBy === "trending" ? "bg-white/10 text-white" : "text-white"
+                          }`}
+                        >
+                          [ TRENDING ]
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSortBy("top-rated");
+                            setSortOpen(false);
+                          }}
+                          className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                            sortBy === "top-rated" ? "bg-white/10 text-white" : "text-white"
+                          }`}
+                        >
+                          [ TOP RATED ]
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="text-white/55 font-medium py-1.5">
+                  Search Results
+                </div>
+              )}
 
-          {/* Sorting and Mode Tabs */}
-          {!debouncedSearch ? (
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 font-mono text-[10px] tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-white/50 font-medium">Sort by:</span>
+              {/* Layout Dropdown */}
+              <div className="relative">
                 <button
-                  onClick={() => setSortBy("latest")}
-                  className={`px-3 py-1 border transition-all duration-150 rounded-none cursor-pointer ${
-                    sortBy === "latest" ? "bg-white text-black border-white" : "border-white/30 text-white hover:border-white"
-                  }`}
+                  onClick={() => {
+                    setLayoutOpen(!layoutOpen);
+                    setSortOpen(false);
+                  }}
+                  className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
                 >
-                  [ Latest ]
+                  LAYOUT: {mobileLayout} <span className="text-[8px]">▼</span>
                 </button>
-                <button
-                  onClick={() => setSortBy("trending")}
-                  className={`px-3 py-1 border transition-all duration-150 rounded-none cursor-pointer ${
-                    sortBy === "trending" ? "bg-white text-black border-white" : "border-white/30 text-white hover:border-white"
-                  }`}
-                >
-                  [ Trending ]
-                </button>
-              </div>
-              <div className="flex items-center gap-2 text-[10px] font-mono font-bold">
-                <Link
-                  href="/upcoming"
-                  className="flex items-center gap-1 border border-white/25 px-2.5 py-1 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
-                >
-                  <Calendar className="w-3 h-3" /> UPCOMING
-                </Link>
-                <Link
-                  href="/random"
-                  className="flex items-center gap-1 border border-white/25 px-2.5 py-1 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
-                >
-                  <Sparkles className="w-3 h-3" /> RANDOM
-                </Link>
+                {layoutOpen && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setLayoutOpen(false)} />
+                    <div className="absolute left-0 mt-1.5 w-32 bg-black border border-white z-40 flex flex-col divide-y divide-white/25">
+                      <button
+                        onClick={() => {
+                          toggleMobileLayout("grid");
+                          setLayoutOpen(false);
+                        }}
+                        className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                          mobileLayout === "grid" ? "bg-white/10 text-white" : "text-white"
+                        }`}
+                      >
+                        [ GRID ]
+                      </button>
+                      <button
+                        onClick={() => {
+                          toggleMobileLayout("list");
+                          setLayoutOpen(false);
+                        }}
+                        className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                          mobileLayout === "list" ? "bg-white/10 text-white" : "text-white"
+                        }`}
+                      >
+                        [ LIST ]
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="font-mono text-[10px] tracking-wider uppercase text-white/50 font-bold border-b border-white/20 pb-4">
-              Search Results: [ Sorted by Relevance ]
+
+            {/* Right side: Navigation links */}
+            <div className="flex items-center gap-2 text-[10px] font-mono font-bold">
+              <Link
+                href="/upcoming"
+                className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
+              >
+                <Calendar className="w-3 h-3" /> UPCOMING
+              </Link>
+              <Link
+                href="/random"
+                className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
+              >
+                <Sparkles className="w-3 h-3" /> RANDOM
+              </Link>
             </div>
-          )}
+          </div>  </div>
 
           {loading ? (
             /* Loading Skeleton */
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="border border-white bg-black p-4 space-y-4 animate-pulse">
-                  <div className="h-40 bg-white/10 w-full"></div>
-                  <div className="h-4 bg-white/10 w-3/4"></div>
-                  <div className="h-3 bg-white/10 w-1/2"></div>
+                <div key={i} className={`border border-white bg-black animate-pulse flex ${mobileLayout === "list" ? "flex-row h-28 md:flex-col md:h-auto p-3 md:p-4 space-y-0 md:space-y-4 gap-3 md:gap-0" : "flex-col p-4 space-y-4"}`}>
+                  <div className={mobileLayout === "list" ? "w-24 shrink-0 h-full bg-white/10 md:w-full md:h-40" : "h-40 bg-white/10 w-full"}></div>
+                  <div className="flex-1 space-y-3 py-1">
+                    <div className="h-4 bg-white/10 w-3/4"></div>
+                    <div className="h-3 bg-white/10 w-1/2"></div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -498,7 +593,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           ) : (
             /* Game Grid */
             <div className="space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
                 {games.map((game, index) => (
                   <GameCard
                     key={game.id}
@@ -506,6 +601,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                     index={index}
                     activeRegion={activeRegion}
                     findCheapestDeal={findCheapestDeal}
+                    mobileLayout={mobileLayout}
                   />
                 ))}
               </div>
