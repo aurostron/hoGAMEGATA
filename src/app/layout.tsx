@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/context/AuthContext";
 import PreferencesButton from "@/components/PreferencesButton";
 import dynamic from "next/dynamic";
+import { unstable_cache } from "next/cache";
+import { db } from "@/lib/db";
 
 const OnboardingModal = dynamic(() => import("@/components/OnboardingModal"));
 
@@ -20,11 +22,75 @@ export const metadata: Metadata = {
   description: "A fast, minimal, and premium metadata registry for survival horror, psychological horror, and indie nightmare games.",
 };
 
-export default function RootLayout({
+async function fetchMaintenanceStatusFromDb() {
+  try {
+    const config = await db.systemConfig.findUnique({
+      where: { key: "maintenance_mode" },
+    });
+    return config?.value === "true";
+  } catch (e) {
+    console.error("Error checking maintenance mode:", e);
+    return false;
+  }
+}
+
+const getCachedMaintenanceStatus = unstable_cache(
+  async () => fetchMaintenanceStatusFromDb(),
+  ["maintenance_mode"],
+  {
+    revalidate: 60,
+    tags: ["maintenance"],
+  }
+);
+
+async function getMaintenanceStatus() {
+  if (process.env.NODE_ENV === "development") {
+    return fetchMaintenanceStatusFromDb();
+  }
+  return getCachedMaintenanceStatus();
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isMaintenance = await getMaintenanceStatus();
+
+  if (isMaintenance) {
+    return (
+      <html
+        lang="en"
+        className={cn("h-full", "antialiased", montserrat.variable, "font-sans")}
+      >
+        <body className="min-h-full flex flex-col items-center justify-center bg-[#030303] text-[#f3f4f6] p-6 selection:bg-[#ff2a2a] selection:text-white">
+          <div className="max-w-2xl w-full border-4 border-[#ff2a2a] bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ff2a2a] relative overflow-hidden flex flex-col gap-6">
+            <div className="bg-[#ff2a2a] text-white font-mono text-[10px] sm:text-xs font-black py-2 px-12 -rotate-12 absolute -top-2 -left-12 w-[150%] text-center uppercase tracking-widest">
+              SYSTEM LOCKDOWN // SYSTEM LOCKDOWN // SYSTEM LOCKDOWN
+            </div>
+            
+            <div className="mt-8 flex flex-col gap-4">
+              <span className="font-mono text-xs text-[#ff2a2a] font-bold tracking-widest uppercase">// STATUS: OFFLINE</span>
+              <h1 className="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6] border-b border-white/10 pb-4">
+                THE WEBSITE IS IN <span className="text-[#ff2a2a] glow-text">MAINTENANCE</span>, CHECK BACK AGAIN LATER!
+              </h1>
+              <p className="font-mono text-sm text-gray-400 mt-2 leading-relaxed">
+                We are currently performing catalog ingestion updates and database FTS indexing operations. 
+                All outbound systems, search routes, and metadata registries are offline.
+              </p>
+            </div>
+            
+            <div className="border border-white/10 p-4 font-mono text-xs text-gray-500 bg-black/40 flex flex-col gap-1">
+              <div>RUNLEVEL: MAINTENANCE (STAGE 5)</div>
+              <div>OPERATOR: CLI_PORTAL</div>
+              <div>TIMESTAMP: {new Date().toISOString()}</div>
+            </div>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html
       lang="en"

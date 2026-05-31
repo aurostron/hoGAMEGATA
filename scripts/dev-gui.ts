@@ -1,6 +1,30 @@
 import * as http from "http";
 import { spawn, ChildProcess } from "child_process";
 import * as path from "path";
+import * as fs from "fs";
+
+// Simple env loader to parse DATABASE_URL correctly including handling Windows carriage returns
+function loadEnv() {
+  const envPath = path.join(process.cwd(), ".env");
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, "utf-8");
+    for (let line of content.split("\n")) {
+      line = line.trim();
+      if (!line || line.startsWith("#")) continue;
+      const index = line.indexOf("=");
+      if (index === -1) continue;
+      const key = line.substring(0, index).trim();
+      let value = line.substring(index + 1).trim();
+      if (value.startsWith('"') && value.endsWith('"')) {
+        value = value.slice(1, -1);
+      } else if (value.startsWith("'") && value.endsWith("'")) {
+        value = value.slice(1, -1);
+      }
+      process.env[key] = value;
+    }
+  }
+}
+loadEnv();
 
 // Global server state
 let currentProcess: ChildProcess | null = null;
@@ -643,9 +667,25 @@ const HTML_CONTENT = `<!DOCTYPE html>
     input:checked + .slider:before {
       transform: translateX(14px);
     }
+    .maintenance-banner {
+      background-color: var(--danger);
+      color: white;
+      text-align: center;
+      padding: 0.6rem;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
   </style>
 </head>
 <body>
+
+  <div id="maintenanceBanner" class="maintenance-banner" style="display:none;">
+    ⚠️ WEBSITE IS CURRENTLY IN MAINTENANCE MODE (OFFLINE FOR USERS)
+  </div>
 
   <header>
     <div class="header-logo">
@@ -664,6 +704,16 @@ const HTML_CONTENT = `<!DOCTYPE html>
   <main class="container">
     <!-- Category Operations Left Column -->
     <div class="controls-grid">
+
+      <!-- Maintenance Mode Card -->
+      <div class="card" style="border-left: 3px solid var(--danger);">
+        <h2><span style="color:var(--danger);">⚠️</span> Website Maintenance Mode</h2>
+        <p>Toggle website maintenance mode. Toggling this affects both localhost and Vercel cloud instantly.</p>
+        <div class="actions-row" style="margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+          <span id="maintenanceStatusLabel" style="font-weight: 800; text-transform: uppercase; font-size: 0.9rem; color: var(--text-muted);">Checking...</span>
+          <button id="toggleMaintenanceBtn" class="btn btn-danger" onclick="toggleMaintenance()">Toggle Mode</button>
+        </div>
+      </div>
 
       <!-- Git Integration Card -->
       <div class="card" style="border-left: 3px solid var(--accent-cyan);">
@@ -880,6 +930,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
           if (payload.cronJobs) {
             renderCronJobs(payload.cronJobs);
           }
+          if (payload.maintenanceMode !== undefined) {
+            updateMaintenanceStatus(payload.maintenanceMode);
+          }
         }
       } catch (e) {
         console.error("SSE parse error:", e);
@@ -971,6 +1024,39 @@ const HTML_CONTENT = `<!DOCTYPE html>
       });
     }
 
+    function updateMaintenanceStatus(enabled) {
+      const banner = document.getElementById('maintenanceBanner');
+      const label = document.getElementById('maintenanceStatusLabel');
+      const btn = document.getElementById('toggleMaintenanceBtn');
+      if (enabled) {
+        banner.style.display = 'block';
+        label.innerText = 'OFFLINE (MAINTENANCE ON)';
+        label.style.color = 'var(--danger)';
+        btn.innerText = 'Disable Maintenance Mode';
+        btn.className = 'btn btn-success';
+      } else {
+        banner.style.display = 'none';
+        label.innerText = 'ONLINE (NORMAL OPERATION)';
+        label.style.color = 'var(--success)';
+        btn.innerText = 'Enable Maintenance Mode';
+        btn.className = 'btn btn-danger';
+      }
+    }
+
+    async function toggleMaintenance() {
+      const btn = document.getElementById('toggleMaintenanceBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/maintenance/toggle', { method: 'POST' });
+        const data = await res.json();
+        updateMaintenanceStatus(data.enabled);
+      } catch (e) {
+        alert('Failed to toggle maintenance mode');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     // Initialize initial state on load
     fetch('/api/status')
       .then(r => r.json())
@@ -978,6 +1064,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
         updateSystemStatus(data.status, data.command);
         if (data.cronJobs) {
           renderCronJobs(data.cronJobs);
+        }
+        if (data.maintenanceMode !== undefined) {
+          updateMaintenanceStatus(data.maintenanceMode);
         }
         if (data.logBuffer) {
           terminal.innerText = data.logBuffer;
@@ -1078,10 +1167,177 @@ const HTML_CONTENT = `<!DOCTYPE html>
 </html>
 `;
 
-const server = http.createServer((req, res) => {
+// Cookie parser helper
+function getCookies(req: http.IncomingMessage) {
+  const list: Record<string, string> = {};
+  const rc = req.headers.cookie;
+  if (rc) {
+    rc.split(";").forEach((cookie) => {
+      const parts = cookie.split("=");
+      list[parts.shift()!.trim()] = decodeURI(parts.join("="));
+    });
+  }
+  return list;
+}
+
+const PASSWORD = process.env.DEV_PORTAL_PASSWORD || "admin";
+
+function getLoginHtmlContent(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - hoGAMEGATA Dev Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0b0e;
+      --bg-card: #12141a;
+      --border-color: #212631;
+      --text-main: #f3f4f6;
+      --accent: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 2.5rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    p { font-size: 0.9rem; color: #9ca3af; margin-bottom: 2rem; }
+    input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.75rem;
+      color: var(--text-main);
+      width: 100%;
+      outline: none;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem;
+      width: 100%;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Developer Portal</h2>
+    <p>Please enter your access password</p>
+    <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter') login()">
+    <button onclick="login()">Unlock Console</button>
+    <div class="error-msg" id="errorMsg">Invalid credentials.</div>
+  </div>
+  <script>
+    async function login() {
+      const password = document.getElementById('passwordInput').value;
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.style.display = 'none';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          errorDiv.style.display = 'block';
+        }
+      } catch (e) {
+        errorDiv.textContent = 'Connection error.';
+        errorDiv.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
+`;
+}
+
+const server = http.createServer(async (req, res) => {
   const parsedUrl = new URL(req.url || "/", `http://${req.headers.host}`);
 
-  // 1. Live SSE stream
+  // CORS Headers for strictly local requests
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+
+  const cookies = getCookies(req);
+  const isAuthenticated = cookies.dev_session === PASSWORD;
+
+  // 1. POST /api/login
+  if (parsedUrl.pathname === "/api/login" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", () => {
+      try {
+        const payload = JSON.parse(body);
+        if (payload.password === PASSWORD) {
+          res.writeHead(200, {
+            "Content-Type": "application/json",
+            "Set-Cookie": `dev_session=${PASSWORD}; Path=/; HttpOnly; SameSite=Strict`,
+          });
+          res.end(JSON.stringify({ success: true }));
+        } else {
+          res.writeHead(401, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid password" }));
+        }
+      } catch (err: any) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // Auth Gate
+  if (!isAuthenticated) {
+    if (parsedUrl.pathname.startsWith("/api/")) {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(getLoginHtmlContent());
+    return;
+  }
+
+  // 2. Live SSE stream
   if (parsedUrl.pathname === "/api/logs") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
@@ -1091,11 +1347,20 @@ const server = http.createServer((req, res) => {
 
     sseClients.add(res);
 
+    // Fetch maintenance status on SSE connect
+    let maintenanceMode = false;
+    try {
+      const { db } = await import("../src/lib/db");
+      const config = await db.systemConfig.findUnique({ where: { key: "maintenance_mode" } });
+      maintenanceMode = config?.value === "true";
+    } catch (e) {}
+
     // Write initial status payload immediately
     res.write(`data: ${JSON.stringify({ 
       type: "status", 
       status, 
       command: currentCommandName,
+      maintenanceMode,
       cronJobs: cronJobs.map(c => ({
         id: c.id,
         name: c.name,
@@ -1112,13 +1377,25 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 2. Fetch status & cron settings
+  // 3. Fetch status & cron settings & maintenance mode
   if (parsedUrl.pathname === "/api/status" && req.method === "GET") {
+    let maintenanceMode = false;
+    try {
+      const { db } = await import("../src/lib/db");
+      const config = await db.systemConfig.findUnique({
+        where: { key: "maintenance_mode" }
+      });
+      maintenanceMode = config?.value === "true";
+    } catch (e) {
+      console.error("DB Maintenance check failed in API status:", e);
+    }
+
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({
       status,
       command: currentCommandName,
       logBuffer,
+      maintenanceMode,
       cronJobs: cronJobs.map(c => ({
         id: c.id,
         name: c.name,
@@ -1131,7 +1408,31 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 3. Trigger manual action run
+  // 4. Toggle Maintenance Mode
+  if (parsedUrl.pathname === "/api/maintenance/toggle" && req.method === "POST") {
+    try {
+      const { db } = await import("../src/lib/db");
+      const config = await db.systemConfig.findUnique({
+        where: { key: "maintenance_mode" }
+      });
+      const isMaintenance = config?.value === "true";
+      const newValue = !isMaintenance;
+      await db.systemConfig.upsert({
+        where: { key: "maintenance_mode" },
+        update: { value: String(newValue) },
+        create: { key: "maintenance_mode", value: String(newValue) }
+      });
+      broadcastLog(`🛠️ [Portal] Maintenance mode set to: ${newValue ? "🔴 ON" : "🟢 OFF"}\n`);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: true, enabled: newValue }));
+    } catch (e) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: String(e) }));
+    }
+    return;
+  }
+
+  // 5. Trigger manual action run
   if (parsedUrl.pathname === "/api/run" && req.method === "POST") {
     let body = "";
     req.on("data", chunk => { body += chunk; });
@@ -1163,7 +1464,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 4. Kill/Abort current task
+  // 6. Kill/Abort current task
   if (parsedUrl.pathname === "/api/kill" && req.method === "POST") {
     killCurrentProcess();
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -1171,7 +1472,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 5. Toggle Cron Enable/Disable
+  // 7. Toggle Cron Enable/Disable
   if (parsedUrl.pathname === "/api/cron/toggle" && req.method === "POST") {
     let body = "";
     req.on("data", chunk => { body += chunk; });
@@ -1182,7 +1483,6 @@ const server = http.createServer((req, res) => {
         if (job) {
           job.enabled = enabled;
           if (enabled) {
-            // Recalculate next run time from now
             job.nextRunTime = Date.now() + job.intervalMs;
           }
           broadcastStatus();
@@ -1200,7 +1500,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 6. Force manual trigger of Cron Job
+  // 8. Force manual trigger of Cron Job
   if (parsedUrl.pathname === "/api/cron/run" && req.method === "POST") {
     let body = "";
     req.on("data", chunk => { body += chunk; });
@@ -1237,7 +1537,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 7. Default view: serve the Single Page Admin dashboard UI
+  // 9. Default view: serve the Single Page Admin dashboard UI
   if (parsedUrl.pathname === "/" && req.method === "GET") {
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end(HTML_CONTENT);
@@ -1251,7 +1551,8 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n==================================================`);
-  console.log(`🖥️  hoGAMEGATA UNIFIED DEVELOPER PORTAL GUI ACTIVE`);
+  console.log(`🖥  hoGAMEGATA UNIFIED DEVELOPER PORTAL GUI ACTIVE`);
   console.log(`📡 Access here: http://localhost:${PORT}`);
+  console.log(`🔑 Login Password: ${PASSWORD}`);
   console.log(`==================================================\n`);
 });
