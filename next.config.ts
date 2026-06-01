@@ -60,6 +60,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    staticGenerationMaxConcurrency: 1,
   },
 };
 
