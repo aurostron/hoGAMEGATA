@@ -53,17 +53,26 @@ export default function OnboardingModal() {
     }, 250);
   };
 
+  const getCategoryForVibe = (slug: string) => {
+    return TAXONOMY_GROUPS.find(group => 
+      group.filters.some(f => f.slug === slug)
+    );
+  };
+
   const toggleVibe = (slug: string) => {
     if (selectedVibes.includes(slug)) {
       setSelectedVibes(selectedVibes.filter(v => v !== slug));
     } else {
-      if (selectedVibes.length < 5) {
-        setSelectedVibes([...selectedVibes, slug]);
+      const group = getCategoryForVibe(slug);
+      if (group) {
+        const groupSlugs = group.filters.map(f => f.slug);
+        const countInGroup = selectedVibes.filter(v => groupSlugs.includes(v)).length;
+        if (countInGroup < 5) {
+          setSelectedVibes([...selectedVibes, slug]);
+        }
       }
     }
   };
-
-  const isMaxReached = selectedVibes.length >= 5;
 
   // Progress bar width (step 0 = 0%, step N = 100%)
   const progressPct = step === 0 ? 0 : Math.round((step / totalSteps) * 100);
@@ -130,74 +139,81 @@ export default function OnboardingModal() {
           )}
 
           {/* ── Steps 1–N: Category Questions ────────────────────── */}
-          {step > 0 && step <= TAXONOMY_GROUPS.length && (
-            <div className="flex flex-col gap-10">
+          {(() => {
+            if (step <= 0 || step > TAXONOMY_GROUPS.length) return null;
+            const currentGroup = TAXONOMY_GROUPS[step - 1];
+            const currentGroupSlugs = currentGroup.filters.map(f => f.slug);
+            const selectedInCurrentGroup = selectedVibes.filter(v => currentGroupSlugs.includes(v));
+            const isCurrentStepMaxReached = selectedInCurrentGroup.length >= 5;
 
-              {/* Step header */}
-              <div className="border-l-2 border-white pl-5 space-y-1.5">
-                <p className="text-white/40 font-mono text-[10px] tracking-widest uppercase">
-                  Step {step} of {TAXONOMY_GROUPS.length}
-                </p>
-                <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight leading-tight">
-                  What {TAXONOMY_GROUPS[step - 1].categoryName} do you like?
-                </h1>
-              </div>
+            return (
+              <div className="flex flex-col gap-10">
+                {/* Step header */}
+                <div className="border-l-2 border-white pl-5 space-y-1.5">
+                  <p className="text-white/40 font-mono text-[10px] tracking-widest uppercase">
+                    Step {step} of {TAXONOMY_GROUPS.length}
+                  </p>
+                  <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight leading-tight">
+                    What {currentGroup.categoryName} do you like?
+                  </h1>
+                </div>
 
-              {/* Tag grid */}
-              <div className="flex flex-wrap gap-2.5">
-                {TAXONOMY_GROUPS[step - 1].filters.map((filter) => {
-                  const isSelected = selectedVibes.includes(filter.slug);
-                  const isDisabled = isMaxReached && !isSelected;
-                  return (
+                {/* Tag grid */}
+                <div className="flex flex-wrap gap-2.5">
+                  {currentGroup.filters.map((filter) => {
+                    const isSelected = selectedVibes.includes(filter.slug);
+                    const isDisabled = isCurrentStepMaxReached && !isSelected;
+                    return (
+                      <button
+                        key={filter.slug}
+                        onClick={() => toggleVibe(filter.slug)}
+                        disabled={isDisabled}
+                        className={cn(
+                          "px-4 py-2.5 border text-xs font-mono font-bold uppercase tracking-wider transition-all duration-150 rounded-none",
+                          isSelected
+                            ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.25)]"
+                            : "bg-transparent text-white border-white/35 hover:border-white hover:bg-white/5",
+                          isDisabled && "opacity-25 cursor-not-allowed pointer-events-none"
+                        )}
+                      >
+                        {filter.name}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Footer row */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                  {/* Selection counter */}
+                  <div className="font-mono text-xs text-white/50 tracking-widest uppercase flex items-center gap-2">
+                    Selected:
+                    <span className={cn(
+                      "font-black px-2 py-0.5 border",
+                      selectedInCurrentGroup.length > 0 ? "text-white border-white/40 bg-white/10" : "text-white/30 border-white/10"
+                    )}>
+                      {selectedInCurrentGroup.length} / 5
+                    </span>
+                  </div>
+
+                  {/* Navigation */}
+                  <div className="flex items-center gap-3">
                     <button
-                      key={filter.slug}
-                      onClick={() => toggleVibe(filter.slug)}
-                      disabled={isDisabled}
-                      className={cn(
-                        "px-4 py-2.5 border text-xs font-mono font-bold uppercase tracking-wider transition-all duration-150 rounded-none",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.25)]"
-                          : "bg-transparent text-white border-white/35 hover:border-white hover:bg-white/5",
-                        isDisabled && "opacity-25 cursor-not-allowed pointer-events-none"
-                      )}
+                      onClick={handleBack}
+                      className="px-5 py-2.5 font-mono font-bold text-xs tracking-widest uppercase text-white/60 border border-white/25 hover:border-white hover:text-white transition-all duration-150"
                     >
-                      {filter.name}
+                      ← BACK
                     </button>
-                  );
-                })}
-              </div>
-
-              {/* Footer row */}
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                {/* Selection counter */}
-                <div className="font-mono text-xs text-white/50 tracking-widest uppercase flex items-center gap-2">
-                  Selected:
-                  <span className={cn(
-                    "font-black px-2 py-0.5 border",
-                    selectedVibes.length > 0 ? "text-white border-white/40 bg-white/10" : "text-white/30 border-white/10"
-                  )}>
-                    {selectedVibes.length} / 5
-                  </span>
-                </div>
-
-                {/* Navigation */}
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleBack}
-                    className="px-5 py-2.5 font-mono font-bold text-xs tracking-widest uppercase text-white/60 border border-white/25 hover:border-white hover:text-white transition-all duration-150"
-                  >
-                    ← BACK
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="px-7 py-2.5 font-mono font-black text-xs tracking-widest uppercase bg-white text-black border border-white hover:bg-transparent hover:text-white transition-all duration-150"
-                  >
-                    NEXT →
-                  </button>
+                    <button
+                      onClick={handleNext}
+                      className="px-7 py-2.5 font-mono font-black text-xs tracking-widest uppercase bg-white text-black border border-white hover:bg-transparent hover:text-white transition-all duration-150"
+                    >
+                      NEXT →
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Final Step: Review ───────────────────────────────── */}
           {step === totalSteps && (
@@ -208,52 +224,58 @@ export default function OnboardingModal() {
                 <p className="text-white/40 font-mono text-[10px] tracking-widest uppercase">Final Step</p>
                 <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight">Review Your Picks</h1>
                 <p className="text-white/50 font-mono text-xs uppercase tracking-widest leading-relaxed pt-1">
-                  These will tune your discovery feed. You can select up to 5.
+                  These will tune your discovery feed. You can select up to 5 in each category.
                 </p>
               </div>
 
               {/* All categories */}
               <div className="space-y-8">
-                {TAXONOMY_GROUPS.map((group) => (
-                  <div key={group.categorySlug} className="space-y-3">
-                    <h2 className="font-mono text-[10px] font-black uppercase tracking-widest text-white/40 border-b border-white/10 pb-1.5">
-                      {group.categoryName}
-                    </h2>
-                    <div className="flex flex-wrap gap-2">
-                      {group.filters.map((filter) => {
-                        const isSelected = selectedVibes.includes(filter.slug);
-                        const isDisabled = isMaxReached && !isSelected;
-                        return (
-                          <button
-                            key={filter.slug}
-                            onClick={() => toggleVibe(filter.slug)}
-                            disabled={isDisabled}
-                            className={cn(
-                              "px-3.5 py-2 border text-[10px] font-mono font-bold uppercase tracking-wider transition-all duration-150",
-                              isSelected
-                                ? "bg-white text-black border-white"
-                                : "bg-transparent text-white border-white/25 hover:border-white hover:bg-white/5",
-                              isDisabled && "opacity-20 cursor-not-allowed pointer-events-none"
-                            )}
-                          >
-                            {filter.name}
-                          </button>
-                        );
-                      })}
+                {TAXONOMY_GROUPS.map((group) => {
+                  const groupSlugs = group.filters.map(f => f.slug);
+                  const selectedInGroup = selectedVibes.filter(v => groupSlugs.includes(v));
+                  const isGroupMaxReached = selectedInGroup.length >= 5;
+
+                  return (
+                    <div key={group.categorySlug} className="space-y-3">
+                      <h2 className="font-mono text-[10px] font-black uppercase tracking-widest text-white/40 border-b border-white/10 pb-1.5">
+                        {group.categoryName}
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {group.filters.map((filter) => {
+                          const isSelected = selectedVibes.includes(filter.slug);
+                          const isDisabled = isGroupMaxReached && !isSelected;
+                          return (
+                            <button
+                              key={filter.slug}
+                              onClick={() => toggleVibe(filter.slug)}
+                              disabled={isDisabled}
+                              className={cn(
+                                "px-3.5 py-2 border text-[10px] font-mono font-bold uppercase tracking-wider transition-all duration-150",
+                                isSelected
+                                  ? "bg-white text-black border-white"
+                                  : "bg-transparent text-white border-white/25 hover:border-white hover:bg-white/5",
+                                isDisabled && "opacity-20 cursor-not-allowed pointer-events-none"
+                              )}
+                            >
+                              {filter.name}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Sticky bottom bar */}
               <div className="sticky bottom-0 -mx-6 px-6 py-4 bg-[#080808] border-t border-white/15 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="font-mono text-xs tracking-widest uppercase flex items-center gap-2">
-                  <span className="text-white/50">Selected:</span>
+                  <span className="text-white/50">Total Selected:</span>
                   <span className={cn(
                     "font-black px-2 py-0.5 border",
                     selectedVibes.length > 0 ? "text-white border-white/40 bg-white/10" : "text-white/30 border-white/10"
                   )}>
-                    {selectedVibes.length} / 5
+                    {selectedVibes.length}
                   </span>
                 </div>
 
