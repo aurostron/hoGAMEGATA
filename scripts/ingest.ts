@@ -99,7 +99,73 @@ async function fetchRawgGameDetails(
   return null;
 }
 
+async function ingestRetroGames() {
+  console.log('🚀 Starting retro horror ingestion');
+  const sources = [
+    { name: 'Archive.org', query: 'https://archive.org/advancedsearch.php?output=json&fl=identifier,title,mediatype,format,year,description,licenseurl&rows=200&sort[]=publicdate+desc&q=collection:(classicgaming)+subject:(horror)+mediatype:(software)' },
+  ];
+  let total = 0;
+  for (const source of sources) {
+    console.log(`📡 Fetching from ${source.name}...`);
+    try {
+      const resp = await fetch(source.query);
+      if (!resp.ok) {
+        console.warn(`⚠️ ${source.name} returned ${resp.status}, skipping`);
+        continue;
+      }
+      const data = await resp.json();
+      const docs = data?.response?.docs || [];
+      console.log(`📚 ${docs.length} items from ${source.name}`);
+      for (const doc of docs) {
+        const slug = doc.identifier.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        let licenseOk = true;
+        if (doc.licenseurl && !doc.licenseurl.includes('creativecommons') && !doc.licenseurl.includes('publicdomain') && doc.licenseurl !== '') {
+          licenseOk = false;
+        }
+        if (!licenseOk) {
+          console.log(`⏭ Skipping ${doc.title}: license ${doc.licenseurl}`);
+          continue;
+        }
+        try {
+          await prisma.game.upsert({
+            where: { slug },
+            update: {
+              title: doc.title,
+              summary: (doc.description || '').substring(0, 2000) || null,
+              releaseDate: doc.year ? new Date(`${doc.year}-01-01`) : null,
+              genreNames: 'Horror',
+              platformNames: 'Classic',
+              source: 'archive.org'
+            },
+            create: {
+              title: doc.title,
+              slug,
+              summary: (doc.description || '').substring(0, 2000) || null,
+              releaseDate: doc.year ? new Date(`${doc.year}-01-01`) : null,
+              genreNames: 'Horror',
+              platformNames: 'Classic',
+              source: 'archive.org'
+            }
+          });
+          total++;
+        } catch (upsertErr) {
+          console.warn(`⚠️ Failed upsert for ${doc.title}:`, upsertErr);
+        }
+      }
+    } catch (e) {
+      console.error(`❌ ${source.name} fetch failed:`, e);
+    }
+  }
+  console.log(`✅ Retro ingestion complete. ${total} games processed.`);
+}
+
 async function runIngestion() {
+  const args = process.argv.slice(2);
+  const retroMode = args.includes('--retro');
+  if (retroMode) {
+    await ingestRetroGames();
+    return;
+  }
   const twitchId = process.env.TWITCH_CLIENT_ID;
   const twitchSecret = process.env.TWITCH_CLIENT_SECRET;
   const rawgApiKey = process.env.RAWG_API_KEY;
