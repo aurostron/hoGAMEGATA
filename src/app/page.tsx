@@ -15,10 +15,20 @@ interface GameData {
   status: string;
   coverUrl: string | null;
   rating: number | null;
+  category: number | null;
   developers: Array<{ name: string; slug: string }>;
   genres: Array<{ name: string; slug: string }>;
   platforms: Array<{ name: string; slug: string }>;
 }
+
+const getCategoryBadge = (category: number | null): string | null => {
+  if (category === 1) return "DLC";
+  if (category === 2) return "Expansion";
+  if (category === 4) return "Standalone";
+  if (category === 8) return "Remake";
+  if (category === 9) return "Remaster";
+  return null;
+};
 
 export default function Home() {
   const [games, setGames] = useState<GameData[]>([]);
@@ -163,36 +173,12 @@ export default function Home() {
               All
             </button>
             <button 
-              onClick={() => setSelectedGenre("Survival")}
+              onClick={() => setSelectedGenre("Adventure")}
               className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Survival" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+                selectedGenre === "Adventure" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
               }`}
             >
-              Survival
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Psychological")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Psychological" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Psychological
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Sci-Fi")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Sci-Fi" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Sci-Fi
-            </button>
-            <button 
-              onClick={() => setSelectedGenre("Co-op")}
-              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
-                selectedGenre === "Co-op" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
-              }`}
-            >
-              Co-op
+              Adventure
             </button>
             <button 
               onClick={() => setSelectedGenre("Indie")}
@@ -201,6 +187,38 @@ export default function Home() {
               }`}
             >
               Indie
+            </button>
+            <button 
+              onClick={() => setSelectedGenre("Shooter")}
+              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
+                selectedGenre === "Shooter" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+              }`}
+            >
+              Shooter
+            </button>
+            <button 
+              onClick={() => setSelectedGenre("Puzzle")}
+              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
+                selectedGenre === "Puzzle" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+              }`}
+            >
+              Puzzle
+            </button>
+            <button 
+              onClick={() => setSelectedGenre("RPG")}
+              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
+                selectedGenre === "RPG" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+              }`}
+            >
+              RPG
+            </button>
+            <button 
+              onClick={() => setSelectedGenre("Simulator")}
+              className={`border border-white px-2.5 py-0.5 rounded-none transition-all duration-150 ${
+                selectedGenre === "Simulator" ? "bg-white text-black" : "bg-black text-white hover:bg-white hover:text-black"
+              }`}
+            >
+              Simulator
             </button>
           </div>
         </section>
@@ -264,6 +282,12 @@ export default function Home() {
                       <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
                         <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
                       </div>
+                    )}
+                    {/* Category Tag */}
+                    {getCategoryBadge(game.category) && (
+                      <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                        {getCategoryBadge(game.category)}
+                      </span>
                     )}
                     {/* Primary Genre Tag */}
                     <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">

@@ -27,13 +27,87 @@ if (connectionString.startsWith("prisma+postgres://")) {
   prisma = new PrismaClient({ adapter });
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+interface RawgDetails {
+  metacritic: number | null;
+  metacriticUrl: string | null;
+  playtime: number | null;
+  esrbRating: string | null;
+  redditUrl: string | null;
+  websiteUrl: string | null;
+  rawgRating: number | null;
+  rawgSlug: string | null;
+}
+
+async function fetchRawgGameDetails(
+  title: string,
+  slug: string,
+  apiKey: string
+): Promise<RawgDetails | null> {
+  const parseRawgData = (data: any): RawgDetails => {
+    return {
+      metacritic: data.metacritic || null,
+      metacriticUrl: data.metacritic_url || null,
+      playtime: data.playtime || null,
+      esrbRating: data.esrb_rating?.name || null,
+      redditUrl: data.reddit_url || null,
+      websiteUrl: data.website || null,
+      rawgRating: data.rating || null,
+      rawgSlug: data.slug || null,
+    };
+  };
+
+  try {
+    // 1. Try to fetch directly by slug
+    const directUrl = `https://api.rawg.io/api/games/${slug}?key=${apiKey}`;
+    const directResponse = await fetch(directUrl);
+    
+    if (directResponse.ok) {
+      const data = await directResponse.json();
+      return parseRawgData(data);
+    }
+
+    // 2. If 404, fallback to search by title
+    console.log(`🔍 RAWG direct slug match failed for '${slug}'. Searching by title '${title}'...`);
+    const searchUrl = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(title)}&page_size=1`;
+    const searchResponse = await fetch(searchUrl);
+    
+    if (searchResponse.ok) {
+      const searchData = (await searchResponse.json()) as { results?: any[] };
+      const bestMatch = searchData.results?.[0];
+      
+      if (bestMatch) {
+        // Fetch detailed data for this game ID
+        const detailUrl = `https://api.rawg.io/api/games/${bestMatch.id}?key=${apiKey}`;
+        const detailResponse = await fetch(detailUrl);
+        if (detailResponse.ok) {
+          const detailData = await detailResponse.json();
+          return parseRawgData(detailData);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn(`⚠️ Failed to fetch RAWG details for '${title}':`, error);
+  }
+
+  return null;
+}
+
 async function runIngestion() {
   const twitchId = process.env.TWITCH_CLIENT_ID;
   const twitchSecret = process.env.TWITCH_CLIENT_SECRET;
+  const rawgApiKey = process.env.RAWG_API_KEY;
 
   if (!twitchId || !twitchSecret) {
     console.error("❌ Error: TWITCH_CLIENT_ID or TWITCH_CLIENT_SECRET missing in .env.");
     process.exit(1);
+  }
+
+  if (!rawgApiKey) {
+    console.warn("⚠️ Warning: RAWG_API_KEY is missing in your .env file. Secondary details enrichment will be skipped.");
+  } else {
+    console.log("🔑 RAWG API Key found. Secondary details will be enriched during ingestion.");
   }
 
   console.log("🔑 IGDB API credentials found. Fetching catalog from Twitch Developer servers...");
@@ -72,8 +146,19 @@ async function runIngestion() {
       }
     }
 
+    // Support custom target limit via --limit <number> (default to 2000)
+    let targetLimit = 2000;
+    const limitIndex = args.indexOf("--limit");
+    if (limitIndex !== -1 && args[limitIndex + 1]) {
+      const parsedLimit = parseInt(args[limitIndex + 1], 10);
+      if (!isNaN(parsedLimit)) {
+        targetLimit = parsedLimit;
+        console.log(`🎯 Custom import target set to: ${targetLimit} games.`);
+      }
+    }
+
     const BATCH_SIZE = 100;
-    const TARGET_TOTAL = 2000;
+    const TARGET_TOTAL = targetLimit;
     let offset = startOffset;
 
     // Helper: Concurrency batch runner
@@ -113,7 +198,9 @@ async function runIngestion() {
         company: { name: string; slug: string };
       }>;
       platforms?: Array<{ name: string; slug: string }>;
+      genres?: Array<{ id: number; name: string; slug: string }>;
       websites?: Array<{ url: string; category: number }>;
+      category?: number;
     }
 
     while (offset < TARGET_TOTAL) {
@@ -128,7 +215,8 @@ async function runIngestion() {
           videos.video_id,
           involved_companies.developer, involved_companies.publisher, involved_companies.company.name, involved_companies.company.slug,
           platforms.name, platforms.slug,
-          websites.url, websites.category;
+          genres.name, genres.slug,
+          websites.url, websites.category, category;
         where themes = (19) & first_release_date != null & cover != null & (total_rating != null | slug = "silent-hill-f");
         sort total_rating desc;
         limit ${BATCH_SIZE};
@@ -157,10 +245,11 @@ async function runIngestion() {
 
       console.log(`📚 Fetched ${games.length} horror games from IGDB. Processing...`);
 
-      // 3. Pre-process and pre-upsert all unique developers, publishers, platforms for this batch
+      // 3. Pre-process and pre-upsert all unique developers, publishers, platforms, genres for this batch
       const uniqueDevelopers = new Map<string, { name: string; slug: string }>();
       const uniquePublishers = new Map<string, { name: string; slug: string }>();
       const uniquePlatforms = new Map<string, { name: string; slug: string }>();
+      const uniqueGenres = new Map<string, { name: string; slug: string; id: number }>();
 
       const seenDevNames = new Set<string>();
       const seenPubNames = new Set<string>();
@@ -191,9 +280,15 @@ async function runIngestion() {
             uniquePlatforms.set(platSlug, { name: p.name, slug: platSlug });
           }
         }
+        if (g.genres) {
+          for (const gen of g.genres) {
+            const genSlug = gen.slug || gen.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+            uniqueGenres.set(genSlug, { name: gen.name, slug: genSlug, id: gen.id });
+          }
+        }
       }
 
-      console.log(`Pre-upserting relations: ${uniqueDevelopers.size} developers, ${uniquePublishers.size} publishers, ${uniquePlatforms.size} platforms...`);
+      console.log(`Pre-upserting relations: ${uniqueDevelopers.size} developers, ${uniquePublishers.size} publishers, ${uniquePlatforms.size} platforms, ${uniqueGenres.size} genres...`);
 
       // Upsert all unique developers in parallel batches by slug
       const developerMap = new Map<string, string>();
@@ -229,6 +324,18 @@ async function runIngestion() {
           create: { name: plat.name, slug: plat.slug }
         });
         platformMap.set(plat.slug, dbPlat.id);
+      });
+
+      // Upsert all unique genres in parallel batches by slug
+      const genreMap = new Map<string, string>();
+      const genresArray = Array.from(uniqueGenres.values());
+      await processInBatches(genresArray, 20, async (gen) => {
+        const dbGen = await prisma.genre.upsert({
+          where: { slug: gen.slug },
+          update: { name: gen.name, igdbId: gen.id },
+          create: { name: gen.name, slug: gen.slug, igdbId: gen.id }
+        });
+        genreMap.set(gen.slug, dbGen.id);
       });
 
       // Remove any games with duplicate slugs to avoid database collisions during concurrent runs
@@ -273,6 +380,25 @@ async function runIngestion() {
       const processGame = async (g: IGDBGame) => {
         const slug = g.slug || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
         console.log(`Processing: ${g.name}`);
+        
+        // Fetch RAWG details if key is present
+        let rawgDetails = null;
+        if (rawgApiKey) {
+          // Sleep for a short randomized delay (10-300ms) to prevent RAWG rate limit blocks
+          await sleep(Math.floor(Math.random() * 290) + 10);
+          rawgDetails = await fetchRawgGameDetails(g.name, slug, rawgApiKey);
+        }
+
+        const rawgFields = rawgDetails ? {
+          metacritic: rawgDetails.metacritic,
+          metacriticUrl: rawgDetails.metacriticUrl,
+          playtime: rawgDetails.playtime,
+          esrbRating: rawgDetails.esrbRating,
+          redditUrl: rawgDetails.redditUrl,
+          websiteUrl: rawgDetails.websiteUrl,
+          rawgRating: rawgDetails.rawgRating,
+          rawgSlug: rawgDetails.rawgSlug,
+        } : {};
         
         const releaseDate = g.first_release_date ? new Date(g.first_release_date * 1000) : null;
         const rating = g.total_rating || null;
@@ -329,6 +455,18 @@ async function runIngestion() {
           }
         }
 
+        const gameGenreIds: string[] = [];
+        if (g.genres && g.genres.length > 0) {
+          for (const gen of g.genres) {
+            const genSlug = gen.slug || gen.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+            const genId = genreMap.get(genSlug);
+            if (genId) gameGenreIds.push(genId);
+          }
+        }
+        if (gameGenreIds.length === 0) {
+          gameGenreIds.push(horrorGenreId);
+        }
+
         const purchaseLinks: Array<{ storeName: string; url: string }> = [];
         if (g.websites) {
           for (const web of g.websites) {
@@ -372,6 +510,8 @@ async function runIngestion() {
               rating,
               trailerUrl,
               screenshots,
+              category: g.category !== undefined ? g.category : null,
+              ...rawgFields,
               developers: {
                 set: developerIds.map(id => ({ id }))
               },
@@ -379,7 +519,7 @@ async function runIngestion() {
                 set: publisherIds.map(id => ({ id }))
               },
               genres: {
-                set: [{ id: horrorGenreId }]
+                set: gameGenreIds.map(id => ({ id }))
               },
               platforms: {
                 set: platformIds.map(id => ({ id }))
@@ -404,6 +544,8 @@ async function runIngestion() {
               rating,
               trailerUrl,
               screenshots,
+              category: g.category !== undefined ? g.category : null,
+              ...rawgFields,
               developers: {
                 connect: developerIds.map(id => ({ id }))
               },
@@ -411,7 +553,7 @@ async function runIngestion() {
                 connect: publisherIds.map(id => ({ id }))
               },
               genres: {
-                connect: [{ id: horrorGenreId }]
+                connect: gameGenreIds.map(id => ({ id }))
               },
               platforms: {
                 connect: platformIds.map(id => ({ id }))
