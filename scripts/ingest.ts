@@ -105,9 +105,9 @@ async function runIngestion() {
   }
 
   if (!rawgApiKey) {
-    console.warn("⚠️ Warning: RAWG_API_KEY is missing in your .env file. Secondary details enrichment will be skipped.");
+    console.warn("⚠️ Warning: RAWG_API_KEY is missing in your .env file. RAWG metadata enrichment will be unavailable.");
   } else {
-    console.log("🔑 RAWG API Key found. Secondary details will be enriched during ingestion.");
+    console.log("🔑 RAWG API Key found. RAWG enrichment can be run separately via 'npm run enrich'.");
   }
 
   console.log("🔑 IGDB API credentials found. Fetching catalog from Twitch Developer servers...");
@@ -146,8 +146,8 @@ async function runIngestion() {
       }
     }
 
-    // Support custom target limit via --limit <number> (default to 2000)
-    let targetLimit = 2000;
+    // Support custom target limit via --limit <number> (default to 3000)
+    let targetLimit = 3000;
     const limitIndex = args.indexOf("--limit");
     if (limitIndex !== -1 && args[limitIndex + 1]) {
       const parsedLimit = parseInt(args[limitIndex + 1], 10);
@@ -381,24 +381,7 @@ async function runIngestion() {
         const slug = g.slug || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
         console.log(`Processing: ${g.name}`);
         
-        // Fetch RAWG details if key is present
-        let rawgDetails = null;
-        if (rawgApiKey) {
-          // Sleep for a short randomized delay (10-300ms) to prevent RAWG rate limit blocks
-          await sleep(Math.floor(Math.random() * 290) + 10);
-          rawgDetails = await fetchRawgGameDetails(g.name, slug, rawgApiKey);
-        }
-
-        const rawgFields = rawgDetails ? {
-          metacritic: rawgDetails.metacritic,
-          metacriticUrl: rawgDetails.metacriticUrl,
-          playtime: rawgDetails.playtime,
-          esrbRating: rawgDetails.esrbRating,
-          redditUrl: rawgDetails.redditUrl,
-          websiteUrl: rawgDetails.websiteUrl,
-          rawgRating: rawgDetails.rawgRating,
-          rawgSlug: rawgDetails.rawgSlug,
-        } : {};
+        // RAWG fetching is decoupled. Enriched in background.
         
         const releaseDate = g.first_release_date ? new Date(g.first_release_date * 1000) : null;
         const rating = g.total_rating || null;
@@ -511,7 +494,6 @@ async function runIngestion() {
               trailerUrl,
               screenshots,
               category: g.category !== undefined ? g.category : null,
-              ...rawgFields,
               developers: {
                 set: developerIds.map(id => ({ id }))
               },
@@ -545,7 +527,7 @@ async function runIngestion() {
               trailerUrl,
               screenshots,
               category: g.category !== undefined ? g.category : null,
-              ...rawgFields,
+              rawgEnriched: false,
               developers: {
                 connect: developerIds.map(id => ({ id }))
               },

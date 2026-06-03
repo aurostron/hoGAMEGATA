@@ -44,23 +44,26 @@ function cleanRequirementsText(text: string): string {
     .trim();
 }
 
-async function getOrFetchSystemRequirements(game: any) {
-  // Check if PC is in platforms
-  const isPC = game.platforms.some((p: any) => p.slug === "pc" || p.name.toLowerCase().includes("pc"));
-  if (!isPC) return { min: null, rec: null };
-
-  if (game.minRequirements || game.recRequirements) {
+async function lazyEnrichRawgMetadata(game: any) {
+  // If already enriched, return cached system requirements immediately
+  if (game.rawgEnriched) {
     return { min: game.minRequirements, rec: game.recRequirements };
   }
 
   const apiKey = process.env.RAWG_API_KEY;
-  if (!apiKey) return { min: null, rec: null };
+  if (!apiKey) {
+    return { min: game.minRequirements, rec: game.recRequirements };
+  }
 
   const rawgSlug = game.rawgSlug || game.slug;
   try {
+    let data = null;
     const url = `https://api.rawg.io/api/games/${rawgSlug}?key=${apiKey}`;
     const response = await fetch(url);
-    if (!response.ok) {
+    
+    if (response.ok) {
+      data = await response.json();
+    } else {
       // Try title search fallback
       const searchUrl = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(game.title)}&page_size=1`;
       const searchRes = await fetch(searchUrl);
@@ -71,48 +74,66 @@ async function getOrFetchSystemRequirements(game: any) {
           const detailUrl = `https://api.rawg.io/api/games/${bestMatch.id}?key=${apiKey}`;
           const detailRes = await fetch(detailUrl);
           if (detailRes.ok) {
-            const detailData = await detailRes.json();
-            return await saveRequirements(game.id, detailData);
+            data = await detailRes.json();
           }
         }
       }
-      return { min: null, rec: null };
     }
 
-    const data = await response.json();
-    return await saveRequirements(game.id, data);
-  } catch (error) {
-    console.error(`⚠️ Failed to lazy-load system requirements for ${game.title}:`, error);
-  }
+    if (data) {
+      const pcPlatform = data.platforms?.find((p: any) => p.platform?.slug === "pc");
+      const requirements = pcPlatform?.requirements_en || null;
+      const minRequirements = requirements?.minimum || null;
+      const recRequirements = requirements?.recommended || null;
+      const esrbRating = data.esrb_rating?.name || null;
 
-  return { min: null, rec: null };
-}
+      // Update local memory reference
+      game.rawgEnriched = true;
+      game.rawgId = data.id || null;
+      game.metacritic = data.metacritic || null;
+      game.metacriticUrl = data.metacritic_url || null;
+      game.playtime = data.playtime || null;
+      game.esrbRating = esrbRating;
+      game.redditUrl = data.reddit_url || null;
+      game.websiteUrl = data.website || null;
+      game.rawgRating = data.rating || null;
+      game.rawgSlug = data.slug || null;
+      game.minRequirements = minRequirements;
+      game.recRequirements = recRequirements;
+      game.lastRawgSync = new Date();
 
-async function saveRequirements(gameId: string, data: any) {
-  const pcPlatform = data.platforms?.find((p: any) => p.platform?.slug === "pc");
-  const requirements = pcPlatform?.requirements_en || null;
-  
-  if (requirements) {
-    const min = requirements.minimum || null;
-    const rec = requirements.recommended || null;
-
-    if (min || rec) {
+      // Cache the complete metadata in the database asynchronously
       try {
         await db.game.update({
-          where: { id: gameId },
+          where: { id: game.id },
           data: {
-            minRequirements: min,
-            recRequirements: rec,
+            rawgEnriched: true,
+            rawgId: game.rawgId,
+            metacritic: game.metacritic,
+            metacriticUrl: game.metacriticUrl,
+            playtime: game.playtime,
+            esrbRating: game.esrbRating,
+            redditUrl: game.redditUrl,
+            websiteUrl: game.websiteUrl,
+            rawgRating: game.rawgRating,
+            rawgSlug: game.rawgSlug,
+            minRequirements: game.minRequirements,
+            recRequirements: game.recRequirements,
+            lastRawgSync: game.lastRawgSync
           }
         });
-        console.log(`💾 System requirements cached for game ID: ${gameId}`);
+        console.log(`💾 RAWG metadata lazy-enriched and cached for game ID: ${game.id}`);
       } catch (dbErr) {
-        console.error("Failed to save requirements to DB:", dbErr);
+        console.error("Failed to save lazy-enriched RAWG metadata to DB:", dbErr);
       }
-      return { min, rec };
+
+      return { min: minRequirements, rec: recRequirements };
     }
+  } catch (error) {
+    console.error(`⚠️ Failed to lazy-load RAWG metadata for ${game.title}:`, error);
   }
-  return { min: null, rec: null };
+
+  return { min: game.minRequirements, rec: game.recRequirements };
 }
 export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
@@ -134,8 +155,8 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     notFound();
   }
 
-  // Fetch PC requirements lazily on server side
-  const requirements = await getOrFetchSystemRequirements(game);
+  // Lazy enrich RAWG metadata on server side
+  const requirements = await lazyEnrichRawgMetadata(game);
 
   // Format rating display
   const ratingDisplay = game.rating ? `${game.rating.toFixed(1)} / 100` : "No rating yet";
@@ -230,10 +251,14 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 <span className="italic">ho</span>GAMEGATA.
               </h1>
             </Link>
-            <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white uppercase font-bold">
-              <span>Game Profile Spec</span>
+            <div className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-white uppercase font-bold">
+              <span>[Horror]</span>
               <span className="text-white font-black">•</span>
-              <span>Metadata Inspection</span>
+              <span>Game</span>
+              <span className="text-white font-black">•</span>
+              <span>Mega</span>
+              <span className="text-white font-black">•</span>
+              <span>Metadata</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -242,8 +267,8 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               href="/" 
               className="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>[ &lt;- Return to Search ]</span>
+              
+              <span>[ Return to Search ]</span>
             </Link>
           </div>
         </div>
@@ -374,7 +399,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               </p>
               {game.storyline && (
                 <div className="mt-4 pt-4 border-t border-white/20">
-                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline Spec</span>
+                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
                   <p className="text-xs text-white leading-relaxed font-sans font-medium">
                     {game.storyline}
                   </p>
@@ -399,7 +424,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             {/* Outlinks & Documentation */}
             {(game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
               <div className="border-t border-white pt-6 space-y-4">
-                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Outlinks & Documentation</span>
+                <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black block">Buy the game</span>
                 <div className="flex flex-wrap gap-3">
                   {/* Purchase/Store Outlinks */}
                   {game.purchaseLinks.map(link => (
@@ -481,7 +506,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         {/* Embedded Trailer Video (If available) */}
         {game.trailerUrl && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Media Trailer Embed</h3>
+            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Game trailers and videos</h3>
             <div className="border border-white bg-black p-1 aspect-video w-full max-w-3xl mx-auto">
               <iframe
                 src={game.trailerUrl}

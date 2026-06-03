@@ -115,7 +115,7 @@ export default function Home() {
               <span className="italic">ho</span>GAMEGATA.
             </h1>
             <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white uppercase font-bold">
-              <span>Game Mega Metadata Registry</span>
+              <span>Game Mega Metadata</span>
               <span className="text-white font-black">•</span>
               <span>{loading ? "HORROR DATABASE" : `${games.length} GAMES ON OUR DATABASE`}</span>
             </div>
@@ -139,10 +139,10 @@ export default function Home() {
         {/* Core Vision Intro */}
         <section className="text-center py-8 space-y-4 max-w-2xl mx-auto border-b border-white pb-12">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
-            Discover Horror Instantly.
+            Discover Horror Games Instantly.
           </h2>
           <p className="text-sm text-white font-medium leading-relaxed">
-            "A minimalistic horror game discovery website focused on horror games. Fast → Minimal → Useful. No comments, reviews, likes, feeds, or unnecessary social clutter."
+            "Fast, Minimal and Useful. No comments, reviews, likes, feeds, or unnecessary social clutter. Minimalistic video game discovery and metadata preservation wesbite."
           </p>
         </section>
 
@@ -156,7 +156,7 @@ export default function Home() {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Instant typo-tolerant search by title, developer, genre..." 
+              placeholder="Search by title, developer, genre..." 
               className="block w-full pl-10 pr-4 py-3 bg-black border border-white rounded-none focus:outline-none text-sm text-white placeholder-white/50 transition-all duration-150 font-medium"
             />
           </div>
