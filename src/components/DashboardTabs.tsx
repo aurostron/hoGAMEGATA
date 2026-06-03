@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { getHighResCoverUrl } from "@/lib/utils";
 
 interface Game {
   id: string;
@@ -97,12 +98,12 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                 className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
               >
                 {/* Cover Image */}
-                <div className="h-48 bg-black relative border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="aspect-[3/4] relative w-full bg-black border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                   {game.coverUrl ? (
                     <img
-                      src={game.coverUrl}
+                      src={getHighResCoverUrl(game.coverUrl) || ""}
                       alt={game.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                       loading="lazy"
                     />
                   ) : (

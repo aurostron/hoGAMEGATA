@@ -80,12 +80,12 @@ export default function DocsPage() {
           
           {/* Introduction Sub-Header */}
           <section className="pb-12 border-b border-white">
-            <div className="font-mono text-xs text-white font-black uppercase tracking-widest mb-3">Project Metadata</div>
+            <div className="font-mono text-xs text-white font-black uppercase tracking-widest mb-3">About the project</div>
             <h2 className="text-3xl text-white font-extrabold leading-tight mb-4">
               Minimalistic, No BS and it just works.
             </h2>
             <p className="text-white max-w-2xl leading-relaxed text-sm">
-              The project is named <span className="text-black bg-white font-black px-1.5 py-0.5 border border-white rounded">hoGAMEGATA</span>, where the prefix <span className="font-bold italic text-white">"ho"</span> denotes horror, and <span className="text-white font-bold">GAMEGATA</span> is the abbreviated technical slang of <span className="font-bold italic text-white">"game mega metadata"</span>. It aims to eliminate modern web fatigue by functioning strictly as a lightweight discovery layer.
+              The project is named <span className="text-black bg-white font-black px-0.5 py-0.05 border border-white rounded">hoGAMEGATA</span>, where the prefix <span className="font-bold italic text-white">"ho"</span> denotes horror, and <span className="text-white font-bold">GAMEGATA</span> is the abbreviated technical slang of <span className="font-bold italic text-white">"game mega metadata"</span>. It aims to eliminate modern web fatigue by functioning strictly as a lightweight discovery layer.
             </p>
           </section>
 
@@ -98,25 +98,23 @@ export default function DocsPage() {
             
             <div className="border border-white bg-black p-6 rounded-none space-y-6">
               <div>
-                <span className="font-mono text-[10px] text-white uppercase tracking-widest block mb-2 font-black">Core Manifesto</span>
+                <span className="font-mono text-[12px] text-white uppercase tracking-widest block mb-2 font-black">Why?</span>
                 <p className="text-lg text-white font-medium leading-relaxed">
-                  "A minimalistic horror game discovery website focused on horror games. Fast → Minimal → Useful. No comments, reviews, likes, feeds, or unnecessary social clutter."
+                  "I created this to solve a problem, people (or atleast me, sighs...) have is that to find good games to play! Now you don't have to search for a game on Google, read it's reveiws, go to Steam or somewhere looking for it, realizing it doesn't have co-op so you can't play it with your friends! Duh, just use hoGAMEGATA. And yes, buy games to support the creators.."
                 </p>
               </div>
 
               {/* Strict Success Metric stark banner */}
               <div className="border-2 border-white bg-black p-5 rounded-none relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-white text-black font-mono text-[9px] uppercase tracking-widest px-2.5 py-1 font-bold">
-                  Strict Target
-                </div>
+
                 <div className="flex items-start gap-4">
                   <Activity className="w-5 h-5 text-white shrink-0 mt-0.5" />
                   <div>
                     <span className="font-mono text-xs text-white uppercase tracking-wider font-bold block mb-1">
-                      Success Metric
+                      Target
                     </span>
                     <p className="text-sm text-white font-medium leading-relaxed">
-                      Target execution: User must be capable of discovering, inspecting, and supporting a developer within 30 seconds.
+                      An user must be capable of discovering and learning about the game, and supporting a developer by purchasing the game within seconds. No ads or BS.
                     </p>
                   </div>
                 </div>
@@ -176,7 +174,7 @@ export default function DocsPage() {
                 </div>
                 <h4 className="text-white group-hover:text-black text-base font-bold mb-1">Tailwind CSS + shadcn/ui</h4>
                 <p className="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
-                  Utility-first styling with custom dark-palette themes and Radix Primitives for clean accessibility wrappers.
+                  Utility-first styling with custom dark-palette and no light mode!
                 </p>
               </div>
 
@@ -188,7 +186,7 @@ export default function DocsPage() {
                 </div>
                 <h4 className="text-white group-hover:text-black text-base font-bold mb-1">MiniSearch Engine</h4>
                 <p className="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
-                  Ultra-fast, typo-tolerant, client-side memory index. Queries games by title, genre, developer, and platforms.
+                  Ultra-fast, client side memory indexing for basic autocorrect and autofill features.
                 </p>
               </div>
 
@@ -224,7 +222,7 @@ export default function DocsPage() {
                 <div className="hidden sm:flex items-center gap-2 p-4 bg-black border border-white rounded-none font-mono text-xs text-white overflow-x-auto">
                   <div className="bg-white text-black px-3 py-1.5 border border-white shrink-0 text-center font-sans font-bold">
                     IGDB API
-                    <span className="block text-[8px] font-mono font-bold text-black mt-0.5">with plans for RAWG API</span>
+                    <span className="block text-[8px] font-mono font-bold text-black mt-0.5">RAWG API, Cheapshark API Plans</span>
                   </div>
                   <ChevronRight className="w-4 h-4 shrink-0 text-white" />
                   <div className="bg-white text-black px-3 py-1.5 border border-white shrink-0 text-center font-sans font-bold">
@@ -396,7 +394,7 @@ export default function DocsPage() {
                   </div>
                 </div>
                 <p className="text-[10px] text-white leading-relaxed font-medium">
-                  *There are plans for purchasing a domain for the website. Media rendering remains free via external image links and hosters.
+                  *There are plans for purchasing a domain for the website. Media rendering remains free via external image links and hosters. And yes I am technically broke :)
                 </p>
               </div>
 

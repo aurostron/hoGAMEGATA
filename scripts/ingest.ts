@@ -3,6 +3,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
+import { MOODS, getMoodTagsForGame } from "./mood-rules";
+
 
 dotenv.config();
 
@@ -126,10 +128,11 @@ async function runIngestion() {
 
     // Check if we should reset or if there is a cursor
     const cursorFile = "ingest_cursor.json";
-    let startOffset = 0;
-    
+    let lastSyncTimestamp: string | null = null;
+
     const args = process.argv.slice(2);
     const reset = args.includes("--reset");
+    const sync = args.includes("--sync");
 
     if (reset) {
       console.log("🧹 --reset flag passed. Starting ingestion from scratch.");
@@ -139,12 +142,31 @@ async function runIngestion() {
     } else if (fs.existsSync(cursorFile)) {
       try {
         const cursorData = JSON.parse(fs.readFileSync(cursorFile, "utf-8"));
-        startOffset = cursorData.offset || 0;
-        console.log(`🔄 Found checkpoint file '${cursorFile}'. Resuming from offset: ${startOffset}...`);
+        lastSyncTimestamp = cursorData.lastSyncTimestamp || null;
+        if (sync) {
+          console.log(`🔄 --sync flag passed. Will sync updates since: ${lastSyncTimestamp || "beginning of time"}`);
+          startOffset = 0;
+        } else {
+          startOffset = cursorData.offset || 0;
+          console.log(`🔄 Found checkpoint file '${cursorFile}'. Resuming from offset: ${startOffset}...`);
+        }
       } catch (e) {
         console.warn(`⚠️ Failed to parse '${cursorFile}'. Starting from offset 0.`);
       }
     }
+
+    let syncTime: number | null = null;
+    if (sync) {
+      if (lastSyncTimestamp) {
+        syncTime = Math.floor(new Date(lastSyncTimestamp).getTime() / 1000);
+      } else {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        syncTime = Math.floor(thirtyDaysAgo.getTime() / 1000);
+        console.log(`⚠️ No previous sync timestamp found. Defaulting to sync updates since 30 days ago (${thirtyDaysAgo.toISOString()}).`);
+      }
+    }
+
 
     // Support custom target limit via --limit <number> (default to 3000)
     let targetLimit = 3000;
@@ -181,6 +203,19 @@ async function runIngestion() {
     });
     const horrorGenreId = horrorGenre.id;
 
+    // Pre-upsert all curated Mood Tags
+    console.log("🏷️ Pre-upserting curated Mood Tags...");
+    const moodTagMap = new Map<string, string>(); // slug -> database id
+    for (const mood of MOODS) {
+      const dbTag = await prisma.tag.upsert({
+        where: { slug: mood.slug },
+        update: { name: mood.name },
+        create: { name: mood.name, slug: mood.slug }
+      });
+      moodTagMap.set(mood.slug, dbTag.id);
+    }
+
+
     interface IGDBGame {
       id: number;
       name: string;
@@ -189,7 +224,10 @@ async function runIngestion() {
       storyline?: string;
       first_release_date?: number;
       total_rating?: number;
+      follows?: number;
       cover?: { url: string };
+
+
       screenshots?: Array<{ url: string }>;
       videos?: Array<{ video_id: string }>;
       involved_companies?: Array<{
@@ -199,25 +237,33 @@ async function runIngestion() {
       }>;
       platforms?: Array<{ name: string; slug: string }>;
       genres?: Array<{ id: number; name: string; slug: string }>;
+      keywords?: Array<{ id: number; name: string; slug: string }>;
       websites?: Array<{ url: string; category: number }>;
       category?: number;
     }
+
 
     while (offset < TARGET_TOTAL) {
       console.log(`\n=== 📥 Processing Batch: Offset ${offset} (Target Limit: ${BATCH_SIZE}) ===`);
 
       // 2. Fetch Horror Games
       // Theme ID for Horror is 19
+      let whereClause = `themes = (19) & first_release_date != null & cover != null & (total_rating != null | slug = "silent-hill-f")`;
+      if (syncTime) {
+        whereClause += ` & updated_at > ${syncTime}`;
+      }
+
       const query = `
-        fields name, slug, summary, storyline, first_release_date, total_rating,
+        fields name, slug, summary, storyline, first_release_date, total_rating, follows,
           cover.url,
           screenshots.url,
           videos.video_id,
           involved_companies.developer, involved_companies.publisher, involved_companies.company.name, involved_companies.company.slug,
           platforms.name, platforms.slug,
           genres.name, genres.slug,
+          keywords.name, keywords.slug,
           websites.url, websites.category, category;
-        where themes = (19) & first_release_date != null & cover != null & (total_rating != null | slug = "silent-hill-f");
+        where ${whereClause};
         sort total_rating desc;
         limit ${BATCH_SIZE};
         offset ${offset};
@@ -234,6 +280,8 @@ async function runIngestion() {
       });
 
       if (!igdbResponse.ok) {
+        const errorText = await igdbResponse.text();
+        console.error(`❌ IGDB API Error Details: ${errorText}`);
         throw new Error(`IGDB request failed for offset ${offset}: ${igdbResponse.statusText}`);
       }
 
@@ -385,7 +433,10 @@ async function runIngestion() {
         
         const releaseDate = g.first_release_date ? new Date(g.first_release_date * 1000) : null;
         const rating = g.total_rating || null;
+        const popularity = g.follows || null;
+
         const status = releaseDate && releaseDate > new Date() ? "upcoming" : "released";
+
         
         let coverUrl = g.cover?.url || null;
         if (coverUrl && coverUrl.startsWith("//")) {
@@ -450,6 +501,44 @@ async function runIngestion() {
           gameGenreIds.push(horrorGenreId);
         }
 
+        // Map mood tags for game
+        const moodTags = getMoodTagsForGame(g);
+        const tagIds: string[] = [];
+        for (const t of moodTags) {
+          const tid = moodTagMap.get(t.slug);
+          if (tid) tagIds.push(tid);
+        }
+
+        // Calculate denormalized relation name strings
+        const developerNamesList: string[] = [];
+        if (g.involved_companies) {
+          for (const ic of g.involved_companies) {
+            if (ic.company && ic.developer) {
+              developerNamesList.push(ic.company.name);
+            }
+          }
+        }
+        const developerNames = developerNamesList.join(", ");
+
+        const genreNamesList: string[] = [];
+        if (g.genres && g.genres.length > 0) {
+          for (const gen of g.genres) {
+            genreNamesList.push(gen.name);
+          }
+        } else {
+          genreNamesList.push("Horror");
+        }
+        const genreNames = genreNamesList.join(", ");
+
+        const platformNamesList: string[] = [];
+        if (g.platforms) {
+          for (const p of g.platforms) {
+            platformNamesList.push(p.name);
+          }
+        }
+        const platformNames = platformNamesList.join(", ");
+
+
         const purchaseLinks: Array<{ storeName: string; url: string }> = [];
         if (g.websites) {
           for (const web of g.websites) {
@@ -491,6 +580,10 @@ async function runIngestion() {
               status,
               coverUrl,
               rating,
+              popularity,
+              developerNames: developerNames || null,
+              genreNames: genreNames || null,
+              platformNames: platformNames || null,
               trailerUrl,
               screenshots,
               category: g.category !== undefined ? g.category : null,
@@ -503,9 +596,13 @@ async function runIngestion() {
               genres: {
                 set: gameGenreIds.map(id => ({ id }))
               },
+              tags: {
+                set: tagIds.map(id => ({ id }))
+              },
               platforms: {
                 set: platformIds.map(id => ({ id }))
               },
+
               purchaseLinks: {
                 create: purchaseLinks
               }
@@ -524,6 +621,10 @@ async function runIngestion() {
               status,
               coverUrl,
               rating,
+              popularity,
+              developerNames: developerNames || null,
+              genreNames: genreNames || null,
+              platformNames: platformNames || null,
               trailerUrl,
               screenshots,
               category: g.category !== undefined ? g.category : null,
@@ -537,9 +638,13 @@ async function runIngestion() {
               genres: {
                 connect: gameGenreIds.map(id => ({ id }))
               },
+              tags: {
+                connect: tagIds.map(id => ({ id }))
+              },
               platforms: {
                 connect: platformIds.map(id => ({ id }))
               },
+
               purchaseLinks: {
                 create: purchaseLinks
               }

@@ -26,6 +26,7 @@
 }
 
 :root {
+  --font-sans: 'Montserrat', sans-serif;
   --background: #030303;
   --foreground: #f3f4f6;
 
@@ -60,6 +61,7 @@
 
 /* Enforce same dark theme for .dark class as well */
 .dark {
+  --font-sans: 'Montserrat', sans-serif;
   --background: #030303;
   --foreground: #f3f4f6;
 
