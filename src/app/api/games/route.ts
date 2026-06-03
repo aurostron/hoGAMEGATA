@@ -40,22 +40,13 @@ export async function GET(request: NextRequest) {
       id: true,
       title: true,
       slug: true,
-      status: true,
       coverUrl: true,
-      isTrending: true,
-      rating: true,
-      category: true,
-      esrbRating: true,
-      developerNames: true,
       genreNames: true,
       platformNames: true,
       releaseDate: true,
-      tags: {
-        select: {
-          name: true,
-          slug: true,
-        }
-      }
+      rating: true,
+      // Removed fields like status, isTrending, category, esrbRating, developerNames, tags for leaner API payload
+      // These can be fetched from a separate endpoint if needed for specific game pages
     };
 
     const where: Prisma.GameWhereInput = {};

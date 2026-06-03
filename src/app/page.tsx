@@ -7,7 +7,7 @@ import SciFiLogo from "@/components/SciFiLogo";
 import GameCatalogClient from "@/components/GameCatalogClient";
 import { db } from "@/lib/db";
 
-export const revalidate = 3600; // revalidate every hour
+export const revalidate = 60; // revalidate every minute
 
 export interface StatsData {
   games: number;
@@ -38,46 +38,19 @@ export default async function Page() {
   
   const stats: StatsData = { games, developers, publishers, tags, screenshots };
 
-  // Fetch initial games
-  const initialGamesRaw = await db.game.findMany({
-    take: 20,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      tags: true,
-      priceSnapshots: true
-    }
-  });
-
-  const nextCursor = initialGamesRaw.length === 20 ? initialGamesRaw[19].id : null;
-  
-  const initialGames = initialGamesRaw.map(g => ({
-    id: g.id,
-    title: g.title,
-    slug: g.slug,
-    summary: g.summary,
-    status: g.status || "Released",
-    coverUrl: g.coverUrl,
-    isTrending: g.isTrending,
-    rating: g.rating,
-    category: g.category,
-    esrbRating: g.esrbRating,
-    pegiRating: g.pegiRating,
-    developerNames: g.developerNames,
-    genreNames: g.genreNames,
-    platformNames: g.platformNames,
-    tags: g.tags.map(t => ({ name: t.name, slug: t.slug })),
-    priceSnapshots: g.priceSnapshots.map(p => ({
-      storeName: p.storeName,
-      dealPrice: p.dealPrice,
-      retailPrice: p.retailPrice,
-      discountPercent: p.discountPercent,
-      dealUrl: p.dealUrl,
-      currency: p.currency,
-      country: p.country
-    }))
-  }));
-
-  const totalCount = games;
+  // Fetch initial games from the leaner summary API
+  let initialGames: any[] = [];
+  let nextCursor: string | null = null;
+  let totalCount = 0;
+  const response = await fetch(process.env.NEXT_PUBLIC_SITE_URL + "/api/games/summary?limit=20&sort=latest");
+  if (!response.ok) {
+    console.error("Failed to fetch initial games summary:", response.statusText);
+  } else {
+    const data = await response.json();
+    initialGames = data.games;
+    nextCursor = data.nextCursor;
+    totalCount = data.totalCount;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black pb-24">
