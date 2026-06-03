@@ -1242,7 +1242,9 @@ const HTML_CONTENT = `<!DOCTYPE html>
           <div>
             \${entry.status === 'PENDING' 
               ? '<button id="approve-btn-' + entry.id + '" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="approveEntry(\\'' + entry.id + '\\')">Approve</button>' 
-              : '<button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" disabled>Approved</button>'
+              : entry.status === 'APPROVED' || entry.status === 'SENT'
+                ? '<div style="display: flex; gap: 0.25rem;"><button id="revoke-btn-' + entry.id + '" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="revokeAccess(\\'' + entry.id + '\\')">Revoke</button><button id="resend-btn-' + entry.id + '" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="resendEmail(\\'' + entry.id + '\\')">Resend</button></div>'
+                : '<button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" disabled>Approved</button>'
             }
           </div>
         \`;
@@ -1278,6 +1280,70 @@ const HTML_CONTENT = `<!DOCTYPE html>
         if (btn) {
           btn.disabled = false;
           btn.innerText = 'Approve';
+        }
+      }
+    }
+
+    async function revokeAccess(id) {
+      const btn = document.getElementById('revoke-btn-' + id);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Revoking...';
+      }
+      try {
+        const res = await fetch('/api/admin/waitlist/revoke', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('User access revoked successfully!');
+          fetchWaitlist();
+        } else {
+          alert('Failed to revoke user access: ' + (data.error || 'Unknown error'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Revoke';
+          }
+        }
+      } catch (e) {
+        alert('Network error trying to revoke user access.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = 'Revoke';
+        }
+      }
+    }
+
+    async function resendEmail(id) {
+      const btn = document.getElementById('resend-btn-' + id);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Resending...';
+      }
+      try {
+        const res = await fetch('/api/admin/waitlist/resend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Email resent successfully!');
+          fetchWaitlist();
+        } else {
+          alert('Failed to resend email: ' + (data.error || 'Unknown error'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Resend';
+          }
+        }
+      } catch (e) {
+        alert('Network error trying to resend email.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = 'Resend';
         }
       }
     }
@@ -1709,8 +1775,10 @@ const server = http.createServer(async (req, res) => {
         const detectedUrl =
           process.env.NEXT_PUBLIC_SITE_URL ||
           hfSpaceUrl ||
-          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
-          "http://localhost:3000";
+          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+        if (!detectedUrl) {
+          throw new Error("No site URL configured. Set NEXT_PUBLIC_SITE_URL in .env to send emails.");
+        }
         const siteUrl = detectedUrl.replace(/\/+$/, "");
 
         if (isSupabaseMode) {
@@ -1789,6 +1857,179 @@ const server = http.createServer(async (req, res) => {
         res.end(JSON.stringify({ success: true }));
       } catch (err: any) {
         console.error("Approve waitlist entry error:", err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || String(err) }));
+      }
+    });
+    return;
+  }
+
+  // 8.3 Revoke waitlist access
+  if (parsedUrl.pathname === "/api/admin/waitlist/revoke" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const { id } = JSON.parse(body);
+        if (!id) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Missing ID" }));
+          return;
+        }
+
+        const { db } = await import("../src/lib/db");
+        const entry = await db.waitlist.findUnique({
+          where: { id }
+        });
+
+        if (!entry) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Waitlist entry not found" }));
+          return;
+        }
+
+        if (entry.status !== "APPROVED" && entry.status !== "SENT") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Entry is not in an approved state" }));
+          return;
+        }
+
+        // Update entry status to REVOKED
+        await db.waitlist.update({
+          where: { id: entry.id },
+          data: { status: "REVOKED" }
+        });
+
+        broadcastLog(`🚫 [Portal] Revoked waitlist access for ${entry.email}\n`);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err: any) {
+        console.error("Revoke waitlist entry error:", err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || String(err) }));
+      }
+    });
+    return;
+  }
+
+  // 8.4 Resend waitlist email
+  if (parsedUrl.pathname === "/api/admin/waitlist/resend" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const { id } = JSON.parse(body);
+        if (!id) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Missing ID" }));
+          return;
+        }
+
+        const { db } = await import("../src/lib/db");
+        const entry = await db.waitlist.findUnique({
+          where: { id }
+        });
+
+        if (!entry) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Waitlist entry not found" }));
+          return;
+        }
+
+        if (entry.status !== "APPROVED" && entry.status !== "SENT") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Entry is not in an approved state" }));
+          return;
+        }
+
+        // Determine if we are using Supabase Mode
+        const isSupabaseMode = !!(
+          process.env.NEXT_PUBLIC_SUPABASE_URL && 
+          process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        let loginUrl = "";
+        const hfSpaceUrl = process.env.SPACE_ID
+          ? `https://${process.env.SPACE_ID.replace(/\/+/g, "-")}.hf.space`
+          : undefined;
+        const detectedUrl =
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          hfSpaceUrl ||
+          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+        if (!detectedUrl) {
+          throw new Error("No site URL configured. Set NEXT_PUBLIC_SITE_URL in .env to send emails.");
+        }
+        const siteUrl = detectedUrl.replace(/\/+$/, "");
+
+        if (isSupabaseMode) {
+          const { createClient } = await import("@supabase/supabase-js");
+          const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+          );
+
+          // Generate magic link
+          const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: "magiclink",
+            email: entry.email,
+            options: {
+              redirectTo: `${siteUrl}/auth/callback`
+            }
+          });
+
+          if (error) {
+            throw new Error(`Supabase Admin Auth error: ${error.message}`);
+          }
+
+          loginUrl = data.properties.action_link;
+        } else {
+          // Mock Auth Mode
+          loginUrl = `${siteUrl}/api/auth/token-login?token=${entry.token}`;
+        }
+
+        // Build email HTML
+        const emailHtml = `
+          <div style="font-family: monospace; background-color: #030303; color: #f3f4f6; padding: 40px; border: 4px solid #ffffff; max-width: 600px; margin: 0 auto; box-shadow: 8px 8px 0px 0px #ffffff;">
+            <h1 style="font-family: sans-serif; font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Welcome to hoGAMEGATA</h1>
+            <p style="font-size: 14px; line-height: 1.6; color: #9ca3af; margin-bottom: 24px;">
+              Your request for early access has been approved! You can now log into the website.
+            </p>
+            <div style="background-color: #08080a; border: 1px solid rgba(255,255,255,0.2); padding: 20px; margin-bottom: 24px;">
+              <span style="font-size: 11px; color: #ff2a2a; font-weight: bold; display: block; margin-bottom: 8px;">[ YOUR ACCESS INFO ]</span>
+              <p style="font-size: 13px; color: #f3f4f6; margin: 0 0 10px 0;"><strong>Email:</strong> ${entry.email}</p>
+              <a href="${loginUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; padding: 12px 24px; font-size: 12px; font-weight: bold; text-decoration: none; text-transform: uppercase; border: 1px solid #ffffff;">[ Open hoGAMEGATA ]</a>
+            </div>
+            <p style="font-size: 11px; color: #4b5563; margin-top: 30px; text-transform: uppercase;">
+              hoGAMEGATA Early Access
+            </p>
+          </div>
+        `;
+
+        // Send email using Resend
+        const { Resend } = await import("resend");
+        if (!process.env.RESEND_API_KEY) {
+          throw new Error("RESEND_API_KEY environment variable is not configured.");
+        }
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        const { error: sendError } = await resend.emails.send({
+          from: "hoGAMEGATA <noreply@gamegata.xyz>",
+          to: [entry.email],
+          subject: "[hoGAMEGATA] Early Access Granted",
+          html: emailHtml,
+        });
+
+        if (sendError) {
+          throw new Error(`Resend error: ${sendError.message}`);
+        }
+
+        broadcastLog(`📧 [Portal] Resent approval email for ${entry.email} (Sent via Resend)\n`);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err: any) {
+        console.error("Resend waitlist email error:", err);
         res.writeHead(500, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message || String(err) }));
       }

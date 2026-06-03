@@ -286,29 +286,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
   const [sortOpen, setSortOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
-  // Setup cursor spotlight tracking for hover devices
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handlePointerMove = (e: PointerEvent) => {
-        if (e.pointerType === "touch") return; // Bypass touch gestures
-        document.documentElement.style.setProperty("--mouse-x", `${e.clientX}px`);
-        document.documentElement.style.setProperty("--mouse-y", `${e.clientY}px`);
-      };
-
-      const handlePointerLeave = () => {
-        document.documentElement.style.setProperty("--mouse-x", "-999px");
-        document.documentElement.style.setProperty("--mouse-y", "-999px");
-      };
-
-      window.addEventListener("pointermove", handlePointerMove);
-      document.addEventListener("pointerleave", handlePointerLeave);
-
-      return () => {
-        window.removeEventListener("pointermove", handlePointerMove);
-        document.removeEventListener("pointerleave", handlePointerLeave);
-      };
-    }
-  }, []);
 
   // Load layout setting from localStorage on mount
   useEffect(() => {
@@ -446,14 +423,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
 
   return (
     <>
-      {/* Global Cursor Spotlight Overlay */}
-      <div 
-        className="pointer-events-none fixed inset-0 z-30"
-        style={{
-          backgroundImage: "radial-gradient(circle 350px at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.08) 35%, rgba(255, 255, 255, 0.02) 65%, transparent 100%)"
-        }}
-      />
-
       <section className="max-w-2xl mx-auto space-y-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
