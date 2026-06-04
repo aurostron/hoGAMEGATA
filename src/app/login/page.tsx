@@ -10,7 +10,9 @@ function LoginForm() {
   const { user, login, signUp, isSupabase } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirect") || "/";
+  const rawRedirect = searchParams.get("redirect") || "/";
+  // Prevent open redirect attacks — only allow relative paths
+  const redirectUrl = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

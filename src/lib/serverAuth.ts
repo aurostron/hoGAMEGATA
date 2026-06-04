@@ -4,30 +4,10 @@ import { createServerClient } from "@supabase/ssr";
 
 export async function getServerUser() {
   const cookieStore = await cookies();
-
-  // 1. Check Mock Session first
-  const mockSession = cookieStore.get("gamegata-session");
-  if (mockSession?.value) {
-    try {
-      const decoded = decodeURIComponent(mockSession.value);
-      const [id, email] = decoded.split(":");
-      if (id && email) {
-        // Ensure user exists in database
-        await db.user.upsert({
-          where: { id },
-          update: { email },
-          create: { id, email },
-        });
-        return { id, email };
-      }
-    } catch (e) {
-      console.error("Error reading server mock session cookie:", e);
-    }
-  }
-
-  // 2. Check Supabase Session if configured
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // 1. Check Supabase Session first (production auth)
   if (supabaseUrl && supabaseAnonKey) {
     try {
       const supabaseServer = createServerClient(
@@ -63,7 +43,32 @@ export async function getServerUser() {
         return { id: user.id, email: user.email || "" };
       }
     } catch (err) {
-      console.error("Supabase server auth resolution failed:", err);
+      console.error("Supabase server auth resolution failed:", err instanceof Error ? err.message : "Unknown error");
+    }
+
+    // Supabase is configured but no session found — do NOT fall through to mock auth
+    return null;
+  }
+
+  // 2. Mock session fallback (development only — when Supabase is not configured)
+  // WARNING: Mock auth is NOT secure. It trusts a client-set cookie without cryptographic verification.
+  // Only available when NEXT_PUBLIC_SUPABASE_URL is not set.
+  const mockSession = cookieStore.get("gamegata-session");
+  if (mockSession?.value) {
+    try {
+      const decoded = decodeURIComponent(mockSession.value);
+      const [id, email] = decoded.split(":");
+      if (id && email) {
+        // Ensure user exists in database
+        await db.user.upsert({
+          where: { id },
+          update: { email },
+          create: { id, email },
+        });
+        return { id, email };
+      }
+    } catch (e) {
+      console.error("Error reading server mock session cookie:", e instanceof Error ? e.message : "Unknown error");
     }
   }
 

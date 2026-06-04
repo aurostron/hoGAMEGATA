@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, record });
   } catch (error) {
-    console.error("❌ Collection update failed:", error);
+    console.error("❌ Collection update failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -65,7 +65,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("❌ Collection delete failed:", error);
+    console.error("❌ Collection delete failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

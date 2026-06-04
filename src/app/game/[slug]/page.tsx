@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { after } from "next/server";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield } from "lucide-react";
 import { db } from "@/lib/db";
@@ -146,6 +147,84 @@ async function lazyEnrichRawgMetadata(game: any) {
 
   return { min: game.minRequirements, rec: game.recRequirements };
 }
+
+async function lazyEnrichSteamMetadata(game: any) {
+  // If the game has already been synced within the last 24 hours, return immediately
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  if (
+    game.steamRating !== null && 
+    game.lastSteamSync && 
+    game.lastSteamSync > twentyFourHoursAgo
+  ) {
+    return;
+  }
+
+  // Bypass Steam API requests during Next.js build phase
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return;
+  }
+
+  // Find the Steam purchase link from purchaseLinks relation
+  const steamLink = game.purchaseLinks?.find((link: any) => 
+    link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
+  );
+
+  if (!steamLink) {
+    return;
+  }
+
+  // Extract Steam AppID using regex
+  const match = steamLink.url.match(/\/app\/(\d+)/);
+  const steamAppId = match ? match[1] : null;
+
+  if (!steamAppId) {
+    return;
+  }
+
+  try {
+    const url = `https://store.steampowered.com/appreviews/${steamAppId}?json=1&num_per_page=0`;
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 hoGAMEGATA/1.0"
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const summary = data.query_summary;
+
+      if (summary && summary.total_reviews > 0) {
+        const totalReviews = summary.total_reviews;
+        const totalPositive = summary.total_positive;
+        const scoreDesc = summary.review_score_desc || "Mixed";
+        const calculatedRating = (totalPositive / totalReviews) * 10;
+
+        // Update local memory reference
+        game.steamRating = calculatedRating;
+        game.steamRatingDesc = scoreDesc;
+        game.lastSteamSync = new Date();
+
+        // Update database asynchronously
+        try {
+          await db.game.update({
+            where: { id: game.id },
+            data: {
+              steamRating: game.steamRating,
+              steamRatingDesc: game.steamRatingDesc,
+              lastSteamSync: game.lastSteamSync
+            }
+          });
+          console.log(`💾 Steam metadata lazy-enriched and cached for game ID: ${game.id}`);
+        } catch (dbErr) {
+          console.error("Failed to save lazy-enriched Steam metadata to DB:", dbErr);
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`⚠️ Failed to lazy-load Steam reviews for ${game.title}:`, error);
+  }
+}
+
 export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
@@ -167,75 +246,91 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     notFound();
   }
 
-  // Lazy get prices from CheapShark (cached)
-  const deals = await lazyGetPrices(game.id, game.title, game.purchaseLinks);
+  // Fetch user, related games, and cheapshark deals concurrently
+  const [deals, user, relatedGamesResult] = await Promise.all([
+    lazyGetPrices(game.id, game.title, game.purchaseLinks),
+    getServerUser(),
+    db.game.findMany({
+      where: {
+        id: { not: game.id },
+        OR: [
+          {
+            genres: {
+              some: {
+                id: { in: game.genres.map((g) => g.id) },
+              },
+            },
+          },
+          {
+            developers: {
+              some: {
+                id: { in: game.developers.map((d) => d.id) },
+              },
+            },
+          },
+        ],
+      },
+      take: 4,
+      orderBy: [
+        { rating: "desc" },
+        { releaseDate: "desc" },
+      ],
+      include: {
+        developers: true,
+        genres: true,
+        tags: true,
+        platforms: true,
+      },
+    })
+  ]);
 
-  // Lazy enrich RAWG metadata on server side
-  const requirements = await lazyEnrichRawgMetadata(game);
+  let relatedGames = relatedGamesResult;
+
+  // Retrieve cached system requirements from the database object
+  const requirements = { min: game.minRequirements, rec: game.recRequirements };
+
+  // Schedule RAWG and Steam metadata lazy enrichment in the background (Non-blocking Stale-While-Revalidate)
+  after(async () => {
+    try {
+      // Create a fresh clone/copy of game properties needed for background functions to prevent mutation conflicts
+      const gameClone = { ...game };
+      await Promise.all([
+        lazyEnrichRawgMetadata(gameClone),
+        lazyEnrichSteamMetadata(gameClone)
+      ]);
+    } catch (err) {
+      console.error(`⚠️ Background enrichment failed for game ${game.title}:`, err);
+    }
+  });
 
   // Format rating display
   const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
 
-  // Fetch the user's wishlist and collection tracking state on the server
-  const user = await getServerUser();
   let isWishlisted = false;
   let collectionStatus = null;
 
   if (user) {
-    const wishlistRecord = await db.wishlist.findUnique({
-      where: {
-        userId_gameId: {
-          userId: user.id,
-          gameId: game.id,
+    const [wishlistRecord, collectionRecord] = await Promise.all([
+      db.wishlist.findUnique({
+        where: {
+          userId_gameId: {
+            userId: user.id,
+            gameId: game.id,
+          },
         },
-      },
-    });
+      }),
+      db.collection.findUnique({
+        where: {
+          userId_gameId: {
+            userId: user.id,
+            gameId: game.id,
+          },
+        },
+      })
+    ]);
     isWishlisted = !!wishlistRecord;
-
-    const collectionRecord = await db.collection.findUnique({
-      where: {
-        userId_gameId: {
-          userId: user.id,
-          gameId: game.id,
-        },
-      },
-    });
     collectionStatus = collectionRecord ? collectionRecord.status : null;
   }
-
-  // Query related games (matching current game's genres or developers, excluding current game)
-  let relatedGames = await db.game.findMany({
-    where: {
-      id: { not: game.id },
-      OR: [
-        {
-          genres: {
-            some: {
-              id: { in: game.genres.map((g) => g.id) },
-            },
-          },
-        },
-        {
-          developers: {
-            some: {
-              id: { in: game.developers.map((d) => d.id) },
-            },
-          },
-        },
-      ],
-    },
-    take: 4,
-    orderBy: [
-      { rating: "desc" },
-      { releaseDate: "desc" },
-    ],
-    include: {
-      developers: true,
-      genres: true,
-      tags: true,
-      platforms: true,
-    },
-  });
 
   // Fallback to highest rated if no related games found
   if (relatedGames.length === 0) {
@@ -326,12 +421,21 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-white flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> Rating:</span>
+                <span className="text-white flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> Avg. Rating:</span>
                 <span className="text-white font-black">{ratingDisplay}</span>
               </div>
 
+              {game.steamRating !== null && (
+                <div className="flex justify-between items-center">
+                  <span className="text-white flex items-center gap-1.5"><Star className="w-3.5 h-3.5" /> [STEAM]</span>
+                  <span className="text-white font-black text-right">
+                    {game.steamRating.toFixed(1)}/10 <span className="text-white/50 text-[10px] font-bold">[{game.steamRatingDesc}]</span>
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center gap-4">
-                <span className="text-white flex items-center gap-1.5 shrink-0"><Monitor className="w-3.5 h-3.5" /> Systems:</span>
+                <span className="text-white flex items-center gap-1.5 shrink-0"><Monitor className="w-3.5 h-3.5" /> Platforms:</span>
                 <PlatformLogos platforms={game.platforms} className="flex flex-wrap justify-end gap-2" solid={true} />
               </div>
 
@@ -495,7 +599,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                           </div>
                           
                           <a
-                            href={deal.dealUrl}
+                            href={`/re/${game.slug}/${deal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(deal.dealUrl)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`font-mono text-[11px] uppercase tracking-wider transition-all duration-150 px-3 py-1.5 font-black flex items-center gap-1 border ${
@@ -528,7 +632,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   {game.purchaseLinks.map(link => (
                     <a
                       key={link.id}
-                      href={link.url}
+                      href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
