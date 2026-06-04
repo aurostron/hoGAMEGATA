@@ -2,7 +2,20 @@ import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
+interface CacheEntry {
+  data: any;
+  expiry: number;
+}
+const apiCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function GET(request: NextRequest) {
+  const cacheKey = request.url;
+  const cached = apiCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiry) {
+    return NextResponse.json(cached.data);
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
@@ -104,11 +117,18 @@ export async function GET(request: NextRequest) {
       nextCursor = nextItem ? nextItem.id : null;
     }
 
-    return NextResponse.json({
+    const responseData = {
       games,
       nextCursor,
       totalCount
+    };
+
+    apiCache.set(cacheKey, {
+      data: responseData,
+      expiry: Date.now() + CACHE_TTL_MS
     });
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("❌ Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
