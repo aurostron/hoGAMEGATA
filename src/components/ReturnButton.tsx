@@ -7,6 +7,9 @@ export default function ReturnButton() {
   const router = useRouter();
 
   const handleReturn = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("nextjs-route-start"));
+    }
     if (
       typeof window !== "undefined" &&
       document.referrer &&
