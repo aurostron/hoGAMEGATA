@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withCloudflare } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -41,4 +40,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withCloudflare(nextConfig);
+export default nextConfig;
