@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "build:cf": "prisma generate && opennextjs-cloudflare build && node scripts/patch-cloudflare.js",
+    "build:cf": "prisma generate && opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
