@@ -11,9 +11,9 @@ interface Game {
   slug: string;
   status: string | null;
   coverUrl: string | null;
-  developers: Array<{ name: string; slug: string }>;
-  genres: Array<{ name: string; slug: string }>;
-  platforms: Array<{ name: string; slug: string }>;
+  developerNames: string | null;
+  genreNames: string | null;
+  platformNames: string | null;
 }
 
 interface CollectionItem {
@@ -114,7 +114,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                   )}
                   {/* Primary Genre Tag */}
                   <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
-                    {game.genres[0]?.name || "Horror"}
+                    {game.genreNames ? game.genreNames.split(", ")[0] : "Horror"}
                   </span>
                 </div>
 
@@ -125,12 +125,12 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                       {game.title}
                     </h4>
                     <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
-                      by {game.developers[0]?.name || "Unknown Dev"}
+                      by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                    <PlatformLogos platforms={game.platforms} />
+                    <PlatformLogos platformNames={game.platformNames} />
                     <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
                       {game.status}
                     </span>
