@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { getHighResCoverUrl } from "@/lib/utils";
+import PlatformLogos from "@/components/PlatformLogos";
 
 interface Game {
   id: string;
@@ -129,9 +130,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                    <span className="text-white group-hover:text-black font-bold truncate max-w-[120px]">
-                      {game.platforms.map((p) => p.name).slice(0, 2).join(", ")}
-                    </span>
+                    <PlatformLogos platforms={game.platforms} />
                     <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
                       {game.status}
                     </span>

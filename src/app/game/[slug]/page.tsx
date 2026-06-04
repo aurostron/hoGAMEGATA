@@ -8,6 +8,8 @@ import TrackControls from "@/components/TrackControls";
 import { getServerUser } from "@/lib/serverAuth";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 import { getHighResCoverUrl } from "@/lib/utils";
+import SciFiLogo from "@/components/SciFiLogo";
+import PlatformLogos from "@/components/PlatformLogos";
 
 interface GamePageProps {
   params: Promise<{
@@ -172,7 +174,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
   const requirements = await lazyEnrichRawgMetadata(game);
 
   // Format rating display
-  const ratingDisplay = game.rating ? `${game.rating.toFixed(1)} / 100` : "No rating yet";
+  const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
 
   // Fetch the user's wishlist and collection tracking state on the server
   const user = await getServerUser();
@@ -261,11 +263,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
       <header className="border-b border-white bg-black sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <Link href="/" className="hover:opacity-85">
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                <span className="italic">ho</span>GAMEGATA.
-              </h1>
-            </Link>
+            <SciFiLogo withLink={true} />
             <div className="flex items-center gap-2 font-mono text-[10px] tracking-widest text-white uppercase font-bold">
               <span>[Horror]</span>
               <span className="text-white font-black">•</span>
@@ -332,11 +330,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 <span className="text-white font-black">{ratingDisplay}</span>
               </div>
 
-              <div className="flex justify-between items-start gap-4">
+              <div className="flex justify-between items-center gap-4">
                 <span className="text-white flex items-center gap-1.5 shrink-0"><Monitor className="w-3.5 h-3.5" /> Systems:</span>
-                <span className="text-white font-black text-right line-clamp-2">
-                  {game.platforms.map(p => p.name).join(", ")}
-                </span>
+                <PlatformLogos platforms={game.platforms} className="flex flex-wrap justify-end gap-2" solid={true} />
               </div>
 
               {game.playtime !== null && game.playtime > 0 && (
@@ -589,7 +585,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         {/* Screenshots Gallery (If available) */}
         {game.screenshots.length > 0 && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Screenshots Spec</h3>
+            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Screenshots</h3>
             <ScreenshotGallery screenshots={game.screenshots} title={game.title} />
           </section>
         )}
@@ -687,9 +683,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                      <span className="text-white group-hover:text-black font-bold truncate max-w-[120px]">
-                        {relatedGame.platforms.map((p) => p.name).slice(0, 2).join(", ")}
-                      </span>
+                      <PlatformLogos platforms={relatedGame.platforms} />
                       <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
                         {relatedGame.status}
                       </span>

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Search, Compass, Calendar, Sparkles, BookOpen } from "lucide-react";
 import AuthButton from "@/components/AuthButton";
 import { getHighResCoverUrl } from "@/lib/utils";
+import SciFiLogo from "@/components/SciFiLogo";
+import PlatformLogos from "@/components/PlatformLogos";
 
 interface GameData {
   id: string;
@@ -146,9 +148,7 @@ export default function Home() {
       <header className="border-b border-white bg-black sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              <span className="italic">ho</span>GAMEGATA.
-            </h1>
+            <SciFiLogo withLink={false} />
             <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white uppercase font-bold">
               <span>Game Mega Metadata</span>
               <span className="text-white font-black">•</span>
@@ -361,9 +361,7 @@ export default function Home() {
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                        <span className="text-white group-hover:text-black font-bold truncate max-w-[120px]">
-                          {game.platforms.map(p => p.name).slice(0, 2).join(", ")}
-                        </span>
+                        <PlatformLogos platforms={game.platforms} />
                         <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
                           {game.status}
                         </span>

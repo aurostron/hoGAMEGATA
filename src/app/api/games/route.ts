@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
       const rawMatches = await db.$queryRaw<{ id: string }[]>(
         Prisma.sql`
           SELECT id FROM "Game"
-          WHERE similarity(title, ${search}) > 0.18
+          WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${search}))
+             OR similarity(title, ${search}) > 0.18
              OR similarity(coalesce("developerNames", ''), ${search}) > 0.2
              OR similarity(coalesce("genreNames", ''), ${search}) > 0.2
              OR similarity(coalesce("platformNames", ''), ${search}) > 0.2
