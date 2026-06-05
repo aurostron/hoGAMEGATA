@@ -10,12 +10,36 @@ export function getHighResCoverUrl(url: string | null): string | null {
   return url.replace("t_cover_big", "t_cover_big_2x");
 }
 
-export function getCategoryBadge(category: number | null): string | null {
+export function getCategoryBadge(category: number | null, title?: string): string | null {
   if (category === 1) return "DLC";
   if (category === 2) return "Expansion";
   if (category === 4) return "Standalone";
   if (category === 8) return "Remake";
   if (category === 9) return "Remaster";
+  
+  if (title) {
+    const lower = title.toLowerCase();
+    if (
+      lower.includes("banned footage") ||
+      lower.includes("end of zoe") ||
+      lower.includes("not a hero") ||
+      lower.includes("shadows of rose") ||
+      lower.includes("separate ways") ||
+      lower.includes("lost in nightmares") ||
+      lower.includes("desperate escape") ||
+      lower.includes("ghost survivors") ||
+      lower.includes("whistleblower") ||
+      lower.includes("left behind") ||
+      lower.includes("season pass") ||
+      lower.includes("extra episode") ||
+      lower.includes("dlc")
+    ) {
+      return "DLC";
+    }
+    if (lower.includes("expansion")) {
+      return "Expansion";
+    }
+  }
   return null;
 }
 

@@ -142,9 +142,9 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
                 </div>
               )}
               {/* Category Tag */}
-              {getCategoryBadge(game.category) && (
+              {getCategoryBadge(game.category, game.title) && (
                 <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
-                  {getCategoryBadge(game.category)}
+                  {getCategoryBadge(game.category, game.title)}
                 </span>
               )}
               {/* itch.io Badge */}
