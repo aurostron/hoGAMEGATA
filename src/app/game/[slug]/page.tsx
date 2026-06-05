@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import PriceComparison from "@/components/PriceComparison";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
+import VibeTracker from "@/components/VibeTracker";
 import { getServerUser } from "@/lib/serverAuth";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 import { getHighResCoverUrl } from "@/lib/utils";
@@ -388,7 +389,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           
           {/* Left Column: Cover & Quick Stats */}
           <div className="md:col-span-1 space-y-6">
-            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0">
+            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative">
               {game.coverUrl ? (
                 <Image 
                   src={getHighResCoverUrl(game.coverUrl) || ""} 
@@ -407,6 +408,12 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               {getCategoryBadge(game.category) && (
                 <span className="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
                   {getCategoryBadge(game.category)}
+                </span>
+              )}
+              {/* itch.io Badge */}
+              {game.slug.startsWith("itch-") && (
+                <span className="absolute top-3 right-3 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                  itch.io
                 </span>
               )}
             </div>
@@ -479,9 +486,16 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           {/* Right Column: Descriptions & Details */}
           <div className="md:col-span-2 space-y-8">
             <div className="space-y-4">
-              <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
-                {game.status}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
+                  {game.status}
+                </span>
+                {game.slug.startsWith("itch-") && (
+                  <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
+                    itch.io
+                  </span>
+                )}
+              </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
                 {game.title}
               </h2>
@@ -504,6 +518,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               initialWishlisted={isWishlisted}
               initialCollectionStatus={collectionStatus}
             />
+            
+            {/* Background Vibe Tracking */}
+            <VibeTracker tags={game.tags} genres={game.genres} />
 
             {/* Description Paragraph */}
             <div className="border-t border-white pt-6 space-y-4">
@@ -703,6 +720,12 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                       <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
                         <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
                       </div>
+                    )}
+                    {/* itch.io Badge */}
+                    {relatedGame.slug.startsWith("itch-") && (
+                      <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                        itch.io
+                      </span>
                     )}
                     {/* Primary Mood Tag */}
                     {relatedGame.tags && relatedGame.tags.length > 0 ? (

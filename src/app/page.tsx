@@ -7,6 +7,7 @@ import { useSearchParams, usePathname } from "next/navigation";
 import { Search, Compass, Calendar, Sparkles, BookOpen } from "lucide-react";
 import AuthButton from "@/components/AuthButton";
 import { getHighResCoverUrl } from "@/lib/utils";
+import { useVibeTracker } from "@/hooks/useVibeTracker";
 import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
 
@@ -84,6 +85,34 @@ function GameCatalogHome() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"latest" | "trending" | "random">(initialSort);
   const [shuffleTrigger, setShuffleTrigger] = useState(0);
+
+  const [recommendedGames, setRecommendedGames] = useState<GameData[]>([]);
+  const [recommendationReason, setRecommendationReason] = useState<string | null>(null);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+  const { getTopAffinities } = useVibeTracker();
+
+  // Fetch recommendations
+  useEffect(() => {
+    async function fetchRecommendations() {
+      try {
+        const topTags = getTopAffinities(3);
+        const tagsParam = topTags.join(",");
+        
+        const res = await fetch(`/api/recommendations?tags=${tagsParam}&limit=4`);
+        if (res.ok) {
+          const data = await res.json();
+          setRecommendedGames(data.games || []);
+          setRecommendationReason(data.reason || null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recommendations", err);
+      } finally {
+        setLoadingRecommendations(false);
+      }
+    }
+    fetchRecommendations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const triggerShuffle = () => {
     setShuffleTrigger((prev) => prev + 1);
@@ -261,6 +290,60 @@ function GameCatalogHome() {
           </div>
         </section>
 
+        {/* Recommendations Section */}
+        {!debouncedSearch && !selectedTag && recommendedGames.length > 0 && (
+          <section className="space-y-6">
+            <div className="flex items-center justify-between border-b border-white pb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-white" />
+                <h3 className="text-sm font-mono uppercase tracking-widest text-white font-bold">{recommendationReason || "Personalized for you"}</h3>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {recommendedGames.map((game) => (
+                <Link 
+                  key={game.slug} 
+                  href={`/game/${game.slug}`}
+                  className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
+                >
+                  <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                    {game.coverUrl ? (
+                      <Image
+                        src={getHighResCoverUrl(game.coverUrl) || ""}
+                        alt={game.title}
+                        fill={true}
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
+                      </div>
+                    )}
+                    {/* itch.io Badge */}
+                    {game.slug.startsWith("itch-") && (
+                      <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                        itch.io
+                      </span>
+                    )}
+                    {game.tags && game.tags.length > 0 && (
+                      <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                        {game.tags[0].name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div>
+                      <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">{game.title}</h4>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Catalog Mapping Grid */}
         <section className="space-y-6">
           <div className="flex items-center justify-between border-b border-white pb-3">
@@ -376,6 +459,12 @@ function GameCatalogHome() {
                       {getCategoryBadge(game.category) && (
                         <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
                           {getCategoryBadge(game.category)}
+                        </span>
+                      )}
+                      {/* itch.io Badge */}
+                      {game.slug.startsWith("itch-") && (
+                        <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                          itch.io
                         </span>
                       )}
                       {/* Primary Mood Tag */}

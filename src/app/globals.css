@@ -156,11 +156,11 @@ body {
   background: #030303;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a1a22;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 0px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b30909;
+  background: #ffffff;
 }
 
 @theme inline {
