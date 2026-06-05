@@ -684,7 +684,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {relatedGames.map((relatedGame) => (
                 <Link
-                  key={relatedGame.slug}
+                  key={relatedGame.id}
                   href={`/game/${relatedGame.slug}`}
                   className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
                 >
