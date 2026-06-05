@@ -5,15 +5,17 @@ import Image from "next/image";
 interface NyanLoaderProps {
   message?: string;
   fullScreen?: boolean;
+  className?: string;
 }
 
 export default function NyanLoader({ 
   message = "SCANNING VIBE MATRIX...", 
-  fullScreen = false 
+  fullScreen = false,
+  className = ""
 }: NyanLoaderProps) {
   const containerClasses = fullScreen
-    ? "fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/75 backdrop-blur-md gap-8"
-    : "flex flex-col items-center justify-center py-16 gap-6 w-full";
+    ? `fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/75 backdrop-blur-md gap-8 ${className}`
+    : `flex flex-col items-center justify-center py-16 gap-6 w-full ${className}`;
 
   const gifSize = fullScreen ? { width: 400, height: 240 } : { width: 160, height: 96 };
   const textSize = fullScreen ? "text-xl md:text-2xl" : "text-xs";
