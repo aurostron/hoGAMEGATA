@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useSearchParams, usePathname } from "next/navigation";
 import { Search, Compass, Calendar, Sparkles, BookOpen } from "lucide-react";
 import AuthButton from "@/components/AuthButton";
-import { getHighResCoverUrl } from "@/lib/utils";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 import { useVibeTracker } from "@/hooks/useVibeTracker";
 import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
@@ -18,6 +18,7 @@ interface GameData {
   summary: string | null;
   status: string;
   coverUrl: string | null;
+  isTrending: boolean;
   rating: number | null;
   category: number | null;
   esrbRating: string | null;
@@ -45,14 +46,6 @@ const MOOD_FILTERS = [
   { name: "Supernatural", slug: "gothic-supernatural" }
 ];
 
-const getCategoryBadge = (category: number | null): string | null => {
-  if (category === 1) return "DLC";
-  if (category === 2) return "Expansion";
-  if (category === 4) return "Standalone";
-  if (category === 8) return "Remake";
-  if (category === 9) return "Remaster";
-  return null;
-};
 
 const getShortEsrbRating = (rating: string | null): string | null => {
   if (!rating) return null;
@@ -309,7 +302,7 @@ function GameCatalogHome() {
                   <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                     {game.coverUrl ? (
                       <Image
-                        src={getHighResCoverUrl(game.coverUrl) || ""}
+                        src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                         alt={game.title}
                         fill={true}
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
@@ -320,6 +313,12 @@ function GameCatalogHome() {
                       <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
                         <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
                       </div>
+                    )}
+                    {/* Category Tag */}
+                    {getCategoryBadge(game.category) && (
+                      <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                        {getCategoryBadge(game.category)}
+                      </span>
                     )}
                     {/* itch.io Badge */}
                     {game.slug.startsWith("itch-") && (
@@ -442,7 +441,7 @@ function GameCatalogHome() {
                     <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                       {game.coverUrl ? (
                         <Image
-                          src={getHighResCoverUrl(game.coverUrl) || ""}
+                          src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                           alt={game.title}
                           fill={true}
                           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"

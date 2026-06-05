@@ -10,10 +10,11 @@ import TrackControls from "@/components/TrackControls";
 import VibeTracker from "@/components/VibeTracker";
 import { getServerUser } from "@/lib/serverAuth";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
-import { getHighResCoverUrl } from "@/lib/utils";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
 import ReturnButton from "@/components/ReturnButton";
+import CreatorGames from "@/components/CreatorGames";
 
 interface GamePageProps {
   params: Promise<{
@@ -44,14 +45,6 @@ export async function generateStaticParams() {
     return [];
   }
 }
-const getCategoryBadge = (category: number | null): string | null => {
-  if (category === 1) return "DLC";
-  if (category === 2) return "Expansion";
-  if (category === 4) return "Standalone";
-  if (category === 8) return "Remake";
-  if (category === 9) return "Remaster";
-  return null;
-};
 
 function cleanRequirementsText(text: string): string {
   return text
@@ -255,50 +248,17 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     notFound();
   }
 
-  // Fetch user and related games concurrently
-  const [user, relatedGamesResult] = await Promise.all([
-    getServerUser(),
-    db.game.findMany({
-      where: {
-        id: { not: game.id },
-        OR: [
-          {
-            genres: {
-              some: {
-                id: { in: game.genres.map((g) => g.id) },
-              },
-            },
-          },
-          {
-            developers: {
-              some: {
-                id: { in: game.developers.map((d) => d.id) },
-              },
-            },
-          },
-        ],
-      },
-      take: 4,
-      orderBy: [
-        { rating: "desc" },
-        { releaseDate: "desc" },
-      ],
-      include: {
-        developers: true,
-        genres: true,
-        tags: true,
-        platforms: true,
-      },
-    })
-  ]);
-
-  let relatedGames = relatedGamesResult;
+  // Fetch user
+  const user = await getServerUser();
 
   // Retrieve cached system requirements from the database object
   const requirements = { min: game.minRequirements, rec: game.recRequirements };
 
   // Schedule RAWG and Steam metadata lazy enrichment in the background (Non-blocking Stale-While-Revalidate)
   after(async () => {
+    if (process.env.NODE_ENV === "development") {
+      return; // Skip background API queries to RAWG and Steam in dev mode to prevent blocking the local socket
+    }
     try {
       // Create a fresh clone/copy of game properties needed for background functions to prevent mutation conflicts
       const gameClone = { ...game };
@@ -340,25 +300,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     collectionStatus = collectionRecord ? collectionRecord.status : null;
   }
 
-  // Fallback to highest rated if no related games found
-  if (relatedGames.length === 0) {
-    relatedGames = await db.game.findMany({
-      where: {
-        id: { not: game.id },
-      },
-      take: 4,
-      orderBy: [
-        { rating: "desc" },
-        { releaseDate: "desc" },
-      ],
-      include: {
-        developers: true,
-        genres: true,
-        tags: true,
-        platforms: true,
-      },
-    });
-  }
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black pb-24">
@@ -394,7 +335,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative">
               {game.coverUrl ? (
                 <Image 
-                  src={getHighResCoverUrl(game.coverUrl) || ""} 
+                  src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""} 
                   alt={game.title} 
                   width={340}
                   height={453}
@@ -648,7 +589,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         {game.screenshots.length > 0 && (
           <section className="border-t border-white pt-12 space-y-6">
             <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Screenshots</h3>
-            <ScreenshotGallery screenshots={game.screenshots} title={game.title} />
+            <ScreenshotGallery screenshots={game.screenshots.map(url => getCloudinaryFetchUrl(url, game.isTrending) || url)} title={game.title} />
           </section>
         )}
 
@@ -693,77 +634,20 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </section>
         )}
 
-        {/* Similar Games Section */}
-        {relatedGames.length > 0 && (
-          <section className="border-t border-white pt-12 space-y-6">
-            <div className="flex items-center gap-2">
-              <Compass className="w-4 h-4 text-white" />
-              <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">More game like this</h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {relatedGames.map((relatedGame) => (
-                <Link
-                  key={relatedGame.id}
-                  href={`/game/${relatedGame.slug}`}
-                  className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
-                >
-                  {/* Cover Image */}
-                  <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
-                    {relatedGame.coverUrl ? (
-                       <Image
-                         src={getHighResCoverUrl(relatedGame.coverUrl) || ""}
-                         alt={relatedGame.title}
-                         fill={true}
-                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
-                         className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                         loading="lazy"
-                       />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
-                        <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
-                      </div>
-                    )}
-                    {/* itch.io Badge */}
-                    {relatedGame.slug.startsWith("itch-") && (
-                      <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
-                        itch.io
-                      </span>
-                    )}
-                    {/* Primary Mood Tag */}
-                    {relatedGame.tags && relatedGame.tags.length > 0 ? (
-                      <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
-                        {relatedGame.tags[0].name}
-                      </span>
-                    ) : (
-                      <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
-                        {relatedGame.genres[0]?.name || "Horror"}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Game Details */}
-                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                      <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
-                        {relatedGame.title}
-                      </h4>
-                      <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
-                        by {relatedGame.developers[0]?.name || "Unknown Dev"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
-                      <PlatformLogos platforms={relatedGame.platforms} />
-                      <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
-                        {relatedGame.status}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Creator Games Section */}
+        {game.developers.length > 0 ? (
+          <CreatorGames 
+            creatorIds={game.developers.map(d => d.id)}
+            creatorNames={game.developers.map(d => d.name)}
+            excludeGameId={game.id}
+          />
+        ) : game.publishers.length > 0 ? (
+          <CreatorGames 
+            creatorIds={game.publishers.map(p => p.id)}
+            creatorNames={game.publishers.map(p => p.name)}
+            excludeGameId={game.id}
+          />
+        ) : null}
 
       </main>
     </div>

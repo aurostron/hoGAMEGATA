@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getHighResCoverUrl } from "@/lib/utils";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 import PlatformLogos from "@/components/PlatformLogos";
 
 interface Game {
@@ -12,9 +12,11 @@ interface Game {
   slug: string;
   status: string | null;
   coverUrl: string | null;
+  isTrending?: boolean;
   developerNames: string | null;
   genreNames: string | null;
   platformNames: string | null;
+  category: number | null;
 }
 
 interface CollectionItem {
@@ -103,7 +105,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                 <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                   {game.coverUrl ? (
                     <Image
-                      src={getHighResCoverUrl(game.coverUrl) || ""}
+                      src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                       alt={game.title}
                       fill={true}
                       sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
@@ -114,6 +116,12 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                     <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
                       <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
                     </div>
+                  )}
+                  {/* Category Tag */}
+                  {getCategoryBadge(game.category) && (
+                    <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                      {getCategoryBadge(game.category)}
+                    </span>
                   )}
                   {/* itch.io Badge */}
                   {game.slug.startsWith("itch-") && (

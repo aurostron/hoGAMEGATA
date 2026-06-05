@@ -22,10 +22,26 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get("tag")?.trim() || "";
     const cursor = searchParams.get("cursor")?.trim() || "";
     const sort = searchParams.get("sort")?.trim() || "latest"; // "latest" | "trending" | "random"
+    const creatorIdsParam = searchParams.get("creatorIds")?.trim() || "";
+    const excludeId = searchParams.get("excludeId")?.trim() || "";
     const limitParam = searchParams.get("limit");
     const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
 
     const where: Prisma.GameWhereInput = {};
+
+    if (excludeId) {
+      where.id = { not: excludeId };
+    }
+
+    if (creatorIdsParam) {
+      const creatorIds = creatorIdsParam.split(",").filter(Boolean);
+      if (creatorIds.length > 0) {
+        where.OR = [
+          { developers: { some: { id: { in: creatorIds } } } },
+          { publishers: { some: { id: { in: creatorIds } } } }
+        ];
+      }
+    }
 
     // 1. Tag Filtering (Filter by Mood Tag slug)
     if (tag) {
@@ -56,7 +72,9 @@ export async function GET(request: NextRequest) {
         `
       );
       matchedIds = rawMatches.map(m => m.id);
-      where.id = { in: matchedIds };
+      where.id = where.id && (where.id as any).not 
+        ? { in: matchedIds, not: (where.id as any).not } 
+        : { in: matchedIds };
     } else if (sort === "random") {
       let rawMatches;
       if (tag) {
@@ -80,7 +98,9 @@ export async function GET(request: NextRequest) {
         );
       }
       matchedIds = rawMatches.map(m => m.id);
-      where.id = { in: matchedIds };
+      where.id = where.id && (where.id as any).not 
+        ? { in: matchedIds, not: (where.id as any).not } 
+        : { in: matchedIds };
     }
 
     // 3. Query Execution with Cursor Pagination
@@ -94,6 +114,9 @@ export async function GET(request: NextRequest) {
           where,
           include: {
             tags: true,
+            developers: true,
+            platforms: true,
+            genres: true,
           },
         }),
         db.game.count()
@@ -126,6 +149,9 @@ export async function GET(request: NextRequest) {
           where,
           include: {
             tags: true,
+            developers: true,
+            platforms: true,
+            genres: true,
           },
           orderBy: sort === "trending"
             ? [
