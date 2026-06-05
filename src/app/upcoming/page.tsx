@@ -135,7 +135,7 @@ export default async function UpcomingPage() {
                         )}
                         {/* itch.io Badge */}
                         {game.slug.startsWith("itch-") && (
-                          <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                          <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                             itch.io
                           </span>
                         )}
@@ -226,7 +226,7 @@ export default async function UpcomingPage() {
                         )}
                         {/* itch.io Badge */}
                         {game.slug.startsWith("itch-") && (
-                          <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                          <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                             itch.io
                           </span>
                         )}

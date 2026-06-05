@@ -4,6 +4,9 @@ import { Pool } from "pg";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import { MOODS, getMoodTagsForGame } from "./mood-rules";
+import { pipeline } from "@xenova/transformers";
+
+let extractor: any = null;
 
 
 dotenv.config();
@@ -97,6 +100,10 @@ async function fetchRawgGameDetails(
 }
 
 async function runIngestion() {
+  console.log("Loading AI embedding model...");
+  extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+  console.log("Model loaded successfully.");
+
   const twitchId = process.env.TWITCH_CLIENT_ID;
   const twitchSecret = process.env.TWITCH_CLIENT_SECRET;
   const rawgApiKey = process.env.RAWG_API_KEY;
@@ -243,6 +250,9 @@ async function runIngestion() {
       category?: number;
     }
 
+    console.log("Loading AI embedding model...");
+    const extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    console.log("Model loaded successfully.");
 
     while (offset < TARGET_TOTAL) {
       console.log(`\n=== 📥 Processing Batch: Offset ${offset} (Target Limit: ${BATCH_SIZE}) ===`);
@@ -651,6 +661,20 @@ async function runIngestion() {
               }
             }
           });
+        }
+
+        // Generate and update the semantic embedding
+        const textToEmbed = `${g.name}. ${g.summary || ""} ${g.storyline || ""}`.trim();
+        if (textToEmbed) {
+          try {
+            const output = await extractor(textToEmbed, { pooling: "mean", normalize: true });
+            const embeddingArray = Array.from(output.data);
+            const vectorString = `[${embeddingArray.join(",")}]`;
+            
+            await prisma.$executeRawUnsafe(`UPDATE "Game" SET embedding = '${vectorString}'::vector WHERE slug = $1`, slug);
+          } catch (embedError) {
+            console.error(`Failed to generate embedding for ${slug}:`, embedError);
+          }
         }
       };
 

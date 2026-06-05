@@ -8,7 +8,7 @@ import PriceComparison from "@/components/PriceComparison";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
 import VibeTracker from "@/components/VibeTracker";
-import { getServerUser } from "@/lib/serverAuth";
+
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 import SciFiLogo from "@/components/SciFiLogo";
@@ -248,8 +248,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     notFound();
   }
 
-  // Fetch user
-  const user = await getServerUser();
+
 
   // Retrieve cached system requirements from the database object
   const requirements = { min: game.minRequirements, rec: game.recRequirements };
@@ -274,31 +273,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
   // Format rating display
   const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
 
-  let isWishlisted = false;
-  let collectionStatus = null;
 
-  if (user) {
-    const [wishlistRecord, collectionRecord] = await Promise.all([
-      db.wishlist.findUnique({
-        where: {
-          userId_gameId: {
-            userId: user.id,
-            gameId: game.id,
-          },
-        },
-      }),
-      db.collection.findUnique({
-        where: {
-          userId_gameId: {
-            userId: user.id,
-            gameId: game.id,
-          },
-        },
-      })
-    ]);
-    isWishlisted = !!wishlistRecord;
-    collectionStatus = collectionRecord ? collectionRecord.status : null;
-  }
 
 
   return (
@@ -332,18 +307,20 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           
           {/* Left Column: Cover & Quick Stats */}
           <div className="md:col-span-1 space-y-6">
-            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative">
+            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative aspect-[3/4] w-full">
               {game.coverUrl ? (
-                <Image 
-                  src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""} 
-                  alt={game.title} 
-                  width={340}
-                  height={453}
-                  priority={true}
-                  className="w-full h-auto object-cover border border-white"
-                />
+                <div className="relative w-full h-full">
+                  <Image 
+                    src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""} 
+                    alt={game.title} 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 340px"
+                    priority={true}
+                    className="object-cover border border-white"
+                  />
+                </div>
               ) : (
-                <div className="aspect-[3/4] w-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center border border-white">
+                <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center border border-white">
                   <span className="font-mono text-xs uppercase tracking-widest text-white">No Cover Art</span>
                 </div>
               )}
@@ -355,7 +332,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               )}
               {/* itch.io Badge */}
               {game.slug.startsWith("itch-") && (
-                <span className="absolute top-3 right-3 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-white border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                <span className="absolute top-3 right-3 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                   itch.io
                 </span>
               )}
@@ -441,7 +418,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   </span>
                 )}
                 {game.slug.startsWith("itch-") && (
-                  <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
+                  <span className="font-mono text-[9px] text-black uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
                     itch.io
                   </span>
                 )}
@@ -465,8 +442,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             <TrackControls
               gameId={game.id}
               gameSlug={game.slug}
-              initialWishlisted={isWishlisted}
-              initialCollectionStatus={collectionStatus}
             />
             
             {/* Background Vibe Tracking */}

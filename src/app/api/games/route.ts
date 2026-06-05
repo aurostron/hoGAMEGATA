@@ -13,7 +13,13 @@ export async function GET(request: NextRequest) {
   const cacheKey = request.url;
   const cached = apiCache.get(cacheKey);
   if (cached && Date.now() < cached.expiry) {
-    return NextResponse.json(cached.data);
+    return new NextResponse(JSON.stringify(cached.data), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600"
+      }
+    });
   }
 
   try {
@@ -192,7 +198,13 @@ export async function GET(request: NextRequest) {
       expiry: Date.now() + CACHE_TTL_MS
     });
 
-    return NextResponse.json(responseData);
+    return new NextResponse(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600"
+      }
+    });
   } catch (error) {
     console.error("❌ Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
