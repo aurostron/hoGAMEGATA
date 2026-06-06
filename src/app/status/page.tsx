@@ -105,12 +105,14 @@ export default function StatusPage() {
         <div className="max-w-5xl mx-auto px-6 py-3 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
             <SciFiLogo withLink={true} />
-            <div className="flex items-center gap-2 text-[10px] tracking-widest text-white/50 uppercase font-black">
-              <span>System</span>
-              <span>•</span>
-              <span>Diagnostics</span>
-              <span>•</span>
-              <span>Console</span>
+            <div className="flex items-center gap-2 font-mono text-[12px] tracking-widest text-white uppercase font-bold mt-1">
+              <span>Horror</span>
+              <span className="text-white font-black">•</span>
+              <span>Game</span>
+              <span className="text-white font-black">•</span>
+              <span>Mega</span>
+              <span className="text-white font-black">•</span>
+              <span>Metadata</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -121,12 +123,12 @@ export default function StatusPage() {
 
       <main className="max-w-3xl mx-auto px-6 mt-12 space-y-8 relative z-10">
         <div className="flex flex-col gap-2">
-          <span className="text-[#ff2a2a] text-xs font-bold tracking-widest uppercase">// SYSTEM STATUS MONITOR</span>
+          <span className="text-[#ff2a2a] text-xs font-bold tracking-widest uppercase">// SYSTEM STATUS</span>
           <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter leading-none text-white">
-            hoGAMEGATA Node Registry status
+            hoGAMEGATA System Status
           </h1>
           <p className="text-xs text-white/60 leading-relaxed max-w-xl">
-            Realtime connection polling, edge execution, and CDN caching matrices.
+            Check if the website, database, and image services are currently online.
           </p>
         </div>
 
@@ -136,23 +138,23 @@ export default function StatusPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/20 text-[10px] text-white/60 uppercase tracking-widest font-black">
-                  <th className="pb-3 pr-4">Node Service</th>
-                  <th className="pb-3 px-4">Provider / Target</th>
-                  <th className="pb-3 px-4 text-center">Latency</th>
-                  <th className="pb-3 pl-4 text-right">Registry Status</th>
+                  <th className="pb-3 pr-4">Service</th>
+                  <th className="pb-3 px-4">Location</th>
+                  <th className="pb-3 px-4 text-center">Speed</th>
+                  <th className="pb-3 pl-4 text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="text-xs divide-y divide-white/10 font-medium">
                 {/* Web App */}
                 <tr className="hover:bg-white/[0.02] transition-colors duration-150">
-                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Core Web App Node ]</td>
-                  <td className="py-4 px-4 text-white/60">Vercel Serverless Edge</td>
+                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Website Server ]</td>
+                  <td className="py-4 px-4 text-white/60">Global Edge Servers</td>
                   <td className="py-4 px-4 text-center tabular-nums">
                     {loading ? "--" : `${data?.webApp.latency}ms`}
                   </td>
                   <td className="py-4 pl-4 text-right">
                     {loading ? (
-                      <span className="text-white/40 animate-pulse">[ POLLING... ]</span>
+                      <span className="text-white/40 animate-pulse">[ Checking... ]</span>
                     ) : (
                       getStatusBadge(data?.webApp.status || "ONLINE")
                     )}
@@ -161,14 +163,14 @@ export default function StatusPage() {
 
                 {/* PostgreSQL Database */}
                 <tr className="hover:bg-white/[0.02] transition-colors duration-150">
-                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Postgres Database ]</td>
-                  <td className="py-4 px-4 text-white/60">Neon Serverless DB (Direct TCP)</td>
+                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Game Database ]</td>
+                  <td className="py-4 px-4 text-white/60">Cloud Database</td>
                   <td className="py-4 px-4 text-center tabular-nums">
                     {loading ? "--" : `${data?.database.latency}ms`}
                   </td>
                   <td className="py-4 pl-4 text-right">
                     {loading ? (
-                      <span className="text-white/40 animate-pulse">[ POLLING... ]</span>
+                      <span className="text-white/40 animate-pulse">[ Checking... ]</span>
                     ) : (
                       getStatusBadge(data?.database.status || "OFFLINE")
                     )}
@@ -177,14 +179,14 @@ export default function StatusPage() {
 
                 {/* Cloudinary CDN */}
                 <tr className="hover:bg-white/[0.02] transition-colors duration-150">
-                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Cloudinary CDN ]</td>
-                  <td className="py-4 px-4 text-white/60">Cloudinary Global Edge CDN</td>
+                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Image Storage ]</td>
+                  <td className="py-4 px-4 text-white/60">Image CDN</td>
                   <td className="py-4 px-4 text-center tabular-nums">
                     {loading ? "--" : `${data?.cdn.latency}ms`}
                   </td>
                   <td className="py-4 pl-4 text-right">
                     {loading ? (
-                      <span className="text-white/40 animate-pulse">[ POLLING... ]</span>
+                      <span className="text-white/40 animate-pulse">[ Checking... ]</span>
                     ) : (
                       getStatusBadge(data?.cdn.status || "OFFLINE")
                     )}
@@ -193,14 +195,14 @@ export default function StatusPage() {
 
                 {/* Catalog API */}
                 <tr className="hover:bg-white/[0.02] transition-colors duration-150">
-                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Games Summary API ]</td>
-                  <td className="py-4 px-4 text-white/60">/api/games/summary</td>
+                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Game Catalog API ]</td>
+                  <td className="py-4 px-4 text-white/60">Catalog API</td>
                   <td className="py-4 px-4 text-center tabular-nums">
                     {loading ? "--" : `${data?.catalogApi.latency}ms`}
                   </td>
                   <td className="py-4 pl-4 text-right">
                     {loading ? (
-                      <span className="text-white/40 animate-pulse">[ POLLING... ]</span>
+                      <span className="text-white/40 animate-pulse">[ Checking... ]</span>
                     ) : (
                       getStatusBadge(data?.catalogApi.status || "OFFLINE")
                     )}
@@ -209,14 +211,14 @@ export default function StatusPage() {
 
                 {/* Stats API */}
                 <tr className="hover:bg-white/[0.02] transition-colors duration-150">
-                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Registry Stats API ]</td>
-                  <td className="py-4 px-4 text-white/60">/api/stats</td>
+                  <td className="py-4 pr-4 font-bold text-white uppercase">[ Statistics API ]</td>
+                  <td className="py-4 px-4 text-white/60">Stats API</td>
                   <td className="py-4 px-4 text-center tabular-nums">
                     {loading ? "--" : `${data?.statsApi.latency}ms`}
                   </td>
                   <td className="py-4 pl-4 text-right">
                     {loading ? (
-                      <span className="text-white/40 animate-pulse">[ POLLING... ]</span>
+                      <span className="text-white/40 animate-pulse">[ Checking... ]</span>
                     ) : (
                       getStatusBadge(data?.statsApi.status || "OFFLINE")
                     )}
@@ -230,27 +232,19 @@ export default function StatusPage() {
             <span>
               {loading 
                 ? "FETCHING LAST UPDATED TIMESTAMP..." 
-                : `LAST DIAGNOSTIC CYCLE: ${data?.timestamp ? new Date(data.timestamp).toLocaleString() : "UNKNOWN"}`}
+                : `Last checked: ${data?.timestamp ? new Date(data.timestamp).toLocaleString() : "UNKNOWN"}`}
             </span>
-            {data?.cached && (
-              <span className="text-amber-400 font-bold uppercase tracking-wider animate-pulse">
-                [ CACHE ACTIVE — REDUCING DB STRAIN ]
-              </span>
-            )}
           </div>
         </div>
 
         {/* Action controls */}
-        <div className="flex justify-between items-center gap-4 font-mono">
-          <span className="text-[10px] text-white/30 font-medium tracking-wide">
-            * DB connections use cached pools to prevent query saturation.
-          </span>
+        <div className="flex justify-end items-center gap-4 font-mono">
           <button
             onClick={() => fetchStatus(true)}
             disabled={scanning || loading}
             className="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-4 py-2.5 rounded-none font-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:translate-y-px"
           >
-            {scanning ? "[ SCROLLING MATRIX... ]" : "[ RE-SCAN SYSTEM ]"}
+            {scanning ? "[ Loading... ]" : "[ Refresh Status ]"}
           </button>
         </div>
       </main>
