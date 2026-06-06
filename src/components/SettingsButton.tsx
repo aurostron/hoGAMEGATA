@@ -88,6 +88,11 @@ export default function SettingsButton() {
             <BookOpen className="w-3.5 h-3.5" /> Technical Docs
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="p-0">
+          <Link href="/status" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
+            <Sliders className="w-3.5 h-3.5" /> System Status
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
