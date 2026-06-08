@@ -13,7 +13,7 @@ export default function HeaderScrollController() {
     if (!header) return;
 
     // Apply smooth transform transition style to the header
-    header.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease";
+    header.style.transition = "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease";
 
     let lastScrollY = window.scrollY;
     let isHidden = false;
@@ -75,6 +75,15 @@ export default function HeaderScrollController() {
     const timer3 = setTimeout(updateThreshold, 1500);
 
     const handleScroll = () => {
+      // If tutorial is active, keep header visible and bypass scroll-hiding logic
+      if (document.body.classList.contains("tutorial-active")) {
+        if (header) {
+          header.style.transform = "translateY(0)";
+          isHidden = false;
+        }
+        return;
+      }
+
       const currentScrollY = window.scrollY;
       const headerHeight = header.offsetHeight;
 

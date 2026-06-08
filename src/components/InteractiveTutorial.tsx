@@ -20,7 +20,7 @@ const TOUR_STEPS: TourStep[] = [
   },
   {
     targetSelector: '[data-tour="search-bar"]',
-    title: "Find Your Nightmare",
+    title: "Find Games",
     description: "Start searching for games by using this search bar. You can look up games by title, developer name, genre, or specific horror style tags.",
     placement: "bottom"
   },
@@ -64,6 +64,18 @@ export default function InteractiveTutorial() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Sync body class with tour state to freeze scrolling
+  useEffect(() => {
+    if (isActive) {
+      document.body.classList.add("tutorial-active");
+    } else {
+      document.body.classList.remove("tutorial-active");
+    }
+    return () => {
+      document.body.classList.remove("tutorial-active");
+    };
+  }, [isActive]);
+
   const calculatePositions = useCallback(() => {
     if (!isActive) return;
     
@@ -95,7 +107,7 @@ export default function InteractiveTutorial() {
     const width = rect.width;
     const height = rect.height;
 
-    // Set spotlight border box around target element
+    // Set spotlight border box around target element with butter-smooth animation
     setSpotlightStyle({
       top: `${top - 4}px`,
       left: `${left - 4}px`,
@@ -104,10 +116,11 @@ export default function InteractiveTutorial() {
       display: "block",
       position: "absolute",
       zIndex: 99999,
-      pointerEvents: "none"
+      pointerEvents: "none",
+      transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)"
     });
 
-    // Handle tooltip positioning
+    // Handle tooltip positioning with butter-smooth animation
     if (isMobile) {
       // On mobile, render as a clean bottom bar card
       setTooltipStyle({
@@ -116,7 +129,8 @@ export default function InteractiveTutorial() {
         left: "16px",
         right: "16px",
         zIndex: 100000,
-        transform: "none"
+        transform: "none",
+        transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)"
       });
       return;
     }
@@ -132,7 +146,8 @@ export default function InteractiveTutorial() {
         top: `${tooltipTop}px`,
         left: `${tooltipLeft}px`,
         transform: "translateX(-50%)",
-        zIndex: 100000
+        zIndex: 100000,
+        transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)"
       });
     } else if (step.placement === "top") {
       tooltipTop = top - 16;
@@ -141,7 +156,8 @@ export default function InteractiveTutorial() {
         top: `${tooltipTop}px`,
         left: `${tooltipLeft}px`,
         transform: "translate(-50%, -100%)",
-        zIndex: 100000
+        zIndex: 100000,
+        transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)"
       });
     }
   }, [isActive, stepIndex, isMobile]);
@@ -229,7 +245,7 @@ export default function InteractiveTutorial() {
       {currentStep.targetSelector && (
         <div 
           style={spotlightStyle}
-          className="border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.7)] bg-white/5 transition-all duration-300"
+          className="border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.7)] bg-white/5"
         />
       )}
 
@@ -238,14 +254,14 @@ export default function InteractiveTutorial() {
         ref={tooltipRef}
         style={tooltipStyle}
         className={cn(
-          "bg-black border-2 border-white p-6 md:p-8 flex flex-col gap-5 max-w-sm w-full transition-all duration-300",
+          "bg-black border-2 border-white p-6 md:p-8 flex flex-col gap-5 max-w-sm w-full",
           currentStep.placement === "center" && "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] max-w-md shadow-[8px_8px_0px_0px_#ffffff]"
         )}
       >
         <div className="space-y-2 select-none">
           <div className="flex justify-between items-center border-b border-white/20 pb-2.5">
-            <span className="font-mono text-[9px] text-[#ff2a2a] font-bold tracking-widest uppercase">
-              {currentStep.targetSelector ? `// SYSTEM TOUR: Step ${stepIndex} of ${TOUR_STEPS.length - 1}` : "// SYSTEM INTRO"}
+            <span className="font-mono text-[10px] text-white font-bold tracking-widest uppercase">
+              {currentStep.targetSelector ? `Step ${stepIndex} / ${TOUR_STEPS.length - 1}` : "Welcome"}
             </span>
             {!isFirst && (
               <button 
