@@ -9,6 +9,7 @@ import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import PageTransitionLoader from "@/components/PageTransitionLoader";
 import HeaderScrollController from "@/components/HeaderScrollController";
+import InteractiveTutorial from "@/components/InteractiveTutorial";
 import { Suspense } from "react";
 
 const OnboardingModal = dynamic(() => import("@/components/OnboardingModal"));
@@ -94,6 +95,9 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Suspense fallback={null}>
           <HeaderScrollController />
+        </Suspense>
+        <Suspense fallback={null}>
+          <InteractiveTutorial />
         </Suspense>
         <AuthProvider>
           <div className="flex-1 flex flex-col w-full">

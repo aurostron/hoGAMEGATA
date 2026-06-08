@@ -48,7 +48,7 @@ export default function SettingsButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={
-        <button className="flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold cursor-pointer bg-black" title="Settings">
+        <button data-tour="options-button" className="flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold cursor-pointer bg-black" title="Settings">
           <Settings className="w-3.5 h-3.5" />
           <span>[ Options ]</span>
         </button>
@@ -75,8 +75,15 @@ export default function SettingsButton() {
 
         {/* Preferences */}
         <DropdownMenuLabel>Personalize</DropdownMenuLabel>
-        <DropdownMenuItem onClick={openModal} className="flex items-center gap-1.5">
+        <DropdownMenuItem onClick={openModal} className="flex items-center gap-1.5 cursor-pointer">
           <Sliders className="w-3.5 h-3.5" /> Preferences
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => {
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("gamegata_start_tutorial"));
+          }
+        }} className="flex items-center gap-1.5 cursor-pointer">
+          <Sliders className="w-3.5 h-3.5" /> Start Tour
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
