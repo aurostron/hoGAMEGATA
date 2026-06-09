@@ -112,7 +112,7 @@ export default function WaitlistPage() {
               </h1>
               <div className="font-sans text-sm text-white/70 space-y-2 leading-relaxed">
                 <p>Thousands of horror games. Metadata, scare ratings, community reviews, and hidden gems you won't find elsewhere.</p>
-                <p className="text-white/40 font-mono text-xs tracking-wider uppercase font-bold pt-2">Join the waitlist for early access.</p>
+                <p className="text-white font-mono text-xs tracking-wider uppercase font-bold pt-2">Join the waitlist for early access.</p>
               </div>
             </div>
 
@@ -168,16 +168,16 @@ export default function WaitlistPage() {
             </span>
           </div>
           <div className="border border-white/10 p-3 bg-black/40 flex flex-col items-center justify-center gap-1 font-mono text-center">
-            <span className="text-[10px] text-white/40 uppercase tracking-widest">Taxonomy System</span>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">Custom game tags</span>
             <span className="text-xs font-bold text-white tracking-wider">
-              {stats ? stats.tags.toLocaleString() : "---"} VIBES MAPPED
+              {stats ? stats.tags.toLocaleString() : "---"}
             </span>
           </div>
         </div>
 
         {/* Footer info block */}
         <div className="border-t border-white/10 pt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest flex flex-col sm:flex-row justify-between items-center w-full gap-2">
-          <span>Soon FOSS on GitHub</span>
+          <span>© hoGAMEGATA</span>
           <span>•</span>
           <span>Indexing since 2026</span>
         </div>
