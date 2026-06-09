@@ -96,13 +96,14 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <HeaderScrollController />
         </Suspense>
-        <Suspense fallback={null}>
-          <InteractiveTutorial />
-        </Suspense>
         <AuthProvider>
+          <Suspense fallback={null}>
+            <InteractiveTutorial />
+          </Suspense>
           <div className="flex-1 flex flex-col w-full">
             {children}
           </div>
+          <OnboardingModal />
         </AuthProvider>
         <footer className="max-w-5xl w-full mx-auto px-6 py-8 border-t border-white flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white uppercase tracking-widest font-black">
           <span>© 2026 hoGAMEGATA Project, soon FOSS on Github.</span>
@@ -111,7 +112,6 @@ export default async function RootLayout({
             <span>Made with ❤️ by aurostron.</span>
           </div>
         </footer>
-        <OnboardingModal />
         <Suspense fallback={null}>
           <PageTransitionLoader />
         </Suspense>

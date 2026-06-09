@@ -4,9 +4,14 @@ import { useState, useEffect } from "react";
 import { usePreferences } from "@/hooks/usePreferences";
 import { TAXONOMY_GROUPS } from "@/lib/taxonomy";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function OnboardingModal() {
+  const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
   const { hasOnboarded, isLoaded, isModalOpen, vibes: existingVibes, completeOnboarding } = usePreferences();
+
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
 
   const [step, setStep] = useState(0);
@@ -34,6 +39,10 @@ export default function OnboardingModal() {
     else if (hour < 18) setGreeting("Good afternoon");
     else setGreeting("Good evening");
   }, []);
+
+  if (authLoading || !user || ["/waitlist", "/login", "/auth/callback"].includes(pathname)) {
+    return null;
+  }
 
   if (!isLoaded || !isModalOpen) return null;
 
