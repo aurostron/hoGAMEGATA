@@ -100,6 +100,11 @@ export default function SettingsButton() {
             <Sliders className="w-3.5 h-3.5" /> System Status
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="p-0">
+          <Link href="/privacy" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
+            <BookOpen className="w-3.5 h-3.5" /> Privacy Policy
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 

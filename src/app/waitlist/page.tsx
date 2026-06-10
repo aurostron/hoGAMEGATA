@@ -112,7 +112,6 @@ export default function WaitlistPage() {
               </h1>
               <div className="font-sans text-sm text-white/70 space-y-2 leading-relaxed">
                 <p>Thousands of horror games. Metadata, scare ratings, community reviews, and hidden gems you won't find elsewhere.</p>
-                <p className="text-white font-mono text-xs tracking-wider uppercase font-bold pt-2">Join the waitlist for early access.</p>
               </div>
             </div>
 
@@ -146,7 +145,7 @@ export default function WaitlistPage() {
                     [ Registering... ]
                   </span>
                 ) : (
-                  "[ Join Waitlist ]"
+                  "[ Request Early Access ]"
                 )}
               </button>
             </form>
