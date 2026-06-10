@@ -9,7 +9,8 @@ const PUBLIC_PATHS = [
   "/api/stats",
   "/login",
   "/auth/callback",
-  "/privacy"
+  "/privacy",
+  "/legal"
 ];
 
 export function proxy(request: NextRequest) {
