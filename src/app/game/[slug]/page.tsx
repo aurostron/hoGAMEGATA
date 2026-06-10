@@ -5,14 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield, Flame } from "lucide-react";
 import { db } from "@/lib/db";
-import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
 import VibeTracker from "@/components/VibeTracker";
 
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
 import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
-import ReturnButton from "@/components/ReturnButton";
+import SettingsButton from "@/components/SettingsButton";
+import HeaderSearch from "@/components/HeaderSearch";
 import dynamic from "next/dynamic";
 import ScareMeter from "@/components/ScareMeter";
 
@@ -554,9 +554,9 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
               <span>Metadata</span>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <AuthButton />
-            <ReturnButton />
+          <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap justify-end relative">
+            <HeaderSearch />
+            <SettingsButton />
           </div>
         </div>
       </header>
