@@ -55,3 +55,6 @@ ingest_cursor.json
 # Local Dev GUI
 /scripts/gui-server.ts
 /logs/
+
+# Local console tool - not part of this repo
+gamegata-console/
