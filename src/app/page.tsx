@@ -8,7 +8,10 @@ import SciFiLogo from "@/components/SciFiLogo";
 import GameCatalogClient from "@/components/GameCatalogClient";
 import { db } from "@/lib/db";
 
-export const revalidate = 60; // revalidate every minute
+
+export const dynamic = 'force-dynamic'; // always server-render, never pre-render at build time
+
+
 
 export interface StatsData {
   games: number;

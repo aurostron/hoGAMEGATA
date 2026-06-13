@@ -5,7 +5,8 @@ import AuthButton from "@/components/AuthButton";
 import { ArrowLeft, Calendar, ExternalLink, Tag, Monitor } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+
 
 export default async function UpcomingPage() {
   const now = new Date();
