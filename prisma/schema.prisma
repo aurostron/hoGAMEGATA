@@ -48,6 +48,13 @@ model Game {
   steamRatingDesc String?
   lastSteamSync   DateTime?
 
+  // ProtonDB / Linux Compatibility metrics
+  protonDbTier        String?   // e.g., "native", "platinum", "gold", "silver", "bronze", "borked"
+  protonDbConfidence  String?   // e.g., "strong", "neutral", "weak"
+  protonDbScore       Float?    // Score between 0 and 1
+  protonDbTotalReports Int?
+  lastProtonDbSync    DateTime?
+
   // Additional metadata & categorizations
   category      Int?           // IGDB Game Category (0 = Main, 1 = DLC, 2 = Expansion, etc.)
   minRequirements String?      @db.Text
@@ -57,6 +64,7 @@ model Game {
   genreNames      String?      @db.Text
   platformNames   String?      @db.Text
   embedding       Unsupported("vector(384)")?
+  taxonomyScores  Json?
   // Many-to-many relationships
   genres        Genre[]
   tags          Tag[]
@@ -75,6 +83,7 @@ model Game {
   @@index([rating])
   @@index([status])
   @@index([popularity])
+  @@index([protonDbTier])
 }
 
 model Developer {

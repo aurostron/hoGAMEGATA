@@ -74,7 +74,7 @@ async function runEnrichment() {
     where: {
       storeName: 'itch.io',
       game: {
-        rawgEnriched: false,
+        rawgEnriched: false, // Prevents re-scraping already enriched games
         slug: { startsWith: 'itch-' } // Safety check
       }
     },
@@ -146,15 +146,24 @@ async function runEnrichment() {
       // Optionally, connect tags if you want to integrate with your Tag model
       for (const tag of extractedTags) {
          const slug = tag.toLowerCase().replace(/[^a-z0-9]/g, '-');
-         await prisma.tag.upsert({
+         
+         // 1. Upsert tag matching by unique slug (and avoid name unique conflict by setting same name on update/create)
+         const dbTag = await prisma.tag.upsert({
            where: { slug },
-           update: {
-             games: { connect: { id: game.id } }
-           },
+           update: {},
            create: {
              name: tag,
              slug: slug,
-             games: { connect: { id: game.id } }
+           }
+         });
+
+         // 2. Connect the relation separately to prevent transaction/upsert bugs
+         await prisma.game.update({
+           where: { id: game.id },
+           data: {
+             tags: {
+               connect: { id: dbTag.id }
+             }
            }
          });
       }

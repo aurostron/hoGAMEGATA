@@ -13,7 +13,7 @@ export default function SciFiLogo({ withLink = true }: SciFiLogoProps) {
   const headerContent = (
     <h1
       onMouseEnter={scrambleLogo}
-      className="text-2xl md:text-3xl font-black text-white tracking-tight cursor-pointer select-none"
+      className="text-2xl md:text-3xl font-black text-white tracking-tight cursor-pointer select-none inline-block min-w-[180px] md:min-w-[220px]"
     >
       <span className="italic">{logoText.substring(0, 2)}</span>
       {logoText.substring(2)}
