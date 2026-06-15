@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield, Flame } from "lucide-react";
 import { db } from "@/lib/db";
 import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
@@ -13,6 +13,7 @@ import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
 import ReturnButton from "@/components/ReturnButton";
 import dynamic from "next/dynamic";
+import ScareMeter from "@/components/ScareMeter";
 
 const PriceComparison = dynamic(() => import("@/components/PriceComparison"));
 const ScreenshotGallery = dynamic(() => import("@/components/ScreenshotGallery"));
@@ -461,6 +462,15 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 </div>
               )}
 
+              {game.scareRating !== null && (
+                <div className="flex justify-between items-center border-t border-white/20 pt-3 mt-1">
+                  <span className="text-white flex items-center gap-1.5"><Flame className="w-3.5 h-3.5" /> SCARE SCORE:</span>
+                  <span className="text-white font-black text-right">
+                    {game.scareRating} / 100
+                  </span>
+                </div>
+              )}
+
               <div className="flex justify-between items-center gap-4">
                 <span className="text-white flex items-center gap-1.5 shrink-0"><Monitor className="w-3.5 h-3.5" /> Platforms:</span>
                 <PlatformLogos platforms={game.platforms} className="flex flex-wrap justify-end gap-2" solid={true} />
@@ -469,7 +479,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               {steamAppId && (
                 <div className="flex justify-between items-baseline gap-2">
                   <span className="text-white flex items-center gap-1.5 shrink-0">
-                    <Monitor className="w-3.5 h-3.5" /> Linux/Deck:
+                    <Monitor className="w-3.5 h-3.5" /> Linux compatibility:
                   </span>
                   <div className="text-right">
                     {game.protonDbTier ? (
@@ -595,9 +605,16 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 <Compass className="w-4 h-4 text-white" />
                 <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Description & Overview</span>
               </div>
-              <p className="text-sm text-white font-medium leading-relaxed font-sans">
-                {game.summary || "No overview available for this title."}
-              </p>
+              {game.summary ? (
+                <div 
+                  className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: game.summary }}
+                />
+              ) : (
+                <p className="text-sm text-white font-medium leading-relaxed font-sans">
+                  No overview available for this title.
+                </p>
+              )}
               {game.storyline && (
                 <div className="mt-4 pt-4 border-t border-white/20">
                   <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
@@ -621,6 +638,17 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Scare Meter Profile */}
+            {game.scareRating !== null && game.scareProfile && (
+              <div className="pt-6">
+                <ScareMeter 
+                  scareRating={game.scareRating} 
+                  scareProfile={game.scareProfile as any} 
+                  reviewCount={game.scareReviewCount}
+                />
               </div>
             )}
 
@@ -739,18 +767,40 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black font-bold">PC System Specifications</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {requirements.min && (
-                <div className="border border-white/20 bg-neutral-950 p-6 space-y-3 rounded-none">
-                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block font-bold">Minimum Requirements</span>
-                  <div className="text-xs text-white/80 leading-relaxed whitespace-pre-line font-medium font-sans">
-                    {cleanRequirementsText(requirements.min)}
+                <div className="border border-white bg-black p-6 space-y-4 rounded-none">
+                  <span className="font-mono text-[9px] bg-white text-black px-2 py-0.5 uppercase tracking-widest inline-block font-black">Minimum Requirements</span>
+                  <div className="text-xs text-white leading-relaxed font-mono space-y-2.5 pt-2">
+                    {cleanRequirementsText(requirements.min).split("\n").map((line, idx) => {
+                      const parts = line.split(/:(.*)/);
+                      if (parts.length >= 2) {
+                        return (
+                          <div key={idx} className="flex flex-col sm:flex-row sm:justify-between border-b border-white/10 pb-1.5 gap-1">
+                            <span className="text-white/60 font-bold tracking-wider uppercase text-[10px]">{parts[0].trim()}</span>
+                            <span className="text-white font-black text-right">{parts[1].trim()}</span>
+                          </div>
+                        );
+                      }
+                      return <p key={idx} className="text-white font-medium pl-1">{line}</p>;
+                    })}
                   </div>
                 </div>
               )}
               {requirements.rec && (
-                <div className="border border-white/20 bg-neutral-950 p-6 space-y-3 rounded-none">
-                  <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block font-bold">Recommended Requirements</span>
-                  <div className="text-xs text-white/80 leading-relaxed whitespace-pre-line font-medium font-sans">
-                    {cleanRequirementsText(requirements.rec)}
+                <div className="border border-white bg-black p-6 space-y-4 rounded-none">
+                  <span className="font-mono text-[9px] bg-white text-black px-2 py-0.5 uppercase tracking-widest inline-block font-black">Recommended Requirements</span>
+                  <div className="text-xs text-white leading-relaxed font-mono space-y-2.5 pt-2">
+                    {cleanRequirementsText(requirements.rec).split("\n").map((line, idx) => {
+                      const parts = line.split(/:(.*)/);
+                      if (parts.length >= 2) {
+                        return (
+                          <div key={idx} className="flex flex-col sm:flex-row sm:justify-between border-b border-white/10 pb-1.5 gap-1">
+                            <span className="text-white/60 font-bold tracking-wider uppercase text-[10px]">{parts[0].trim()}</span>
+                            <span className="text-white font-black text-right">{parts[1].trim()}</span>
+                          </div>
+                        );
+                      }
+                      return <p key={idx} className="text-white font-medium pl-1">{line}</p>;
+                    })}
                   </div>
                 </div>
               )}

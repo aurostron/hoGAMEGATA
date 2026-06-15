@@ -48,6 +48,12 @@ model Game {
   steamRatingDesc String?
   lastSteamSync   DateTime?
 
+  // Scare Meter (computed from Steam reviews + taxonomy)
+  scareRating       Float?    // Overall scare score 0-100
+  scareProfile      Json?     // { dread, jumpscare, psychological, gore, tension, disturbing, isolation }
+  scareReviewCount  Int?      // Number of Steam reviews analyzed
+  lastScareSync     DateTime?
+
   // ProtonDB / Linux Compatibility metrics
   protonDbTier        String?   // e.g., "native", "platinum", "gold", "silver", "bronze", "borked"
   protonDbConfidence  String?   // e.g., "strong", "neutral", "weak"

@@ -1,0 +1,270 @@
+import * as readline from "readline";
+import { spawn } from "child_process";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function askQuestion(query: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) => {
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
+function runScript(scriptPath: string, args: string[] = []): Promise<number> {
+  return new Promise((resolve) => {
+    console.log(`\n==================================================`);
+    console.log(`🚀 RUNNING: npx tsx ${scriptPath} ${args.join(" ")}`);
+    console.log(`==================================================\n`);
+    
+    const isWindows = process.platform === "win32";
+    const child = spawn("npx", ["tsx", scriptPath, ...args], {
+      stdio: "inherit",
+      shell: isWindows,
+    });
+    
+    child.on("close", (code) => {
+      console.log(`\n==================================================`);
+      console.log(`🏁 COMPLETED: Exit Code ${code}`);
+      console.log(`==================================================`);
+      resolve(code || 0);
+    });
+  });
+}
+
+async function showMainMenu() {
+  console.log("\n==================================================");
+  console.log("🖥️  hoGAMEGATA UNIFIED DEVELOPER PORTAL");
+  console.log("==================================================");
+  console.log("1. IGDB Catalog Ingestion Control");
+  console.log("2. RAWG & Steam Metadata Enrichment");
+  console.log("3. Itch.io Scraper & Ingest Console");
+  console.log("4. Outbound Click Analytics Redirection (Stage 5)");
+  console.log("5. Price Sync Aggregator (CheapShark / ITAD)");
+  console.log("6. PostgreSQL Search Indexes Setup (FTS)");
+  console.log("7. Scare Meter NLP Batch Processing");
+  console.log("8. Exit Portal");
+  console.log("==================================================");
+
+  const choice = await askQuestion("Select category [1-8]: ");
+
+  switch (choice) {
+    case "1":
+      await showIngestMenu();
+      break;
+    case "2":
+      await showEnrichMenu();
+      break;
+    case "3":
+      await showItchMenu();
+      break;
+    case "4":
+      console.log("\n💡 Outbound Click Redirection operates automatically at runtime.");
+      console.log("Redirect Endpoint: /re/[slug]/[store]");
+      console.log("Clicks are logged in 'ReferralClick' database table.");
+      await askQuestion("\n[Press Enter to return to main menu]");
+      break;
+    case "5": {
+      console.log("\nRunning Deal Price Synchronization...");
+      await runScript("scripts/sync-prices.ts");
+      await askQuestion("\n[Press Enter to return to main menu]");
+      break;
+    }
+    case "6": {
+      console.log("\nRunning FTS Database Index Setup...");
+      await runScript("scripts/setup_fts.ts");
+      await askQuestion("\n[Press Enter to return to main menu]");
+      break;
+    }
+    case "7":
+      await showScareMenu();
+      break;
+    case "8":
+      console.log("👋 Exiting portal.");
+      process.exit(0);
+    default:
+      console.log("❌ Invalid choice.");
+      await sleep(1000);
+  }
+}
+
+async function showIngestMenu() {
+  console.log("\n--------------------------------------------------");
+  console.log("📥 IGDB CATALOG INGESTION");
+  console.log("--------------------------------------------------");
+  console.log("1. Sync modifications since last run (Incremental)");
+  console.log("2. Full Ingest (Reset cursor and import from scratch)");
+  console.log("3. Custom import target size (set limit)");
+  console.log("4. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-4]: ");
+  switch (choice) {
+    case "1":
+      await runScript("scripts/ingest.ts", ["--sync"]);
+      break;
+    case "2":
+      const confirm = await askQuestion("⚠️ Are you sure you want to reset checkpoints? [y/N]: ");
+      if (confirm.toLowerCase() === "y") {
+        await runScript("scripts/ingest.ts", ["--reset"]);
+      }
+      break;
+    case "3":
+      const limit = await askQuestion("Enter target limit (e.g. 1000): ");
+      const num = parseInt(limit, 10);
+      if (!isNaN(num)) {
+        await runScript("scripts/ingest.ts", ["--limit", num.toString()]);
+      } else {
+        console.log("❌ Invalid limit.");
+      }
+      break;
+    case "4":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await showIngestMenu();
+}
+
+async function showEnrichMenu() {
+  console.log("\n--------------------------------------------------");
+  console.log("⚡ RAWG & STEAM METADATA ENRICHMENT");
+  console.log("--------------------------------------------------");
+  console.log("1. Run batch enrichment (stale / unenriched games)");
+  console.log("2. Custom batch limit (set number of games)");
+  console.log("3. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-3]: ");
+  switch (choice) {
+    case "1":
+      await runScript("scripts/enrich.ts");
+      break;
+    case "2":
+      const limit = await askQuestion("Enter batch limit (default 100): ");
+      const num = parseInt(limit, 10);
+      if (!isNaN(num)) {
+        await runScript("scripts/enrich.ts", ["--limit", num.toString()]);
+      } else {
+        console.log("❌ Invalid limit.");
+      }
+      break;
+    case "3":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await showEnrichMenu();
+}
+
+async function showScareMenu() {
+  console.log("\n--------------------------------------------------");
+  console.log("🤖 SCARE METER CLOUD AI (GEMINI 2.5 FLASH)");
+  console.log("--------------------------------------------------");
+  console.log("1. Run default batch (50 games)");
+  console.log("2. Run large batch (500 games)");
+  console.log("3. Custom batch limit (set number of games)");
+  console.log("4. Process a specific game (by slug)");
+  console.log("5. Process batch by tag (e.g. survival-horror)");
+  console.log("6. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-6]: ");
+  switch (choice) {
+    case "1":
+      await runScript("scripts/enrich-scare.ts");
+      break;
+    case "2":
+      await runScript("scripts/enrich-scare.ts", ["--limit", "500"]);
+      break;
+    case "3":
+      const limit = await askQuestion("Enter batch limit (e.g. 100): ");
+      const num = parseInt(limit, 10);
+      if (!isNaN(num)) {
+        await runScript("scripts/enrich-scare.ts", ["--limit", num.toString()]);
+      } else {
+        console.log("❌ Invalid limit.");
+      }
+      break;
+    case "4":
+      const slug = await askQuestion("Enter game slug (e.g. resident-evil-4): ");
+      if (slug.trim() !== "") {
+        await runScript("scripts/enrich-scare.ts", ["--slug", slug.trim()]);
+      } else {
+        console.log("❌ Invalid slug.");
+      }
+      break;
+    case "5":
+      const tag = await askQuestion("Enter tag slug (e.g. multiplayer): ");
+      const tagLimit = await askQuestion("Enter batch limit (e.g. 50): ");
+      const parsedTagLimit = parseInt(tagLimit, 10);
+      if (tag.trim() !== "" && !isNaN(parsedTagLimit)) {
+        await runScript("scripts/enrich-scare.ts", ["--tag", tag.trim(), "--limit", parsedTagLimit.toString()]);
+      } else {
+        console.log("❌ Invalid tag or limit.");
+      }
+      break;
+    case "6":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await showScareMenu();
+}
+
+
+async function showItchMenu() {
+  console.log("\n--------------------------------------------------");
+  console.log("🎮 ITCH.IO SCRAPER & INGESTION");
+  console.log("--------------------------------------------------");
+  console.log("1. Open interactive itch.io dashboard");
+  console.log("2. Run batch enrichment of all unenriched itch games");
+  console.log("3. Import games from 3D Horror listing (Popular)");
+  console.log("4. Import games from 3D Horror listing (New & Popular)");
+  console.log("5. Import games from 3D Horror listing (Top Rated)");
+  console.log("6. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-6]: ");
+  switch (choice) {
+    case "1":
+      // Running enrich-itch.ts without args launches its own interactive menu!
+      await runScript("scripts/enrich-itch.ts");
+      break;
+    case "2":
+      await runScript("scripts/enrich-itch.ts", ["--batch"]);
+      break;
+    case "3":
+      // To run listing imports directly we can launch enrich-itch with custom args
+      // We will update main() in enrich-itch.ts to handle --list-url
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/tag-3d/tag-horror"]);
+      break;
+    case "4":
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/new-and-popular/tag-3d/tag-horror"]);
+      break;
+    case "5":
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/top-rated/tag-3d/tag-horror"]);
+      break;
+    case "6":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await showItchMenu();
+}
+
+async function main() {
+  while (true) {
+    await showMainMenu();
+  }
+}
+
+main().catch((err) => {
+  console.error("Fatal Portal Error:", err);
+  process.exit(1);
+});

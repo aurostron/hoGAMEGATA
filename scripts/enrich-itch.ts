@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import * as dotenv from "dotenv";
 import * as cheerio from "cheerio";
+import * as readline from "readline";
 
 dotenv.config();
 
@@ -24,6 +25,19 @@ const adapter = new PrismaPg(pool);
 prisma = new PrismaClient({ adapter });
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function askQuestion(query: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) => {
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
 
 async function fetchHtmlWithBackoff(url: string, retries = 3, delay = 2000): Promise<string | null> {
   try {
@@ -56,26 +70,186 @@ async function fetchHtmlWithBackoff(url: string, retries = 3, delay = 2000): Pro
   }
 }
 
-async function runEnrichment() {
-  const args = process.argv.slice(2);
-  let batchLimit = 20;
-  const limitIndex = args.indexOf("--limit");
-  if (limitIndex !== -1 && args[limitIndex + 1]) {
-    const parsedLimit = parseInt(args[limitIndex + 1], 10);
-    if (!isNaN(parsedLimit)) {
-      batchLimit = parsedLimit;
+interface ScrapedMetadata {
+  screenshots: string[];
+  summaryHtml: string | null;
+  coverUrl: string | null;
+  extractedTags: string[];
+}
+
+function parseItchPage(html: string): ScrapedMetadata {
+  const $ = cheerio.load(html);
+  
+  const coverUrl = $('meta[property="og:image"]').attr('content') || 
+                   $('meta[name="twitter:image"]').attr('content') || null;
+
+  const screenshots: string[] = [];
+  $('.screenshot_list a').each((i, el) => {
+    const href = $(el).attr('href');
+    if (href && (href.endsWith('.png') || href.endsWith('.jpg') || href.endsWith('.gif') || href.includes('itch.zone'))) {
+      screenshots.push(href);
+    }
+  });
+
+  let summaryHtml: string | null = null;
+  const desc = $('.formatted_description').html();
+  if (desc) {
+    summaryHtml = desc.trim();
+  }
+
+  const extractedTags: string[] = [];
+  $('a[href^="https://itch.io/games/tag-"], a[href^="https://itch.io/games/genre-"]').each((i, el) => {
+    const tagText = $(el).text().trim();
+    if (tagText) extractedTags.push(tagText);
+  });
+
+  // Extract developer/author name
+  let developerName: string | null = null;
+  
+  // Try breadcrumbs or author link selectors
+  const authorLink = $('.game_header .breadcrumb a, .game_info_panel a[href*=".itch.io"], a.profile_link, .author_name a').first();
+  if (authorLink.length) {
+    developerName = authorLink.text().trim();
+  }
+  
+  // Fallback: extract username from the URL path if possible
+  if (!developerName) {
+    const canonical = $('link[rel="canonical"]').attr('href');
+    if (canonical) {
+      const match = canonical.match(/https?:\/\/([^.]+)\.itch\.io/);
+      if (match) {
+        developerName = match[1];
+      }
     }
   }
 
+  return { coverUrl, screenshots, summaryHtml, extractedTags, developerName };
+}
+
+async function enrichGameDetails(gameId: string, title: string, url: string): Promise<boolean> {
+  console.log(`\n🔄 Scraping: ${title} at ${url}`);
+  const html = await fetchHtmlWithBackoff(url);
+  if (!html) {
+    console.log(`  ❌ Failed to fetch HTML for ${title}. Skipping.`);
+    return false;
+  }
+
+  const { coverUrl, screenshots, summaryHtml, extractedTags, developerName } = parseItchPage(html);
+
+  try {
+    const updateData: any = {
+      rawgEnriched: true,
+      lastRawgSync: new Date(),
+    };
+
+    if (coverUrl) updateData.coverUrl = coverUrl;
+    if (summaryHtml) updateData.summary = summaryHtml;
+    if (screenshots.length > 0) updateData.screenshots = screenshots;
+
+    // Connect developer if extracted
+    if (developerName) {
+      const devSlug = developerName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      const dbDev = await prisma.developer.upsert({
+        where: { slug: devSlug },
+        update: { name: developerName },
+        create: { name: developerName, slug: devSlug }
+      });
+      updateData.developers = {
+        connect: { id: dbDev.id }
+      };
+      updateData.developerNames = developerName;
+    }
+
+    await prisma.game.update({
+      where: { id: gameId },
+      data: updateData
+    });
+
+    for (const tag of extractedTags) {
+      const slug = tag.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const dbTag = await prisma.tag.upsert({
+        where: { slug },
+        update: {},
+        create: {
+          name: tag,
+          slug: slug,
+        }
+      });
+
+      await prisma.game.update({
+        where: { id: gameId },
+        data: {
+          tags: {
+            connect: { id: dbTag.id }
+          }
+        }
+      });
+    }
+
+    console.log(`  ✅ Enriched ${title} with ${screenshots.length} screenshots and ${extractedTags.length} tags.`);
+    return true;
+  } catch (err) {
+    console.error(`  ❌ Database update failed for ${title}:`, err);
+    return false;
+  }
+}
+
+async function addAndEnrichCustomGame(title: string, url: string) {
+  const cleanSlug = "itch-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  console.log(`\nAdding entry for "${title}" with slug "${cleanSlug}"...`);
+
+  let game = await prisma.game.findUnique({ where: { slug: cleanSlug } });
+  if (!game) {
+    game = await prisma.game.create({
+      data: {
+        title,
+        slug: cleanSlug,
+        status: "released",
+        purchaseLinks: {
+          create: {
+            storeName: "itch.io",
+            url: url
+          }
+        }
+      }
+    });
+  } else {
+    game = await prisma.game.update({
+      where: { id: game.id },
+      data: { title, status: "released" }
+    });
+    const existingLink = await prisma.purchaseLink.findFirst({
+      where: { gameId: game.id, storeName: "itch.io" }
+    });
+    if (existingLink) {
+      await prisma.purchaseLink.update({
+        where: { id: existingLink.id },
+        data: { url }
+      });
+    } else {
+      await prisma.purchaseLink.create({
+        data: {
+          gameId: game.id,
+          storeName: "itch.io",
+          url
+        }
+      });
+    }
+  }
+
+  await enrichGameDetails(game.id, title, url);
+  console.log(`✅ Game entry "${title}" successfully added and enriched (ID: ${game.id}).`);
+}
+
+async function runEnrichmentBatch(batchLimit: number) {
   console.log(`🧹 Querying database for up to ${batchLimit} unenriched itch.io games...`);
   
-  // Find games with an itch.io purchase link where rawgEnriched is false
   const purchaseLinks = await prisma.purchaseLink.findMany({
     where: {
       storeName: 'itch.io',
       game: {
-        rawgEnriched: false, // Prevents re-scraping already enriched games
-        slug: { startsWith: 'itch-' } // Safety check
+        rawgEnriched: false,
+        slug: { startsWith: 'itch-' }
       }
     },
     include: { game: true },
@@ -89,92 +263,12 @@ async function runEnrichment() {
   }
 
   console.log(`📚 Found ${count} games to process. Starting scraping...`);
-
   let enrichedCount = 0;
 
   for (const link of purchaseLinks) {
-    const game = link.game;
-    console.log(`\n🔄 Scraping: ${game.title} at ${link.url}`);
-    
-    const html = await fetchHtmlWithBackoff(link.url);
-    if (!html) {
-      console.log(`  ❌ Failed to fetch HTML for ${game.title}. Skipping.`);
-      continue;
-    }
+    const success = await enrichGameDetails(link.game.id, link.game.title, link.url);
+    if (success) enrichedCount++;
 
-    const $ = cheerio.load(html);
-
-    // 1. Extract Screenshots
-    const screenshots: string[] = [];
-    $('.screenshot_list a').each((i, el) => {
-      const href = $(el).attr('href');
-      if (href && (href.endsWith('.png') || href.endsWith('.jpg') || href.endsWith('.gif') || href.includes('itch.zone'))) {
-        screenshots.push(href);
-      }
-    });
-
-    // 2. Extract Description
-    let summaryHtml = $('.formatted_description').html();
-    if (summaryHtml) {
-       // Optional: Clean up standard itch.io injected classes if you prefer, 
-       // but typically raw HTML is fine if your frontend handles it safely.
-       summaryHtml = summaryHtml.trim();
-    }
-
-    // 3. Extract Tags/Genres from the right sidebar or footer
-    const extractedTags: string[] = [];
-    $('a[href^="https://itch.io/games/tag-"], a[href^="https://itch.io/games/genre-"]').each((i, el) => {
-      const tagText = $(el).text().trim();
-      if (tagText) extractedTags.push(tagText);
-    });
-
-    // 4. Update the Game record in the database
-    try {
-      const updateData: any = {
-        rawgEnriched: true, // Mark as enriched
-        lastRawgSync: new Date(),
-      };
-
-      if (screenshots.length > 0) updateData.screenshots = screenshots;
-      if (summaryHtml) updateData.summary = summaryHtml; // Overwrite summary
-
-      await prisma.game.update({
-        where: { id: game.id },
-        data: updateData
-      });
-
-      // Optionally, connect tags if you want to integrate with your Tag model
-      for (const tag of extractedTags) {
-         const slug = tag.toLowerCase().replace(/[^a-z0-9]/g, '-');
-         
-         // 1. Upsert tag matching by unique slug (and avoid name unique conflict by setting same name on update/create)
-         const dbTag = await prisma.tag.upsert({
-           where: { slug },
-           update: {},
-           create: {
-             name: tag,
-             slug: slug,
-           }
-         });
-
-         // 2. Connect the relation separately to prevent transaction/upsert bugs
-         await prisma.game.update({
-           where: { id: game.id },
-           data: {
-             tags: {
-               connect: { id: dbTag.id }
-             }
-           }
-         });
-      }
-
-      console.log(`  ✅ Enriched ${game.title} with ${screenshots.length} screenshots and ${extractedTags.length} tags.`);
-      enrichedCount++;
-    } catch (err) {
-      console.error(`  ❌ Database update failed for ${game.title}:`, err);
-    }
-
-    // Wait 3-6 seconds to be polite to the itch.io servers and prevent IP bans
     const delay = Math.floor(Math.random() * 3000) + 3000;
     console.log(`  ⏳ Waiting ${delay}ms before next game...`);
     await sleep(delay);
@@ -183,14 +277,223 @@ async function runEnrichment() {
   console.log(`\n🎉 Web scraping batch complete! Enriched ${enrichedCount} of ${count} games.`);
 }
 
-runEnrichment()
+async function runEnrichmentSingle(filter: { slug?: string; url?: string }) {
+  let purchaseLinks: any[] = [];
+
+  if (filter.slug) {
+    console.log(`🎯 Targeted enrichment by slug: "${filter.slug}"`);
+    purchaseLinks = await prisma.purchaseLink.findMany({
+      where: {
+        storeName: 'itch.io',
+        game: { slug: filter.slug }
+      },
+      include: { game: true }
+    });
+  } else if (filter.url) {
+    console.log(`🎯 Targeted enrichment by URL: "${filter.url}"`);
+    purchaseLinks = await prisma.purchaseLink.findMany({
+      where: {
+        storeName: 'itch.io',
+        url: filter.url
+      },
+      include: { game: true }
+    });
+  }
+
+  const count = purchaseLinks.length;
+  if (count === 0) {
+    console.log("❌ No matching itch.io games found in database.");
+    return;
+  }
+
+  for (const link of purchaseLinks) {
+    await enrichGameDetails(link.game.id, link.game.title, link.url);
+  }
+}
+
+async function scrapeItchListingPage(listingUrl: string): Promise<Array<{ title: string, url: string }>> {
+  console.log(`🔍 Scrape Request: Fetching list from ${listingUrl}...`);
+  const html = await fetchHtmlWithBackoff(listingUrl);
+  if (!html) {
+    console.error("  ❌ Failed to fetch list page HTML.");
+    return [];
+  }
+
+  const $ = cheerio.load(html);
+  const games: Array<{ title: string, url: string }> = [];
+
+  $('.game_cell, .grid_cell').each((i, el) => {
+    const titleEl = $(el).find('.game_title a, .title a');
+    const title = titleEl.text().trim();
+    const url = titleEl.attr('href');
+
+    if (title && url && url.startsWith('http')) {
+      games.push({ title, url });
+    }
+  });
+
+  console.log(`✅ Extracted ${games.length} games from listing.`);
+  return games;
+}
+
+async function runListIngestion(listingUrl: string) {
+  const games = await scrapeItchListingPage(listingUrl);
+  if (games.length === 0) {
+    console.log("⚠️ No games found on the page or request failed.");
+    return;
+  }
+
+  console.log(`🚀 Queueing ${games.length} games for database seeding and enrichment...`);
+  
+  let successCount = 0;
+  for (const game of games) {
+    const cleanSlug = "itch-" + game.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    
+    // Check if game already enriched
+    const existing = await prisma.game.findUnique({
+      where: { slug: cleanSlug },
+      select: { rawgEnriched: true }
+    });
+
+    if (existing?.rawgEnriched) {
+      console.log(`⏭️ "${game.title}" is already enriched. Skipping.`);
+      continue;
+    }
+
+    try {
+      await addAndEnrichCustomGame(game.title, game.url);
+      successCount++;
+      // Wait polite rate limit delay between scrapings
+      const delay = Math.floor(Math.random() * 3000) + 3000;
+      console.log(`  ⏳ Waiting ${delay}ms before next game...`);
+      await sleep(delay);
+    } catch (err) {
+      console.error(`  ❌ Failed to process "${game.title}":`, err);
+    }
+  }
+  
+  console.log(`\n🎉 Listing ingestion complete! Seeded and enriched ${successCount} new games.`);
+}
+
+async function showInteractiveMenu() {
+  console.log("\n==================================================");
+  console.log("🎮 ITCH.IO INGESTION & ENRICHMENT DASHBOARD");
+  console.log("==================================================");
+  console.log("1. Batch enrichment (scrape all unenriched games)");
+  console.log("2. Enrich specific game by DB slug");
+  console.log("3. Enrich specific game by itch.io URL");
+  console.log("4. Add and enrich a new custom itch.io game");
+  console.log("5. Import & enrich games from an itch.io listing page");
+  console.log("6. Exit");
+  console.log("==================================================");
+
+  const choice = await askQuestion("Select option [1-6]: ");
+
+  switch (choice) {
+    case "1": {
+      const limitStr = await askQuestion("Enter batch limit (default 20): ");
+      const limit = parseInt(limitStr, 10) || 20;
+      await runEnrichmentBatch(limit);
+      break;
+    }
+    case "2": {
+      const slug = await askQuestion("Enter game slug (e.g., itch-pyramida): ");
+      if (!slug) {
+        console.log("❌ Slug cannot be empty.");
+        break;
+      }
+      await runEnrichmentSingle({ slug });
+      break;
+    }
+    case "3": {
+      const url = await askQuestion("Enter itch.io page URL: ");
+      if (!url) {
+        console.log("❌ URL cannot be empty.");
+        break;
+      }
+      await runEnrichmentSingle({ url });
+      break;
+    }
+    case "4": {
+      const title = await askQuestion("Enter game title: ");
+      const url = await askQuestion("Enter itch.io page URL: ");
+      if (!title || !url) {
+        console.log("❌ Title and URL cannot be empty.");
+        break;
+      }
+      await addAndEnrichCustomGame(title, url);
+      break;
+    }
+    case "5": {
+      console.log("\nChoose or enter listing URL:");
+      console.log("1. 3D Horror (Popular)     -> https://itch.io/games/tag-3d/tag-horror");
+      console.log("2. 3D Horror (New & Pop)   -> https://itch.io/games/new-and-popular/tag-3d/tag-horror");
+      console.log("3. 3D Horror (Top Rated)   -> https://itch.io/games/top-rated/tag-3d/tag-horror");
+      console.log("4. Custom URL");
+      
+      const subChoice = await askQuestion("Select option [1-4]: ");
+      let targetUrl = "";
+      if (subChoice === "1") targetUrl = "https://itch.io/games/tag-3d/tag-horror";
+      else if (subChoice === "2") targetUrl = "https://itch.io/games/new-and-popular/tag-3d/tag-horror";
+      else if (subChoice === "3") targetUrl = "https://itch.io/games/top-rated/tag-3d/tag-horror";
+      else if (subChoice === "4") {
+        targetUrl = await askQuestion("Enter custom itch.io category/tag page URL: ");
+      }
+
+      if (!targetUrl) {
+        console.log("❌ URL cannot be empty.");
+        break;
+      }
+      await runListIngestion(targetUrl);
+      break;
+    }
+    case "6":
+      console.log("👋 Exiting dashboard.");
+      prisma.$disconnect();
+      pool.end();
+      process.exit(0);
+    default:
+      console.log("❌ Invalid option. Try again.");
+      await showInteractiveMenu();
+  }
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+
+  // If arguments are passed, execute non-interactively
+  const slugIndex = args.indexOf("--slug");
+  const urlIndex = args.indexOf("--url");
+  const limitIndex = args.indexOf("--limit");
+  const listUrlIndex = args.indexOf("--list-url");
+
+  if (slugIndex !== -1 && args[slugIndex + 1]) {
+    await runEnrichmentSingle({ slug: args[slugIndex + 1] });
+  } else if (urlIndex !== -1 && args[urlIndex + 1]) {
+    await runEnrichmentSingle({ url: args[urlIndex + 1] });
+  } else if (listUrlIndex !== -1 && args[listUrlIndex + 1]) {
+    await runListIngestion(args[listUrlIndex + 1]);
+  } else if (args.includes("--batch") || limitIndex !== -1) {
+    let limit = 20;
+    if (limitIndex !== -1 && args[limitIndex + 1]) {
+      const parsedLimit = parseInt(args[limitIndex + 1], 10);
+      if (!isNaN(parsedLimit)) limit = parsedLimit;
+    }
+    await runEnrichmentBatch(limit);
+  } else {
+    // No arguments -> run interactive menu dashboard
+    await showInteractiveMenu();
+  }
+}
+
+main()
   .then(() => {
     prisma.$disconnect();
     pool.end();
     process.exit(0);
   })
   .catch((err) => {
-    console.error("❌ Scraper Error:", err);
+    console.error("❌ Fatal Execution Error:", err);
     prisma.$disconnect();
     pool.end();
     process.exit(1);
