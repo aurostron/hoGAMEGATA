@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, usePathname } from "next/navigation";
 import { Search, Calendar, Sparkles } from "lucide-react";
-import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
 import { usePreferences } from "@/hooks/usePreferences";
 import PlatformLogos from "@/components/PlatformLogos";
 
@@ -269,7 +269,9 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                     className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
                   >
                     {/* Cover Image */}
-                    <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className={`relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center ${
+                      game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"
+                    }`}>
                       {game.coverUrl ? (
                         <Image
                           src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
@@ -286,11 +288,17 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                         </div>
                       )}
                       {/* Category Tag */}
-                      {getCategoryBadge(game.category, game.title) && (
-                        <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
-                          {getCategoryBadge(game.category, game.title)}
-                        </span>
-                      )}
+                      {(() => {
+                        const badge = getCategoryBadge(game.category, game.title);
+                        if (!badge) return null;
+                        const isVN = badge === "Visual Novel";
+                        const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
+                        return (
+                          <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
+                            {badge}
+                          </span>
+                        );
+                      })()}
                       {/* itch.io Badge */}
                       {game.slug.startsWith("itch-") && (
                         <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
@@ -315,7 +323,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                     <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                       <div>
                         <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
-                          {game.title}
+                          {cleanTitle(game.title)}
                         </h4>
                         <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
                           by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}

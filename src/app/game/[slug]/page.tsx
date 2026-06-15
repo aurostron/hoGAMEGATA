@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { after } from "next/server";
+import { headers } from "next/headers";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield, Flame } from "lucide-react";
@@ -8,7 +9,7 @@ import AuthButton from "@/components/AuthButton";
 import TrackControls from "@/components/TrackControls";
 import VibeTracker from "@/components/VibeTracker";
 
-import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
 import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
 import ReturnButton from "@/components/ReturnButton";
@@ -22,6 +23,9 @@ const CreatorGames = dynamic(() => import("@/components/CreatorGames"));
 interface GamePageProps {
   params: Promise<{
     slug: string;
+  }>;
+  searchParams: Promise<{
+    country?: string;
   }>;
 }
 
@@ -319,9 +323,28 @@ async function lazyEnrichProtonDbMetadata(game: any) {
   }
 }
 
-export default async function GameProfilePage({ params }: GamePageProps) {
+export default async function GameProfilePage({ params, searchParams }: GamePageProps) {
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const { slug } = resolvedParams;
+
+  const headersList = await headers();
+  const detectCountry = (): string => {
+    const geoHeaders = [
+      "x-vercel-ip-country",      // Vercel
+      "x-country",                // Netlify
+      "x-nf-country-code",        // Netlify Edge
+      "cf-ipcountry",             // Cloudflare
+      "cloudfront-viewer-country" // AWS CloudFront
+    ];
+    for (const h of geoHeaders) {
+      const val = headersList.get(h);
+      if (val && val.length === 2) return val.toUpperCase();
+    }
+    return "US";
+  };
+
+  const country = (resolvedSearchParams.country || detectCountry()).toUpperCase();
 
   // Query game details from database
   const game = await db.game.findUnique({
@@ -406,7 +429,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           
           {/* Left Column: Cover & Quick Stats */}
           <div className="md:col-span-1 space-y-6">
-            <div className="border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative aspect-[3/4] w-full">
+            <div className={`border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative w-full ${
+              game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"
+            }`}>
               {game.coverUrl ? (
                 <div className="relative w-full h-full">
                   <Image 
@@ -423,18 +448,16 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   <span className="font-mono text-xs uppercase tracking-widest text-white">No Cover Art</span>
                 </div>
               )}
-              {/* Category Tag */}
-              {getCategoryBadge(game.category, game.title) && (
-                <span className="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
-                  {getCategoryBadge(game.category, game.title)}
-                </span>
-              )}
-              {/* itch.io Badge */}
-              {game.slug.startsWith("itch-") && (
-                <span className="absolute top-3 right-3 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
-                  itch.io
-                </span>
-              )}
+              {/* Category Tag (Excluding Visual Novels) */}
+              {(() => {
+                const badge = getCategoryBadge(game.category, game.title);
+                if (!badge || badge === "Visual Novel") return null;
+                return (
+                  <span className="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]">
+                    {badge}
+                  </span>
+                );
+              })()}
             </div>
 
             {/* Quick Specs Container */}
@@ -564,11 +587,18 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                     {game.status}
                   </span>
                 )}
-                {getCategoryBadge(game.category, game.title) && (
-                  <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-[#7f1d1d] px-2 py-0.5 font-bold bg-[#7f1d1d] text-[#fca5a5] w-fit block">
-                    {getCategoryBadge(game.category, game.title)}
-                  </span>
-                )}
+                {(() => {
+                  const badge = getCategoryBadge(game.category, game.title);
+                  if (!badge) return null;
+                  const isVN = badge === "Visual Novel";
+                  const borderClass = isVN ? "border-[#581c87]" : "border-[#7f1d1d]";
+                  const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5]";
+                  return (
+                    <span className={`font-mono text-[9px] uppercase tracking-widest border px-2 py-0.5 font-bold w-fit block ${borderClass} ${bgClass}`}>
+                      {badge}
+                    </span>
+                  );
+                })()}
                 {game.slug.startsWith("itch-") && (
                   <span className="font-mono text-[9px] text-black uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
                     itch.io
@@ -576,7 +606,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 )}
               </div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
-                {game.title}
+                {cleanTitle(game.title)}
               </h2>
               <div className="flex flex-wrap gap-2 text-xs font-mono font-bold uppercase">
                 <span className="text-white/60">Developed by:</span>
@@ -652,19 +682,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               </div>
             )}
 
-            {/* Genre badging */}
-            <div className="border-t border-white pt-6 flex flex-wrap gap-4 items-center">
-              <div className="flex items-center gap-1.5 font-mono text-[10px] text-white/60 uppercase tracking-widest font-bold">
-                Genres:
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {game.genres.map(genre => (
-                  <span key={genre.slug} className="border border-white/40 text-white/70 font-mono text-[9px] uppercase tracking-wider px-2 py-0.5">
-                    {genre.name}
-                  </span>
-                ))}
-              </div>
-            </div>
+
 
             {/* Cheapest Deals Comparison Engine (Client-Side Asynchronous Load) */}
             <PriceComparison
@@ -672,6 +690,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               gameSlug={game.slug}
               gameTitle={game.title}
               purchaseLinks={game.purchaseLinks}
+              country={country}
             />
 
             {/* Outlinks & Documentation */}

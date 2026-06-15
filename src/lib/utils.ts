@@ -11,14 +11,21 @@ export function getHighResCoverUrl(url: string | null): string | null {
 }
 
 export function getCategoryBadge(category: number | null, title?: string): string | null {
-  if (category === 1) return "DLC";
-  if (category === 2) return "Expansion";
-  if (category === 4) return "Standalone";
-  if (category === 8) return "Remake";
-  if (category === 9) return "Remaster";
-  
   if (title) {
     const lower = title.toLowerCase();
+    
+    // Check for Visual Novel markers first so a Visual Novel DLC gets categorized correctly or VNs stand out
+    if (
+      lower.includes("[visual novel]") ||
+      lower.includes("(visual novel)") ||
+      lower.includes("[vn]") ||
+      lower.includes("(vn)") ||
+      lower.includes("visual novel") ||
+      lower.includes("interactive novel")
+    ) {
+      return "Visual Novel";
+    }
+
     if (
       lower.includes("banned footage") ||
       lower.includes("end of zoe") ||
@@ -40,6 +47,13 @@ export function getCategoryBadge(category: number | null, title?: string): strin
       return "Expansion";
     }
   }
+
+  if (category === 1) return "DLC";
+  if (category === 2) return "Expansion";
+  if (category === 4) return "Standalone";
+  if (category === 8) return "Remake";
+  if (category === 9) return "Remaster";
+  
   return null;
 }
 
@@ -53,4 +67,13 @@ export function getCloudinaryFetchUrl(originalUrl: string | null, isTrending?: b
   }
   
   return originalUrl;
+}
+
+export function cleanTitle(title: string): string {
+  if (!title) return "";
+  // Strip bracketed text like [FREE] [VISUAL NOVEL] or parenthesized text like (demo)
+  return title
+    .replace(/\s*[\[\(][^\]\)]*[\]\)]\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

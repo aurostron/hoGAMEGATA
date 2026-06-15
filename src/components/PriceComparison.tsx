@@ -9,6 +9,7 @@ interface PriceDeal {
   retailPrice: number;
   discountPercent: number;
   dealUrl: string;
+  currency?: string;
 }
 
 interface PurchaseLink {
@@ -21,27 +22,54 @@ interface PriceComparisonProps {
   gameSlug: string;
   gameTitle: string;
   purchaseLinks: PurchaseLink[];
+  country?: string;
 }
+
+const REGIONS = [
+  { code: "US", label: "USD ($)" },
+  { code: "IN", label: "INR (₹)" },
+  { code: "EU", label: "EUR (€)" },
+  { code: "GB", label: "GBP (£)" },
+  { code: "CA", label: "CAD (C$)" },
+  { code: "AU", label: "AUD (A$)" }
+];
 
 export default function PriceComparison({
   gameId,
   gameSlug,
   gameTitle,
-  purchaseLinks
+  purchaseLinks,
+  country = "US"
 }: PriceComparisonProps) {
   const [deals, setDeals] = useState<PriceDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [region, setRegion] = useState<string>("US");
+
+  // Load persisted region setting on mount
+  useEffect(() => {
+    const savedRegion = localStorage.getItem("gamegata_currency_region");
+    if (savedRegion && REGIONS.some(r => r.code === savedRegion)) {
+      setRegion(savedRegion);
+    } else {
+      const serverVal = country.toUpperCase();
+      const isValid = REGIONS.some(r => r.code === serverVal);
+      setRegion(isValid ? serverVal : "US");
+    }
+  }, [country]);
 
   useEffect(() => {
     async function loadPrices() {
+      setLoading(true);
+      setError(false);
       try {
         const response = await fetch(`/api/games/${gameId}/prices`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: gameTitle,
-            purchaseLinks: purchaseLinks
+            purchaseLinks: purchaseLinks,
+            country: region
           })
         });
 
@@ -60,13 +88,29 @@ export default function PriceComparison({
     }
 
     loadPrices();
-  }, [gameId, gameTitle, purchaseLinks]);
+  }, [gameId, gameTitle, purchaseLinks, region]);
 
+  const handleRegionChange = (newRegion: string) => {
+    setRegion(newRegion);
+    localStorage.setItem("gamegata_currency_region", newRegion);
+    window.dispatchEvent(new Event("gamegata_currency_updated"));
+  };
+
+  // Keep rendering skeleton while loading
   if (loading) {
     return (
       <div className="border-t border-white pt-6 space-y-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between">
           <span className="font-mono text-[12px] text-white uppercase tracking-widest font-black">Cheapest Deals</span>
+          <select 
+            disabled
+            value={region}
+            className="font-mono text-[10px] uppercase border border-white/20 bg-black text-white/45 px-2 py-0.5 cursor-not-allowed rounded-none outline-none"
+          >
+            {REGIONS.map(r => (
+              <option key={r.code} value={r.code}>{r.label}</option>
+            ))}
+          </select>
         </div>
         <div className="border border-white bg-black divide-y divide-white/20">
           {[1, 2, 3].map((i) => (
@@ -90,8 +134,17 @@ export default function PriceComparison({
 
   return (
     <div className="border-t border-white pt-6 space-y-4">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between">
         <span className="font-mono text-[12px] text-white uppercase tracking-widest font-black">Cheapest Deals</span>
+        <select 
+          value={region}
+          onChange={(e) => handleRegionChange(e.target.value)}
+          className="font-mono text-[10px] uppercase border border-white bg-black text-white px-2 py-0.5 cursor-pointer font-bold outline-none rounded-none focus:border-white focus:ring-0"
+        >
+          {REGIONS.map(r => (
+            <option key={r.code} value={r.code} className="bg-black text-white">{r.label}</option>
+          ))}
+        </select>
       </div>
 
       {error ? (
@@ -103,6 +156,23 @@ export default function PriceComparison({
           {deals.map((deal, idx) => {
             const isCheapest = idx === 0;
             const storeKey = deal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const currencyCode = deal.currency || "USD";
+            const formatPrice = (amount: number) => {
+              try {
+                return new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: currencyCode,
+                  minimumFractionDigits: 2,
+                }).format(amount);
+              } catch (e) {
+                return new Intl.NumberFormat("en-US", {
+                  style: "currency",
+                  currency: "USD",
+                  minimumFractionDigits: 2,
+                }).format(amount);
+              }
+            };
+
             return (
               <div 
                 key={idx}
@@ -130,11 +200,11 @@ export default function PriceComparison({
                   <div className="flex items-baseline gap-2 font-mono">
                     {deal.discountPercent > 0 && (
                       <span className="text-[12px] text-white/50 line-through">
-                        ${deal.retailPrice.toFixed(2)}
+                        {formatPrice(deal.retailPrice)}
                       </span>
                     )}
                     <span className={`text-base font-black ${isCheapest ? "text-emerald-400" : "text-white"}`}>
-                      ${deal.dealPrice.toFixed(2)}
+                      {formatPrice(deal.dealPrice)}
                     </span>
                   </div>
                   
