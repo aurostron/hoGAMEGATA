@@ -6,15 +6,13 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
+COPY prisma ./prisma/
 
 # Install dependencies
 RUN npm ci
 
 # Copy all files
 COPY . .
-
-# Generate Prisma Client
-RUN npx prisma generate
 
 # Expose default Hugging Face port
 EXPOSE 7860
