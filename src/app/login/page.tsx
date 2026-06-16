@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ShieldAlert, ArrowLeft } from "lucide-react";
 
 function LoginForm() {
-  const { user, login, signUp, isSupabase } = useAuth();
+  const { user, login, signUp, loginWithGoogle, isSupabase } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect") || "/";
@@ -20,6 +20,34 @@ function LoginForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [isCapped, setIsCapped] = useState(false);
+
+  // Handle URL errors on load (e.g. redirect back from OAuth when limit is hit)
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "limit_reached") {
+      setErrorMsg("Registration limit of 10,000 users has been reached.");
+    } else if (errorParam === "auth_failed") {
+      setErrorMsg("Authentication failed. Please try again.");
+    }
+  }, [searchParams]);
+
+  // Check if signup cap is reached
+  useEffect(() => {
+    async function checkLimit() {
+      try {
+        const res = await fetch("/api/user/check-limit");
+        const data = await res.json();
+        if (data.capped) {
+          setIsCapped(true);
+          setIsRegistering(false); // Force off registration tab
+        }
+      } catch (err) {
+        console.error("Failed to query user limit status:", err);
+      }
+    }
+    checkLimit();
+  }, []);
 
   // If already logged in, redirect away
   useEffect(() => {
@@ -75,6 +103,22 @@ function LoginForm() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setErrorMsg("");
+    setSuccessMsg("");
+    setAuthLoading(true);
+    try {
+      const res = await loginWithGoogle();
+      if (res && !res.success) {
+        setErrorMsg(res.error || "Failed to authenticate with Google.");
+        setAuthLoading(false);
+      }
+    } catch (err) {
+      setErrorMsg("Failed to initiate Google sign in.");
+      setAuthLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-md border border-white bg-black p-8 space-y-6">
       <div className="space-y-2 text-center">
@@ -85,6 +129,14 @@ function LoginForm() {
           {isRegistering ? "Establish new profile keys" : "Authenticate terminal credentials"}
         </p>
       </div>
+
+      {/* Capped Banner */}
+      {isCapped && (
+        <div className="border border-white p-3.5 bg-black font-mono text-[10px] leading-relaxed uppercase text-white font-bold tracking-tight text-center animate-pulse">
+          [ CAP LIMIT REACHED: REGISTRATIONS CLOSED ]
+          <span className="block font-normal text-white/60 mt-1">Only existing accounts may authenticate.</span>
+        </div>
+      )}
 
       {/* Mode Indicator Banner */}
       <div className="border border-white p-3.5 flex gap-3 items-start bg-black font-mono text-[10px] leading-relaxed uppercase">
@@ -143,31 +195,50 @@ function LoginForm() {
           </div>
         )}
 
-        <button
-          type="submit"
-          disabled={authLoading}
-          className="w-full py-3 border border-white bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-widest transition-all duration-150 disabled:opacity-50"
-        >
-          {authLoading ? "[ Syncing... ]" : isRegistering ? "[ Register Account ]" : "[ Authenticate ]"}
-        </button>
+        <div className="flex flex-col gap-3 pt-2">
+          <button
+            type="submit"
+            disabled={authLoading}
+            className="w-full py-3 border border-white bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-widest transition-all duration-150 disabled:opacity-50 cursor-pointer"
+          >
+            {authLoading ? "[ Syncing... ]" : isRegistering ? "[ Register Account ]" : "[ Authenticate ]"}
+          </button>
+
+          <div className="relative flex py-1.5 items-center">
+            <div className="flex-grow border-t border-white/20"></div>
+            <span className="flex-shrink mx-4 text-[9px] text-white/40 uppercase tracking-widest font-black">OR</span>
+            <div className="flex-grow border-t border-white/20"></div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={authLoading}
+            className="w-full py-3 border border-white bg-white text-black hover:bg-black hover:text-white font-bold uppercase tracking-widest transition-all duration-150 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>[ Sign In with Google ]</span>
+          </button>
+        </div>
       </form>
 
       {/* Toggles */}
-      <div className="pt-4 border-t border-white/20 text-center font-mono text-[10px] uppercase">
-        <button
-          type="button"
-          onClick={() => {
-            setIsRegistering(!isRegistering);
-            setErrorMsg("");
-            setSuccessMsg("");
-          }}
-          className="text-white hover:underline tracking-wider font-bold"
-        >
-          {isRegistering 
-            ? "[ Already registered? Authenticate here ]" 
-            : "[ Create new database profile key ]"}
-        </button>
-      </div>
+      {!isCapped && (
+        <div className="pt-4 border-t border-white/20 text-center font-mono text-[10px] uppercase">
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setErrorMsg("");
+              setSuccessMsg("");
+            }}
+            className="text-white hover:underline tracking-wider font-bold cursor-pointer"
+          >
+            {isRegistering 
+              ? "[ Already registered? Authenticate here ]" 
+              : "[ Create new database profile key ]"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

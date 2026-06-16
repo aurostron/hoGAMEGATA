@@ -630,7 +630,7 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
             <VibeTracker tags={game.tags} genres={game.genres} />
 
             {/* Description Paragraph */}
-            <div className="border-t border-white pt-6 space-y-4">
+            <div className="border-t border-white pt-6 space-y-4 select-none">
               <div className="flex items-center gap-2">
                 <Compass className="w-4 h-4 text-white" />
                 <span className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Description & Overview</span>

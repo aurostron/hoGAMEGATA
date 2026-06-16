@@ -43,7 +43,8 @@ export default async function Page() {
     take: 20,
     orderBy: { createdAt: 'desc' },
     include: {
-      tags: true
+      tags: true,
+      priceSnapshots: true
     }
   });
 
@@ -64,7 +65,16 @@ export default async function Page() {
     developerNames: g.developerNames,
     genreNames: g.genreNames,
     platformNames: g.platformNames,
-    tags: g.tags.map(t => ({ name: t.name, slug: t.slug }))
+    tags: g.tags.map(t => ({ name: t.name, slug: t.slug })),
+    priceSnapshots: g.priceSnapshots.map(p => ({
+      storeName: p.storeName,
+      dealPrice: p.dealPrice,
+      retailPrice: p.retailPrice,
+      discountPercent: p.discountPercent,
+      dealUrl: p.dealUrl,
+      currency: p.currency,
+      country: p.country
+    }))
   }));
 
   const totalCount = games;

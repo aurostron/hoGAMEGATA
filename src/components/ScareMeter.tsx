@@ -41,7 +41,12 @@ export default function ScareMeter({ scareRating, scareProfile, reviewCount }: S
   ];
 
   return (
-    <div className="border border-white bg-black p-6 space-y-6">
+    <div 
+      className="border border-white bg-black p-6 space-y-6 select-none"
+      onCopy={(e) => e.preventDefault()}
+      onContextMenu={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+    >
       <div className="flex justify-between items-baseline border-b border-white/20 pb-4">
         <h3 className="font-mono text-sm uppercase tracking-widest font-black text-white flex items-center gap-2">
           ⚡ Scare Profile
