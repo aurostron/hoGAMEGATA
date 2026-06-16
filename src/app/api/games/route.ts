@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { preprocessSearchQuery, embedQuery } from "@/lib/searchEngine";
 
 interface CacheEntry {
   data: any;
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
+    const mode = searchParams.get("mode")?.trim() || "exact";
     const tagsParam = searchParams.get("tags")?.trim() || "";
     const tag = searchParams.get("tag")?.trim() || "";
     const activeTagsString = tagsParam || tag;
@@ -40,13 +42,20 @@ export async function GET(request: NextRequest) {
       id: true,
       title: true,
       slug: true,
+      summary: true,
+      status: true,
       coverUrl: true,
+      isTrending: true,
+      rating: true,
+      category: true,
+      esrbRating: true,
+      pegiRating: true,
+      developerNames: true,
       genreNames: true,
       platformNames: true,
       releaseDate: true,
-      rating: true,
-      // Removed fields like status, isTrending, category, esrbRating, developerNames, tags for leaner API payload
-      // These can be fetched from a separate endpoint if needed for specific game pages
+      tags: { select: { name: true, slug: true } },
+      priceSnapshots: true,
     };
 
     const where: Prisma.GameWhereInput = {};
@@ -65,37 +74,79 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 1. Tag Filtering (Filter by Mood Tag slug)
-    if (selectedTags.length > 0) {
-      where.AND = selectedTags.map(tagSlug => ({
-        tags: {
-          some: {
-            slug: tagSlug
-          }
-        }
-      }));
-    }
-
     let matchedIds: string[] = [];
+    let semanticExtractedSlugs: string[] = [];
 
     // 2. Server-side Search or Random filtering
     if (search) {
-      const rawMatches = await db.$queryRaw<{ id: string }[]>(
-        Prisma.sql`
-          SELECT id FROM "Game"
-          WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${search}))
-             OR similarity(title, ${search}) > 0.18
-             OR similarity(coalesce("developerNames", ''), ${search}) > 0.2
-             OR similarity(coalesce("genreNames", ''), ${search}) > 0.2
-             OR similarity(coalesce("platformNames", ''), ${search}) > 0.2
-          ORDER BY GREATEST(
-            similarity(title, ${search}),
-            similarity(coalesce("developerNames", ''), ${search})
-          ) DESC
-          LIMIT 100;
-        `
-      );
-      matchedIds = rawMatches.map(m => m.id);
+      if (mode === "semantic") {
+        // Preprocess search query: extract tag constraints and expand vocabulary
+        const { cleanedQuery, expandedQuery, extractedSlugs } = preprocessSearchQuery(search);
+        semanticExtractedSlugs = extractedSlugs;
+
+        // Perform FTS keyword search
+        const ftsMatches = await db.$queryRaw<{ id: string }[]>(
+          Prisma.sql`
+            SELECT id FROM "Game"
+            WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${cleanedQuery}))
+               OR similarity(title, ${cleanedQuery}) > 0.18
+            ORDER BY similarity(title, ${cleanedQuery}) DESC
+            LIMIT 100;
+          `
+        );
+
+        // Perform pgvector similarity search
+        let vectorMatches: { id: string }[] = [];
+        try {
+          const queryVector = await embedQuery(expandedQuery || cleanedQuery || search);
+          if (queryVector && queryVector.length > 0) {
+            const vectorString = `[${queryVector.join(",")}]`;
+            vectorMatches = await db.$queryRawUnsafe<{ id: string }[]>(
+              `SELECT id FROM "Game" WHERE embedding IS NOT NULL ORDER BY embedding <-> '${vectorString}'::vector LIMIT 100;`
+            );
+          }
+        } catch (embedErr) {
+          console.error("❌ Semantic embedding search failed:", embedErr);
+        }
+
+        // Combine using Reciprocal Rank Fusion (RRF) with constant k=60
+        const rrfScores = new Map<string, number>();
+        const k = 60;
+
+        ftsMatches.forEach((match, index) => {
+          const rank = index + 1;
+          rrfScores.set(match.id, (rrfScores.get(match.id) || 0) + 1 / (k + rank));
+        });
+
+        vectorMatches.forEach((match, index) => {
+          const rank = index + 1;
+          rrfScores.set(match.id, (rrfScores.get(match.id) || 0) + 1 / (k + rank));
+        });
+
+        matchedIds = Array.from(rrfScores.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(entry => entry[0]);
+
+      } else {
+        // Standard FTS / Exact query match
+        const rawMatches = await db.$queryRaw<{ id: string }[]>(
+          Prisma.sql`
+            SELECT id FROM "Game"
+            WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${search}))
+               OR similarity(title, ${search}) > 0.18
+               OR similarity(coalesce("developerNames", ''), ${search}) > 0.2
+               OR similarity(coalesce("genreNames", ''), ${search}) > 0.2
+               OR similarity(coalesce("platformNames", ''), ${search}) > 0.2
+            ORDER BY GREATEST(
+              similarity(title, ${search}),
+              similarity(coalesce("developerNames", ''), ${search})
+            ) DESC
+            LIMIT 100;
+          `
+        );
+        matchedIds = rawMatches.map(m => m.id);
+      }
+
       where.id = where.id && (where.id as any).not 
         ? { in: matchedIds, not: (where.id as any).not } 
         : { in: matchedIds };
@@ -127,6 +178,18 @@ export async function GET(request: NextRequest) {
       where.id = where.id && (where.id as any).not 
         ? { in: matchedIds, not: (where.id as any).not } 
         : { in: matchedIds };
+    }
+
+    // 1. Tag Filtering (Filter by Mood Tag slug + extracted semantic slugs)
+    const combinedTags = [...selectedTags, ...semanticExtractedSlugs];
+    if (combinedTags.length > 0) {
+      where.AND = combinedTags.map(tagSlug => ({
+        tags: {
+          some: {
+            slug: tagSlug
+          }
+        }
+      }));
     }
 
     // 3. Query Execution with Cursor Pagination

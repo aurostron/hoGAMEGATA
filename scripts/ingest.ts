@@ -741,7 +741,9 @@ async function runIngestion() {
         }
 
         // Generate and update the semantic embedding
-        const textToEmbed = `${g.name}. ${g.summary || ""} ${g.storyline || ""}`.trim();
+        const genreList = g.genres?.map(gen => gen.name).join(", ") || "";
+        const keywordList = g.keywords?.map(kw => kw.name).join(", ") || "";
+        const textToEmbed = `${g.name}. Description: ${g.summary || ""} ${g.storyline || ""}. Genres: ${genreList}. Keywords: ${keywordList}`.trim();
         if (textToEmbed) {
           try {
             const output = await extractor(textToEmbed, { pooling: "mean", normalize: true });

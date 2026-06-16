@@ -47,6 +47,8 @@ export async function GET(request: Request) {
       rating: true,
       genreNames: true,
       platformNames: true,
+      priceSnapshots: true,
+      tags: { select: { name: true, slug: true } },
     };
 
     const where: Prisma.GameWhereInput = {};

@@ -40,7 +40,7 @@ async function syncGamePrices(game: any) {
 
     if (freshDeals.length > 0) {
       await prisma.$transaction([
-        prisma.priceSnapshot.deleteMany({ where: { gameId: game.id } }),
+        prisma.priceSnapshot.deleteMany({ where: { gameId: game.id, country: "US" } }),
         prisma.priceSnapshot.createMany({
           data: freshDeals.map(deal => ({
             gameId: game.id,
@@ -49,6 +49,7 @@ async function syncGamePrices(game: any) {
             retailPrice: deal.retailPrice,
             discountPercent: deal.discountPercent,
             dealUrl: deal.dealUrl,
+            country: "US",
             updatedAt: new Date()
           }))
         })

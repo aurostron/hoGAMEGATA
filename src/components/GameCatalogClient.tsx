@@ -55,9 +55,10 @@ interface GameCardProps {
   activeRegion: string;
   findCheapestDeal: (game: GameData) => any;
   mobileLayout?: "grid" | "list";
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = "grid" }: GameCardProps) {
+function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = "grid", onClick }: GameCardProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resolvedDeal, setResolvedDeal] = useState<any>(null);
@@ -115,6 +116,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       href={`/game/${game.slug}`}
       onContextMenu={handleContextMenu}
       onMouseLeave={handleMouseLeave}
+      onClick={onClick}
       data-tour={index === 0 ? "game-card" : undefined}
       className={`border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
         mobileLayout === "list"
@@ -287,6 +289,21 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [activeRegion, setActiveRegion] = useState("US");
   const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
   const [sortOpen, setSortOpen] = useState(false);
+  const [isSemantic, setIsSemantic] = useState(searchParams.get("mode") === "semantic");
+
+  const handleGameClick = (gameId: string, index: number) => {
+    if (debouncedSearch.trim()) {
+      fetch("/api/search/click", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: debouncedSearch,
+          gameId,
+          position: index
+        })
+      }).catch(err => console.warn("Failed to log search click:", err));
+    }
+  };
 
   const handleFeelingLucky = async () => {
     if (!searchQuery.trim()) {
@@ -298,7 +315,8 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     window.dispatchEvent(new Event("nextjs-route-start"));
     setLoading(true);
     try {
-      const response = await fetch(`/api/games?search=${encodeURIComponent(searchQuery)}&limit=10`);
+      const modeParam = isSemantic ? "&mode=semantic" : "";
+      const response = await fetch(`/api/games?search=${encodeURIComponent(searchQuery)}&limit=10${modeParam}`);
       if (response.ok) {
         const data = await response.json();
         const fetchedGames: GameData[] = data.games || [];
@@ -379,7 +397,10 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   // Sync states with browser URL search parameters dynamically
   useEffect(() => {
     const params = new URLSearchParams();
-    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (debouncedSearch) {
+      params.set("search", debouncedSearch);
+      if (isSemantic) params.set("mode", "semantic");
+    }
     if (sortBy && sortBy !== "latest") params.set("sort", sortBy);
 
     const queryString = params.toString();
@@ -390,14 +411,16 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     if (currentQuery !== expectedQuery) {
       window.history.replaceState(null, "", newUrl);
     }
-  }, [debouncedSearch, sortBy, pathname]);
+  }, [debouncedSearch, isSemantic, sortBy, pathname]);
 
   useEffect(() => {
     const query = searchParams.get("search") || "";
     const sort = (searchParams.get("sort") as "latest" | "trending") || "latest";
+    const mode = searchParams.get("mode") === "semantic";
     setSearchQuery(query);
     setDebouncedSearch(query);
     setSortBy(sort);
+    setIsSemantic(mode);
   }, [searchParams]);
 
   useEffect(() => {
@@ -416,7 +439,10 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       setLoading(true);
       try {
         const queryParams = new URLSearchParams();
-        if (debouncedSearch) queryParams.set("search", debouncedSearch);
+        if (debouncedSearch) {
+          queryParams.set("search", debouncedSearch);
+          if (isSemantic) queryParams.set("mode", "semantic");
+        }
         if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
         queryParams.set("limit", "20");
 
@@ -434,14 +460,17 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       }
     }
     fetchInitialGames();
-  }, [debouncedSearch, sortBy, hasInitialFetchRun]);
+  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun]);
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
     try {
       const queryParams = new URLSearchParams();
-      if (debouncedSearch) queryParams.set("search", debouncedSearch);
+      if (debouncedSearch) {
+        queryParams.set("search", debouncedSearch);
+        if (isSemantic) queryParams.set("mode", "semantic");
+      }
       if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
       queryParams.set("cursor", nextCursor);
       queryParams.set("limit", "20");
@@ -497,7 +526,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by title, developer, genre, vibe..."
+              placeholder={isSemantic ? "Describe vibes, concepts, settings..." : "Search by title, developer, genre, vibe..."}
               className="block w-full pl-10 pr-4 py-3.5 bg-black border border-white/30 focus:border-white rounded-none focus:outline-none text-sm text-white placeholder-white/30 transition-all duration-200 font-medium tracking-wide"
             />
             {debouncedSearch && (
@@ -516,6 +545,26 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           >
             {loading ? "[ SEARCHING... ]" : "[ I'M FEELING LUCKY ]"}
           </button>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-white/50 tracking-wider">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsSemantic(prev => !prev)}
+              className={`px-2.5 py-1 border transition-all duration-150 cursor-pointer ${
+                isSemantic 
+                  ? "bg-white text-black border-white font-bold" 
+                  : "bg-black text-white/50 border-white/20 hover:border-white/50 hover:text-white"
+              }`}
+            >
+              {isSemantic ? "[ VIBE SEARCH: ON ]" : "[ VIBE SEARCH: OFF ]"}
+            </button>
+            <span className="hidden sm:inline text-[9px] text-white/40">
+              {isSemantic 
+                ? "Searches by descriptions, concepts & settings (e.g. 'alien isolation but co-op')"
+                : "Searches by exact titles, developers, or genres"
+              }
+            </span>
+          </div>
         </div>
       </section>
 
@@ -622,6 +671,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                     activeRegion={activeRegion}
                     findCheapestDeal={findCheapestDeal}
                     mobileLayout={mobileLayout}
+                    onClick={() => handleGameClick(game.id, index)}
                   />
                 ))}
               </div>
