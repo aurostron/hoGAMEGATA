@@ -10,7 +10,7 @@ on:
       limit:
         description: 'Override batch record limit per stage'
         required: false
-        default: '100'
+        default: '30'
       mode:
         description: 'Sync Mode (--sync or --reset)'
         required: true
