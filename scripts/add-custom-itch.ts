@@ -58,6 +58,7 @@ async function addCustomItchGame(title: string, itchUrl: string) {
   let summaryHtml: string | null = null;
   let coverUrl: string | null = null;
   let extractedTags: string[] = [];
+  let developerName: string | null = null;
 
   if (html) {
     const $ = cheerio.load(html);
@@ -85,10 +86,52 @@ async function addCustomItchGame(title: string, itchUrl: string) {
       const tagText = $(el).text().trim();
       if (tagText) extractedTags.push(tagText);
     });
+
+    // Try breadcrumbs or author link selectors
+    const authorLink = $('.game_header .breadcrumb a, .game_info_panel a[href*=".itch.io"], a.profile_link, .author_name a').first();
+    if (authorLink.length) {
+      developerName = authorLink.text().trim();
+    }
+    
+    // Fallback: extract username from the URL path if possible
+    if (!developerName) {
+      const canonical = $('link[rel="canonical"]').attr('href');
+      if (canonical) {
+        const match = canonical.match(/https?:\/\/([^.]+)\.itch\.io/);
+        if (match) {
+          developerName = match[1];
+        }
+      }
+    }
     
     console.log(`✨ Scraped successfully: found ${screenshots.length} screenshots, cover image, and ${extractedTags.length} tags.`);
   } else {
     console.warn(`⚠️ Could not fetch details from ${itchUrl}. Initializing default database record.`);
+  }
+
+  // If developer name not extracted from HTML, extract from the URL subdomain
+  if (!developerName) {
+    const match = itchUrl.match(/https?:\/\/([^.]+)\.itch\.io/);
+    if (match) {
+      const extractedDevName = match[1];
+      developerName = extractedDevName
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    }
+  }
+
+  let developerConnect: any = undefined;
+  if (developerName) {
+    const devSlug = developerName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const dbDev = await prisma.developer.upsert({
+      where: { slug: devSlug },
+      update: { name: developerName },
+      create: { name: developerName, slug: devSlug }
+    });
+    developerConnect = {
+      connect: { id: dbDev.id }
+    };
   }
 
   // Create or Update the game entry
@@ -102,6 +145,8 @@ async function addCustomItchGame(title: string, itchUrl: string) {
       summary: summaryHtml || undefined,
       coverUrl: coverUrl || undefined,
       screenshots: screenshots.length > 0 ? screenshots : undefined,
+      developerNames: developerName || undefined,
+      developers: developerConnect,
     },
     create: {
       title,
@@ -112,6 +157,8 @@ async function addCustomItchGame(title: string, itchUrl: string) {
       summary: summaryHtml,
       coverUrl,
       screenshots,
+      developerNames: developerName || null,
+      developers: developerConnect,
       purchaseLinks: {
         create: {
           storeName: "itch.io",

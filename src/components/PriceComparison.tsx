@@ -99,9 +99,9 @@ export default function PriceComparison({
   // Keep rendering skeleton while loading
   if (loading) {
     return (
-      <div className="border-t border-white pt-6 space-y-4">
+      <div className="pt-6 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[12px] text-white uppercase tracking-widest font-black">Cheapest Deals</span>
+          <span className="font-mono text-xs text-white uppercase tracking-widest font-black">Cheapest Deals</span>
           <select 
             disabled
             value={region}
@@ -133,9 +133,9 @@ export default function PriceComparison({
   }
 
   return (
-    <div className="border-t border-white pt-6 space-y-4">
+    <div className="pt-6 space-y-4">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[12px] text-white uppercase tracking-widest font-black">Cheapest Deals</span>
+        <span className="font-mono text-xs text-white uppercase tracking-widest font-black">Cheapest Deals</span>
         <select 
           value={region}
           onChange={(e) => handleRegionChange(e.target.value)}
