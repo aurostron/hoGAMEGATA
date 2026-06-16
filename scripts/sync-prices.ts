@@ -65,12 +65,22 @@ async function syncGamePrices(game: any) {
 }
 
 async function main() {
-  console.log("🚀 Starting Dynamic Price Comparison Sync Warmer (CheapShark + ITAD)...");
+  const args = process.argv.slice(2);
+  let limit = 100;
+  const limitIndex = args.indexOf("--limit");
+  if (limitIndex !== -1 && args[limitIndex + 1]) {
+    const parsedLimit = parseInt(args[limitIndex + 1], 10);
+    if (!isNaN(parsedLimit)) {
+      limit = parsedLimit;
+    }
+  }
+
+  console.log(`🚀 Starting Dynamic Price Comparison Sync Warmer (CheapShark + ITAD) with limit: ${limit}...`);
   const startTime = Date.now();
 
   const games = await prisma.game.findMany({
     orderBy: { popularity: { sort: "desc", nulls: "last" } },
-    take: 150,
+    take: limit,
     include: { purchaseLinks: true },
   });
 
