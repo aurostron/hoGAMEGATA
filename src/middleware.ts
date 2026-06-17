@@ -13,7 +13,9 @@ const PUBLIC_PATHS = [
   "/legal"
 ];
 
-export function proxy(request: NextRequest) {
+export const runtime = "edge";
+
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Allow public paths without authentication
