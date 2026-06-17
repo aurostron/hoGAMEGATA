@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, usePathname } from "next/navigation";
@@ -115,7 +115,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       href={`/game/${game.slug}`}
       onContextMenu={handleContextMenu}
       onMouseLeave={handleMouseLeave}
-      className={`border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
+      className={`border border-white bg-black/90 rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
         mobileLayout === "list"
           ? "flex-row h-28 md:flex-col md:h-full"
           : "flex-col h-full"
@@ -286,6 +286,40 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
   const [sortOpen, setSortOpen] = useState(false);
   const [layoutOpen, setLayoutOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Setup cursor spotlight tracking for hover devices
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches) {
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        containerRef.current.style.setProperty("--mouse-x", `${x}px`);
+        containerRef.current.style.setProperty("--mouse-y", `${y}px`);
+      };
+
+      const handleMouseLeave = () => {
+        if (!containerRef.current) return;
+        containerRef.current.style.setProperty("--mouse-x", "-999px");
+        containerRef.current.style.setProperty("--mouse-y", "-999px");
+      };
+
+      const container = containerRef.current;
+      if (container) {
+        container.addEventListener("mousemove", handleMouseMove);
+        container.addEventListener("mouseleave", handleMouseLeave);
+      }
+
+      return () => {
+        if (container) {
+          container.removeEventListener("mousemove", handleMouseMove);
+          container.removeEventListener("mouseleave", handleMouseLeave);
+        }
+      };
+    }
+  }, []);
 
   // Load layout setting from localStorage on mount
   useEffect(() => {
@@ -447,7 +481,14 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         </section>
 
         {/* Catalog Mapping Grid */}
-        <section className="space-y-6">
+        <section 
+          ref={containerRef}
+          className="space-y-6 relative"
+          style={{
+            backgroundImage: "radial-gradient(circle 350px at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(255, 255, 255, 0.06), transparent 80%)",
+            backgroundAttachment: "local"
+          }}
+        >
           <div className="flex flex-col gap-3">
             {/* Top row: title + nav links */}
                     {/* Sorting and Mode Tabs */}
@@ -576,7 +617,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
             /* Loading Skeleton */
             <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className={`border border-white bg-black animate-pulse flex ${mobileLayout === "list" ? "flex-row h-28 md:flex-col md:h-auto p-3 md:p-4 space-y-0 md:space-y-4 gap-3 md:gap-0" : "flex-col p-4 space-y-4"}`}>
+                <div key={i} className={`border border-white bg-black/90 animate-pulse flex ${mobileLayout === "list" ? "flex-row h-28 md:flex-col md:h-auto p-3 md:p-4 space-y-0 md:space-y-4 gap-3 md:gap-0" : "flex-col p-4 space-y-4"}`}>
                   <div className={mobileLayout === "list" ? "w-24 shrink-0 h-full bg-white/10 md:w-full md:h-40" : "h-40 bg-white/10 w-full"}></div>
                   <div className="flex-1 space-y-3 py-1">
                     <div className="h-4 bg-white/10 w-3/4"></div>

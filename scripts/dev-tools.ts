@@ -1,5 +1,29 @@
 import * as readline from "readline";
 import { spawn } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
+
+// Simple env loader to ensure DATABASE_URL is available
+function loadEnv() {
+  const envPath = path.join(process.cwd(), ".env");
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, "utf-8");
+    for (const line of content.split("\n")) {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let value = match[2] || "";
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1);
+        } else if (value.startsWith("'") && value.endsWith("'")) {
+          value = value.slice(1, -1);
+        }
+        process.env[key] = value;
+      }
+    }
+  }
+}
+loadEnv();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -37,6 +61,38 @@ function runScript(scriptPath: string, args: string[] = []): Promise<number> {
   });
 }
 
+async function toggleMaintenanceMode() {
+  console.log("\nChecking maintenance mode status...");
+  try {
+    const { db } = await import("../src/lib/db");
+    
+    let config = await db.systemConfig.findUnique({
+      where: { key: "maintenance_mode" }
+    });
+    
+    const isMaintenance = config?.value === "true";
+    console.log(`\n==================================================`);
+    console.log(`📢 CURRENT STATUS: Website is ${isMaintenance ? "🔴 OFFLINE (Maintenance Mode)" : "🟢 ONLINE (Normal)"}`);
+    console.log(`==================================================\n`);
+    
+    const action = await askQuestion(`Toggle Maintenance Mode ${isMaintenance ? "OFF" : "ON"}? [y/N]: `);
+    if (action.toLowerCase() === "y") {
+      const newValue = !isMaintenance;
+      await db.systemConfig.upsert({
+        where: { key: "maintenance_mode" },
+        update: { value: String(newValue) },
+        create: { key: "maintenance_mode", value: String(newValue) }
+      });
+      console.log(`\n✅ Maintenance mode successfully set to ${newValue ? "🔴 ON" : "🟢 OFF"}.`);
+    } else {
+      console.log("\n❌ Action cancelled.");
+    }
+  } catch (e) {
+    console.error("❌ Failed to query/update database:", e);
+  }
+  await askQuestion("\n[Press Enter to return to main menu]");
+}
+
 async function showMainMenu() {
   console.log("\n==================================================");
   console.log("🖥️  hoGAMEGATA UNIFIED DEVELOPER PORTAL");
@@ -48,10 +104,11 @@ async function showMainMenu() {
   console.log("5. Price Sync Aggregator (CheapShark / ITAD)");
   console.log("6. PostgreSQL Search Indexes Setup (FTS)");
   console.log("7. Scare Meter NLP Batch Processing");
-  console.log("8. Exit Portal");
+  console.log("8. Toggle Website Maintenance Mode");
+  console.log("9. Exit Portal");
   console.log("==================================================");
 
-  const choice = await askQuestion("Select category [1-8]: ");
+  const choice = await askQuestion("Select category [1-9]: ");
 
   switch (choice) {
     case "1":
@@ -85,6 +142,9 @@ async function showMainMenu() {
       await showScareMenu();
       break;
     case "8":
+      await toggleMaintenanceMode();
+      break;
+    case "9":
       console.log("👋 Exiting portal.");
       process.exit(0);
     default:
