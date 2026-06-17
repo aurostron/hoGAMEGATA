@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { preprocessSearchQuery, embedQuery } from "@/lib/searchEngine";
 
+export const dynamic = "force-dynamic";
+
 interface CacheEntry {
   data: any;
   expiry: number;

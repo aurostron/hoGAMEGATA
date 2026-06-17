@@ -42,19 +42,41 @@ export default async function Page() {
   
   const stats: StatsData = { games, developers, publishers, tags, screenshots };
 
-  // Fetch initial games from the leaner summary API
+  const gameSummarySelect = {
+    id: true,
+    title: true,
+    slug: true,
+    coverUrl: true,
+    releaseDate: true,
+    rating: true,
+    genreNames: true,
+    platformNames: true,
+    priceSnapshots: true,
+    tags: { select: { name: true, slug: true } },
+  };
+
   let initialGames: any[] = [];
   let nextCursor: string | null = null;
   let totalCount = 0;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-  const response = await fetch(baseUrl + "/api/games/summary?limit=20&sort=latest");
-  if (!response.ok) {
-    console.error("Failed to fetch initial games summary:", response.statusText);
-  } else {
-    const data = await response.json();
-    initialGames = data.games;
-    nextCursor = data.nextCursor;
-    totalCount = data.totalCount;
+
+  try {
+    const [fetchedGames, gamesCount] = await Promise.all([
+      db.game.findMany({
+        where: {},
+        select: gameSummarySelect,
+        take: 21,
+        orderBy: { releaseDate: "desc" },
+      }),
+      db.game.count(),
+    ]);
+    totalCount = gamesCount;
+    const limit = 20;
+    initialGames = fetchedGames.slice(0, limit);
+    if (fetchedGames.length > limit) {
+      nextCursor = initialGames[initialGames.length - 1]?.id || null;
+    }
+  } catch (err) {
+    console.error("Failed to fetch initial games:", err);
   }
 
   return (
