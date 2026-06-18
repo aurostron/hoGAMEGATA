@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "build:pages": "npx @opennextjs/cloudflare build && node scripts/setup-pages.js",
+    "build:pages": "node scripts/patch-cloudflare-build.js && npx @opennextjs/cloudflare build && node scripts/setup-pages.js",
     "start": "next start",
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
@@ -37,6 +37,7 @@
     "next": "16.2.6",
     "openai": "^6.44.0",
     "pg": "^8.21.0",
+    "pg-cloudflare": "^1.4.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.14.0",
