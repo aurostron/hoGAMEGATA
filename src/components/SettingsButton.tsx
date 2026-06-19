@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { Settings, BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -18,7 +19,6 @@ export default function SettingsButton() {
   const { user, logout } = useAuth();
   const { openModal } = usePreferences();
   const pathname = usePathname();
-  const router = useRouter();
   const [layout, setLayout] = useState<"grid" | "list">("grid");
 
   // Sync layout from localStorage on mount and listen to changes
@@ -83,8 +83,10 @@ export default function SettingsButton() {
 
         {/* Technical Docs */}
         <DropdownMenuLabel>Resources</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => router.push("/docs")} className="flex items-center gap-1.5">
-          <BookOpen className="w-3.5 h-3.5" /> Technical Docs
+        <DropdownMenuItem className="p-0">
+          <Link href="/docs" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
+            <BookOpen className="w-3.5 h-3.5" /> Technical Docs
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
@@ -93,8 +95,10 @@ export default function SettingsButton() {
         {user ? (
           <>
             <DropdownMenuLabel>Account ({user.email.split("@")[0]})</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => router.push("/dashboard")} className="flex items-center gap-1.5">
-              <UserIcon className="w-3.5 h-3.5" /> Dashboard
+            <DropdownMenuItem className="p-0">
+              <Link href="/dashboard" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
+                <UserIcon className="w-3.5 h-3.5" /> Dashboard
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => logout()} className="flex items-center gap-1.5">
               <LogOut className="w-3.5 h-3.5" /> Logout
@@ -103,8 +107,10 @@ export default function SettingsButton() {
         ) : (
           <>
             <DropdownMenuLabel>Account</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => router.push(`/login?redirect=${encodeURIComponent(pathname)}`)} className="flex items-center gap-1.5">
-              <LogIn className="w-3.5 h-3.5" /> Login
+            <DropdownMenuItem className="p-0">
+              <Link href={`/login?redirect=${encodeURIComponent(pathname)}`} className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
+                <LogIn className="w-3.5 h-3.5" /> Login
+              </Link>
             </DropdownMenuItem>
           </>
         )}

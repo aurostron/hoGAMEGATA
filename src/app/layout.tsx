@@ -7,6 +7,8 @@ import PreferencesButton from "@/components/PreferencesButton";
 import dynamic from "next/dynamic";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
+import PageTransitionLoader from "@/components/PageTransitionLoader";
+import { Suspense } from "react";
 
 const OnboardingModal = dynamic(() => import("@/components/OnboardingModal"));
 
@@ -102,6 +104,9 @@ export default async function RootLayout({
           </div>
         </footer>
         <OnboardingModal />
+        <Suspense fallback={null}>
+          <PageTransitionLoader />
+        </Suspense>
       </body>
     </html>
   );
