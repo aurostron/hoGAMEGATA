@@ -11,7 +11,16 @@ export default function PageTransitionLoader() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
 
-  // Triggered on any URL/Search parameter changes
+  const currentKey = pathname + (searchParams?.toString() || "");
+  const [prevKey, setPrevKey] = useState(currentKey);
+
+  // Synchronously reset navigation state on route change during render
+  if (currentKey !== prevKey) {
+    setPrevKey(currentKey);
+    setIsNavigating(false);
+  }
+
+  // Triggered on any URL/Search parameter changes (fallback)
   useEffect(() => {
     setIsNavigating(false);
   }, [pathname, searchParams]);
