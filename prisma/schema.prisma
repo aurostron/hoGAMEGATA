@@ -91,6 +91,9 @@ model Game {
   @@index([status])
   @@index([popularity])
   @@index([protonDbTier])
+  @@index([slug])
+  @@index([genreNames])
+  @@index([platformNames])
 }
 
 model Developer {
