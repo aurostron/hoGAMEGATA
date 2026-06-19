@@ -20,8 +20,29 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const deals = await lazyGetPrices(id, title, purchaseLinks, country);
-    return NextResponse.json({ deals });
+    let targetCountry = country;
+    if (!targetCountry || targetCountry === "detect") {
+      const geoHeaders = [
+        "x-vercel-ip-country",
+        "x-country",
+        "x-nf-country-code",
+        "cf-ipcountry",
+        "cloudfront-viewer-country"
+      ];
+      for (const h of geoHeaders) {
+        const val = request.headers.get(h);
+        if (val && val.length === 2) {
+          targetCountry = val.toUpperCase();
+          break;
+        }
+      }
+      if (!targetCountry) {
+        targetCountry = "US"; // default fallback
+      }
+    }
+
+    const deals = await lazyGetPrices(id, title, purchaseLinks, targetCountry);
+    return NextResponse.json({ deals, country: targetCountry });
   } catch (error) {
     console.error(`[Pricing API Error] Failed to fetch prices for game:`, error);
     return NextResponse.json(

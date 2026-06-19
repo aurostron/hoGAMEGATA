@@ -44,7 +44,7 @@ export default function PriceComparison({
   const [deals, setDeals] = useState<PriceDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [region, setRegion] = useState<string>("US");
+  const [region, setRegion] = useState<string>("detect");
 
   // Load persisted region setting on mount
   useEffect(() => {
@@ -52,11 +52,9 @@ export default function PriceComparison({
     if (savedRegion && REGIONS.some(r => r.code === savedRegion)) {
       setRegion(savedRegion);
     } else {
-      const serverVal = country.toUpperCase();
-      const isValid = REGIONS.some(r => r.code === serverVal);
-      setRegion(isValid ? serverVal : "US");
+      setRegion("detect");
     }
-  }, [country]);
+  }, []);
 
   useEffect(() => {
     async function loadPrices() {
@@ -76,6 +74,12 @@ export default function PriceComparison({
         if (response.ok) {
           const data = await response.json();
           setDeals(data.deals || []);
+          
+          // If we had country set to 'detect', auto-select the detected country
+          if (region === "detect" && data.country) {
+            setRegion(data.country);
+            localStorage.setItem("gamegata_currency_region", data.country);
+          }
         } else {
           setError(true);
         }
@@ -104,7 +108,7 @@ export default function PriceComparison({
           <span className="font-mono text-xs text-white uppercase tracking-widest font-black">Cheapest Deals</span>
           <select 
             disabled
-            value={region}
+            value={region === "detect" ? "US" : region}
             className="font-mono text-[10px] uppercase border border-white/20 bg-black text-white/45 px-2 py-0.5 cursor-not-allowed rounded-none outline-none"
           >
             {REGIONS.map(r => (

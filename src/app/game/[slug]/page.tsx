@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { after } from "next/server";
-import { headers } from "next/headers";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield, Flame } from "lucide-react";
@@ -323,28 +322,9 @@ async function lazyEnrichProtonDbMetadata(game: any) {
   }
 }
 
-export default async function GameProfilePage({ params, searchParams }: GamePageProps) {
+export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
   const { slug } = resolvedParams;
-
-  const headersList = await headers();
-  const detectCountry = (): string => {
-    const geoHeaders = [
-      "x-vercel-ip-country",      // Vercel
-      "x-country",                // Netlify
-      "x-nf-country-code",        // Netlify Edge
-      "cf-ipcountry",             // Cloudflare
-      "cloudfront-viewer-country" // AWS CloudFront
-    ];
-    for (const h of geoHeaders) {
-      const val = headersList.get(h);
-      if (val && val.length === 2) return val.toUpperCase();
-    }
-    return "US";
-  };
-
-  const country = (resolvedSearchParams.country || detectCountry()).toUpperCase();
 
   // Query game details from database
   const game = await db.game.findUnique({
@@ -455,7 +435,6 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
       gameSlug={game.slug}
       gameTitle={game.title}
       purchaseLinks={game.purchaseLinks}
-      country={country}
     />
   );
 
@@ -826,7 +805,6 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
                    gameSlug={game.slug}
                    gameTitle={game.title}
                    purchaseLinks={game.purchaseLinks}
-                   country={country}
                  />
                );
 
@@ -974,7 +952,6 @@ export default async function GameProfilePage({ params, searchParams }: GamePage
                    gameSlug={game.slug}
                    gameTitle={game.title}
                    purchaseLinks={game.purchaseLinks}
-                   country={country}
                  />
                );
                const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
