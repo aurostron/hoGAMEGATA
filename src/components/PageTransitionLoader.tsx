@@ -11,6 +11,9 @@ export default function PageTransitionLoader() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
 
+  const [isMounted, setIsMounted] = useState(false);
+  const [isFadeIn, setIsFadeIn] = useState(false);
+
   const currentKey = pathname + (searchParams?.toString() || "");
   const [prevKey, setPrevKey] = useState(currentKey);
 
@@ -24,6 +27,23 @@ export default function PageTransitionLoader() {
   useEffect(() => {
     setIsNavigating(false);
   }, [pathname, searchParams]);
+
+  // Handle CSS transition fade states
+  useEffect(() => {
+    if (isNavigating) {
+      setIsMounted(true);
+      const timer = setTimeout(() => {
+        setIsFadeIn(true);
+      }, 10);
+      return () => clearTimeout(timer);
+    } else {
+      setIsFadeIn(false);
+      const timer = setTimeout(() => {
+        setIsMounted(false);
+      }, 300); // 300ms matches transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [isNavigating]);
 
   useEffect(() => {
     const pickRandomMessage = () => {
@@ -111,7 +131,17 @@ export default function PageTransitionLoader() {
     return () => clearTimeout(timer);
   }, [isNavigating]);
 
-  if (!isNavigating) return null;
+  if (!isMounted) return null;
 
-  return <NyanLoader fullScreen message={currentMessage} />;
+  return (
+    <NyanLoader 
+      fullScreen 
+      message={currentMessage} 
+      className={`transition-all duration-300 ease-out ${
+        isFadeIn 
+          ? "opacity-100 backdrop-blur-md" 
+          : "opacity-0 backdrop-blur-none pointer-events-none"
+      }`} 
+    />
+  );
 }
