@@ -71,15 +71,7 @@ export default async function Page() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <AuthButton />
             <SettingsButton />
-            <Link 
-              href="/docs" 
-              className="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>[ Technical Docs ]</span>
-            </Link>
           </div>
         </div>
       </header>

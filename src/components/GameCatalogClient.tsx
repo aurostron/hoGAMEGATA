@@ -8,6 +8,7 @@ import { useSearchParams, usePathname } from "next/navigation";
 import { Search, Calendar, Sparkles } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
 import PlatformLogos from "@/components/PlatformLogos";
+import NyanLoader from "@/components/NyanLoader";
 
 export interface GameData {
   id: string;
@@ -285,14 +286,23 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [activeRegion, setActiveRegion] = useState("US");
   const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
   const [sortOpen, setSortOpen] = useState(false);
-  const [layoutOpen, setLayoutOpen] = useState(false);
 
-  // Load layout setting from localStorage on mount
+  // Load layout setting from localStorage on mount and listen to changes
   useEffect(() => {
     const saved = localStorage.getItem("gata-mobile-layout");
     if (saved === "list" || saved === "grid") {
       setMobileLayout(saved);
     }
+
+    const handleLayoutChange = () => {
+      const currentSaved = localStorage.getItem("gata-mobile-layout");
+      if (currentSaved === "list" || currentSaved === "grid") {
+        setMobileLayout(currentSaved);
+      }
+    };
+
+    window.addEventListener("gata-mobile-layout-changed", handleLayoutChange);
+    return () => window.removeEventListener("gata-mobile-layout-changed", handleLayoutChange);
   }, []);
 
   const toggleMobileLayout = (layout: "grid" | "list") => {
@@ -459,7 +469,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                   <button
                     onClick={() => {
                       setSortOpen(!sortOpen);
-                      setLayoutOpen(false);
                     }}
                     className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
                   >
@@ -512,47 +521,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                 </div>
               )}
 
-              {/* Layout Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setLayoutOpen(!layoutOpen);
-                    setSortOpen(false);
-                  }}
-                  className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
-                >
-                  LAYOUT: {mobileLayout} <span className="text-[8px]">▼</span>
-                </button>
-                {layoutOpen && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setLayoutOpen(false)} />
-                    <div className="absolute left-0 mt-1.5 w-32 bg-black border border-white z-40 flex flex-col divide-y divide-white/25">
-                      <button
-                        onClick={() => {
-                          toggleMobileLayout("grid");
-                          setLayoutOpen(false);
-                        }}
-                        className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
-                          mobileLayout === "grid" ? "bg-white/10 text-white" : "text-white"
-                        }`}
-                      >
-                        [ GRID ]
-                      </button>
-                      <button
-                        onClick={() => {
-                          toggleMobileLayout("list");
-                          setLayoutOpen(false);
-                        }}
-                        className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
-                          mobileLayout === "list" ? "bg-white/10 text-white" : "text-white"
-                        }`}
-                      >
-                        [ LIST ]
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
             </div>
 
             {/* Right side: Navigation links */}
@@ -573,18 +541,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           </div>  </div>
 
           {loading ? (
-            /* Loading Skeleton */
-            <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className={`border border-white bg-transparent animate-pulse flex ${mobileLayout === "list" ? "flex-row h-28 md:flex-col md:h-auto p-3 md:p-4 space-y-0 md:space-y-4 gap-3 md:gap-0" : "flex-col p-4 space-y-4"}`}>
-                  <div className={mobileLayout === "list" ? "w-24 shrink-0 h-full bg-white/10 md:w-full md:h-40" : "h-40 bg-white/10 w-full"}></div>
-                  <div className="flex-1 space-y-3 py-1">
-                    <div className="h-4 bg-white/10 w-3/4"></div>
-                    <div className="h-3 bg-white/10 w-1/2"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <NyanLoader message="INGESTING CATALOG CONTENT..." />
           ) : games.length === 0 ? (
             /* No Results */
             <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold">
