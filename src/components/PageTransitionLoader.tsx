@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import NyanLoader from "./NyanLoader";
+import { LOADING_MESSAGES } from "@/lib/loading-messages";
 
 export default function PageTransitionLoader() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isNavigating, setIsNavigating] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState("");
 
   // Triggered on any URL/Search parameter changes
   useEffect(() => {
@@ -15,6 +17,11 @@ export default function PageTransitionLoader() {
   }, [pathname, searchParams]);
 
   useEffect(() => {
+    const pickRandomMessage = () => {
+      const randomIndex = Math.floor(Math.random() * LOADING_MESSAGES.length);
+      setCurrentMessage(LOADING_MESSAGES[randomIndex]);
+    };
+
     const handleAnchorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const anchor = target.closest("a");
@@ -53,7 +60,8 @@ export default function PageTransitionLoader() {
           return;
         }
 
-        // Trigger transition loading
+        // Trigger transition loading with a random message
+        pickRandomMessage();
         setIsNavigating(true);
       } catch (err) {
         // Fallback for any invalid URLs
@@ -62,11 +70,13 @@ export default function PageTransitionLoader() {
 
     const handlePopState = () => {
       // Back/forward navigation
+      pickRandomMessage();
       setIsNavigating(true);
     };
 
     const handleCustomRouteStart = () => {
       // Programmatic route start
+      pickRandomMessage();
       setIsNavigating(true);
     };
 
@@ -94,5 +104,5 @@ export default function PageTransitionLoader() {
 
   if (!isNavigating) return null;
 
-  return <NyanLoader fullScreen message="LOADING REGISTRY CONTENT..." />;
+  return <NyanLoader fullScreen message={currentMessage} />;
 }

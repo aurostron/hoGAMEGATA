@@ -27,7 +27,7 @@ export default function NyanLoader({
           alt="Nyan Cat Loading..."
           width={gifSize.width}
           height={gifSize.height}
-          className="object-contain"
+          className={`object-contain ${fullScreen ? "-translate-x-[10%] md:-translate-x-[14%]" : ""}`}
           unoptimized
           style={{ imageRendering: "pixelated" }}
         />
