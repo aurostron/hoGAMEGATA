@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import AuthButton from "@/components/AuthButton";
+import SettingsButton from "@/components/SettingsButton";
 import SciFiLogo from "@/components/SciFiLogo";
 import GameCatalogClient from "@/components/GameCatalogClient";
 import { db } from "@/lib/db";
@@ -71,6 +72,7 @@ export default async function Page() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <AuthButton />
+            <SettingsButton />
             <Link 
               href="/docs" 
               className="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
