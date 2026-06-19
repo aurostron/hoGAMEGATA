@@ -5,24 +5,55 @@ import { preprocessSearchQuery, embedQuery } from "@/lib/searchEngine";
 
 export const dynamic = "force-dynamic";
 
-interface CacheEntry {
-  data: any;
-  expiry: number;
+const gameSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  status: true,
+  coverUrl: true,
+  isTrending: true,
+  rating: true,
+  category: true,
+  esrbRating: true,
+  pegiRating: true,
+  developerNames: true,
+  genreNames: true,
+  platformNames: true,
+  releaseDate: true,
+  tags: { select: { name: true, slug: true } },
+};
+
+async function fetchCheapestSnapshots(gameIds: string[]) {
+  if (gameIds.length === 0) return new Map<string, any[]>();
+  const rows = await db.$queryRaw<{
+    gameId: string;
+    storeName: string;
+    dealPrice: number;
+    retailPrice: number;
+    discountPercent: number;
+    dealUrl: string;
+    currency: string;
+    country: string;
+  }[]>`
+    SELECT "gameId", "storeName", "dealPrice", "retailPrice", "discountPercent", "dealUrl", "currency", "country"
+    FROM (
+      SELECT *,
+        ROW_NUMBER() OVER (PARTITION BY "gameId" ORDER BY "dealPrice" ASC)::int as rn
+      FROM "PriceSnapshot"
+      WHERE "gameId" IN (${Prisma.join(gameIds)})
+    ) sub
+    WHERE rn <= 3
+  `;
+  const grouped = new Map<string, any[]>();
+  for (const row of rows) {
+    const { gameId, ...snapshot } = row;
+    if (!grouped.has(gameId)) grouped.set(gameId, []);
+    grouped.get(gameId)!.push(snapshot);
+  }
+  return grouped;
 }
-const apiCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 export async function GET(request: NextRequest) {
-  const cacheKey = request.url;
-  const cached = apiCache.get(cacheKey);
-  if (cached && Date.now() < cached.expiry) {
-    return NextResponse.json(cached.data, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-      },
-    });
-  }
-
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
@@ -34,31 +65,11 @@ export async function GET(request: NextRequest) {
       ? activeTagsString.split(",").map(t => t.trim()).filter(Boolean)
       : [];
     const cursor = searchParams.get("cursor")?.trim() || "";
-    const sort = searchParams.get("sort")?.trim() || "latest"; // "latest" | "trending" | "random"
+    const sort = searchParams.get("sort")?.trim() || "latest";
     const creatorIdsParam = searchParams.get("creatorIds")?.trim() || "";
     const excludeId = searchParams.get("excludeId")?.trim() || "";
     const limitParam = searchParams.get("limit");
     const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
-
-    const gameSelect = {
-      id: true,
-      title: true,
-      slug: true,
-      summary: true,
-      status: true,
-      coverUrl: true,
-      isTrending: true,
-      rating: true,
-      category: true,
-      esrbRating: true,
-      pegiRating: true,
-      developerNames: true,
-      genreNames: true,
-      platformNames: true,
-      releaseDate: true,
-      tags: { select: { name: true, slug: true } },
-      priceSnapshots: true,
-    };
 
     const where: Prisma.GameWhereInput = {};
 
@@ -79,14 +90,11 @@ export async function GET(request: NextRequest) {
     let matchedIds: string[] = [];
     let semanticExtractedSlugs: string[] = [];
 
-    // 2. Server-side Search or Random filtering
     if (search) {
       if (mode === "semantic") {
-        // Preprocess search query: extract tag constraints and expand vocabulary
         const { cleanedQuery, expandedQuery, extractedSlugs } = preprocessSearchQuery(search);
         semanticExtractedSlugs = extractedSlugs;
 
-        // Perform FTS keyword search
         const ftsMatches = await db.$queryRaw<{ id: string }[]>(
           Prisma.sql`
             SELECT id FROM "Game"
@@ -97,7 +105,6 @@ export async function GET(request: NextRequest) {
           `
         );
 
-        // Perform pgvector similarity search
         let vectorMatches: { id: string }[] = [];
         try {
           const queryVector = await embedQuery(expandedQuery || cleanedQuery || search);
@@ -108,29 +115,24 @@ export async function GET(request: NextRequest) {
             );
           }
         } catch (embedErr) {
-          console.error("❌ Semantic embedding search failed:", embedErr);
+          console.error("Semantic embedding search failed:", embedErr);
         }
 
-        // Combine using Reciprocal Rank Fusion (RRF) with constant k=60
         const rrfScores = new Map<string, number>();
         const k = 60;
-
         ftsMatches.forEach((match, index) => {
           const rank = index + 1;
           rrfScores.set(match.id, (rrfScores.get(match.id) || 0) + 1 / (k + rank));
         });
-
         vectorMatches.forEach((match, index) => {
           const rank = index + 1;
           rrfScores.set(match.id, (rrfScores.get(match.id) || 0) + 1 / (k + rank));
         });
-
         matchedIds = Array.from(rrfScores.entries())
           .sort((a, b) => b[1] - a[1])
           .map(entry => entry[0]);
 
       } else {
-        // Standard FTS / Exact query match
         const rawMatches = await db.$queryRaw<{ id: string }[]>(
           Prisma.sql`
             SELECT id FROM "Game"
@@ -149,8 +151,8 @@ export async function GET(request: NextRequest) {
         matchedIds = rawMatches.map(m => m.id);
       }
 
-      where.id = where.id && (where.id as any).not 
-        ? { in: matchedIds, not: (where.id as any).not } 
+      where.id = where.id && (where.id as any).not
+        ? { in: matchedIds, not: (where.id as any).not }
         : { in: matchedIds };
     } else if (sort === "random") {
       let rawMatches;
@@ -177,12 +179,11 @@ export async function GET(request: NextRequest) {
         );
       }
       matchedIds = rawMatches.map(m => m.id);
-      where.id = where.id && (where.id as any).not 
-        ? { in: matchedIds, not: (where.id as any).not } 
+      where.id = where.id && (where.id as any).not
+        ? { in: matchedIds, not: (where.id as any).not }
         : { in: matchedIds };
     }
 
-    // 1. Tag Filtering (Filter by Mood Tag slug + extracted semantic slugs)
     const combinedTags = [...selectedTags, ...semanticExtractedSlugs];
     if (combinedTags.length > 0) {
       where.AND = combinedTags.map(tagSlug => ({
@@ -194,27 +195,19 @@ export async function GET(request: NextRequest) {
       }));
     }
 
-    // 3. Query Execution with Cursor Pagination
     let games: any[] = [];
     let nextCursor: string | null = null;
-    let totalCount = 0;
 
     if (search) {
-      const [allSearchGames, count] = await Promise.all([
-        db.game.findMany({
-          where,
-          select: gameSelect,
-        }),
-        db.game.count()
-      ]);
-      totalCount = count;
+      const allSearchGames = await db.game.findMany({
+        where,
+        select: gameSelect,
+      });
 
-      // Sort by similarity order
       if (matchedIds.length > 0) {
         allSearchGames.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
       }
 
-      // Paginate in memory
       let paginatedGames = allSearchGames;
       if (cursor) {
         const cursorIndex = allSearchGames.findIndex(g => g.id === cursor);
@@ -227,65 +220,70 @@ export async function GET(request: NextRequest) {
       if (paginatedGames.length > limit) {
         nextCursor = games[games.length - 1].id;
       }
-    } else {
-      const [fetchedGames, count] = await Promise.all([
-        db.game.findMany({
-          take: sort === "random" ? limit : limit + 1, // For random, we already limited in raw query
-          ...(sort !== "random" && cursor ? { skip: 1, cursor: { id: cursor } } : {}),
-          where,
-          select: gameSelect,
-          orderBy: sort === "trending"
-            ? [
-                { isTrending: "desc" },
-                { popularity: { sort: "desc", nulls: "last" } },
-                { id: "desc" }
-              ]
-            : sort === "top-rated"
-            ? [
-                { rating: { sort: "desc", nulls: "last" } },
-                { id: "desc" }
-              ]
-            : {
-                releaseDate: "desc",
-              },
-        }),
-        db.game.count()
-      ]);
-      totalCount = count;
-
-      if (sort === "random") {
-        nextCursor = "more-random";
-        games = fetchedGames;
-        if (matchedIds.length > 0) {
-          games.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
-        }
-      } else {
-        if (fetchedGames.length > limit) {
-          const nextItem = fetchedGames.pop();
-          nextCursor = nextItem ? nextItem.id : null;
-        }
-        games = fetchedGames;
+    } else if (sort === "random") {
+      games = await db.game.findMany({
+        where,
+        select: gameSelect,
+        take: limit,
+      });
+      if (matchedIds.length > 0) {
+        games.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
       }
+      nextCursor = "more-random";
+    } else {
+      let cursorFilter: Prisma.GameWhereInput = {};
+      if (cursor && sort !== "trending") {
+        const sep = cursor.lastIndexOf("_");
+        const cursorVal = cursor.substring(0, sep);
+        const cursorId = cursor.substring(sep + 1);
+
+        if (sort === "top-rated") {
+          cursorFilter = cursorVal === "null"
+            ? { AND: [{ rating: null }, { id: { lt: cursorId } }] }
+            : { OR: [{ rating: { lt: parseFloat(cursorVal) } }, { rating: parseFloat(cursorVal), id: { lt: cursorId } }] };
+        } else {
+          cursorFilter = cursorVal === "null"
+            ? { AND: [{ releaseDate: null }, { id: { lt: cursorId } }] }
+            : { OR: [{ releaseDate: { lt: new Date(parseInt(cursorVal, 10)) } }, { releaseDate: new Date(parseInt(cursorVal, 10)), id: { lt: cursorId } }] };
+        }
+      }
+
+      const fetchedGames = await db.game.findMany({
+        take: limit + 1,
+        where: cursor ? { AND: [where, cursorFilter] } : where,
+        select: gameSelect,
+        orderBy: sort === "trending"
+          ? [{ isTrending: "desc" }, { popularity: { sort: "desc", nulls: "last" } }, { id: "desc" }]
+          : sort === "top-rated"
+          ? [{ rating: { sort: "desc", nulls: "last" } }, { id: "desc" }]
+          : [{ releaseDate: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+      });
+
+      if (fetchedGames.length > limit) {
+        const nextItem = fetchedGames.pop()!;
+        if (sort === "trending") {
+          nextCursor = nextItem.id;
+        } else if (sort === "top-rated") {
+          nextCursor = `${nextItem.rating ?? "null"}_${nextItem.id}`;
+        } else {
+          nextCursor = `${nextItem.releaseDate ? nextItem.releaseDate.getTime() : "null"}_${nextItem.id}`;
+        }
+      }
+      games = fetchedGames;
     }
 
-    const responseData = {
-      games,
-      nextCursor,
-      totalCount
-    };
+    const gameIds = games.map((g: any) => g.id);
+    const snapshotMap = await fetchCheapestSnapshots(gameIds);
+    for (const game of games) {
+      game.priceSnapshots = snapshotMap.get(game.id) || [];
+    }
 
-    apiCache.set(cacheKey, {
-      data: responseData,
-      expiry: Date.now() + CACHE_TTL_MS
-    });
-
-    return NextResponse.json(responseData, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-      },
-    });
+    return NextResponse.json(
+      { games, nextCursor },
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+    );
   } catch (error) {
-    console.error("❌ Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
+    console.error("Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json(
       { error: "Failed to fetch games from database" },
       { status: 500 }

@@ -87,7 +87,7 @@ model Game {
   referralClicks ReferralClick[]
   searchClicks   SearchClick[]
 
-  @@index([releaseDate])
+  @@index([releaseDate, id])
   @@index([rating])
   @@index([status])
   @@index([popularity])

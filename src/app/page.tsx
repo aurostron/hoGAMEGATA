@@ -7,6 +7,7 @@ import SettingsButton from "@/components/SettingsButton";
 import SciFiLogo from "@/components/SciFiLogo";
 import GameCatalogClient from "@/components/GameCatalogClient";
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 
 
 export const dynamic = 'force-dynamic'; // always server-render, never pre-render at build time
@@ -51,29 +52,48 @@ export default async function Page() {
     rating: true,
     genreNames: true,
     platformNames: true,
-    priceSnapshots: true,
     tags: { select: { name: true, slug: true } },
   };
 
   let initialGames: any[] = [];
   let nextCursor: string | null = null;
-  let totalCount = 0;
 
   try {
-    const [fetchedGames, gamesCount] = await Promise.all([
-      db.game.findMany({
-        where: {},
-        select: gameSummarySelect,
-        take: 21,
-        orderBy: { releaseDate: "desc" },
-      }),
-      db.game.count(),
-    ]);
-    totalCount = gamesCount;
+    const fetchedGames = await db.game.findMany({
+      where: {},
+      select: gameSummarySelect,
+      take: 21,
+      orderBy: [{ releaseDate: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+    });
     const limit = 20;
     initialGames = fetchedGames.slice(0, limit);
     if (fetchedGames.length > limit) {
-      nextCursor = initialGames[initialGames.length - 1]?.id || null;
+      const lastGame = initialGames[initialGames.length - 1];
+      nextCursor = lastGame ? `${lastGame.releaseDate ? lastGame.releaseDate.getTime() : "null"}_${lastGame.id}` : null;
+    }
+
+    const gameIds = initialGames.map((g: any) => g.id);
+    if (gameIds.length > 0) {
+      const rows = await db.$queryRaw<{
+        gameId: string; storeName: string; dealPrice: number; retailPrice: number;
+        discountPercent: number; dealUrl: string; currency: string; country: string;
+      }[]>`
+        SELECT "gameId", "storeName", "dealPrice", "retailPrice", "discountPercent", "dealUrl", "currency", "country"
+        FROM (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY "gameId" ORDER BY "dealPrice" ASC)::int as rn
+          FROM "PriceSnapshot"
+          WHERE "gameId" IN (${Prisma.join(gameIds)})
+        ) sub WHERE rn <= 3
+      `;
+      const snapshotMap = new Map<string, any[]>();
+      for (const row of rows) {
+        const { gameId, ...snapshot } = row;
+        if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
+        snapshotMap.get(gameId)!.push(snapshot);
+      }
+      for (const game of initialGames) {
+        game.priceSnapshots = snapshotMap.get(game.id) || [];
+      }
     }
   } catch (err) {
     console.error("Failed to fetch initial games:", err);
@@ -155,10 +175,10 @@ export default async function Page() {
 
       <main className="max-w-5xl mx-auto px-6 mt-10 space-y-12">
         <Suspense fallback={<div className="min-h-screen bg-black text-white font-mono flex items-center justify-center">[ INITIALIZING SYSTEMS... ]</div>}>
-          <GameCatalogClient 
-            initialGames={initialGames} 
-            initialTotalGames={totalCount} 
-            initialNextCursor={nextCursor} 
+          <GameCatalogClient
+            initialGames={initialGames}
+            initialTotalGames={null}
+            initialNextCursor={nextCursor}
           />
         </Suspense>
       </main>
