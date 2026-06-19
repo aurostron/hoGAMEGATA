@@ -76,6 +76,42 @@ const nodeModules = path.join(__dirname, '../node_modules');
   console.log(`[patch] Added ${aliases.length} esbuild aliases: ${aliases.map(a => a.split('"')[1]).join(', ')}`);
 })();
 
+// --- Patch bundle-server.js: externalize "next" from esbuild bundle ---
+// The handler.mjs bundles the entire Next.js runtime (~11 MB). But nft has already
+// traced all next dependencies into _worker.js/node_modules/next/. We avoid this
+// duplication by keeping "next" external — at runtime it resolves from the traced
+// (and patched) node_modules instead.
+(function patchEsbuildExternal() {
+  const bundleServerPath = path.join(
+    nodeModules,
+    '@opennextjs/cloudflare/dist/cli/build/bundle-server.js'
+  );
+
+  if (!fs.existsSync(bundleServerPath)) {
+    console.log('[patch] bundle-server.js not found, skipping external patch');
+    return;
+  }
+
+  let code = fs.readFileSync(bundleServerPath, 'utf-8');
+
+  const oldExternal = 'external: ["./middleware/handler.mjs"]';
+  const newExternal = 'external: ["./middleware/handler.mjs", "next"]';
+
+  if (code.includes(newExternal)) {
+    console.log('[patch] esbuild external already includes "next", skipping');
+    return;
+  }
+
+  if (!code.includes(oldExternal)) {
+    console.warn('[patch] WARNING: Could not find external array in bundle-server.js');
+    return;
+  }
+
+  code = code.replace(oldExternal, newExternal);
+  fs.writeFileSync(bundleServerPath, code, 'utf-8');
+  console.log('[patch] Added "next" to esbuild external — handler.mjs will import from traced node_modules');
+})();
+
 // --- Patch copyTracedFiles.js: handle Windows EPERM on symlink ---
 const copyTracedPath = path.join(
   nodeModules,
