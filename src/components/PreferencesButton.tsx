@@ -1,9 +1,15 @@
 "use client";
 
 import { usePreferences } from "@/hooks/usePreferences";
+import { usePathname } from "next/navigation";
 
 export default function PreferencesButton() {
   const { openModal } = usePreferences();
+  const pathname = usePathname();
+
+  if (pathname === "/waitlist") {
+    return null;
+  }
 
   return (
     <button

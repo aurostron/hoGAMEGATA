@@ -884,6 +884,21 @@ const HTML_CONTENT = `<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- Section 8 -->
+      <div class="card">
+        <h2><span class="num">8</span> Early Access Waitlist Manager</h2>
+        <p>Review access requests and grant entry to waitlisted users.</p>
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Recent Requests</span>
+            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="fetchWaitlist()">Refresh</button>
+          </div>
+          <div id="waitlistContainer" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 1rem;">Loading waitlist...</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Terminal Output Right Column -->
@@ -1072,6 +1087,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
           terminal.innerText = data.logBuffer;
           terminal.scrollTop = terminal.scrollHeight;
         }
+        fetchWaitlist();
       });
 
     function clearTerminal() {
@@ -1161,6 +1177,96 @@ const HTML_CONTENT = `<!DOCTYPE html>
       const limit = document.getElementById('scareTagLimit').value;
       if (!tag || !limit || parseInt(limit) <= 0) return alert('Please input both tag and limit.');
       runCommand('scare', ['--tag', tag, '--limit', limit], 'Scare tag enrichment: ' + tag + ' (' + limit + ')');
+    }
+
+    async function fetchWaitlist() {
+      try {
+        const res = await fetch('/api/admin/waitlist');
+        if (res.ok) {
+          const data = await res.json();
+          renderWaitlist(data);
+        } else {
+          document.getElementById('waitlistContainer').innerHTML = '<div style="font-size: 0.8rem; color: var(--danger); text-align: center; padding: 1rem;">Failed to load waitlist.</div>';
+        }
+      } catch (e) {
+        console.error("Fetch waitlist error:", e);
+      }
+    }
+
+    function renderWaitlist(entries) {
+      const container = document.getElementById('waitlistContainer');
+      if (!entries || entries.length === 0) {
+        container.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 1rem;">No waitlist requests found.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      entries.forEach(entry => {
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.alignItems = 'center';
+        item.style.padding = '0.5rem';
+        item.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
+        item.style.border = '1px solid var(--border-color)';
+        item.style.borderRadius = '4px';
+
+        let badgeClass = 'cron-badge';
+        if (entry.status === 'APPROVED' || entry.status === 'SENT') {
+          badgeClass = 'cron-badge success';
+        }
+
+        const dateStr = new Date(entry.createdAt).toLocaleDateString();
+
+        item.innerHTML = \`
+          <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+            <span style="font-size: 0.8rem; font-weight: bold; color: var(--text-main); word-break: break-all;">\${entry.email}</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="\${badgeClass}" style="font-size: 0.65rem;">\${entry.status}</span>
+              <span style="font-size: 0.65rem; color: var(--text-muted);">\${dateStr}</span>
+            </div>
+          </div>
+          <div>
+            \${entry.status === 'PENDING' 
+              ? '<button id="approve-btn-' + entry.id + '" class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" onclick="approveEntry(\\'' + entry.id + '\\')">Approve</button>' 
+              : '<button class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;" disabled>Approved</button>'
+            }
+          </div>
+        \`;
+        container.appendChild(item);
+      });
+    }
+
+    async function approveEntry(id) {
+      const btn = document.getElementById('approve-btn-' + id);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Approving...';
+      }
+      try {
+        const res = await fetch('/api/admin/waitlist/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('User approved and email sent successfully!');
+          fetchWaitlist();
+        } else {
+          alert('Failed to approve user: ' + (data.error || 'Unknown error'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Approve';
+          }
+        }
+      } catch (e) {
+        alert('Network error trying to approve user.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = 'Approve';
+        }
+      }
     }
   </script>
 </body>
@@ -1532,6 +1638,139 @@ const server = http.createServer(async (req, res) => {
       } catch (err: any) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // 8.1 Get waitlist
+  if (parsedUrl.pathname === "/api/admin/waitlist" && req.method === "GET") {
+    try {
+      const { db } = await import("../src/lib/db");
+      const list = await db.waitlist.findMany({
+        orderBy: { createdAt: "desc" }
+      });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(list));
+    } catch (e) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: String(e) }));
+    }
+    return;
+  }
+
+  // 8.2 Approve waitlist entry
+  if (parsedUrl.pathname === "/api/admin/waitlist/approve" && req.method === "POST") {
+    let body = "";
+    req.on("data", chunk => { body += chunk; });
+    req.on("end", async () => {
+      try {
+        const { id } = JSON.parse(body);
+        if (!id) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Missing ID" }));
+          return;
+        }
+
+        const { db } = await import("../src/lib/db");
+        const entry = await db.waitlist.findUnique({
+          where: { id }
+        });
+
+        if (!entry) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Waitlist entry not found" }));
+          return;
+        }
+
+        // Determine if we are using Supabase Mode
+        const isSupabaseMode = !!(
+          process.env.NEXT_PUBLIC_SUPABASE_URL && 
+          process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
+        let loginUrl = "";
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+        if (isSupabaseMode) {
+          const { createClient } = await import("@supabase/supabase-js");
+          const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+          );
+
+          // Generate magic link
+          const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: "magiclink",
+            email: entry.email,
+            options: {
+              redirectTo: `${siteUrl}/auth/callback`
+            }
+          });
+
+          if (error) {
+            throw new Error(`Supabase Admin Auth error: ${error.message}`);
+          }
+
+          loginUrl = data.properties.action_link;
+        } else {
+          // Mock Auth Mode
+          loginUrl = `${siteUrl}/api/auth/token-login?token=${entry.token}`;
+        }
+
+        // Build email HTML
+        const emailHtml = `
+          <div style="font-family: monospace; background-color: #030303; color: #f3f4f6; padding: 40px; border: 4px solid #ffffff; max-width: 600px; margin: 0 auto; box-shadow: 8px 8px 0px 0px #ffffff;">
+            <h1 style="font-family: sans-serif; font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">// hoGAMEGATA ACCESS GRANTED</h1>
+            <p style="font-size: 14px; line-height: 1.6; color: #9ca3af; margin-bottom: 24px;">
+              Your request for early-access registry credentials has been approved by the system operator.
+            </p>
+            <div style="background-color: #08080a; border: 1px solid rgba(255,255,255,0.2); padding: 20px; margin-bottom: 24px;">
+              <span style="font-size: 11px; color: #ff2a2a; font-weight: bold; display: block; margin-bottom: 8px;">[ ACCESS CREDENTIALS ]</span>
+              <p style="font-size: 13px; color: #f3f4f6; margin: 0 0 10px 0;"><strong>Identity:</strong> ${entry.email}</p>
+              <p style="font-size: 13px; color: #f3f4f6; margin: 0 0 16px 0;"><strong>Access Mode:</strong> ${isSupabaseMode ? "Supabase Auth" : "Mock Session Token"}</p>
+              <a href="${loginUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; padding: 12px 24px; font-size: 12px; font-weight: bold; text-decoration: none; text-transform: uppercase; border: 1px solid #ffffff;">[ Launch Console ]</a>
+            </div>
+            <p style="font-size: 11px; color: #4b5563; margin-top: 30px; text-transform: uppercase;">
+              Runlevel: early_access // Build: v1.0.4
+            </p>
+          </div>
+        `;
+
+        // Send email using Resend
+        const { Resend } = await import("resend");
+        if (!process.env.RESEND_API_KEY) {
+          throw new Error("RESEND_API_KEY environment variable is not configured.");
+        }
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        const { error: sendError } = await resend.emails.send({
+          from: "hoGAMEGATA <onboarding@resend.dev>",
+          to: [entry.email],
+          subject: "[hoGAMEGATA] Early Access Granted",
+          html: emailHtml,
+        });
+
+        if (sendError) {
+          throw new Error(`Resend error: ${sendError.message}`);
+        }
+
+        // Update entry status in DB
+        // If in Supabase mode, it's immediately active (SENT), otherwise it's APPROVED (pending first click)
+        const nextStatus = isSupabaseMode ? "SENT" : "APPROVED";
+        await db.waitlist.update({
+          where: { id: entry.id },
+          data: { status: nextStatus }
+        });
+
+        broadcastLog(`📧 [Portal] Approved waitlist request for ${entry.email} (Sent via Resend)\n`);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ success: true }));
+      } catch (err: any) {
+        console.error("Approve waitlist entry error:", err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: err.message || String(err) }));
       }
     });
     return;

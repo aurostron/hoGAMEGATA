@@ -209,5 +209,13 @@ model SystemConfig {
   value String
 }
 
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  status    String   @default("PENDING") // PENDING, APPROVED, SENT
+  token     String   @unique // Secure random token for URL login
+  createdAt DateTime @default(now())
+}
+
 
 
