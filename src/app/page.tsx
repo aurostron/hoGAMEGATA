@@ -42,7 +42,8 @@ export default async function Page() {
   let initialGames: any[] = [];
   let nextCursor: string | null = null;
   let totalCount = 0;
-  const response = await fetch(process.env.NEXT_PUBLIC_SITE_URL + "/api/games/summary?limit=20&sort=latest");
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  const response = await fetch(baseUrl + "/api/games/summary?limit=20&sort=latest");
   if (!response.ok) {
     console.error("Failed to fetch initial games summary:", response.statusText);
   } else {
