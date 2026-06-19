@@ -68,7 +68,8 @@ model Game {
   popularity      Float?
   developerNames  String?      @db.Text
   genreNames      String?      @db.Text
-  platformNames   String?      @db.Text
+    platformNames   String?      @db.Text
+    source          String?
   embedding       Unsupported("vector(384)")?
   taxonomyScores  Json?
   // Many-to-many relationships

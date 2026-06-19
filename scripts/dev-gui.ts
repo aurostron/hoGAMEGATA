@@ -218,6 +218,7 @@ const SCRIPT_MAPPING: Record<string, string> = {
   "git": "git",
   "git-sync": "scripts/git-sync.ts",
   "pipeline": "scripts/run-pipeline.ts",
+  "retro-ingest": "scripts/ingest.ts",
 };
 
 // Background Cron Job Runner Loop (every 5 seconds)
@@ -759,6 +760,18 @@ const HTML_CONTENT = `<!DOCTYPE html>
             <input type="number" id="ingestLimit" class="input-control" placeholder="e.g. 1000" min="1">
             <button class="btn" onclick="runIngestWithLimit()">Run Ingestion with Limit</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Section Retro Ingest -->
+      <div class="card" style="border-left: 3px solid var(--accent-cyan);">
+        <h2><span class="num">↩</span> Retro / Abandonware Ingestion</h2>
+        <p>Ingest retro horror games from Archive.org, Abandonia, and MyAbandonware.</p>
+        <div class="actions-row">
+          <button class="btn btn-cyan" onclick="runCommand('retro-ingest', ['--retro'], 'Retro Horror Ingestion')">Start Retro Ingest</button>
+        </div>
+        <div class="help-tooltip" style="margin-top:0.5rem;">
+          <strong>Sources:</strong> Archive.org (classicgaming), Abandonia, MyAbandonware — public domain & abandonware titles only.
         </div>
       </div>
 
@@ -1690,7 +1703,15 @@ const server = http.createServer(async (req, res) => {
         );
 
         let loginUrl = "";
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        const hfSpaceUrl = process.env.SPACE_ID
+          ? `https://${process.env.SPACE_ID.replace(/\/+/g, "-")}.hf.space`
+          : undefined;
+        const detectedUrl =
+          process.env.NEXT_PUBLIC_SITE_URL ||
+          hfSpaceUrl ||
+          (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined) ||
+          "http://localhost:3000";
+        const siteUrl = detectedUrl.replace(/\/+$/, "");
 
         if (isSupabaseMode) {
           const { createClient } = await import("@supabase/supabase-js");
@@ -1721,18 +1742,17 @@ const server = http.createServer(async (req, res) => {
         // Build email HTML
         const emailHtml = `
           <div style="font-family: monospace; background-color: #030303; color: #f3f4f6; padding: 40px; border: 4px solid #ffffff; max-width: 600px; margin: 0 auto; box-shadow: 8px 8px 0px 0px #ffffff;">
-            <h1 style="font-family: sans-serif; font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">// hoGAMEGATA ACCESS GRANTED</h1>
+            <h1 style="font-family: sans-serif; font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 20px; color: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Welcome to hoGAMEGATA</h1>
             <p style="font-size: 14px; line-height: 1.6; color: #9ca3af; margin-bottom: 24px;">
-              Your request for early-access registry credentials has been approved by the system operator.
+              Your request for early access has been approved! You can now log into the website.
             </p>
             <div style="background-color: #08080a; border: 1px solid rgba(255,255,255,0.2); padding: 20px; margin-bottom: 24px;">
-              <span style="font-size: 11px; color: #ff2a2a; font-weight: bold; display: block; margin-bottom: 8px;">[ ACCESS CREDENTIALS ]</span>
-              <p style="font-size: 13px; color: #f3f4f6; margin: 0 0 10px 0;"><strong>Identity:</strong> ${entry.email}</p>
-              <p style="font-size: 13px; color: #f3f4f6; margin: 0 0 16px 0;"><strong>Access Mode:</strong> ${isSupabaseMode ? "Supabase Auth" : "Mock Session Token"}</p>
-              <a href="${loginUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; padding: 12px 24px; font-size: 12px; font-weight: bold; text-decoration: none; text-transform: uppercase; border: 1px solid #ffffff;">[ Launch Console ]</a>
+              <span style="font-size: 11px; color: #ff2a2a; font-weight: bold; display: block; margin-bottom: 8px;">[ YOUR ACCESS INFO ]</span>
+              <p style="font-size: 13px; color: #f3f4f6; margin: 0 0 10px 0;"><strong>Email:</strong> ${entry.email}</p>
+              <a href="${loginUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; padding: 12px 24px; font-size: 12px; font-weight: bold; text-decoration: none; text-transform: uppercase; border: 1px solid #ffffff;">[ Open hoGAMEGATA ]</a>
             </div>
             <p style="font-size: 11px; color: #4b5563; margin-top: 30px; text-transform: uppercase;">
-              Runlevel: early_access // Build: v1.0.4
+              hoGAMEGATA Early Access
             </p>
           </div>
         `;
@@ -1745,7 +1765,7 @@ const server = http.createServer(async (req, res) => {
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         const { error: sendError } = await resend.emails.send({
-          from: "hoGAMEGATA <onboarding@resend.dev>",
+          from: "hoGAMEGATA <noreply@gamegata.xyz>",
           to: [entry.email],
           subject: "[hoGAMEGATA] Early Access Granted",
           html: emailHtml,
