@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ShieldAlert, ArrowLeft } from "lucide-react";
+import SciFiLogo from "@/components/SciFiLogo";
 
 function LoginForm() {
   const { user, login, signUp, loginWithGoogle, isSupabase } = useAuth();
@@ -123,18 +124,18 @@ function LoginForm() {
     <div className="w-full max-w-md border border-white bg-black p-8 space-y-6">
       <div className="space-y-2 text-center">
         <h2 className="text-2xl font-extrabold uppercase tracking-tight">
-          {isRegistering ? "Register Spec" : "Authorization Key"}
+          {isRegistering ? "Create Account" : "Sign In"}
         </h2>
         <p className="text-xs text-white/60 font-mono uppercase tracking-wider">
-          {isRegistering ? "Establish new profile keys" : "Authenticate terminal credentials"}
+          {isRegistering ? "Register for a new account" : "Sign in to your account"}
         </p>
       </div>
 
       {/* Capped Banner */}
       {isCapped && (
         <div className="border border-white p-3.5 bg-black font-mono text-[10px] leading-relaxed uppercase text-white font-bold tracking-tight text-center animate-pulse">
-          [ CAP LIMIT REACHED: REGISTRATIONS CLOSED ]
-          <span className="block font-normal text-white/60 mt-1">Only existing accounts may authenticate.</span>
+          [ Account registrations are currently closed ]
+          <span className="block font-normal text-white/60 mt-1">Only existing users can sign in at this time.</span>
         </div>
       )}
 
@@ -143,12 +144,12 @@ function LoginForm() {
         <ShieldAlert className="w-4 h-4 shrink-0 text-white" />
         <div>
           <span className="font-black text-white block mb-0.5">
-            {isSupabase ? "Supabase Mode Connected" : "Local Mock Mode Active"}
+            {isSupabase ? "Online Mode Active" : "Demo Mode Active"}
           </span>
           <span className="text-white/60">
             {isSupabase 
-              ? "Real server database synchronization enabled via cloud OAuth."
-              : "No Supabase env credentials found. Type any email to log in instantly. Local PostgreSQL storage applies."}
+              ? "You are connected to our live account services."
+              : "The site is running in demo mode. You can enter any email to log in instantly. Your changes are saved locally."}
           </span>
         </div>
       </div>
@@ -156,12 +157,12 @@ function LoginForm() {
       {/* Message Banners */}
       {errorMsg && (
         <div className="border border-white bg-white text-black p-3 text-xs font-mono font-bold uppercase text-center">
-          [ ERROR: {errorMsg} ]
+          [ Error: {errorMsg} ]
         </div>
       )}
       {successMsg && (
         <div className="border border-white bg-black text-white p-3 text-xs font-mono font-bold uppercase text-center">
-          [ SUCCESS: {successMsg} ]
+          [ Success: {successMsg} ]
         </div>
       )}
 
@@ -201,7 +202,7 @@ function LoginForm() {
             disabled={authLoading}
             className="w-full py-3 border border-white bg-black text-white hover:bg-white hover:text-black font-bold uppercase tracking-widest transition-all duration-150 disabled:opacity-50 cursor-pointer"
           >
-            {authLoading ? "[ Syncing... ]" : isRegistering ? "[ Register Account ]" : "[ Authenticate ]"}
+            {authLoading ? "[ Loading... ]" : isRegistering ? "[ Create Account ]" : "[ Sign In ]"}
           </button>
 
           <div className="relative flex py-1.5 items-center">
@@ -234,8 +235,8 @@ function LoginForm() {
             className="text-white hover:underline tracking-wider font-bold cursor-pointer"
           >
             {isRegistering 
-              ? "[ Already registered? Authenticate here ]" 
-              : "[ Create new database profile key ]"}
+              ? "[ Already have an account? Sign in here ]" 
+              : "[ Need an account? Register here ]"}
           </button>
         </div>
       )}
@@ -250,15 +251,15 @@ export default function LoginPage() {
       <header className="border-b border-white bg-black">
         <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <Link href="/" className="hover:opacity-85">
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                <span className="italic">ho</span>GAMEGATA.
-              </h1>
-            </Link>
-            <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white uppercase font-bold">
-              <span>Authentication Gateway</span>
+            <SciFiLogo withLink={true} />
+            <div className="flex items-center gap-2 font-mono text-[12px] tracking-widest text-white uppercase font-bold mt-1">
+              <span>Horror</span>
               <span className="text-white font-black">•</span>
-              <span>Secure Session</span>
+              <span>Game</span>
+              <span className="text-white font-black">•</span>
+              <span>Mega</span>
+              <span className="text-white font-black">•</span>
+              <span>Metadata</span>
             </div>
           </div>
           <div>
@@ -277,7 +278,7 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center p-6 my-12">
         <Suspense fallback={
           <div className="w-full max-w-md border border-white bg-black p-8 space-y-6 text-center font-mono text-xs text-white/50 animate-pulse">
-            [ Initializing Auth Terminal... ]
+            [ Loading Login Form... ]
           </div>
         }>
           <LoginForm />
