@@ -41,11 +41,24 @@ if (fs.existsSync(workerJsSrc)) {
 // with an empty object. Font fallback adjustments may be slightly less
 // precise but saves 4.2 MB of bundle size.
 const fontMetricsPath = path.join(workerDir, 'server-functions/default/node_modules/next/dist/server/capsize-font-metrics.json');
+let savedFontMB = 0;
 if (fs.existsSync(fontMetricsPath)) {
   const origSize = fs.statSync(fontMetricsPath).size;
   fs.writeFileSync(fontMetricsPath, '{}\n', 'utf-8');
-  const savedMB = (origSize / (1024 * 1024)).toFixed(2);
-  console.log(`Done! Worker, dependencies + removed ${savedMB} MB font metrics → assets/_worker.js/index.js`);
-} else {
-  console.log('Done! Worker and dependencies packaged to assets/_worker.js/index.js');
+  savedFontMB = origSize / (1024 * 1024);
 }
+
+// Reduce bundle size: Replace the heavy 4.8 MB Prisma WASM query compiler
+// with an empty shim. Since we are using Prisma Accelerate (prisma+postgres://),
+// the client never instantiates the local WASM engine at runtime.
+const prismaWasmPath = path.join(workerDir, 'server-functions/default/node_modules/.prisma/client/query_compiler_fast_bg.wasm-base64.js');
+let savedPrismaMB = 0;
+if (fs.existsSync(prismaWasmPath)) {
+  const origSize = fs.statSync(prismaWasmPath).size;
+  fs.writeFileSync(prismaWasmPath, 'const wasm = "";\nmodule.exports = { wasm };\n', 'utf-8');
+  savedPrismaMB = origSize / (1024 * 1024);
+}
+
+const totalSaved = (savedFontMB + savedPrismaMB).toFixed(2);
+console.log(`Done! Pruned assets (saved ${totalSaved} MB: ${savedFontMB.toFixed(2)} MB fonts + ${savedPrismaMB.toFixed(2)} MB Prisma WASM) → assets/_worker.js/index.js`);
+
