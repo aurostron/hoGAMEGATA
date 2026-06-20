@@ -248,7 +248,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black flex flex-col justify-between">
       {/* Header */}
-      <header className="border-b border-white bg-black">
+      <header className="border-b border-white bg-black sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
             <SciFiLogo withLink={true} />
