@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import NyanLoader from "./NyanLoader";
 import { LOADING_MESSAGES } from "@/lib/loading-messages";
@@ -16,6 +16,14 @@ export default function PageTransitionLoader() {
 
   const currentKey = pathname + (searchParams?.toString() || "");
   const [prevKey, setPrevKey] = useState(currentKey);
+
+  const pathnameRef = useRef(pathname);
+  const searchParamsRef = useRef(searchParams);
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+    searchParamsRef.current = searchParams;
+  }, [pathname, searchParams]);
 
   // Synchronously reset navigation state on route change during render
   if (currentKey !== prevKey) {
@@ -98,9 +106,27 @@ export default function PageTransitionLoader() {
     };
 
     const handlePopState = () => {
-      // Back/forward navigation
-      pickRandomMessage();
-      setIsNavigating(true);
+      // Back/forward navigation: only show loader if Next.js hasn't already transitioned to the new page
+      const normalizePath = (path: string) => {
+        if (path.length > 1 && path.endsWith("/")) {
+          return path.slice(0, -1);
+        }
+        return path;
+      };
+
+      const browserPath = normalizePath(window.location.pathname);
+      const reactPath = normalizePath(pathnameRef.current);
+      
+      const browserSearch = window.location.search;
+      const reactSearch = searchParamsRef.current?.toString() ? "?" + searchParamsRef.current.toString() : "";
+
+      const currentBrowserKey = browserPath + browserSearch;
+      const currentReactKey = reactPath + reactSearch;
+
+      if (currentBrowserKey !== currentReactKey) {
+        pickRandomMessage();
+        setIsNavigating(true);
+      }
     };
 
     const handleCustomRouteStart = () => {
