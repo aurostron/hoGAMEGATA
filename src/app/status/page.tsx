@@ -91,7 +91,7 @@ export default function StatusPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono selection:bg-white selection:text-black pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black pb-24 relative overflow-hidden">
       {/* Scanline Effect Overlay */}
       <div 
         className="pointer-events-none fixed inset-0 z-50 opacity-[0.03]"
@@ -131,7 +131,7 @@ export default function StatusPage() {
         </div>
 
         {/* Status Table */}
-        <div className="border border-white bg-neutral-950 p-6 md:p-8 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-6">
+        <div className="border border-white bg-neutral-950 p-6 md:p-8 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-6 font-mono">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -240,20 +240,8 @@ export default function StatusPage() {
           </div>
         </div>
 
-        {/* Diagnostic Logs console */}
-        <div className="border border-white/30 bg-[#050508] p-4 font-mono text-[10px] text-white/70 space-y-1.5 max-h-48 overflow-y-auto leading-relaxed">
-          <div className="text-[#ff2a2a] border-b border-white/10 pb-1.5 uppercase font-bold tracking-widest">
-            // LOCAL CONSOLE DIAGNOSTIC LOGS
-          </div>
-          {consoleLogs.map((log, i) => (
-            <div key={i} className="whitespace-pre-wrap select-text selection:bg-white selection:text-black">
-              {log}
-            </div>
-          ))}
-        </div>
-
         {/* Action controls */}
-        <div className="flex justify-between items-center gap-4">
+        <div className="flex justify-between items-center gap-4 font-mono">
           <span className="text-[10px] text-white/30 font-medium tracking-wide">
             * DB connections use cached pools to prevent query saturation.
           </span>
