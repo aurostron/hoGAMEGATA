@@ -56,6 +56,7 @@ export function usePreferences() {
   }, []);
 
   const completeOnboarding = useCallback((newVibes: string[]) => {
+    const isFirstTime = localStorage.getItem(ONBOARD_KEY) !== "true";
     setVibesState(newVibes);
     setHasOnboardedState(true);
     setIsModalOpen(false);
@@ -65,6 +66,12 @@ export function usePreferences() {
     
     window.dispatchEvent(new Event("gamegata_prefs_updated"));
     window.dispatchEvent(new Event(CLOSE_MODAL_EVENT));
+
+    if (isFirstTime) {
+      setTimeout(() => {
+        window.dispatchEvent(new Event("gamegata_start_tutorial"));
+      }, 500);
+    }
   }, []);
 
   const openModal = useCallback(() => {

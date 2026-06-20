@@ -110,12 +110,12 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
 
   const finalDeal = resolvedDeal || findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
-
   return (
     <Link 
       href={`/game/${game.slug}`}
       onContextMenu={handleContextMenu}
       onMouseLeave={handleMouseLeave}
+      data-tour={index === 0 ? "game-card" : undefined}
       className={`border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
         mobileLayout === "list"
           ? "flex-row h-28 md:flex-col md:h-full"
@@ -434,7 +434,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   return (
     <>
       <section className="max-w-2xl mx-auto space-y-4">
-          <div className="relative">
+          <div className="relative" data-tour="search-bar">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-white/60" />
             </div>
