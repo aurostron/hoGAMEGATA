@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { Search, Calendar, Sparkles } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
 import PlatformLogos from "@/components/PlatformLogos";
@@ -269,6 +269,7 @@ interface GameCatalogClientProps {
 export default function GameCatalogClient({ initialGames, initialTotalGames, initialNextCursor }: GameCatalogClientProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
 
   const initialSearch = searchParams.get("search") || "";
   const initialTagsParam = searchParams.get("tags") || searchParams.get("tag") || "";
@@ -286,6 +287,59 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [activeRegion, setActiveRegion] = useState("US");
   const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
   const [sortOpen, setSortOpen] = useState(false);
+
+  const handleFeelingLucky = async () => {
+    if (!searchQuery.trim()) {
+      window.dispatchEvent(new Event("nextjs-route-start"));
+      router.push("/random");
+      return;
+    }
+
+    window.dispatchEvent(new Event("nextjs-route-start"));
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/games?search=${encodeURIComponent(searchQuery)}&limit=10`);
+      if (response.ok) {
+        const data = await response.json();
+        const fetchedGames: GameData[] = data.games || [];
+        
+        if (fetchedGames.length > 0) {
+          const q = searchQuery.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+          
+          // 1. Exact match (cleaned)
+          let bestMatch = fetchedGames.find(g => {
+            const t = g.title.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+            return t === q;
+          });
+
+          // 2. Starts with / includes match
+          if (!bestMatch) {
+            bestMatch = fetchedGames.find(g => {
+              const t = g.title.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
+              return t.includes(q) || q.includes(t);
+            });
+          }
+
+          // 3. Fallback to first result
+          if (!bestMatch) {
+            bestMatch = fetchedGames[0];
+          }
+
+          if (bestMatch) {
+            router.push(`/game/${bestMatch.slug}`);
+            return;
+          }
+        }
+      }
+      window.dispatchEvent(new Event("nextjs-route-complete"));
+      alert(`[ ERROR: LUCK OUT OF BOUNDS ]\nNo close match found for "${searchQuery}".`);
+    } catch (e) {
+      console.error("I'm feeling lucky search failed", e);
+      window.dispatchEvent(new Event("nextjs-route-complete"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Load layout setting from localStorage on mount and listen to changes
   useEffect(() => {
@@ -434,7 +488,8 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   return (
     <>
       <section className="max-w-2xl mx-auto space-y-4">
-          <div className="relative" data-tour="search-bar">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1" data-tour="search-bar">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-white/60" />
             </div>
@@ -454,7 +509,15 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
               </button>
             )}
           </div>
-        </section>
+          <button
+            onClick={handleFeelingLucky}
+            disabled={loading}
+            className="px-4 py-3.5 bg-black border border-white/30 text-white hover:border-white hover:bg-white hover:text-black transition-all duration-150 rounded-none cursor-pointer font-mono text-xs font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[46px]"
+          >
+            {loading ? "[ SEARCHING... ]" : "[ I'M FEELING LUCKY ]"}
+          </button>
+        </div>
+      </section>
 
         {/* Catalog Mapping Grid */}
         <section className="space-y-6 relative">

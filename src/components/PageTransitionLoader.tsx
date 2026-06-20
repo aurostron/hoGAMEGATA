@@ -135,14 +135,20 @@ export default function PageTransitionLoader() {
       setIsNavigating(true);
     };
 
+    const handleCustomRouteComplete = () => {
+      setIsNavigating(false);
+    };
+
     document.addEventListener("click", handleAnchorClick);
     window.addEventListener("popstate", handlePopState);
     window.addEventListener("nextjs-route-start", handleCustomRouteStart);
+    window.addEventListener("nextjs-route-complete", handleCustomRouteComplete);
 
     return () => {
       document.removeEventListener("click", handleAnchorClick);
       window.removeEventListener("popstate", handlePopState);
       window.removeEventListener("nextjs-route-start", handleCustomRouteStart);
+      window.removeEventListener("nextjs-route-complete", handleCustomRouteComplete);
     };
   }, []);
 
