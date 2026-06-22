@@ -86,7 +86,7 @@ export default function WaitlistPage() {
           /* Success Screen */
           <div className="flex flex-col gap-6">
             <span className="font-mono text-xs text-emerald-400 font-bold tracking-widest uppercase flex items-center gap-2">
-              // REGISTRATION SIGNED
+              Request Sent
             </span>
             <h1 className="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
               You are on the list.
@@ -95,15 +95,15 @@ export default function WaitlistPage() {
               We have successfully registered your email address. Once approved, we will send an access link containing login credentials to <span className="text-white font-bold">{email}</span>.
             </p>
             <div className="border border-emerald-500/20 p-4 font-mono text-xs text-emerald-400 bg-emerald-950/20 flex flex-col gap-1">
-              <div>WAITLIST_STATUS: PENDING_APPROVAL</div>
-              <div>DISPATCH_PROVIDER: RESEND_SECURE</div>
+              <div>Waitlist status: Pending Approval</div>
+              <div>Dispatch: Resend Secure</div>
             </div>
           </div>
         ) : (
           /* Form Screen */
           <div className="flex flex-col gap-6">
             <span className="font-mono text-xs text-white font-bold tracking-widest uppercase flex items-center gap-2">
-              // STATUS: <span className="inline-block w-2 h-2 rounded-full bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]" /> RESTRICTED ACCESS
+              STATUS: <span className="inline-block w-2 h-2 rounded-full bg-red-600 animate-pulse shadow-[0_0_8px_rgba(220,38,38,0.8)]" /> RESTRICTED ACCESS
             </span>
             
             <div className="space-y-4">
@@ -112,7 +112,7 @@ export default function WaitlistPage() {
               </h1>
               <div className="font-sans text-sm text-white/70 space-y-2 leading-relaxed">
                 <p>Thousands of horror games. Metadata, scare ratings, community reviews, and hidden gems you won't find elsewhere.</p>
-                <p className="text-white/40 font-mono text-xs tracking-wider uppercase font-bold pt-2">// Join the waitlist for early access.</p>
+                <p className="text-white/40 font-mono text-xs tracking-wider uppercase font-bold pt-2">Join the waitlist for early access.</p>
               </div>
             </div>
 
@@ -122,10 +122,10 @@ export default function WaitlistPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="ENTER ACCESS CREDENTIAL..."
+                  placeholder="Enter your email address..."
                   disabled={status === "loading"}
                   required
-                  className="block w-full px-4 py-3.5 bg-black border border-white/30 text-white placeholder-white/30 text-xs font-mono tracking-wider focus:border-red-600 focus:shadow-[0_0_10px_rgba(220,38,38,0.3)] focus:outline-none rounded-none transition-all duration-200 caret-red-600 uppercase font-bold"
+                  className="block w-full px-4 py-3.5 bg-black border border-white/30 text-white placeholder-white/30 text-xs font-mono tracking-wider focus:border-white focus:shadow-[0_0_10px_rgba(255,255,255,0.15)] focus:outline-none rounded-none transition-all duration-200 caret-white font-bold"
                 />
               </div>
 
@@ -138,15 +138,15 @@ export default function WaitlistPage() {
               <button
                 type="submit"
                 disabled={status === "loading" || !email}
-                className="px-8 py-3.5 bg-white text-black font-mono font-black text-xs tracking-widest uppercase border border-white hover:bg-transparent hover:text-[#ff2a2a] hover:border-[#ff2a2a] transition-all duration-150 rounded-none w-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[46px]"
+                className="px-8 py-3.5 bg-white text-black font-mono font-black text-xs tracking-widest uppercase border border-white hover:bg-transparent hover:text-white hover:border-white transition-all duration-150 rounded-none w-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[46px]"
               >
                 {status === "loading" ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
-                    [ REGISTERING... ]
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                    [ Registering... ]
                   </span>
                 ) : (
-                  "[ JOIN WAITLIST ]"
+                  "[ Join Waitlist ]"
                 )}
               </button>
             </form>
@@ -158,35 +158,28 @@ export default function WaitlistPage() {
           <div className="border border-white/10 p-3 bg-black/40 flex flex-col items-center justify-center gap-1 font-mono text-center">
             <span className="text-[10px] text-white/40 uppercase tracking-widest">Database Size</span>
             <span className="text-xs font-bold text-white tracking-wider">
-              [ {stats ? stats.games.toLocaleString() : "---"} GAMES INDEXED ]
+              {stats ? stats.games.toLocaleString() : "---"} GAMES INDEXED
             </span>
           </div>
           <div className="border border-white/10 p-3 bg-black/40 flex flex-col items-center justify-center gap-1 font-mono text-center">
             <span className="text-[10px] text-white/40 uppercase tracking-widest">Early Access</span>
             <span className="text-xs font-bold text-white tracking-wider">
-              [ {stats ? stats.waitlist.toLocaleString() : "---"} WAITING ]
+              {stats ? stats.waitlist.toLocaleString() : "---"} WAITING
             </span>
           </div>
           <div className="border border-white/10 p-3 bg-black/40 flex flex-col items-center justify-center gap-1 font-mono text-center">
             <span className="text-[10px] text-white/40 uppercase tracking-widest">Taxonomy System</span>
             <span className="text-xs font-bold text-white tracking-wider">
-              [ {stats ? stats.tags.toLocaleString() : "---"} VIBES MAPPED ]
+              {stats ? stats.tags.toLocaleString() : "---"} VIBES MAPPED
             </span>
           </div>
         </div>
 
         {/* Footer info block */}
-        <div className="border-t border-white/10 pt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span>Runlevel: early_access</span>
-            <span>•</span>
-            <span>Build: v1.0.5</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span>SOON FOSS ON GITHUB</span>
-            <span>•</span>
-            <span>INDEXING THE HORROR WEB SINCE 2026</span>
-          </div>
+        <div className="border-t border-white/10 pt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest flex flex-col sm:flex-row justify-between items-center w-full gap-2">
+          <span>Soon FOSS on GitHub</span>
+          <span>•</span>
+          <span>Indexing since 2026</span>
         </div>
       </div>
     </div>
