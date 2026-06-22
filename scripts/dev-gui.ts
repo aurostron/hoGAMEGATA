@@ -852,7 +852,15 @@ const HTML_CONTENT = `<!DOCTYPE html>
         <h2><span class="num">5</span> Price Sync Aggregator</h2>
         <p>Query external API providers (CheapShark/ITAD) to update latest deals.</p>
         <div class="actions-row">
-          <button class="btn btn-cyan" onclick="runCommand('sync-prices', [], 'Sync Prices')">Run Deal Price Sync</button>
+          <button class="btn btn-primary" onclick="runCommand('sync-prices', ['--limit', '100'], 'Sync Prices (Top 100)')">Sync Top 100</button>
+          <button class="btn btn-cyan" onclick="runCommand('sync-prices', ['--limit', '150'], 'Sync Prices (Top 150)')">Sync Top 150</button>
+        </div>
+        <div class="actions-row">
+          <div class="form-group">
+            <label for="priceLimit">Limit:</label>
+            <input type="number" id="priceLimit" class="input-control" placeholder="Limit count" min="1" value="100">
+            <button class="btn" onclick="runPriceSyncWithLimit()">Sync with Limit</button>
+          </div>
         </div>
       </div>
 
@@ -1177,6 +1185,12 @@ const HTML_CONTENT = `<!DOCTYPE html>
       const limit = document.getElementById('scareLimit').value;
       if (!limit || parseInt(limit) <= 0) return alert('Please input a valid limit size.');
       runCommand('scare', ['--limit', limit], 'Scare Enrichment limit ' + limit);
+    }
+
+    function runPriceSyncWithLimit() {
+      const limit = document.getElementById('priceLimit').value;
+      if (!limit || parseInt(limit) <= 0) return alert('Please input a valid limit size.');
+      runCommand('sync-prices', ['--limit', limit], 'Price Sync limit ' + limit);
     }
 
     function runScareSlug() {

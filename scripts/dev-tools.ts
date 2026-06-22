@@ -127,9 +127,31 @@ async function showMainMenu() {
       await askQuestion("\n[Press Enter to return to main menu]");
       break;
     case "5": {
-      console.log("\nRunning Deal Price Synchronization...");
-      await runScript("scripts/sync-prices.ts");
-      await askQuestion("\n[Press Enter to return to main menu]");
+      console.log("\n--------------------------------------------------");
+      console.log("💰 PRICE SYNC AGGREGATOR");
+      console.log("--------------------------------------------------");
+      console.log("1. Sync top 100 games (Default)");
+      console.log("2. Sync top 150 games");
+      console.log("3. Sync custom number of games");
+      console.log("4. Return to Main Menu");
+      console.log("--------------------------------------------------");
+      const priceChoice = await askQuestion("Select action [1-4]: ");
+      if (priceChoice === "1") {
+        await runScript("scripts/sync-prices.ts", ["--limit", "100"]);
+      } else if (priceChoice === "2") {
+        await runScript("scripts/sync-prices.ts", ["--limit", "150"]);
+      } else if (priceChoice === "3") {
+        const customLimit = await askQuestion("Enter target limit: ");
+        const num = parseInt(customLimit, 10);
+        if (!isNaN(num)) {
+          await runScript("scripts/sync-prices.ts", ["--limit", num.toString()]);
+        } else {
+          console.log("❌ Invalid limit.");
+        }
+      }
+      if (priceChoice !== "4") {
+        await askQuestion("\n[Press Enter to return to main menu]");
+      }
       break;
     }
     case "6": {
