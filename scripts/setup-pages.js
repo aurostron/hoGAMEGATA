@@ -59,6 +59,18 @@ if (fs.existsSync(prismaWasmPath)) {
   savedPrismaMB = origSize / (1024 * 1024);
 }
 
-const totalSaved = (savedFontMB + savedPrismaMB).toFixed(2);
-console.log(`Done! Pruned assets (saved ${totalSaved} MB: ${savedFontMB.toFixed(2)} MB fonts + ${savedPrismaMB.toFixed(2)} MB Prisma WASM) → assets/_worker.js/index.js`);
+// Reduce bundle size: Replace the heavy 534 KB onnxruntime-web Node.js runtime 
+// file with an empty shim since Cloudflare Workers run in a V8 edge environment, 
+// not Node.js, and load the web/WASM version instead.
+const onnxNodePath = path.join(workerDir, 'server-functions/default/node_modules/onnxruntime-web/dist/ort-web.node.js');
+let savedOnnxNodeMB = 0;
+if (fs.existsSync(onnxNodePath)) {
+  const origSize = fs.statSync(onnxNodePath).size;
+  fs.writeFileSync(onnxNodePath, 'module.exports = {};\n', 'utf-8');
+  savedOnnxNodeMB = origSize / (1024 * 1024);
+}
+
+const totalSaved = (savedFontMB + savedPrismaMB + savedOnnxNodeMB).toFixed(2);
+console.log(`Done! Pruned assets (saved ${totalSaved} MB: ${savedFontMB.toFixed(2)} MB fonts + ${savedPrismaMB.toFixed(2)} MB Prisma WASM + ${savedOnnxNodeMB.toFixed(2)} MB ONNX Node) → assets/_worker.js/index.js`);
+
 
