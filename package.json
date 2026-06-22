@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "build:pages": "node scripts/patch-cloudflare-build.js && npx @opennextjs/cloudflare build && node scripts/setup-pages.js",
+    "deploy:pages": "npx wrangler pages deploy .open-next/assets --minify",
     "start": "next start",
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
