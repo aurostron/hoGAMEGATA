@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 // Cache for the summary data
 interface CacheEntry {
   data: any;
