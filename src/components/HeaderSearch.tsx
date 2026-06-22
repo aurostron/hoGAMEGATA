@@ -83,9 +83,9 @@ export default function HeaderSearch() {
       <div className="relative w-40 sm:w-60">
         <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
           {loading ? (
-            <Loader2 className="h-3.5 w-3.5 text-white/50 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 text-white/70 animate-spin" />
           ) : (
-            <Search className="h-3.5 w-3.5 text-white/50" />
+            <Search className="h-3.5 w-3.5 text-white/70" />
           )}
         </div>
         <input
@@ -94,7 +94,7 @@ export default function HeaderSearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim() && setIsOpen(true)}
           placeholder="Search games..."
-          className="block w-full pl-8 pr-8 py-1.5 bg-black border border-white/30 text-xs text-white placeholder-white/30 focus:border-white focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
+          className="block w-full pl-8 pr-8 py-1.5 bg-black border border-white text-xs text-white placeholder-white/50 focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
         />
         {query && (
           <button
