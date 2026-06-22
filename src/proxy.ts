@@ -8,7 +8,8 @@ const PUBLIC_PATHS = [
   "/api/games/summary",
   "/api/stats",
   "/login",
-  "/auth/callback"
+  "/auth/callback",
+  "/privacy"
 ];
 
 export function proxy(request: NextRequest) {
