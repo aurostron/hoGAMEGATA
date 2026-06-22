@@ -106,7 +106,7 @@ export default async function RootLayout({
           <OnboardingModal />
         </AuthProvider>
         <footer className="max-w-5xl w-full mx-auto px-6 py-8 border-t border-white flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-          <span>© 2026 hoGAMEGATA Project, soon FOSS on Github.</span>
+          <span>© 2026 hoGAMEGATA, Free, forever.</span>
           <div className="flex items-center gap-4">
             <PreferencesButton />
             <span>Made with ❤️ by aurostron.</span>
