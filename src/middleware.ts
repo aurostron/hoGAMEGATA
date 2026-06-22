@@ -13,8 +13,6 @@ const PUBLIC_PATHS = [
   "/legal"
 ];
 
-export const runtime = "edge";
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
