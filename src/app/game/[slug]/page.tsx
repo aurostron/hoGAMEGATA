@@ -12,6 +12,7 @@ import SciFiLogo from "@/components/SciFiLogo";
 import PlatformLogos from "@/components/PlatformLogos";
 import SettingsButton from "@/components/SettingsButton";
 import HeaderSearch from "@/components/HeaderSearch";
+import ShareButton from "@/components/ShareButton";
 import dynamic from "next/dynamic";
 import ScareMeter from "@/components/ScareMeter";
 
@@ -723,9 +724,12 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   </span>
                 )}
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
-                {cleanTitle(game.title)}
-              </h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
+                  {cleanTitle(game.title)}
+                </h2>
+                <ShareButton />
+              </div>
               <div className="flex flex-wrap gap-2 text-xs font-mono font-bold uppercase">
                 <span className="text-white/60">Developed by:</span>
                 <span className="text-white font-black">{game.developers.map(d => d.name).join(", ")}</span>
