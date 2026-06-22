@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:pages": "npx @opennextjs/cloudflare build && node scripts/setup-pages.js",
     "start": "next start",
+
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
     "tag-moods": "tsx scripts/tag-moods.ts",
