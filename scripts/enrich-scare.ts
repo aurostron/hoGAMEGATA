@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import * as dotenv from "dotenv";
 import { GoogleGenAI, Type } from "@google/genai";
+import OpenAI from "openai";
 
 dotenv.config();
 
@@ -29,6 +30,10 @@ const adapter = new PrismaPg(pool);
 prisma = new PrismaClient({ adapter });
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const freeLlm = new OpenAI({ 
+  baseURL: "http://localhost:3001/v1", 
+  apiKey: process.env.FREELLM_API_KEY || "dummy-key" 
+});
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -79,85 +84,131 @@ function cleanAndExtractReviews(reviews: any[]): string {
   
   if (topReviews.length === 0) return "";
 
-  // Combine into a digest
-  return topReviews.map((r, i) => `Review ${i+1}:\n${r.review}`).join("\n\n---\n\n");
+  // Minify: truncate to 400 chars, strip all linebreaks/excess whitespace, use dense delimiters
+  return topReviews.map((r, i) => {
+    let minified = r.review.replace(/\s+/g, ' ').trim();
+    if (minified.length > 400) minified = minified.substring(0, 400) + '...';
+    return `[${i+1}] ${minified}`;
+  }).join(' ');
 }
 
 async function processSteamScare(reviews: any[]): Promise<{ rating: number, profile: ScareProfile, reviewCount: number } | null> {
   const digest = cleanAndExtractReviews(reviews);
   if (!digest) return null;
 
-  try {
-    const prompt = `You are a horror game analysis engine.
+  const prompt = `You are an expert horror game analysis engine.
 Analyze player sentiment and determine the game's scare profile based on these Steam reviews.
-Return ONLY valid JSON matching the schema.
-Score the following from 0 to 100 based on how strongly the players emphasize them:
-- overallScare (0-100)
-- dread (0-100)
-- jumpscare (0-100)
-- psychological (0-100)
-- gore (0-100)
-- tension (0-100)
-- disturbing (0-100)
-- isolation (0-100)
 
-Also include:
-- shortSummary: 1-2 sentences summarizing why it's scary.
-- playerWarnings: An array of up to 3 short tags like "Emotionally Exhausting" or "Extreme Jump Scares".
+SCORING RUBRIC (0-100):
+- 90-100: Legendary, traumatizing horror (e.g. Visage, Amnesia). Players report extreme fear, panic attacks, or having to quit.
+- 75-89: Very scary. Consistently terrifying, high tension.
+- 50-74: Moderately scary. Standard horror game, spooky but manageable.
+- 0-49: Not very scary. Action-horror, mild spooks, or horror is secondary.
+
+PARAMETERS TO SCORE:
+- overallScare: The primary rating based on the rubric above.
+- dread: Lingering anxiety, oppressive atmosphere, slow-burn tension.
+- jumpscare: Cheap or earned sudden scares, loud noises, chaotic panic.
+- psychological: Mind-bending, trauma, paranoia, insanity.
+- gore: Blood, body horror, visceral mutilation.
+- tension: High-stress chases, hiding mechanics, relentless pursuit.
+- disturbing: Unsettling themes, taboo subjects, gross-out horror.
+- isolation: Feeling completely alone, lost, or trapped without help.
+
+Do NOT be afraid to use extreme scores (e.g. 95+ or 10-) if the reviews strongly support it.
+
+Return ONLY valid JSON matching the following schema. Do NOT wrap it in markdown blockquotes like \`\`\`json.
+{
+  "overallScare": integer (0-100),
+  "dread": integer (0-100),
+  "jumpscare": integer (0-100),
+  "psychological": integer (0-100),
+  "gore": integer (0-100),
+  "tension": integer (0-100),
+  "disturbing": integer (0-100),
+  "isolation": integer (0-100),
+  "shortSummary": "1-2 sentences summarizing why it's scary.",
+  "playerWarnings": ["warning 1", "warning 2", "warning 3"]
+}
 
 Review Digest:
 ${digest}`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            overallScare: { type: Type.INTEGER },
-            dread: { type: Type.INTEGER },
-            jumpscare: { type: Type.INTEGER },
-            psychological: { type: Type.INTEGER },
-            gore: { type: Type.INTEGER },
-            tension: { type: Type.INTEGER },
-            disturbing: { type: Type.INTEGER },
-            isolation: { type: Type.INTEGER },
-            shortSummary: { type: Type.STRING },
-            playerWarnings: { type: Type.ARRAY, items: { type: Type.STRING } }
-          },
-          required: ["overallScare", "dread", "jumpscare", "psychological", "gore", "tension", "disturbing", "isolation", "shortSummary", "playerWarnings"]
-        }
-      }
+  let parsed: any = null;
+
+  // 1. Try FreeLLM API Primary
+  try {
+    process.stdout.write(`  🤖 Primary: Hitting local FreeLLM API... `);
+    const response = await freeLlm.chat.completions.create({
+      model: "auto", // The Unified API requested 'auto' to auto-route
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
     });
 
-    const outputText = response.text;
-    if (!outputText) return null;
+    const outputText = response.choices[0]?.message?.content;
+    if (!outputText) throw new Error("Empty response");
     
-    const parsed = JSON.parse(outputText);
+    parsed = JSON.parse(outputText);
+    console.log("✅ Success");
+  } catch (err: any) {
+    console.log(`❌ Failed (${err.message})`);
+    console.log(`  ⚠️ Falling back to Gemini 2.5 Flash...`);
+    
+    // 2. Fallback to Gemini 2.5 Flash
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              overallScare: { type: Type.INTEGER },
+              dread: { type: Type.INTEGER },
+              jumpscare: { type: Type.INTEGER },
+              psychological: { type: Type.INTEGER },
+              gore: { type: Type.INTEGER },
+              tension: { type: Type.INTEGER },
+              disturbing: { type: Type.INTEGER },
+              isolation: { type: Type.INTEGER },
+              shortSummary: { type: Type.STRING },
+              playerWarnings: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["overallScare", "dread", "jumpscare", "psychological", "gore", "tension", "disturbing", "isolation", "shortSummary", "playerWarnings"]
+          }
+        }
+      });
 
-    const profile: ScareProfile = {
-      dread: parsed.dread,
-      jumpscare: parsed.jumpscare,
-      psychological: parsed.psychological,
-      gore: parsed.gore,
-      tension: parsed.tension,
-      disturbing: parsed.disturbing,
-      isolation: parsed.isolation,
-      shortSummary: parsed.shortSummary,
-      playerWarnings: parsed.playerWarnings
-    };
-
-    return {
-      rating: parsed.overallScare,
-      profile,
-      reviewCount: reviews.length
-    };
-  } catch (err) {
-    console.error("❌ Gemini API Error:", err);
-    return null;
+      const outputText = response.text;
+      if (!outputText) throw new Error("Empty Gemini response");
+      
+      parsed = JSON.parse(outputText);
+    } catch (fallbackErr: any) {
+      console.error("  ❌ Gemini Fallback also failed:", fallbackErr.message);
+      return null;
+    }
   }
+
+  if (!parsed) return null;
+
+  const profile: ScareProfile = {
+    dread: parsed.dread || 0,
+    jumpscare: parsed.jumpscare || 0,
+    psychological: parsed.psychological || 0,
+    gore: parsed.gore || 0,
+    tension: parsed.tension || 0,
+    disturbing: parsed.disturbing || 0,
+    isolation: parsed.isolation || 0,
+    shortSummary: parsed.shortSummary,
+    playerWarnings: parsed.playerWarnings || []
+  };
+
+  return {
+    rating: parsed.overallScare || 0,
+    profile,
+    reviewCount: reviews.length
+  };
 }
 
 function processTaxonomyScare(taxonomyScores: any): { rating: number, profile: ScareProfile } | null {
@@ -241,7 +292,7 @@ async function runScareEnrichment() {
     whereClause.tags = { some: { slug: targetTag } };
   }
 
-  console.log(`🤖 Loading Gemini 2.5 Flash Cloud AI for Scare Analysis...`);
+  console.log(`🤖 Loading FreeLLM API (with Gemini Fallback) for Scare Analysis...`);
 
   if (targetSlug) {
     whereClause = { slug: targetSlug };

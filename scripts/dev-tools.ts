@@ -224,7 +224,7 @@ async function showEnrichMenu() {
 
 async function showScareMenu() {
   console.log("\n--------------------------------------------------");
-  console.log("🤖 SCARE METER CLOUD AI (GEMINI 2.5 FLASH)");
+  console.log("🤖 SCARE METER CLOUD AI (FREELLM + GEMINI FALLBACK)");
   console.log("--------------------------------------------------");
   console.log("1. Run default batch (50 games)");
   console.log("2. Run large batch (500 games)");

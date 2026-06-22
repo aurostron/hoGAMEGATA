@@ -868,7 +868,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       <!-- Section 7 -->
       <div class="card">
         <h2><span class="num">7</span> Scare Meter NLP AI Enrichment</h2>
-        <p>Analyze descriptions with Gemini 2.5 Flash Cloud AI to populate horror profiles.</p>
+        <p>Analyze descriptions with FreeLLM API (Gemini Fallback) to populate horror profiles.</p>
         <div class="actions-row">
           <button class="btn btn-primary" onclick="runCommand('scare', [], 'Default Scare Enrichment')">Run Default Batch (50)</button>
           <button class="btn" onclick="runCommand('scare', ['--limit', '500'], 'Large Scare Enrichment')">Run Large Batch (500)</button>
