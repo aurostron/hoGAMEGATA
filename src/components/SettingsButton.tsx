@@ -105,6 +105,11 @@ export default function SettingsButton() {
             <BookOpen className="w-3.5 h-3.5" /> Privacy Policy
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="p-0">
+          <Link href="/legal" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
+            <BookOpen className="w-3.5 h-3.5" /> Legal Notice
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
