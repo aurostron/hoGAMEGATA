@@ -1,5 +1,3 @@
-import { pipeline } from "@xenova/transformers";
-
 let extractorInstance: any = null;
 
 // Caches queries to their generated number array vector embedding
@@ -7,7 +5,9 @@ const queryVectorCache = new Map<string, number[]>();
 
 export async function getExtractor() {
   if (!extractorInstance) {
-    // Loads from HuggingFace cache directory where model files are stored locally
+    // Dynamic import: @xenova/transformers is heavy (~141 MB source);
+    // lazy-loading it prevents nft from tracing the entire dep tree into the bundle.
+    const { pipeline } = await import("@xenova/transformers");
     extractorInstance = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
   }
   return extractorInstance;
