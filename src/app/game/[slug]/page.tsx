@@ -41,7 +41,7 @@ export async function generateStaticParams() {
     const games = await db.game.findMany({
       select: { slug: true },
       orderBy: { popularity: "desc" },
-      take: 100,
+      take: 500,
     });
     return games.map((game) => ({
       slug: game.slug,
