@@ -100,7 +100,13 @@ export async function GET(request: NextRequest) {
             SELECT id FROM "Game"
             WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${cleanedQuery}))
                OR similarity(title, ${cleanedQuery}) > 0.18
-            ORDER BY similarity(title, ${cleanedQuery}) DESC
+               OR regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g')
+               OR similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g')) > 0.18
+            ORDER BY GREATEST(
+              CASE WHEN regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g') THEN 1.0 ELSE 0.0 END,
+              similarity(title, ${cleanedQuery}),
+              similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g'))
+            ) DESC
             LIMIT 100;
           `
         );
@@ -141,8 +147,12 @@ export async function GET(request: NextRequest) {
                OR similarity(coalesce("developerNames", ''), ${search}) > 0.2
                OR similarity(coalesce("genreNames", ''), ${search}) > 0.2
                OR similarity(coalesce("platformNames", ''), ${search}) > 0.2
+               OR regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g')
+               OR similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g')) > 0.18
             ORDER BY GREATEST(
+              CASE WHEN regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g') THEN 1.0 ELSE 0.0 END,
               similarity(title, ${search}),
+              similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g')),
               similarity(coalesce("developerNames", ''), ${search})
             ) DESC
             LIMIT 100;
