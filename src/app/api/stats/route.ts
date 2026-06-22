@@ -5,11 +5,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const [gameCount, devCount, pubCount, tagCount] = await Promise.all([
+    const [gameCount, devCount, pubCount, tagCount, waitlistCount] = await Promise.all([
       db.game.count(),
       db.developer.count(),
       db.publisher.count(),
       db.tag.count(),
+      db.waitlist.count(),
     ]);
 
     // Count total screenshots stored across PostgreSQL string arrays
@@ -24,6 +25,7 @@ export async function GET() {
       publishers: pubCount,
       tags: tagCount,
       screenshots: screenshotCount,
+      waitlist: waitlistCount,
     }, {
       headers: {
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=600"

@@ -6,6 +6,7 @@ const PUBLIC_PATHS = [
   "/api/waitlist/join",
   "/api/auth/token-login",
   "/api/games/summary",
+  "/api/stats",
   "/login",
   "/auth/callback"
 ];

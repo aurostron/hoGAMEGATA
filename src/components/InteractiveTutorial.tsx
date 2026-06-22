@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface TourStep {
   targetSelector: string | null; // null means centered modal
@@ -40,6 +41,7 @@ const TOUR_STEPS: TourStep[] = [
 
 export default function InteractiveTutorial() {
   const pathname = usePathname();
+  const { user, loading: authLoading } = useAuth();
   const [isActive, setIsActive] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [spotlightStyle, setSpotlightStyle] = useState<React.CSSProperties>({});
@@ -226,6 +228,10 @@ export default function InteractiveTutorial() {
     setIsActive(false);
     localStorage.setItem("gamegata_tutorial_completed", "true");
   };
+
+  if (authLoading || !user || ["/waitlist", "/login", "/auth/callback"].includes(pathname)) {
+    return null;
+  }
 
   if (!isActive) return null;
 
