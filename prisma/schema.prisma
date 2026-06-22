@@ -85,6 +85,7 @@ model Game {
   collections   Collection[]
   priceSnapshots PriceSnapshot[]
   referralClicks ReferralClick[]
+  searchClicks   SearchClick[]
 
   @@index([releaseDate])
   @@index([rating])
@@ -219,6 +220,17 @@ model Waitlist {
   status    String   @default("PENDING") // PENDING, APPROVED, SENT
   token     String   @unique // Secure random token for URL login
   createdAt DateTime @default(now())
+}
+
+model SearchClick {
+  id        String   @id @default(cuid())
+  query     String
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  position  Int
+  createdAt DateTime @default(now())
+
+  @@index([query])
 }
 
 
