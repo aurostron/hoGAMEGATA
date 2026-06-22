@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link as LinkIcon, Check } from "lucide-react";
+import { Share, Check } from "lucide-react";
 
 export default function ShareButton() {
   const [copied, setCopied] = useState(false);
@@ -19,18 +19,17 @@ export default function ShareButton() {
   };
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block shrink-0">
       <button
         onClick={handleShare}
-        className="flex items-center gap-1.5 font-mono text-[9px] sm:text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-2.5 py-1.5 font-bold rounded-none bg-black cursor-pointer select-none"
+        className="flex items-center justify-center h-[36px] w-[36px] sm:h-[40px] sm:w-[40px] text-white hover:bg-white hover:text-black transition-all duration-150 border border-white rounded-none bg-black cursor-pointer select-none"
         title="Copy clean game link"
       >
-        <LinkIcon className="w-3 h-3" />
-        <span>[ Share ]</span>
+        <Share className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
       </button>
 
       {copied && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-white text-black border border-white font-mono text-[9px] uppercase tracking-wider font-bold z-50 whitespace-nowrap flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-white text-black border border-white font-mono text-[9px] uppercase tracking-wider font-bold z-50 whitespace-nowrap flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)] animate-fade-in">
           <Check className="w-2.5 h-2.5" />
           <span>[ Link Copied ]</span>
           {/* Arrow */}
