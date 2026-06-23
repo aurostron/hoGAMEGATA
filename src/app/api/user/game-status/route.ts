@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getServerUser } from "@/lib/serverAuth";
 
 export async function GET(request: NextRequest) {
@@ -16,29 +16,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Missing gameId" }, { status: 400 });
     }
 
-    const [wishlistRecord, collectionRecord] = await Promise.all([
-      db.wishlist.findUnique({
-        where: {
-          userId_gameId: {
-            userId: user.id,
-            gameId,
-          },
-        },
-      }),
-      db.collection.findUnique({
-        where: {
-          userId_gameId: {
-            userId: user.id,
-            gameId,
-          },
-        },
-      })
+    const supabase = getSupabaseServer();
+
+    const [wishlistResult, collectionResult] = await Promise.all([
+      supabase
+        .from("Wishlist")
+        .select("id")
+        .eq("userId", user.id)
+        .eq("gameId", gameId)
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("Collection")
+        .select("status")
+        .eq("userId", user.id)
+        .eq("gameId", gameId)
+        .limit(1)
+        .maybeSingle(),
     ]);
 
     return NextResponse.json({
       loggedIn: true,
-      wishlisted: !!wishlistRecord,
-      collectionStatus: collectionRecord ? collectionRecord.status : null
+      wishlisted: !!wishlistResult.data,
+      collectionStatus: collectionResult.data?.status || null,
     });
   } catch (error) {
     console.error("❌ Failed to resolve user status for game:", error);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,15 +9,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const logEntry = await db.searchClick.create({
-      data: {
+    const supabase = getSupabaseServer();
+    const { data, error } = await supabase
+      .from("SearchClick")
+      .insert({
         query: query.trim(),
         gameId,
         position,
-      },
-    });
+      })
+      .select("id")
+      .single();
 
-    return NextResponse.json({ success: true, id: logEntry.id });
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, id: data.id });
   } catch (error) {
     console.error("❌ Search click logging failed:", error);
     return NextResponse.json({ error: "Failed to log search click" }, { status: 500 });

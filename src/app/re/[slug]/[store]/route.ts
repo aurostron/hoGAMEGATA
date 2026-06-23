@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { generateAffiliateLink } from "@/lib/affiliate";
 
 interface RouteParams {
@@ -30,54 +30,63 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const gameId = searchParams.get("gameId") || "";
 
   try {
+    const supabase = getSupabaseServer();
+
     // 1. Resolve the Game from database
     let game = null;
     if (gameId) {
-      game = await db.game.findUnique({
-        where: { id: gameId },
-        include: { purchaseLinks: true }
-      });
+      const { data } = await supabase
+        .from("Game")
+        .select("id, slug, purchaseLinks:PurchaseLink(*)")
+        .eq("id", gameId)
+        .limit(1)
+        .maybeSingle();
+      game = data;
     }
 
     if (!game && slug) {
-      game = await db.game.findUnique({
-        where: { slug },
-        include: { purchaseLinks: true }
-      });
+      const { data } = await supabase
+        .from("Game")
+        .select("id, slug, purchaseLinks:PurchaseLink(*)")
+        .eq("slug", slug)
+        .limit(1)
+        .maybeSingle();
+      game = data;
     }
 
     if (!game) {
       console.warn(`[Redirect Warning] Game not found for ID: "${gameId}" / Slug: "${slug}"`);
-      // Fail-safe: redirect to fallbackUrl or home
       return NextResponse.redirect(fallbackUrl || new URL("/", request.url).toString(), 307);
     }
 
-    // 2. Resolve database storeName and search for clean purchase link
+    // 2. Resolve store name and find clean purchase link
     const targetStoreName = matchStoreName(store);
-    const cleanLink = game.purchaseLinks.find(
-      (link) => link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") === targetStoreName.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const purchaseLinks = game.purchaseLinks as any[];
+    const cleanLink = purchaseLinks?.find(
+      (link: any) => link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") === targetStoreName.toLowerCase().replace(/[^a-z0-9]/g, "")
     );
 
     let finalRedirectionUrl = fallbackUrl;
 
     if (cleanLink && cleanLink.url) {
-      // Clean link exists, wrap with our affiliate tags
-      finalRedirectionUrl = generateAffiliateLink(cleanLink.storeName, cleanLink.url);
+      let targetUrl = cleanLink.url;
+      // If store is itch.io, append /purchase to open the payment overlay directly
+      if (cleanLink.storeName.toLowerCase() === "itch.io" && !targetUrl.endsWith("/purchase")) {
+        targetUrl = `${targetUrl.replace(/\/$/, "")}/purchase`;
+      }
+      finalRedirectionUrl = generateAffiliateLink(cleanLink.storeName, targetUrl);
     }
 
-    // Fail-safe check
     if (!finalRedirectionUrl) {
       finalRedirectionUrl = cleanLink?.url || fallbackUrl || new URL("/", request.url).toString();
     }
 
-    // 3. Log referral click in database for monetization analytics
+    // 3. Log referral click in database
     try {
-      await db.referralClick.create({
-        data: {
-          gameId: game.id,
-          storeName: cleanLink?.storeName || targetStoreName,
-          targetUrl: finalRedirectionUrl,
-        }
+      await supabase.from("ReferralClick").insert({
+        gameId: game.id,
+        storeName: cleanLink?.storeName || targetStoreName,
+        targetUrl: finalRedirectionUrl,
       });
     } catch (dbErr) {
       console.error("[Redirect Analytics Error] Failed to log ReferralClick:", dbErr);

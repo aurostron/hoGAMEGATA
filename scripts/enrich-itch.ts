@@ -247,6 +247,79 @@ async function addAndEnrichCustomGame(title: string, url: string) {
   console.log(`✅ Game entry "${title}" successfully added and enriched (ID: ${game.id}).`);
 }
 
+async function addCustomGameDryRun(title: string, url: string, coverUrl: string | null, developerName: string | null) {
+  const cleanSlug = "itch-" + title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  console.log(`\n[Dry Run] Adding skeleton entry for "${title}" with slug "${cleanSlug}"...`);
+
+  let game = await prisma.game.findUnique({ where: { slug: cleanSlug } });
+  
+  const baseData: any = {
+    title,
+    status: "released",
+    rawgEnriched: false, // Remains false until enriched with detail scraper
+  };
+  
+  if (coverUrl) baseData.coverUrl = coverUrl;
+  if (developerName) baseData.developerNames = developerName;
+
+  if (!game) {
+    game = await prisma.game.create({
+      data: {
+        ...baseData,
+        slug: cleanSlug,
+        purchaseLinks: {
+          create: {
+            storeName: "itch.io",
+            url: url
+          }
+        }
+      }
+    });
+  } else {
+    game = await prisma.game.update({
+      where: { id: game.id },
+      data: baseData
+    });
+    const existingLink = await prisma.purchaseLink.findFirst({
+      where: { gameId: game.id, storeName: "itch.io" }
+    });
+    if (existingLink) {
+      await prisma.purchaseLink.update({
+        where: { id: existingLink.id },
+        data: { url }
+      });
+    } else {
+      await prisma.purchaseLink.create({
+        data: {
+          gameId: game.id,
+          storeName: "itch.io",
+          url
+        }
+      });
+    }
+  }
+
+  // Connect Developer relation if developerName is provided
+  if (developerName) {
+    const devSlug = developerName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const dbDev = await prisma.developer.upsert({
+      where: { slug: devSlug },
+      update: { name: developerName },
+      create: { name: developerName, slug: devSlug }
+    });
+    await prisma.game.update({
+      where: { id: game.id },
+      data: {
+        developers: {
+          connect: { id: dbDev.id }
+        }
+      }
+    });
+  }
+
+  console.log(`✅ [Dry Run] Skeleton entry created (ID: ${game.id}) with developer: "${developerName || "Unknown"}" and cover.`);
+}
+
 async function runEnrichmentBatch(batchLimit: number) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -324,7 +397,7 @@ async function runEnrichmentSingle(filter: { slug?: string; url?: string }) {
   }
 }
 
-async function scrapeItchListingPage(listingUrl: string): Promise<Array<{ title: string, url: string }>> {
+async function scrapeItchListingPage(listingUrl: string): Promise<Array<{ title: string, url: string, coverUrl: string | null, developerName: string | null }>> {
   console.log(`🔍 Scrape Request: Fetching list from ${listingUrl}...`);
   const html = await fetchHtmlWithBackoff(listingUrl);
   if (!html) {
@@ -333,15 +406,26 @@ async function scrapeItchListingPage(listingUrl: string): Promise<Array<{ title:
   }
 
   const $ = cheerio.load(html);
-  const games: Array<{ title: string, url: string }> = [];
+  const games: Array<{ title: string, url: string, coverUrl: string | null, developerName: string | null }> = [];
 
   $('.game_cell, .grid_cell').each((i, el) => {
     const titleEl = $(el).find('.game_title a, .title a');
     const title = titleEl.text().trim();
     const url = titleEl.attr('href');
+    
+    // Scrape cover image
+    const imgEl = $(el).find('.game_thumb img');
+    let coverUrl = imgEl.attr('data-lazy') || imgEl.attr('src') || null;
+    if (coverUrl && coverUrl.startsWith('//')) {
+      coverUrl = `https:${coverUrl}`;
+    }
+
+    // Scrape developer name
+    const devEl = $(el).find('.game_author a, .author a');
+    const developerName = devEl.text().trim() || null;
 
     if (title && url && url.startsWith('http')) {
-      games.push({ title, url });
+      games.push({ title, url, coverUrl, developerName });
     }
   });
 
@@ -349,14 +433,29 @@ async function scrapeItchListingPage(listingUrl: string): Promise<Array<{ title:
   return games;
 }
 
-async function runListIngestion(listingUrl: string) {
+async function runListIngestion(listingUrl: string, isDryRun: boolean = false) {
   const games = await scrapeItchListingPage(listingUrl);
   if (games.length === 0) {
     console.log("⚠️ No games found on the page or request failed.");
     return;
   }
 
-  console.log(`🚀 Queueing ${games.length} games for database seeding and enrichment...`);
+  if (isDryRun) {
+    console.log(`🚀 Dry Run: Seeding ${games.length} games to database instantly...`);
+    let successCount = 0;
+    for (const game of games) {
+      try {
+        await addCustomGameDryRun(game.title, game.url, game.coverUrl, game.developerName);
+        successCount++;
+      } catch (err) {
+        console.error(`  ❌ Failed to dry-run seed "${game.title}":`, err);
+      }
+    }
+    console.log(`\n🎉 Dry run listing ingestion complete! Seeded ${successCount} skeleton game entries.`);
+    return;
+  }
+
+  console.log(`🚀 Full Run: Seeding and detailed-scraping ${games.length} games...`);
   
   let successCount = 0;
   for (const game of games) {
@@ -457,7 +556,11 @@ async function showInteractiveMenu() {
         console.log("❌ URL cannot be empty.");
         break;
       }
-      await runListIngestion(targetUrl);
+      
+      const dryRunAns = await askQuestion("Do a fast dry run? (seeds titles/covers/devs instantly, redirects visitor) [Y/n]: ");
+      const isDry = dryRunAns.toLowerCase() !== 'n';
+      
+      await runListIngestion(targetUrl, isDry);
       break;
     }
     case "6":
@@ -479,13 +582,14 @@ async function main() {
   const urlIndex = args.indexOf("--url");
   const limitIndex = args.indexOf("--limit");
   const listUrlIndex = args.indexOf("--list-url");
+  const isDryRun = args.includes("--dry-run");
 
   if (slugIndex !== -1 && args[slugIndex + 1]) {
     await runEnrichmentSingle({ slug: args[slugIndex + 1] });
   } else if (urlIndex !== -1 && args[urlIndex + 1]) {
     await runEnrichmentSingle({ url: args[urlIndex + 1] });
   } else if (listUrlIndex !== -1 && args[listUrlIndex + 1]) {
-    await runListIngestion(args[listUrlIndex + 1]);
+    await runListIngestion(args[listUrlIndex + 1], isDryRun);
   } else if (args.includes("--batch") || limitIndex !== -1) {
     let limit = 20;
     if (limitIndex !== -1 && args[limitIndex + 1]) {

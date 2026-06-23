@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getServerUser } from "@/lib/serverAuth";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import DashboardTabs from "@/components/DashboardTabs";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -14,33 +14,25 @@ export default async function DashboardPage() {
     redirect("/login?redirect=/dashboard");
   }
 
+  const supabase = getSupabaseServer();
+
   // Query wishlist
-  const wishlistItems = await db.wishlist.findMany({
-    where: { userId: user.id },
-    include: {
-      game: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const { data: wishlistItems } = await supabase
+    .from("Wishlist")
+    .select("createdAt, game:Game(*)")
+    .eq("userId", user.id)
+    .order("createdAt", { ascending: false });
 
   // Query collection items
-  const collectionItems = await db.collection.findMany({
-    where: { userId: user.id },
-    include: {
-      game: true,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  const { data: collectionItems } = await supabase
+    .from("Collection")
+    .select("status, createdAt, game:Game(*)")
+    .eq("userId", user.id)
+    .order("createdAt", { ascending: false });
 
-  // Extract raw games
-  const wishlistedGames = wishlistItems.map((item) => item.game);
-  
-  // Group collection games by status
-  const collectionGames = collectionItems.map((item) => ({
+  const wishlistedGames = (wishlistItems || []).map((item: any) => item.game);
+
+  const collectionGames = (collectionItems || []).map((item: any) => ({
     status: item.status,
     game: item.game,
   }));
@@ -89,7 +81,6 @@ export default async function DashboardPage() {
           </p>
         </section>
 
-        {/* Dashboard Tabs Rendering */}
         <DashboardTabs
           wishlist={wishlistedGames}
           collection={collectionGames}

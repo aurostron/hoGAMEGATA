@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { createServerClient } from "@supabase/ssr";
 
 export async function getServerUser() {
@@ -36,11 +36,13 @@ export async function getServerUser() {
       if (user) {
         // Sync user to local DB
         try {
-          await db.user.upsert({
-            where: { id: user.id },
-            update: { email: user.email || "" },
-            create: { id: user.id, email: user.email || "" },
-          });
+          const db = getSupabaseServer();
+          await db
+            .from("User")
+            .upsert(
+              { id: user.id, email: user.email || "" },
+              { onConflict: "id" }
+            );
         } catch (upsertErr) {
           console.warn("User sync upsert failed (likely email constraint), ignoring:", upsertErr instanceof Error ? upsertErr.message : String(upsertErr));
         }
@@ -55,20 +57,19 @@ export async function getServerUser() {
   }
 
   // 2. Mock session fallback (development only — when Supabase is not configured)
-  // WARNING: Mock auth is NOT secure. It trusts a client-set cookie without cryptographic verification.
-  // Only available when NEXT_PUBLIC_SUPABASE_URL is not set.
   const mockSession = cookieStore.get("gamegata-session");
   if (mockSession?.value) {
     try {
       const decoded = decodeURIComponent(mockSession.value);
       const [id, email] = decoded.split(":");
       if (id && email) {
-        // Ensure user exists in database
-        await db.user.upsert({
-          where: { id },
-          update: { email },
-          create: { id, email },
-        });
+        const db = getSupabaseServer();
+        await db
+          .from("User")
+          .upsert(
+            { id, email },
+            { onConflict: "id" }
+          );
         return { id, email };
       }
     } catch (e) {

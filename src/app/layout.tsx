@@ -6,7 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import PreferencesButton from "@/components/PreferencesButton";
 import dynamic from "next/dynamic";
 import { unstable_cache } from "next/cache";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import PageTransitionLoader from "@/components/PageTransitionLoader";
 import HeaderScrollController from "@/components/HeaderScrollController";
 import InteractiveTutorial from "@/components/InteractiveTutorial";
@@ -28,10 +28,14 @@ export const metadata: Metadata = {
 
 async function fetchMaintenanceStatusFromDb() {
   try {
-    const config = await db.systemConfig.findUnique({
-      where: { key: "maintenance_mode" },
-    });
-    return config?.value === "true";
+    const supabase = getSupabaseServer();
+    const { data } = await supabase
+      .from("SystemConfig")
+      .select("value")
+      .eq("key", "maintenance_mode")
+      .limit(1)
+      .maybeSingle();
+    return data?.value === "true";
   } catch (e) {
     console.error("Error checking maintenance mode:", e);
     return false;
@@ -119,4 +123,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Parser from 'rss-parser';
-import { db as prisma } from '@/lib/db';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 
 const parser = new Parser();
 
@@ -11,6 +11,7 @@ export async function GET() {
       'https://itch.io/games/tag-thriller.xml'
     ];
     
+    const supabase = getSupabaseServer();
     let ingestedCount = 0;
     
     for (const feedUrl of feedsToFetch) {
@@ -20,62 +21,51 @@ export async function GET() {
         if (!item.title || !item.link) continue;
         const itemLink: string = item.link;
         
-        // Example link: https://username.itch.io/game-slug
         const urlParts = itemLink.split('/');
         const rawSlug = urlParts[urlParts.length - 1];
-        const slug = `itch-${rawSlug}`; // Prefixing to avoid collision with IGDB/RAWG slugs
+        const slug = `itch-${rawSlug}`;
         
-        // Build the Game data
         const gameData = {
           title: item.title,
           slug: slug,
           summary: item.contentSnippet || null,
-          releaseDate: item.pubDate ? new Date(item.pubDate) : new Date(),
+          releaseDate: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
           status: "released",
-          // Extract basic cover from HTML content if possible (simple regex)
           coverUrl: item.content?.match(/<img[^>]+src="([^">]+)"/)?.[1] || null,
         };
 
-        // Upsert the game
-        const game = await prisma.game.upsert({
-          where: { slug },
-          update: gameData,
-          create: gameData,
-        });
+        // Upsert game
+        const { data: game, error: gameError } = await supabase
+          .from("Game")
+          .upsert(gameData, { onConflict: "slug" })
+          .select("id")
+          .single();
 
-        // Upsert the purchase link specifically for itch.io
-        await prisma.purchaseLink.upsert({
-          where: {
-            id: `itch-link-${game.id}`, // We'll just try to find it, but upsert doesn't let us search by non-unique easily if no unique constraint exists
-          },
-          update: {
-            url: itemLink
-          },
-          create: {
-            storeName: 'itch.io',
-            url: itemLink,
-            gameId: game.id
-          }
-        }).catch(async (e) => {
-           const existingLink = await prisma.purchaseLink.findFirst({
-             where: { gameId: game.id, storeName: 'itch.io' }
-           });
-           
-           if (existingLink) {
-             await prisma.purchaseLink.update({
-               where: { id: existingLink.id },
-               data: { url: itemLink }
-             });
-           } else {
-             await prisma.purchaseLink.create({
-               data: {
-                 storeName: 'itch.io',
-                 url: itemLink,
-                 gameId: game.id
-               }
-             });
-           }
-        });
+        if (gameError || !game) continue;
+
+        // Upsert purchase link
+        const { data: existingLink } = await supabase
+          .from("PurchaseLink")
+          .select("id")
+          .eq("gameId", game.id)
+          .eq("storeName", "itch.io")
+          .limit(1)
+          .maybeSingle();
+
+        if (existingLink) {
+          await supabase
+            .from("PurchaseLink")
+            .update({ url: itemLink })
+            .eq("id", existingLink.id);
+        } else {
+          await supabase
+            .from("PurchaseLink")
+            .insert({
+              storeName: "itch.io",
+              url: itemLink,
+              gameId: game.id,
+            });
+        }
         
         ingestedCount++;
       }

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getServerUser } from "@/lib/serverAuth";
-import { CollectionStatus } from "@prisma/client";
+
+const VALID_STATUSES = ["OWNED", "PLAYING", "COMPLETED", "WANT_TO_PLAY"] as const;
 
 export async function POST(request: Request) {
   try {
@@ -15,29 +16,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing gameId or status" }, { status: 400 });
     }
 
-    // Verify valid status enum value
-    if (!Object.values(CollectionStatus).includes(status as CollectionStatus)) {
+    if (!VALID_STATUSES.includes(status as typeof VALID_STATUSES[number])) {
       return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
     }
 
-    const record = await db.collection.upsert({
-      where: {
-        userId_gameId: {
-          userId: user.id,
-          gameId,
-        },
-      },
-      update: {
-        status: status as CollectionStatus,
-      },
-      create: {
-        userId: user.id,
-        gameId,
-        status: status as CollectionStatus,
-      },
-    });
+    const supabase = getSupabaseServer();
 
-    return NextResponse.json({ success: true, record });
+    // Upsert: insert or update on conflict
+    const { error } = await supabase
+      .from("Collection")
+      .upsert(
+        { userId: user.id, gameId, status },
+        { onConflict: "userId,gameId" }
+      );
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Collection update failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -56,12 +51,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Missing gameId" }, { status: 400 });
     }
 
-    await db.collection.deleteMany({
-      where: {
-        userId: user.id,
-        gameId,
-      },
-    });
+    const supabase = getSupabaseServer();
+    const { error } = await supabase
+      .from("Collection")
+      .delete()
+      .eq("userId", user.id)
+      .eq("gameId", gameId);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {

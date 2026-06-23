@@ -1,57 +1,11 @@
 import { NextResponse, NextRequest } from "next/server";
-import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { getSupabaseServer } from "@/lib/supabaseServer";
+import { searchGamesExact, searchGamesSemantic, randomGameIds, getCheapestSnapshots } from "@/lib/dbRpc";
 import { preprocessSearchQuery } from "@/lib/searchEngine";
 
 export const dynamic = "force-dynamic";
 
-const gameSelect = {
-  id: true,
-  title: true,
-  slug: true,
-  status: true,
-  coverUrl: true,
-  isTrending: true,
-  rating: true,
-  category: true,
-  esrbRating: true,
-  pegiRating: true,
-  developerNames: true,
-  genreNames: true,
-  platformNames: true,
-  releaseDate: true,
-  tags: { select: { name: true, slug: true } },
-};
-
-async function fetchCheapestSnapshots(gameIds: string[]) {
-  if (gameIds.length === 0) return new Map<string, any[]>();
-  const rows = await db.$queryRaw<{
-    gameId: string;
-    storeName: string;
-    dealPrice: number;
-    retailPrice: number;
-    discountPercent: number;
-    dealUrl: string;
-    currency: string;
-    country: string;
-  }[]>`
-    SELECT "gameId", "storeName", "dealPrice", "retailPrice", "discountPercent", "dealUrl", "currency", "country"
-    FROM (
-      SELECT *,
-        ROW_NUMBER() OVER (PARTITION BY "gameId" ORDER BY "dealPrice" ASC)::int as rn
-      FROM "PriceSnapshot"
-      WHERE "gameId" IN (${Prisma.join(gameIds)})
-    ) sub
-    WHERE rn <= 3
-  `;
-  const grouped = new Map<string, any[]>();
-  for (const row of rows) {
-    const { gameId, ...snapshot } = row;
-    if (!grouped.has(gameId)) grouped.set(gameId, []);
-    grouped.get(gameId)!.push(snapshot);
-  }
-  return grouped;
-}
+const gameSummarySelect = "id, title, slug, status, coverUrl, isTrending, rating, category, esrbRating, pegiRating, developerNames, genreNames, platformNames, releaseDate, tags:Tag(name, slug)";
 
 export async function GET(request: NextRequest) {
   try {
@@ -71,21 +25,7 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get("limit");
     const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
 
-    const where: Prisma.GameWhereInput = {};
-
-    if (excludeId) {
-      where.id = { not: excludeId };
-    }
-
-    if (creatorIdsParam) {
-      const creatorIds = creatorIdsParam.split(",").filter(Boolean);
-      if (creatorIds.length > 0) {
-        where.OR = [
-          { developers: { some: { id: { in: creatorIds } } } },
-          { publishers: { some: { id: { in: creatorIds } } } }
-        ];
-      }
-    }
+    const supabase = getSupabaseServer();
 
     let matchedIds: string[] = [];
     let semanticExtractedSlugs: string[] = [];
@@ -94,173 +34,209 @@ export async function GET(request: NextRequest) {
       if (mode === "semantic") {
         const { cleanedQuery, expandedQuery, extractedSlugs } = preprocessSearchQuery(search);
         semanticExtractedSlugs = extractedSlugs;
-
-        const ftsMatches = await db.$queryRaw<{ id: string }[]>(
-          Prisma.sql`
-            SELECT id FROM "Game"
-            WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${expandedQuery || cleanedQuery}))
-               OR similarity(title, ${cleanedQuery}) > 0.18
-               OR regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g')
-               OR similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g')) > 0.18
-            ORDER BY GREATEST(
-              CASE WHEN regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g') THEN 1.0 ELSE 0.0 END,
-              similarity(title, ${cleanedQuery}),
-              similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g'))
-            ) DESC
-            LIMIT 100;
-          `
-        );
-
-        matchedIds = ftsMatches.map(match => match.id);
-
+        const results = await searchGamesSemantic(cleanedQuery, expandedQuery, 100);
+        matchedIds = results.map(r => r.id);
       } else {
-        const rawMatches = await db.$queryRaw<{ id: string }[]>(
-          Prisma.sql`
-            SELECT id FROM "Game"
-            WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${search}))
-               OR similarity(title, ${search}) > 0.18
-               OR similarity(coalesce("developerNames", ''), ${search}) > 0.2
-               OR similarity(coalesce("genreNames", ''), ${search}) > 0.2
-               OR similarity(coalesce("platformNames", ''), ${search}) > 0.2
-               OR regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g')
-               OR similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g')) > 0.18
-            ORDER BY GREATEST(
-              CASE WHEN regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g') THEN 1.0 ELSE 0.0 END,
-              similarity(title, ${search}),
-              similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${search})), '[^a-z0-9]', '', 'g')),
-              similarity(coalesce("developerNames", ''), ${search})
-            ) DESC
-            LIMIT 100;
-          `
-        );
-        matchedIds = rawMatches.map(m => m.id);
+        const results = await searchGamesExact(search, 100);
+        matchedIds = results.map(r => r.id);
       }
-
-      where.id = where.id && (where.id as any).not
-        ? { in: matchedIds, not: (where.id as any).not }
-        : { in: matchedIds };
     } else if (sort === "random") {
-      let rawMatches;
-      if (selectedTags.length > 0) {
-        rawMatches = await db.$queryRaw<{ id: string }[]>(
-          Prisma.sql`
-            SELECT g.id FROM "Game" g
-            JOIN "_GameToTag" gt ON g.id = gt."A"
-            JOIN "Tag" t ON gt."B" = t.id
-            WHERE t.slug IN (${Prisma.join(selectedTags)})
-            GROUP BY g.id
-            HAVING COUNT(DISTINCT t.slug) = ${selectedTags.length}
-            ORDER BY random()
-            LIMIT ${limit};
-          `
-        );
-      } else {
-        rawMatches = await db.$queryRaw<{ id: string }[]>(
-          Prisma.sql`
-            SELECT id FROM "Game"
-            ORDER BY random()
-            LIMIT ${limit};
-          `
-        );
-      }
-      matchedIds = rawMatches.map(m => m.id);
-      where.id = where.id && (where.id as any).not
-        ? { in: matchedIds, not: (where.id as any).not }
-        : { in: matchedIds };
+      const results = await randomGameIds(
+        selectedTags.length > 0 ? selectedTags : null,
+        limit
+      );
+      matchedIds = results.map(r => r.id);
     }
 
+    // Build query
+    let query = supabase.from("Game").select(gameSummarySelect);
+
+    // Filter by matched IDs (search or random)
+    if (matchedIds.length > 0) {
+      query = query.in("id", matchedIds);
+    }
+
+    // Exclude specific game
+    if (excludeId) {
+      query = query.neq("id", excludeId);
+    }
+
+    // Filter by creator IDs
+    if (creatorIdsParam) {
+      const creatorIds = creatorIdsParam.split(",").filter(Boolean);
+      if (creatorIds.length > 0) {
+        // This requires a join which Supabase doesn't support directly
+        // We'll need to use a subquery approach or fetch separately
+        // For now, we'll use .or() with a workaround
+        const { data: creatorGames } = await supabase
+          .from("_GameToDeveloper")
+          .select("A")
+          .in("B", creatorIds);
+        
+        const { data: publisherGames } = await supabase
+          .from("_GameToPublisher")
+          .select("A")
+          .in("B", creatorIds);
+
+        const gameIds = [
+          ...(creatorGames || []).map((r: any) => r.A),
+          ...(publisherGames || []).map((r: any) => r.A),
+        ];
+
+        if (gameIds.length > 0) {
+          query = query.in("id", gameIds);
+        } else {
+          // No games found for these creators
+          return NextResponse.json(
+            { games: [], nextCursor: null },
+            { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+          );
+        }
+      }
+    }
+
+    // Filter by tag slugs (AND logic)
     const combinedTags = [...selectedTags, ...semanticExtractedSlugs];
     if (combinedTags.length > 0) {
-      where.AND = combinedTags.map(tagSlug => ({
-        tags: {
-          some: {
-            slug: tagSlug
-          }
+      // For each tag, we need to filter games that have ALL the tags
+      // Supabase doesn't support AND logic for many-to-many directly
+      // We'll fetch games with ANY tag, then filter in memory
+      const { data: tagGames } = await supabase
+        .from("_GameToTag")
+        .select("A, B:Tag!inner(slug)")
+        .in("B.slug", combinedTags);
+
+      // Group by game ID and count distinct tags
+      const tagCounts = new Map<string, Set<string>>();
+      for (const row of tagGames || []) {
+        const gameId = row.A;
+        const tagSlug = (row.B as any)?.slug;
+        if (tagSlug) {
+          if (!tagCounts.has(gameId)) tagCounts.set(gameId, new Set());
+          tagCounts.get(gameId)!.add(tagSlug);
         }
-      }));
+      }
+
+      // Only keep games that have ALL tags
+      const validGameIds = Array.from(tagCounts.entries())
+        .filter((entry) => entry[1].size >= combinedTags.length)
+        .map((entry) => entry[0]);
+
+      if (validGameIds.length === 0) {
+        return NextResponse.json(
+          { games: [], nextCursor: null },
+          { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+        );
+      }
+
+      query = query.in("id", validGameIds);
     }
 
     let games: any[] = [];
     let nextCursor: string | null = null;
 
     if (search) {
-      const allSearchGames = await db.game.findMany({
-        where,
-        select: gameSelect,
-      });
+      // For search, fetch all matching games and sort by relevance
+      const { data: allSearchGames } = await query;
+      games = allSearchGames || [];
 
       if (matchedIds.length > 0) {
-        allSearchGames.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
+        games.sort((a: any, b: any) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
       }
 
-      let paginatedGames = allSearchGames;
+      // Client-side cursor pagination for search results
       if (cursor) {
-        const cursorIndex = allSearchGames.findIndex(g => g.id === cursor);
+        const cursorIndex = games.findIndex((g: any) => g.id === cursor);
         if (cursorIndex !== -1) {
-          paginatedGames = allSearchGames.slice(cursorIndex + 1);
+          games = games.slice(cursorIndex + 1);
         }
       }
 
-      games = paginatedGames.slice(0, limit);
-      if (paginatedGames.length > limit) {
-        nextCursor = games[games.length - 1].id;
+      const paginatedGames = games.slice(0, limit);
+      if (games.length > limit) {
+        nextCursor = paginatedGames[paginatedGames.length - 1]?.id || null;
       }
+      games = paginatedGames;
     } else if (sort === "random") {
-      games = await db.game.findMany({
-        where,
-        select: gameSelect,
-        take: limit,
-      });
+      // Random games already have the right limit
+      const { data: fetchedGames } = await query.limit(limit);
+      games = fetchedGames || [];
       if (matchedIds.length > 0) {
-        games.sort((a, b) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
+        games.sort((a: any, b: any) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
       }
       nextCursor = "more-random";
     } else {
-      let cursorFilter: Prisma.GameWhereInput = {};
+      // Cursor-based pagination for sorted results
+      if (sort === "trending") {
+        query = query.order("isTrending", { ascending: false });
+        query = query.order("popularity", { ascending: false, nullsFirst: false });
+        query = query.order("id", { ascending: false });
+      } else if (sort === "top-rated") {
+        query = query.order("rating", { ascending: false, nullsFirst: false });
+        query = query.order("id", { ascending: false });
+      } else {
+        // latest
+        query = query.order("releaseDate", { ascending: false, nullsFirst: false });
+        query = query.order("id", { ascending: false });
+      }
+
+      // Apply cursor filter
       if (cursor && sort !== "trending") {
         const sep = cursor.lastIndexOf("_");
         const cursorVal = cursor.substring(0, sep);
         const cursorId = cursor.substring(sep + 1);
 
         if (sort === "top-rated") {
-          cursorFilter = cursorVal === "null"
-            ? { AND: [{ rating: null }, { id: { lt: cursorId } }] }
-            : { OR: [{ rating: { lt: parseFloat(cursorVal) } }, { rating: parseFloat(cursorVal), id: { lt: cursorId } }] };
+          if (cursorVal === "null") {
+            query = query.or(`rating.is.null,and(rating.eq.0,id.lt.${cursorId})`);
+          } else {
+            query = query.or(`and(rating.lt.${cursorVal}),and(rating.eq.${cursorVal},id.lt.${cursorId})`);
+          }
         } else {
-          cursorFilter = cursorVal === "null"
-            ? { AND: [{ releaseDate: null }, { id: { lt: cursorId } }] }
-            : { OR: [{ releaseDate: { lt: new Date(parseInt(cursorVal, 10)) } }, { releaseDate: new Date(parseInt(cursorVal, 10)), id: { lt: cursorId } }] };
+          const cursorDate = new Date(parseInt(cursorVal, 10)).toISOString();
+          if (cursorVal === "null") {
+            query = query.or(`releaseDate.is.null,id.lt.${cursorId}`);
+          } else {
+            query = query.or(`and(releaseDate.lt.${cursorDate}),and(releaseDate.eq.${cursorDate},id.lt.${cursorId})`);
+          }
         }
       }
 
-      const fetchedGames = await db.game.findMany({
-        take: limit + 1,
-        where: cursor ? { AND: [where, cursorFilter] } : where,
-        select: gameSelect,
-        orderBy: sort === "trending"
-          ? [{ isTrending: "desc" }, { popularity: { sort: "desc", nulls: "last" } }, { id: "desc" }]
-          : sort === "top-rated"
-          ? [{ rating: { sort: "desc", nulls: "last" } }, { id: "desc" }]
-          : [{ releaseDate: { sort: "desc", nulls: "last" } }, { id: "desc" }],
-      });
+      if (cursor && sort === "trending") {
+        // Trending uses id as cursor
+        query = query.lt("id", cursor);
+      }
 
-      if (fetchedGames.length > limit) {
-        const nextItem = fetchedGames.pop()!;
+      // Fetch one extra to determine if there's a next page
+      query = query.limit(limit + 1);
+
+      const { data: fetchedGames } = await query;
+      const allGames = fetchedGames || [];
+
+      if (allGames.length > limit) {
+        const nextItem = allGames.pop()!;
         if (sort === "trending") {
           nextCursor = nextItem.id;
         } else if (sort === "top-rated") {
           nextCursor = `${nextItem.rating ?? "null"}_${nextItem.id}`;
         } else {
-          nextCursor = `${nextItem.releaseDate ? nextItem.releaseDate.getTime() : "null"}_${nextItem.id}`;
+          nextCursor = `${nextItem.releaseDate ? new Date(nextItem.releaseDate).getTime() : "null"}_${nextItem.id}`;
         }
       }
-      games = fetchedGames;
+      games = allGames;
     }
 
+    // Fetch price snapshots
     const gameIds = games.map((g: any) => g.id);
-    const snapshotMap = await fetchCheapestSnapshots(gameIds);
+    const snapshotMap = await getCheapestSnapshots(gameIds);
+    const snapshotGrouped = new Map<string, any[]>();
+    for (const row of snapshotMap) {
+      const { gameId, ...snapshot } = row;
+      if (!snapshotGrouped.has(gameId)) snapshotGrouped.set(gameId, []);
+      snapshotGrouped.get(gameId)!.push(snapshot);
+    }
     for (const game of games) {
-      game.priceSnapshots = snapshotMap.get(game.id) || [];
+      game.priceSnapshots = snapshotGrouped.get(game.id) || [];
     }
 
     return NextResponse.json(

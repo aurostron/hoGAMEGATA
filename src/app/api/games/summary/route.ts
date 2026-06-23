@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export const dynamic = "force-dynamic";
 
-// Cache for the summary data
 interface CacheEntry {
   data: any;
   expiry: number;
 }
 const apiCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_MS = 10 * 60 * 1000;
 
 export async function GET(request: Request) {
   const cacheKey = request.url;
@@ -33,99 +31,106 @@ export async function GET(request: Request) {
       ? activeTagsString.split(",").map(t => t.trim()).filter(Boolean)
       : [];
     const cursor = searchParams.get("cursor")?.trim() || "";
-    const sort = searchParams.get("sort")?.trim() || "latest"; // "latest" | "trending" | "random"
-    const creatorIdsParam = searchParams.get("creatorIds")?.trim() || "";
+    const sort = searchParams.get("sort")?.trim() || "latest";
+    const _creatorIdsParam = searchParams.get("creatorIds")?.trim() || "";
     const excludeId = searchParams.get("excludeId")?.trim() || "";
     const limitParam = searchParams.get("limit");
-    const limit = Math.min(Math.max(parseInt(limitParam || "5000", 10) || 5000, 1), 5000); // Default higher limit for index
+    const limit = Math.min(Math.max(parseInt(limitParam || "5000", 10) || 5000, 1), 5000);
 
-    // Minimal fields for client-side MiniSearch index
-    const gameSummarySelect = {
-      id: true,
-      title: true,
-      slug: true,
-      coverUrl: true,
-      releaseDate: true,
-      rating: true,
-      genreNames: true,
-      platformNames: true,
-      priceSnapshots: true,
-      tags: { select: { name: true, slug: true } },
-    };
+    const supabase = getSupabaseServer();
 
-    const where: Prisma.GameWhereInput = {};
+    const gameSummarySelect = "id, title, slug, coverUrl, releaseDate, rating, genreNames, platformNames, priceSnapshots:PriceSnapshot(*), tags:Tag(name, slug)";
+
+    let query = supabase.from("Game").select(gameSummarySelect);
 
     if (excludeId) {
-      where.id = { not: excludeId };
+      query = query.neq("id", excludeId);
     }
 
-    if (creatorIdsParam) {
-      const creatorIds = creatorIdsParam.split(",").filter(Boolean);
-      if (creatorIds.length > 0) {
-        where.OR = [
-          { developers: { some: { id: { in: creatorIds } } } },
-          { publishers: { some: { id: { in: creatorIds } } } }
-        ];
+    // Tag filtering
+    if (selectedTags.length > 0) {
+      // Fetch games with ANY of the tags
+      const { data: tagGames } = await supabase
+        .from("_GameToTag")
+        .select("A, B:Tag!inner(slug)")
+        .in("B.slug", selectedTags);
+
+      const tagCounts = new Map<string, Set<string>>();
+      for (const row of tagGames || []) {
+        const gameId = row.A;
+        const tagSlug = (row.B as any)?.slug;
+        if (tagSlug) {
+          if (!tagCounts.has(gameId)) tagCounts.set(gameId, new Set());
+          tagCounts.get(gameId)!.add(tagSlug);
+        }
+      }
+
+      const validGameIds = Array.from(tagCounts.entries())
+        .filter((entry) => entry[1].size >= selectedTags.length)
+        .map((entry) => entry[0]);
+
+      if (validGameIds.length === 0) {
+        return NextResponse.json(
+          { games: [], nextCursor: null, totalCount: 0 },
+          { headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' } }
+        );
+      }
+
+      query = query.in("id", validGameIds);
+    }
+
+    // Sorting
+    if (sort === "trending") {
+      query = query.order("isTrending", { ascending: false });
+      query = query.order("popularity", { ascending: false, nullsFirst: false });
+      query = query.order("id", { ascending: false });
+    } else if (sort === "top-rated") {
+      query = query.order("rating", { ascending: false, nullsFirst: false });
+      query = query.order("id", { ascending: false });
+    } else {
+      query = query.order("releaseDate", { ascending: false });
+    }
+
+    // Cursor pagination (using Supabase cursor-based approach)
+    if (cursor) {
+      const { data: cursorGame } = await supabase
+        .from("Game")
+        .select("id")
+        .eq("id", cursor)
+        .limit(1)
+        .maybeSingle();
+
+      if (cursorGame) {
+        // Simple cursor: fetch games after this cursor
+        if (sort === "latest") {
+          query = query.gt("releaseDate", cursor);
+        } else if (sort === "top-rated") {
+          query = query.gt("rating", 0);
+        }
       }
     }
 
-    // 1. Tag Filtering (Filter by Mood Tag slug)
-    if (selectedTags.length > 0) {
-      where.AND = selectedTags.map(tagSlug => ({
-        tags: {
-          some: {
-            slug: tagSlug
-          }
-        }
-      }));
-    }
+    // Count total
+    const { count: totalCount } = await supabase
+      .from("Game")
+      .select("*", { count: "exact", head: true });
 
-    let games: any[] = [];
+    // Fetch games
+    query = query.limit(limit + 1);
+    const { data: fetchedGames } = await query;
+
+    const allGames = fetchedGames || [];
     let nextCursor: string | null = null;
-    let totalCount = 0;
+    let games = allGames.slice(0, limit);
 
-    const queryOptions: any = {
-      where,
-      select: gameSummarySelect,
-      take: limit + 1, // Fetch one extra item to determine if there's a next page
-      orderBy:
-        sort === "trending"
-          ? [
-              { isTrending: "desc" },
-              { popularity: { sort: "desc", nulls: "last" } },
-              { id: "desc" },
-            ]
-          : sort === "top-rated"
-          ? [
-              { rating: { sort: "desc", nulls: "last" } },
-              { id: "desc" }
-            ]
-          : {
-              releaseDate: "desc",
-            },
-    };
-
-    if (cursor) {
-      queryOptions.cursor = { id: cursor };
-      queryOptions.skip = 1;
-    }
-
-    // 2. Query Execution with Cursor Pagination
-    const [fetchedGames, count] = await Promise.all([
-      db.game.findMany(queryOptions),
-      db.game.count({ where })
-    ]);
-    totalCount = count;
-
-    games = fetchedGames.slice(0, limit);
-    if (fetchedGames.length > limit) {
+    if (allGames.length > limit) {
       nextCursor = games[games.length - 1]?.id || null;
     }
 
     const responseData = {
       games,
       nextCursor,
-      totalCount,
+      totalCount: totalCount || 0,
     };
 
     apiCache.set(cacheKey, { data: responseData, expiry: Date.now() + CACHE_TTL_MS });

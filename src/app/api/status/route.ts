@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
-// Server-side cache to protect the database and prevent rate-limit exhaustion
 let cachedStatus: any = null;
 let lastChecked = 0;
-const CACHE_DURATION_MS = 15000; // 15 seconds
+const CACHE_DURATION_MS = 15000;
 
 async function checkDatabase(): Promise<{ status: "ONLINE" | "OFFLINE"; latency: number }> {
   const start = performance.now();
   try {
-    // Perform a lightweight 'SELECT 1' connection check instead of scanning a table
-    await db.$queryRaw`SELECT 1`;
+    const supabase = getSupabaseServer();
+    const { error } = await supabase.rpc("health_check");
     const latency = Math.round(performance.now() - start);
+    if (error) throw error;
     return { status: "ONLINE", latency };
   } catch (err) {
     console.error("Database status check failed:", err);
@@ -22,7 +22,6 @@ async function checkDatabase(): Promise<{ status: "ONLINE" | "OFFLINE"; latency:
 async function checkCDN(): Promise<{ status: "ONLINE" | "OFFLINE"; latency: number }> {
   const start = performance.now();
   try {
-    // Ping Cloudinary's hostname with a 3-second timeout
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 3000);
 
@@ -31,10 +30,10 @@ async function checkCDN(): Promise<{ status: "ONLINE" | "OFFLINE"; latency: numb
       signal: controller.signal,
       cache: "no-store",
     });
-    
+
     clearTimeout(id);
     const latency = Math.round(performance.now() - start);
-    
+
     if (response.ok || response.status < 500) {
       return { status: "ONLINE", latency };
     }
@@ -47,19 +46,14 @@ async function checkCDN(): Promise<{ status: "ONLINE" | "OFFLINE"; latency: numb
 
 export async function GET() {
   const now = Date.now();
-  
-  // Return cached result if TTL is still active
+
   if (cachedStatus && now - lastChecked < CACHE_DURATION_MS) {
     return NextResponse.json({ ...cachedStatus, cached: true });
   }
 
   const start = performance.now();
 
-  // Run database and CDN pings in parallel to optimize latency
-  const [dbResult, cdnResult] = await Promise.all([
-    checkDatabase(),
-    checkCDN()
-  ]);
+  const [dbResult, cdnResult] = await Promise.all([checkDatabase(), checkCDN()]);
 
   const totalLatency = Math.round(performance.now() - start);
 

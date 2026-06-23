@@ -3,13 +3,25 @@
 import { useState, useEffect } from "react";
 import SciFiLogo from "@/components/SciFiLogo";
 
+// Secret developer bypass code — only works on localhost
+const DEV_BYPASS_CODE = "gamegata-dev-2026";
+
 export default function WaitlistPage() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [stats, setStats] = useState<{ games: number; tags: number; waitlist: number } | null>(null);
+  const [isLocalhost, setIsLocalhost] = useState(false);
+  const [bypassStatus, setBypassStatus] = useState<"idle" | "loading" | "granted">("idle");
 
   useEffect(() => {
+    // Check if running on localhost
+    setIsLocalhost(
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "::1"
+    );
+
     fetch("/api/stats")
       .then((res) => {
         if (!res.ok) throw new Error("Stats load failed");
@@ -26,6 +38,33 @@ export default function WaitlistPage() {
         console.error("Failed to load waitlist stats:", err);
       });
   }, []);
+
+  // Watch email field for the secret dev bypass code
+  useEffect(() => {
+    if (!isLocalhost) return;
+    if (email.trim() === DEV_BYPASS_CODE) {
+      setBypassStatus("loading");
+      fetch("/api/auth/dev-bypass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: DEV_BYPASS_CODE }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setBypassStatus("granted");
+            // Brief delay for visual feedback, then redirect
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 800);
+          } else {
+            setBypassStatus("idle");
+            console.error("Bypass failed:", data.error);
+          }
+        })
+        .catch(() => setBypassStatus("idle"));
+    }
+  }, [email, isLocalhost]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +94,22 @@ export default function WaitlistPage() {
       setErrorMessage("A network error occurred. Please try again.");
     }
   };
+
+  // If bypass was granted, show a quick access-granted screen
+  if (bypassStatus === "granted") {
+    return (
+      <div className="min-h-screen bg-[#030303] text-[#f3f4f6] flex flex-col items-center justify-center p-6">
+        <div className="max-w-sm w-full border-4 border-emerald-400 bg-[#08080a] p-8 shadow-[8px_8px_0px_0px_#34d399] flex flex-col gap-4 font-mono text-center">
+          <div className="text-emerald-400 text-4xl">🔓</div>
+          <h2 className="text-emerald-400 font-black text-xl uppercase tracking-wider">DEV ACCESS GRANTED</h2>
+          <p className="text-xs text-white/50">Redirecting to app...</p>
+          <div className="w-full bg-emerald-900/30 h-1 rounded overflow-hidden">
+            <div className="h-full bg-emerald-400 animate-pulse" style={{ width: "100%" }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#030303] text-[#f3f4f6] flex flex-col items-center justify-center p-6 selection:bg-red-600/30 selection:text-white relative overflow-hidden">
@@ -118,13 +173,17 @@ export default function WaitlistPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
               <div className="flex flex-col gap-2">
                 <input
-                  type="email"
+                  type={isLocalhost ? "text" : "email"}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address..."
-                  disabled={status === "loading"}
-                  required
-                  className="block w-full px-4 py-3.5 bg-black border border-white/30 text-white placeholder-white/30 text-xs font-mono tracking-wider focus:border-white focus:shadow-[0_0_10px_rgba(255,255,255,0.15)] focus:outline-none rounded-none transition-all duration-200 caret-white font-bold"
+                  placeholder={isLocalhost ? "Enter your email address..." : "Enter your email address..."}
+                  disabled={status === "loading" || bypassStatus === "loading"}
+                  required={!isLocalhost}
+                  className={`block w-full px-4 py-3.5 bg-black border text-white placeholder-white/30 text-xs font-mono tracking-wider focus:shadow-[0_0_10px_rgba(255,255,255,0.15)] focus:outline-none rounded-none transition-all duration-200 caret-white font-bold ${
+                    bypassStatus === "loading"
+                      ? "border-emerald-400/60 text-emerald-300 animate-pulse"
+                      : "border-white/30 focus:border-white"
+                  }`}
                 />
               </div>
 
@@ -136,13 +195,13 @@ export default function WaitlistPage() {
 
               <button
                 type="submit"
-                disabled={status === "loading" || !email}
+                disabled={status === "loading" || bypassStatus === "loading" || !email}
                 className="px-8 py-3.5 bg-white text-black font-mono font-black text-xs tracking-widest uppercase border border-white hover:bg-transparent hover:text-white hover:border-white transition-all duration-150 rounded-none w-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[46px]"
               >
-                {status === "loading" ? (
+                {status === "loading" || bypassStatus === "loading" ? (
                   <span className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                    [ Registering... ]
+                    {bypassStatus === "loading" ? "[ Authenticating... ]" : "[ Registering... ]"}
                   </span>
                 ) : (
                   "[ Request Early Access ]"

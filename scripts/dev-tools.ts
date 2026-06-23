@@ -306,13 +306,16 @@ async function showItchMenu() {
   console.log("--------------------------------------------------");
   console.log("1. Open interactive itch.io dashboard");
   console.log("2. Run batch enrichment of all unenriched itch games");
-  console.log("3. Import games from 3D Horror listing (Popular)");
-  console.log("4. Import games from 3D Horror listing (New & Popular)");
-  console.log("5. Import games from 3D Horror listing (Top Rated)");
-  console.log("6. Return to Main Menu");
+  console.log("3. Import games from 3D Horror listing (Popular) - FULL SCRAPE");
+  console.log("4. Import games from 3D Horror listing (Popular) - FAST DRY RUN");
+  console.log("5. Import games from 3D Horror listing (New & Popular) - FULL SCRAPE");
+  console.log("6. Import games from 3D Horror listing (New & Popular) - FAST DRY RUN");
+  console.log("7. Import games from 3D Horror listing (Top Rated) - FULL SCRAPE");
+  console.log("8. Import games from 3D Horror listing (Top Rated) - FAST DRY RUN");
+  console.log("9. Return to Main Menu");
   console.log("--------------------------------------------------");
 
-  const choice = await askQuestion("Select action [1-6]: ");
+  const choice = await askQuestion("Select action [1-9]: ");
   switch (choice) {
     case "1":
       // Running enrich-itch.ts without args launches its own interactive menu!
@@ -322,17 +325,24 @@ async function showItchMenu() {
       await runScript("scripts/enrich-itch.ts", ["--batch"]);
       break;
     case "3":
-      // To run listing imports directly we can launch enrich-itch with custom args
-      // We will update main() in enrich-itch.ts to handle --list-url
       await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/tag-3d/tag-horror"]);
       break;
     case "4":
-      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/new-and-popular/tag-3d/tag-horror"]);
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/tag-3d/tag-horror", "--dry-run"]);
       break;
     case "5":
-      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/top-rated/tag-3d/tag-horror"]);
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/new-and-popular/tag-3d/tag-horror"]);
       break;
     case "6":
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/new-and-popular/tag-3d/tag-horror", "--dry-run"]);
+      break;
+    case "7":
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/top-rated/tag-3d/tag-horror"]);
+      break;
+    case "8":
+      await runScript("scripts/enrich-itch.ts", ["--list-url", "https://itch.io/games/top-rated/tag-3d/tag-horror", "--dry-run"]);
+      break;
+    case "9":
       return;
     default:
       console.log("❌ Invalid choice.");

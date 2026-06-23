@@ -59,9 +59,5 @@ ingest_cursor.json
 # Local console tool - not part of this repo
 gamegata-console/
 
-# OpenNext build artifacts
-.open-next/
-.open-next-temp/
-
 # Cron job logs
 /Gamegata cron job logs/

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getServerUser } from "@/lib/serverAuth";
 import { cookies } from "next/headers";
 
@@ -13,7 +13,6 @@ export async function POST(request: Request) {
     // Auth check: verify the caller is syncing their own data
     const existingUser = await getServerUser();
     if (existingUser) {
-      // Authenticated user can only sync their own record
       if (existingUser.id !== id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
@@ -35,10 +34,21 @@ export async function POST(request: Request) {
       }
     }
 
-    // Enforce 10,000 user limit checks before inserting
-    const count = await db.user.count();
-    if (count >= 10000) {
-      const existing = await db.user.findUnique({ where: { id } });
+    const supabase = getSupabaseServer();
+
+    // Enforce 10,000 user limit
+    const { count } = await supabase
+      .from("User")
+      .select("*", { count: "exact", head: true });
+
+    if ((count ?? 0) >= 10000) {
+      const { data: existing } = await supabase
+        .from("User")
+        .select("id")
+        .eq("id", id)
+        .limit(1)
+        .maybeSingle();
+
       if (!existing) {
         return NextResponse.json(
           { error: "Registration limit of 10,000 users has been reached." },
@@ -47,13 +57,14 @@ export async function POST(request: Request) {
       }
     }
 
-    const user = await db.user.upsert({
-      where: { id },
-      update: { email },
-      create: { id, email },
-    });
+    // Upsert user
+    const { error } = await supabase
+      .from("User")
+      .upsert({ id, email }, { onConflict: "id" });
 
-    return NextResponse.json({ success: true, user });
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, user: { id, email } });
   } catch (error) {
     console.error("❌ Failed to sync user:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import crypto from "crypto";
 
 export async function POST(request: Request) {
@@ -9,16 +9,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email address is required" }, { status: 400 });
     }
 
-    // Simple email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: "Invalid email address format" }, { status: 400 });
     }
 
-    // Check if email already exists in waitlist
-    const existing = await db.waitlist.findUnique({
-      where: { email: email.toLowerCase() }
-    });
+    const supabase = getSupabaseServer();
+
+    // Check if email already exists
+    const { data: existing } = await supabase
+      .from("Waitlist")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .limit(1)
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ success: true, message: "Already joined" });
@@ -28,15 +32,19 @@ export async function POST(request: Request) {
     const token = crypto.randomBytes(32).toString("hex");
 
     // Create waitlist entry
-    const entry = await db.waitlist.create({
-      data: {
+    const { data, error } = await supabase
+      .from("Waitlist")
+      .insert({
         email: email.toLowerCase(),
         token,
-        status: "PENDING"
-      }
-    });
+        status: "PENDING",
+      })
+      .select("id")
+      .single();
 
-    return NextResponse.json({ success: true, id: entry.id });
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, id: data.id });
   } catch (error) {
     console.error("❌ Failed to join waitlist:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
