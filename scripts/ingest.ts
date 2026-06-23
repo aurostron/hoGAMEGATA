@@ -196,16 +196,18 @@ async function runIngestion() {
     console.log("✅ Successfully authenticated with Twitch Developer Portal!");
 
     // Check if we should reset or if there is a cursor
-    const cursorFile = "ingest_cursor.json";
-    let lastSyncTimestamp: string | null = null;
-
     const args = process.argv.slice(2);
     const reset = args.includes("--reset");
     const sync = args.includes("--sync");
+    const isUpcoming = args.includes("--upcoming");
+
+    // Check if we should reset or if there is a cursor
+    const cursorFile = isUpcoming ? "ingest_upcoming_cursor.json" : "ingest_cursor.json";
+    let lastSyncTimestamp: string | null = null;
     let startOffset = 0;
 
     if (reset) {
-      console.log("🧹 --reset flag passed. Starting ingestion from scratch.");
+      console.log(`🧹 --reset flag passed. Starting ingestion from scratch for cursor '${cursorFile}'.`);
       if (fs.existsSync(cursorFile)) {
         fs.unlinkSync(cursorFile);
       }
@@ -317,12 +319,20 @@ async function runIngestion() {
     const extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
     console.log("Model loaded successfully.");
 
+    const currentTimestamp = Math.floor(Date.now() / 1000);
     while (offset < TARGET_TOTAL) {
       console.log(`\n=== 📥 Processing Batch: Offset ${offset} (Target Limit: ${BATCH_SIZE}) ===`);
 
       // 2. Fetch Horror Games
       // Theme ID for Horror is 19
-      let whereClause = `themes = (19) & first_release_date != null & cover != null & (total_rating != null | slug = "silent-hill-f")`;
+      let whereClause = `themes = (19) & first_release_date != null & cover != null & (total_rating != null | first_release_date > ${currentTimestamp} | slug = "silent-hill-f")`;
+      let sortBy = "total_rating desc";
+
+      if (isUpcoming) {
+        whereClause = `themes = (19) & first_release_date > ${currentTimestamp} & cover != null`;
+        sortBy = "first_release_date asc";
+      }
+
       if (syncTime) {
         whereClause += ` & updated_at > ${syncTime}`;
       }
@@ -339,7 +349,7 @@ async function runIngestion() {
           player_perspectives.name, player_perspectives.slug,
           websites.url, websites.category, category;
         where ${whereClause};
-        sort total_rating desc;
+        sort ${sortBy};
         limit ${BATCH_SIZE};
         offset ${offset};
       `;
@@ -472,12 +482,21 @@ async function runIngestion() {
 
       // 4. Fetch existing games and delete their purchase links in bulk before loop
       console.log("🔍 Checking existing games in database to optimize operations...");
+      const batchIgdbIds = uniqueGames.map(g => g.id).filter(id => id !== undefined);
+      const batchSlugs = uniqueGames.map(g => g.slug || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+
       const existingGames = await prisma.game.findMany({
-        where: { slug: { in: uniqueGames.map(g => g.slug || g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")) } },
-        select: { id: true, slug: true }
+        where: {
+          OR: [
+            { igdbId: { in: batchIgdbIds } },
+            { slug: { in: batchSlugs } }
+          ]
+        },
+        select: { id: true, slug: true, igdbId: true }
       });
 
       const existingSlugs = new Set(existingGames.map(g => g.slug));
+      const existingIgdbIds = new Set(existingGames.map(g => g.igdbId).filter((id): id is number => id !== null));
       const existingIds = existingGames.map(g => g.id);
 
       if (existingIds.length > 0) {
@@ -654,12 +673,14 @@ async function runIngestion() {
           }
         }
 
-        const isExisting = existingSlugs.has(slug);
+        const isExisting = existingSlugs.has(slug) || (g.id !== undefined && existingIgdbIds.has(g.id));
 
         if (isExisting) {
           // Direct update for existing games (much faster than upsert)
           await prisma.game.update({
-            where: { slug },
+            where: g.id !== undefined && existingIgdbIds.has(g.id)
+              ? { igdbId: g.id }
+              : { slug },
             data: {
               title: g.name,
               summary: g.summary || null,

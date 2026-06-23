@@ -747,6 +747,10 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               <TrackControls
                 gameId={game.id}
                 gameSlug={game.slug}
+                gameTitle={game.title}
+                genres={game.genres.map(g => g.name)}
+                siteRating={game.rating ? game.rating / 10 : null}
+                steamRating={game.steamRating}
               />
             </div>
           </div>

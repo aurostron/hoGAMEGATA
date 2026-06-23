@@ -19,6 +19,7 @@
     "dev-tools": "tsx scripts/dev-tools.ts",
     "dev-gui": "tsx scripts/dev-gui.ts",
     "scare": "tsx scripts/enrich-scare.ts",
+    "generate-recommendations": "tsx scripts/generate-recommendations.ts",
     "pipeline:run": "tsx scripts/run-pipeline.ts",
     "postinstall": "prisma generate"
   },
