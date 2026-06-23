@@ -1,0 +1,401 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AuthButton from '../components/AuthButton';
+import { 
+  ArrowLeft, 
+  Terminal, 
+  Layers, 
+  Cpu, 
+  Database, 
+  Route, 
+  ShieldAlert, 
+  DollarSign, 
+  Activity, 
+  ChevronRight, 
+  FileText
+} from "lucide-react";
+---
+
+<Layout title="Technical Specification | hoGAMEGATA" withSearch={true}>
+  {/* Custom Sub-header for Docs */}
+  <header class="border-b border-white bg-black">
+    <div class="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-2xl md:text-3xl font-black text-white tracking-tight">
+          Technical Specification
+        </h2>
+        <div class="flex items-center gap-2 font-mono text-[10px] tracking-widest text-white/50 uppercase font-bold">
+          <span>Specification Registry</span>
+          <span class="text-white/40 font-black">•</span>
+          <span>v2.0</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <AuthButton client:load />
+        <a 
+          href="/" 
+          class="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
+        >
+          <ArrowLeft class="w-3.5 h-3.5" />
+          <span>[ Return to Search ]</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  {/* Main Container */}
+  <main class="max-w-5xl w-full mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-12 pb-24">
+    {/* Sticky Sidebar Navigation */}
+    <aside class="lg:col-span-1 lg:sticky lg:top-28 h-fit hidden lg:block select-none">
+      <div class="font-mono text-xs tracking-wider text-white font-black uppercase mb-4">
+        Sections
+      </div>
+      <nav class="flex flex-col gap-3">
+        <a href="#vision" class="group flex items-center justify-between text-white hover:underline transition-all duration-150 py-1 border-b border-transparent hover:border-white text-xs font-mono font-bold">
+          <span>01 / Vision</span>
+          <ChevronRight class="w-3 h-3 text-white" />
+        </a>
+        <a href="#stack" class="group flex items-center justify-between text-white hover:underline transition-all duration-150 py-1 border-b border-transparent hover:border-white text-xs font-mono font-bold">
+          <span>02 / Tech Stack</span>
+          <ChevronRight class="w-3 h-3 text-white" />
+        </a>
+        <a href="#pipeline" class="group flex items-center justify-between text-white hover:underline transition-all duration-150 py-1 border-b border-transparent hover:border-white text-xs font-mono font-bold">
+          <span>03 / Data Pipeline</span>
+          <ChevronRight class="w-3 h-3 text-white" />
+        </a>
+        <a href="#routes" class="group flex items-center justify-between text-white hover:underline transition-all duration-150 py-1 border-b border-transparent hover:border-white text-xs font-mono font-bold">
+          <span>04 / Route Architecture</span>
+          <ChevronRight class="w-3 h-3 text-white" />
+        </a>
+        <a href="#nongoals" class="group flex items-center justify-between text-white hover:underline transition-all duration-150 py-1 border-b border-transparent hover:border-white text-xs font-mono font-bold">
+          <span>05 / Limits & Non-Goals</span>
+          <ChevronRight class="w-3 h-3 text-white" />
+        </a>
+      </nav>
+    </aside>
+
+    {/* Documentation Content */}
+    <div class="lg:col-span-3 space-y-16">
+      
+      {/* Introduction Sub-Header */}
+      <section class="pb-12 border-b border-white">
+        <div class="font-mono text-xs text-white/50 font-black uppercase tracking-widest mb-3">About the project</div>
+        <h2 class="text-3xl text-white font-extrabold leading-tight mb-4">
+          Minimalistic, No BS and it just works.
+        </h2>
+        <p class="text-white max-w-2xl leading-relaxed text-sm">
+          The project is named <span class="text-black bg-white font-black px-1 py-0.5 border border-white rounded-none">hoGAMEGATA</span>, where the prefix <span class="font-bold italic text-white">"ho"</span> denotes horror, and <span class="text-white font-bold">GAMEGATA</span> is the abbreviated technical slang of <span class="font-bold italic text-white">"game mega metadata"</span>. It aims to eliminate modern web fatigue by functioning strictly as a lightweight discovery layer.
+        </p>
+      </section>
+
+      {/* 1. VISION & PHILOSOPHY */}
+      <section id="vision" class="space-y-6 scroll-mt-24">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs bg-white text-black border border-white px-2.5 py-1 font-black">01</span>
+          <h3 class="text-lg text-white uppercase tracking-wider font-black">Project Vision & Philosophy</h3>
+        </div>
+        
+        <div class="border border-white bg-black p-6 rounded-none space-y-6">
+          <div class="space-y-2">
+            <span class="font-mono text-[12px] text-white/50 uppercase tracking-widest block mb-2 font-black">Why?</span>
+            <p class="text-lg text-white font-medium leading-relaxed font-sans">
+              "I created this to solve a problem, people (or atleast me, sighs...) have is that to find good games to play! Now you don't have to search for a game on Google, read it's reviews, go to Steam or somewhere looking for it, realizing it doesn't have co-op so you can't play it with your friends! Just use hoGAMEGATA. And yes, buy games to support the creators.."
+            </p>
+          </div>
+
+          {/* Strict Success Metric stark banner */}
+          <div class="border border-white bg-black p-5 rounded-none relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <Activity class="w-5 h-5 text-white shrink-0 mt-0.5" />
+              <div>
+                <span class="font-mono text-xs text-white/50 uppercase tracking-wider font-bold block mb-1">
+                  Target
+                </span>
+                <p class="text-sm text-white font-medium leading-relaxed font-sans">
+                  A user must be capable of discovering and learning about the game, and supporting a developer by purchasing the game within seconds. No ads or BS.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. TECHNICAL STACK MAP */}
+      <section id="stack" class="space-y-6 scroll-mt-24">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs bg-white text-black border border-white px-2.5 py-1 font-black">02</span>
+          <h3 class="text-lg text-white uppercase tracking-wider font-black">Technical Stack Map</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Astro */}
+          <div class="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-xs text-white/50 group-hover:text-black/50 font-bold uppercase">Framework</span>
+              <Terminal class="w-4 h-4 text-white group-hover:text-black" />
+            </div>
+            <h4 class="text-white group-hover:text-black text-base font-bold mb-1">Astro (V5+)</h4>
+            <p class="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
+              Static-first compilation, React islands, serverless API routes, and near-zero runtime JS compilation overhead.
+            </p>
+          </div>
+
+          {/* Supabase */}
+          <div class="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-xs text-white/50 group-hover:text-black/50 font-bold uppercase">Database</span>
+              <Database class="w-4 h-4 text-white group-hover:text-black" />
+            </div>
+            <h4 class="text-white group-hover:text-black text-base font-bold mb-1">Supabase (PostgreSQL)</h4>
+            <p class="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
+              Relational game metadata storage leveraging direct PostgREST calls with zero local Prisma runtime database connections.
+            </p>
+          </div>
+
+          {/* PostgREST RPCs */}
+          <div class="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-xs text-white/50 group-hover:text-black/50 font-bold uppercase">SQL Optimization</span>
+              <Layers class="w-4 h-4 text-white group-hover:text-black" />
+            </div>
+            <h4 class="text-white group-hover:text-black text-base font-bold mb-1">Stored RPC Functions</h4>
+            <p class="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
+              Optimized PostgreSQL stored functions executing Full Text Search (FTS) and vector distance math directly in database memory.
+            </p>
+          </div>
+
+          {/* Tailwind CSS & shadcn/ui */}
+          <div class="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-xs text-white/50 group-hover:text-black/50 font-bold uppercase">Styles & UI</span>
+              <Cpu class="w-4 h-4 text-white group-hover:text-black" />
+            </div>
+            <h4 class="text-white group-hover:text-black text-base font-bold mb-1">Tailwind CSS v4</h4>
+            <p class="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
+              High-performance styling utilizing modern CSS-based configurations, smooth animations, and a strict dark theme.
+            </p>
+          </div>
+
+          {/* Cloudflare Pages */}
+          <div class="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-xs text-white/50 group-hover:text-black/50 font-bold uppercase">CDN Infrastructure</span>
+              <Terminal class="w-4 h-4 text-white group-hover:text-black" />
+            </div>
+            <h4 class="text-white group-hover:text-black text-base font-bold mb-1">Cloudflare Pages</h4>
+            <p class="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
+              Static asset delivery from the nearest global edge with serverless edge functions for tracking APIs under a 3MB bundle limit.
+            </p>
+          </div>
+
+          {/* MiniSearch */}
+          <div class="border border-white bg-black p-5 rounded-none hover:bg-white hover:text-black group transition-all duration-150">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-mono text-xs text-white/50 group-hover:text-black/50 font-bold uppercase">Vibe Search</span>
+              <FileText class="w-4 h-4 text-white group-hover:text-black" />
+            </div>
+            <h4 class="text-white group-hover:text-black text-base font-bold mb-1">Vector Precomputing</h4>
+            <p class="text-xs text-white group-hover:text-black leading-relaxed font-sans font-medium">
+              Calculates nearest game embeddings offline and records relations, making similarity checks a simple primary key lookup.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. DATA PIPELINE STRATEGY */}
+      <section id="pipeline" class="space-y-6 scroll-mt-24">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs bg-white text-black border border-white px-2.5 py-1 font-black">03</span>
+          <h3 class="text-lg text-white uppercase tracking-wider font-black">Data Pipeline Strategy</h3>
+        </div>
+
+        <div class="border border-white bg-black p-6 rounded-none space-y-6">
+          {/* Flowchart */}
+          <div>
+            <span class="font-mono text-[10px] text-white/50 uppercase tracking-widest block mb-3 font-bold">
+              Ingestion Sequence
+            </span>
+            
+            <div class="hidden sm:flex items-center gap-2 p-4 bg-black border border-white rounded-none font-mono text-xs text-white overflow-x-auto select-none">
+              <div class="bg-white text-black px-3 py-1.5 border border-white shrink-0 text-center font-sans font-bold">
+                IGDB API
+                <span class="block text-[8px] font-mono font-bold text-black/60 mt-0.5">RAWG API, Cheapshark API</span>
+              </div>
+              <ChevronRight class="w-4 h-4 shrink-0 text-white" />
+              <div class="bg-white text-black px-3 py-1.5 border border-white shrink-0 text-center font-sans font-bold">
+                Normalization Layer
+                <span class="block text-[8px] font-mono font-bold text-black/60 mt-0.5">Local TS Tooling</span>
+              </div>
+              <ChevronRight class="w-4 h-4 shrink-0 text-white" />
+              <div class="bg-white text-black px-3 py-1.5 border border-white shrink-0 text-center font-sans font-bold">
+                Supabase Postgres
+                <span class="block text-[8px] font-mono font-bold text-black/60 mt-0.5">Remote Database</span>
+              </div>
+              <ChevronRight class="w-4 h-4 shrink-0 text-white" />
+              <div class="bg-white text-black px-3 py-1.5 border border-white shrink-0 text-center font-sans font-bold">
+                Astro Static Build
+                <span class="block text-[8px] font-mono font-bold text-black/60 mt-0.5">Statically Precomputed HTML</span>
+              </div>
+            </div>
+
+            <div class="sm:hidden flex flex-col gap-2 p-4 bg-black border border-white rounded-none font-mono text-xs text-white">
+              <div class="bg-white text-black px-3 py-1.5 border border-white text-center font-sans font-bold">
+                IGDB API (Local TypeScript)
+              </div>
+              <div class="text-center text-white font-bold">↓</div>
+              <div class="bg-white text-black px-3 py-1.5 border border-white text-center font-sans font-bold">
+                Normalization Layer
+              </div>
+              <div class="text-center text-white font-bold">↓</div>
+              <div class="bg-white text-black px-3 py-1.5 border border-white text-center font-sans font-bold">
+                Remote Supabase Postgres DB
+              </div>
+              <div class="text-center text-white font-bold">↓</div>
+              <div class="bg-white text-black px-3 py-1.5 border border-white text-center font-sans font-bold">
+                Astro Static Compiler
+              </div>
+            </div>
+          </div>
+
+          {/* Constraints and Details */}
+          <div class="space-y-3">
+            <span class="font-mono text-[10px] text-white/50 uppercase tracking-widest block font-bold">
+              Media Handling & Scaling
+            </span>
+            <p class="text-sm leading-relaxed text-white font-medium font-sans">
+              <strong>Zero local asset storage.</strong> Bypassing Vercel/Cloudflare serverless limits via offline local batch ingestion. All imagery, cover nodes, and screenshots are stored, resolved, and rendered purely via CDN-fetch asset URLs (Cloudinary), keeping the static compilation sizes tiny and database load at zero.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. APP FUNCTIONALITY & ROUTE ARCHITECTURE */}
+      <section id="routes" class="space-y-6 scroll-mt-24">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs bg-white text-black border border-white px-2.5 py-1 font-black">04</span>
+          <h3 class="text-lg text-white uppercase tracking-wider font-black">App Functionality & Route Architecture</h3>
+        </div>
+
+        <div class="border border-white rounded-none overflow-hidden bg-black font-sans">
+          <div class="grid grid-cols-1 divide-y divide-white">
+            {/* Route: / */}
+            <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 hover:bg-white hover:text-black group transition-all duration-150">
+              <div class="flex items-center gap-3">
+                <Route class="w-4 h-4 text-white group-hover:text-black" />
+                <span class="font-mono text-sm text-white group-hover:text-black font-bold tracking-tight">/</span >
+              </div>
+              <p class="text-xs text-white group-hover:text-black md:max-w-md font-medium">
+                Instant, client-side catalog mapping, filters, sorting and FTS searching preloaded with build-time index data.
+              </p>
+            </div>
+
+            {/* Route: /game/[slug] */}
+            <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 hover:bg-white hover:text-black group transition-all duration-150">
+              <div class="flex items-center gap-3">
+                <Route class="w-4 h-4 text-white group-hover:text-black" />
+                <span class="font-mono text-sm text-white group-hover:text-black font-bold tracking-tight">/game/[slug]</span >
+              </div>
+              <p class="text-xs text-white group-hover:text-black md:max-w-md font-medium">
+                100% statically pre-rendered game profiles showcasing developer metadata, screenshots, and live price feeds.
+              </p>
+            </div>
+
+            {/* Route: /dashboard */}
+            <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 hover:bg-white hover:text-black group transition-all duration-150">
+              <div class="flex items-center gap-3">
+                <Route class="w-4 h-4 text-white group-hover:text-black" />
+                <span class="font-mono text-sm text-white group-hover:text-black font-bold tracking-tight">/dashboard</span >
+              </div>
+              <p class="text-xs text-white group-hover:text-black md:max-w-md font-medium">
+                Private, authenticated wishlist and play status collection tracker populated client-side.
+              </p>
+            </div>
+
+            {/* Route: /upcoming */}
+            <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 hover:bg-white hover:text-black group transition-all duration-150">
+              <div class="flex items-center gap-3">
+                <Route class="w-4 h-4 text-white group-hover:text-black" />
+                <span class="font-mono text-sm text-white group-hover:text-black font-bold tracking-tight">/upcoming</span >
+              </div>
+              <p class="text-xs text-white group-hover:text-black md:max-w-md font-medium">
+                An uncluttered release calendar tracking emerging software and upcoming project timelines.
+              </p>
+            </div>
+
+            {/* Route: /random */}
+            <div class="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2 hover:bg-white hover:text-black group transition-all duration-150">
+              <div class="flex items-center gap-3">
+                <Route class="w-4 h-4 text-white group-hover:text-black" />
+                <span class="font-mono text-sm text-white group-hover:text-black font-bold tracking-tight">/random</span >
+              </div>
+              <p class="text-xs text-white group-hover:text-black md:max-w-md font-medium">
+                Fast server-side redirect utility mapping users to discover random database entries instantly.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. NON-GOALS & FINANCIAL GUARDRAILS */}
+      <section id="nongoals" class="space-y-6 scroll-mt-24">
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs bg-white text-black border border-white px-2.5 py-1 font-black">05</span>
+          <h3 class="text-lg text-white uppercase tracking-wider font-black">Non-Goals & Financial Guardrails</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Structural Boundaries */}
+          <div class="border border-white bg-black p-6 rounded-none space-y-4 font-sans">
+            <div class="flex items-center gap-2">
+              <ShieldAlert class="w-4 h-4 text-white" />
+              <span class="font-mono text-xs text-white/50 uppercase tracking-wider font-bold">
+                Non-Goals
+              </span>
+            </div>
+            <p class="text-xs text-white leading-relaxed font-medium">
+              To protect the scope and preserve a zero-noise user experience, the website enforces absolute structural boundaries:
+            </p>
+            <ul class="text-xs text-white space-y-2 list-disc list-inside font-bold">
+              <li>No reviews or comments</li>
+              <li>No social elements, likes, or upvotes</li>
+              <li>No algorithmic feeds or ads</li>
+              <li>No piracy indexation or link distribution</li>
+              <li>No hosting for game files</li>
+            </ul>
+          </div>
+
+          {/* Financial Projection */}
+          <div class="border border-white bg-black p-6 rounded-none space-y-4 font-sans">
+            <div class="flex items-center gap-2">
+              <DollarSign class="w-4 h-4 text-white" />
+              <span class="font-mono text-xs text-white/50 uppercase tracking-wider font-bold">
+                Financial Limitations
+              </span>
+            </div>
+            <p class="text-xs text-white leading-relaxed font-medium">
+              We are keeping the project overhead down, using static CDN edges and serverless free-tiers to run at zero-cost indefinitely.
+            </p>
+            <div class="p-3 bg-black border border-white rounded-none font-mono">
+              <div class="flex justify-between items-center text-xs mb-1 font-bold">
+                <span class="text-white">Database & hosting:</span>
+                <span class="text-white">$0.00 / mo</span>
+              </div>
+              <div class="flex justify-between items-center text-xs mb-1 font-bold">
+                <span class="text-white">Media CDN:</span>
+                <span class="text-white">$0.00 / mo</span>
+              </div>
+              <div class="flex justify-between items-center text-xs border-t border-white mt-2 pt-2 font-black">
+                <span class="text-white">Total Fixed Budget:</span>
+                <span class="text-white">$0.00 / mo</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-white/50 leading-relaxed font-medium">
+              *Hosted remote databases and edge endpoints are running under free trial tier limitations. Domaining costs are out-of-pocket.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</Layout>

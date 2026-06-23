@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { getSupabaseServer } from "./supabaseServer";
 
 const CHEAPSHARK_STORE_MAP: Record<string, string> = {
   "1": "Steam",
@@ -57,7 +57,6 @@ export interface PriceDeal {
   currency: string;
 }
 
-// Resilient fetch with exponential backoff and cooldown tracking for 429 rate limits
 // Resilient fetch with exponential backoff and cooldown tracking for 429 rate limits
 async function fetchWithBackoff(url: string, init?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
   const controller = new AbortController();
@@ -251,7 +250,7 @@ async function fetchItadPrices(apiKey: string, itadId: string, country: string):
 
 // 3. Dynamic Aggregated Fetcher
 export async function fetchAggregatedDeals(steamId: string | null, title: string, country: string = "US"): Promise<PriceDeal[]> {
-  const itadApiKey = process.env.ITAD_API_KEY;
+  const itadApiKey = import.meta.env?.ITAD_API_KEY || process.env.ITAD_API_KEY;
   const upperCountry = (country || "US").toUpperCase();
 
   const fetchPromises: Promise<PriceDeal[]>[] = [];
@@ -293,7 +292,7 @@ export async function fetchAggregatedDeals(steamId: string | null, title: string
   return sortedDeals;
 }
 
-// 4. Lazy Cache Getter
+// 4. Lazy Cache Getter using direct Supabase queries
 export async function lazyGetPrices(
   gameId: string,
   title: string,
@@ -304,14 +303,26 @@ export async function lazyGetPrices(
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   try {
+    const supabase = getSupabaseServer();
+
     // A. Check database cache
-    const cached = await db.priceSnapshot.findMany({
-      where: { gameId, country: upperCountry },
-      orderBy: { dealPrice: "asc" }
-    });
+    const { data: cachedData, error: cacheError } = await supabase
+      .from("PriceSnapshot")
+      .select("*")
+      .eq("gameId", gameId)
+      .eq("country", upperCountry)
+      .order("dealPrice", { ascending: true });
+
+    if (cacheError) {
+      console.warn("⚠️ Failed to retrieve cached prices from Supabase:", cacheError);
+    }
+
+    const cached = cachedData || [];
 
     // Bypass API calls during production pre-render to avoid build limits
-    if (process.env.NEXT_PHASE === "phase-production-build") {
+    // In Astro, we check import.meta.env.SSR or check if we are building
+    const isBuildPhase = process.env.NODE_ENV === "production" && typeof window === "undefined" && !process.env.CF_PAGES;
+    if (isBuildPhase) {
       return cached.map(c => ({
         storeName: c.storeName,
         dealPrice: c.dealPrice,
@@ -323,7 +334,7 @@ export async function lazyGetPrices(
     }
 
     if (cached.length > 0) {
-      const oldestUpdate = Math.min(...cached.map(c => c.updatedAt.getTime()));
+      const oldestUpdate = Math.min(...cached.map(c => new Date(c.updatedAt).getTime()));
       const isFresh = (Date.now() - oldestUpdate) < CACHE_TTL_MS;
 
       if (isFresh) {
@@ -352,11 +363,21 @@ export async function lazyGetPrices(
     const freshDeals = await fetchAggregatedDeals(steamId, title, upperCountry);
 
     if (freshDeals.length > 0) {
-      // D. Transaction to update local cached data
-      await db.$transaction([
-        db.priceSnapshot.deleteMany({ where: { gameId, country: upperCountry } }),
-        db.priceSnapshot.createMany({
-          data: freshDeals.map(deal => ({
+      // D. Update local cached data in Supabase (simulate transaction via Delete then Insert)
+      const { error: deleteError } = await supabase
+        .from("PriceSnapshot")
+        .delete()
+        .eq("gameId", gameId)
+        .eq("country", upperCountry);
+
+      if (deleteError) {
+        console.warn("⚠️ Failed to delete stale prices from Supabase:", deleteError);
+      }
+
+      const { error: insertError } = await supabase
+        .from("PriceSnapshot")
+        .insert(
+          freshDeals.map(deal => ({
             gameId,
             storeName: deal.storeName,
             dealPrice: deal.dealPrice,
@@ -365,10 +386,14 @@ export async function lazyGetPrices(
             dealUrl: deal.dealUrl,
             currency: deal.currency,
             country: upperCountry,
-            updatedAt: new Date()
+            updatedAt: new Date().toISOString()
           }))
-        })
-      ]);
+        );
+
+      if (insertError) {
+        console.warn("⚠️ Failed to write fresh prices to Supabase:", insertError);
+      }
+
       return freshDeals;
     } else if (cached.length > 0) {
       // Fall back to stale cache if API failed/returned empty

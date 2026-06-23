@@ -1,13 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useState, useEffect } from "react";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import { User, LogOut, LogIn } from "lucide-react";
 
-export default function AuthButton() {
+function AuthButtonInner() {
   const { user, loading, logout } = useAuth();
-  const pathname = usePathname();
+  const [pathname, setPathname] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPathname(window.location.pathname);
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -19,13 +24,13 @@ export default function AuthButton() {
 
   if (!user) {
     return (
-      <Link
+      <a
         href={`/login?redirect=${encodeURIComponent(pathname)}`}
         className="group flex items-center gap-1.5 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
       >
         <LogIn className="w-3.5 h-3.5" />
         <span>[ Login ]</span>
-      </Link>
+      </a>
     );
   }
 
@@ -34,13 +39,13 @@ export default function AuthButton() {
   return (
     <div className="flex flex-wrap items-center gap-3">
       {/* Dashboard Link */}
-      <Link
+      <a
         href="/dashboard"
         className="group flex items-center gap-1.5 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
       >
         <User className="w-3.5 h-3.5" />
         <span>[ Dashboard: {emailPrefix} ]</span>
-      </Link>
+      </a>
 
       {/* Logout Button */}
       <button
@@ -51,5 +56,13 @@ export default function AuthButton() {
         <span>[ Logout ]</span>
       </button>
     </div>
+  );
+}
+
+export default function AuthButton() {
+  return (
+    <AuthProvider>
+      <AuthButtonInner />
+    </AuthProvider>
   );
 }

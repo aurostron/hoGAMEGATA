@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-
 interface NyanLoaderProps {
   message?: string;
   fullScreen?: boolean;
@@ -24,13 +22,12 @@ export default function NyanLoader({
     <div className={containerClasses}>
       {/* Nyan Cat GIF (no background track or borders) */}
       <div className="relative flex items-center justify-center select-none pointer-events-none">
-        <Image
+        <img
           src="/nyan-cat.gif"
           alt="Nyan Cat Loading..."
           width={gifSize.width}
           height={gifSize.height}
           className={`object-contain ${fullScreen ? "-translate-x-[10%] md:-translate-x-[14%]" : ""}`}
-          unoptimized
           style={{ imageRendering: "pixelated" }}
         />
       </div>
@@ -42,4 +39,3 @@ export default function NyanLoader({
     </div>
   );
 }
-

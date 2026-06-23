@@ -59,7 +59,9 @@ export function getCategoryBadge(category: number | null, title?: string): strin
 
 export function getCloudinaryFetchUrl(originalUrl: string | null, isTrending?: boolean): string | null {
   if (!originalUrl) return null;
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  
+  // Use import.meta.env for Astro build/runtime, fallback to process.env
+  const cloudName = import.meta.env?.PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   
   if (isTrending && cloudName) {
     // Uses Cloudinary's fetch feature to optimize and cache trending images

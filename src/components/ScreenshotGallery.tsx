@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 
 interface ScreenshotGalleryProps {
   screenshots: string[];
@@ -69,14 +68,12 @@ export default function ScreenshotGallery({ screenshots, title }: ScreenshotGall
           <button
             key={i}
             onClick={() => openLightbox(i)}
-            className="border border-white bg-black p-1 hover:bg-white transition-colors duration-150 cursor-pointer text-left block w-full focus:outline-none focus:ring-1 focus:ring-white aspect-video relative"
+            className="border border-white bg-black p-1 hover:bg-white transition-colors duration-150 cursor-pointer text-left block w-full focus:outline-none focus:ring-1 focus:ring-white aspect-video relative overflow-hidden"
           >
-            <Image
+            <img
               src={url}
               alt={`${title} screenshot ${i + 1}`}
-              fill={true}
-              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-              className="object-cover border border-white hover:opacity-95 transition-opacity"
+              className="object-cover w-full h-full border border-white hover:opacity-95 transition-opacity"
               loading="lazy"
             />
           </button>
@@ -97,12 +94,9 @@ export default function ScreenshotGallery({ screenshots, title }: ScreenshotGall
               isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
             }`}
           >
-            <Image
+            <img
               src={selectedUrl}
               alt={`${title} screenshot enlarged`}
-              width={1920}
-              height={1080}
-              priority={true}
               className="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain border border-white select-none"
             />
 

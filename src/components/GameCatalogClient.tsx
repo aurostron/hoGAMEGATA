@@ -1,14 +1,10 @@
-
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Search, Calendar, Sparkles } from "lucide-react";
-import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "@/lib/utils";
-import PlatformLogos from "@/components/PlatformLogos";
-import NyanLoader from "@/components/NyanLoader";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "../lib/utils";
+import PlatformLogos from "./PlatformLogos";
+import NyanLoader from "./NyanLoader";
 
 export interface GameData {
   id: string;
@@ -112,12 +108,11 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
   const finalDeal = resolvedDeal || findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
   return (
-    <Link 
+    <a 
       href={`/game/${game.slug}`}
       onContextMenu={handleContextMenu}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      data-tour={index === 0 ? "game-card" : undefined}
       className={`border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
         mobileLayout === "list"
           ? "flex-row h-28 md:flex-col md:h-full"
@@ -131,14 +126,11 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
           : "w-full border-b border-white " + (game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]")
       }`}>
         {game.coverUrl ? (
-          <Image
+          <img
             src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
             alt={game.title}
-            fill={true}
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            className="object-cover w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
             loading={index < 4 ? undefined : "lazy"}
-            priority={index < 4}
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
@@ -205,11 +197,11 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       </div>
       
       {/* Game Details */}
-      <div className={`flex-1 flex flex-col justify-between ${
+      <div className={`flex-grow flex flex-col justify-between ${
         mobileLayout === "list" ? "p-3 md:p-4 space-y-2 md:space-y-3" : "p-4 space-y-3"
       }`}>
         <div className="flex justify-between items-stretch gap-3 min-h-[32px]">
-          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
             <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none">
               {cleanTitle(game.title)}
             </h4>
@@ -258,7 +250,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
           </span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
 
@@ -269,27 +261,42 @@ interface GameCatalogClientProps {
 }
 
 export default function GameCatalogClient({ initialGames, initialTotalGames, initialNextCursor }: GameCatalogClientProps) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const initialSearch = searchParams.get("search") || "";
-  const initialTagsParam = searchParams.get("tags") || searchParams.get("tag") || "";
-  const initialSort = (searchParams.get("sort") as "latest" | "trending" | "top-rated") || "latest";
-
   const [games, setGames] = useState<GameData[]>(initialGames);
-  const [totalGames, setTotalGames] = useState<number | null>(initialTotalGames);
-  const [loading, setLoading] = useState(false); // starts false because we have initial data
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
-  const [sortBy, setSortBy] = useState<"latest" | "trending" | "top-rated">(initialSort);
+  const [sortBy, setSortBy] = useState<"latest" | "trending" | "top-rated">("latest");
   const [hasInitialFetchRun, setHasInitialFetchRun] = useState(false);
   const [activeRegion, setActiveRegion] = useState("US");
   const [mobileLayout, setMobileLayout] = useState<"grid" | "list">("grid");
   const [sortOpen, setSortOpen] = useState(false);
-  const [isSemantic, setIsSemantic] = useState(searchParams.get("mode") === "semantic");
+  const [isSemantic, setIsSemantic] = useState(false);
+  const [pathname, setPathname] = useState("");
+
+  // Hydrate states from URL parameters and localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPathname(window.location.pathname);
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("search") || "";
+      const sort = (params.get("sort") as "latest" | "trending" | "top-rated") || "latest";
+      const mode = params.get("mode") === "semantic";
+      
+      setSearchQuery(query);
+      setDebouncedSearch(query);
+      setSortBy(sort);
+      setIsSemantic(mode);
+
+      // Persisted settings
+      const savedLayout = localStorage.getItem("gata-mobile-layout");
+      if (savedLayout === "list" || savedLayout === "grid") {
+        setMobileLayout(savedLayout);
+      }
+      setActiveRegion(localStorage.getItem("gamegata_currency_region") || "US");
+    }
+  }, []);
 
   const handleGameClick = (gameId: string, index: number) => {
     if (debouncedSearch.trim()) {
@@ -307,12 +314,10 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
 
   const handleFeelingLucky = async () => {
     if (!searchQuery.trim()) {
-      window.dispatchEvent(new Event("nextjs-route-start"));
-      router.push("/random");
+      window.location.assign("/random");
       return;
     }
 
-    window.dispatchEvent(new Event("nextjs-route-start"));
     setLoading(true);
     try {
       const modeParam = isSemantic ? "&mode=semantic" : "";
@@ -324,13 +329,11 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         if (fetchedGames.length > 0) {
           const q = searchQuery.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
           
-          // 1. Exact match (cleaned)
           let bestMatch = fetchedGames.find(g => {
             const t = g.title.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
             return t === q;
           });
 
-          // 2. Starts with / includes match
           if (!bestMatch) {
             bestMatch = fetchedGames.find(g => {
               const t = g.title.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
@@ -338,55 +341,38 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
             });
           }
 
-          // 3. Fallback to first result
           if (!bestMatch) {
             bestMatch = fetchedGames[0];
           }
 
           if (bestMatch) {
-            router.push(`/game/${bestMatch.slug}`);
+            window.location.assign(`/game/${bestMatch.slug}`);
             return;
           }
         }
       }
-      window.dispatchEvent(new Event("nextjs-route-complete"));
       alert(`[ ERROR: LUCK OUT OF BOUNDS ]\nNo close match found for "${searchQuery}".`);
     } catch (e) {
       console.error("I'm feeling lucky search failed", e);
-      window.dispatchEvent(new Event("nextjs-route-complete"));
     } finally {
       setLoading(false);
     }
   };
 
-  // Load layout setting from localStorage on mount and listen to changes
+  // Sync mobile layout listener
   useEffect(() => {
-    const saved = localStorage.getItem("gata-mobile-layout");
-    if (saved === "list" || saved === "grid") {
-      setMobileLayout(saved);
-    }
-
     const handleLayoutChange = () => {
       const currentSaved = localStorage.getItem("gata-mobile-layout");
       if (currentSaved === "list" || currentSaved === "grid") {
         setMobileLayout(currentSaved);
       }
     };
-
     window.addEventListener("gata-mobile-layout-changed", handleLayoutChange);
     return () => window.removeEventListener("gata-mobile-layout-changed", handleLayoutChange);
   }, []);
 
-  const toggleMobileLayout = (layout: "grid" | "list") => {
-    setMobileLayout(layout);
-    localStorage.setItem("gata-mobile-layout", layout);
-  };
-
-  // Load and listen to persisted region setting
+  // Sync region settings listener
   useEffect(() => {
-    const r = localStorage.getItem("gamegata_currency_region") || "US";
-    setActiveRegion(r);
-    
     const handleUpdate = () => {
       setActiveRegion(localStorage.getItem("gamegata_currency_region") || "US");
     };
@@ -394,8 +380,17 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     return () => window.removeEventListener("gamegata_currency_updated", handleUpdate);
   }, []);
 
+  // Debounce search query
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   // Sync states with browser URL search parameters dynamically
   useEffect(() => {
+    if (typeof window === "undefined" || !pathname) return;
     const params = new URLSearchParams();
     if (debouncedSearch) {
       params.set("search", debouncedSearch);
@@ -413,28 +408,13 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     }
   }, [debouncedSearch, isSemantic, sortBy, pathname]);
 
+  // Fetch games when search filters or sorting changes
   useEffect(() => {
-    const query = searchParams.get("search") || "";
-    const sort = (searchParams.get("sort") as "latest" | "trending") || "latest";
-    const mode = searchParams.get("mode") === "semantic";
-    setSearchQuery(query);
-    setDebouncedSearch(query);
-    setSortBy(sort);
-    setIsSemantic(mode);
-  }, [searchParams]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    async function fetchInitialGames() {
+    async function fetchCatalogGames() {
+      // Don't run fetch on initial paint if search/sort filters are empty/default
       if (!hasInitialFetchRun && !debouncedSearch && sortBy === "latest") {
         setHasInitialFetchRun(true);
-        return; // initial data is enough
+        return;
       }
       setLoading(true);
       try {
@@ -451,7 +431,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           const data = await response.json();
           setGames(data.games || []);
           setNextCursor(data.nextCursor || null);
-          setTotalGames(data.totalCount ?? null);
         }
       } catch (err) {
         console.error("❌ Error fetching catalog:", err);
@@ -459,7 +438,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         setLoading(false);
       }
     }
-    fetchInitialGames();
+    fetchCatalogGames();
   }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun]);
 
   async function loadMoreGames() {
@@ -496,10 +475,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const findCheapestDeal = (game: GameData) => {
     if (!game.priceSnapshots || game.priceSnapshots.length === 0) return null;
     
-    // Filter by the current active region first
     let regional = game.priceSnapshots.filter(p => p.country === activeRegion);
-    
-    // Fallback to US if regional snaps aren't cached yet
     if (regional.length === 0) {
       regional = game.priceSnapshots.filter(p => p.country === "US");
     }
@@ -509,7 +485,6 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     
     if (regional.length === 0) return null;
     
-    // Sort ascending by price
     const sorted = [...regional].sort((a, b) => a.dealPrice - b.dealPrice);
     return sorted[0];
   };
@@ -518,7 +493,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     <>
       <section className="max-w-2xl mx-auto space-y-4">
         <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1" data-tour="search-bar">
+          <div className="relative flex-1">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-white/60" />
             </div>
@@ -568,20 +543,15 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         </div>
       </section>
 
-        {/* Catalog Mapping Grid */}
-        <section className="space-y-6 relative">
-          <div className="flex flex-col gap-3">
-            {/* Top row: title + nav links */}
-                    {/* Sorting and Mode Tabs */}
+      {/* Catalog Mapping Grid */}
+      <section className="space-y-6 relative mt-10">
+        <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[10px] tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
-            {/* Left side: Sort by and Layout dropdowns adjacent to each other */}
             <div className="flex items-center gap-4 flex-wrap">
               {!debouncedSearch ? (
                 <div className="relative">
                   <button
-                    onClick={() => {
-                      setSortOpen(!sortOpen);
-                    }}
+                    onClick={() => setSortOpen(!sortOpen)}
                     className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
                   >
                     SORT: {sortBy} <span className="text-[8px]">▼</span>
@@ -632,69 +602,61 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
                   Search Results
                 </div>
               )}
-
             </div>
 
-            {/* Right side: Navigation links */}
             <div className="flex items-center gap-2 text-[10px] font-mono font-bold">
-              <Link
+              <a
                 href="/upcoming"
                 className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
               >
                 <Calendar className="w-3 h-3" /> UPCOMING
-              </Link>
-              <Link
+              </a>
+              <a
                 href="/random"
                 className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
               >
                 <Sparkles className="w-3 h-3" /> RANDOM
-              </Link>
+              </a>
             </div>
-          </div>  </div>
+          </div>  
+        </div>
 
-          {loading ? (
-            <NyanLoader message="INGESTING CATALOG CONTENT..." />
-          ) : games.length === 0 ? (
-            /* No Results */
-            <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold">
-              [ No horror titles match your current criteria ]
+        {loading ? (
+          <NyanLoader message="INGESTING CATALOG CONTENT..." />
+        ) : games.length === 0 ? (
+          <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold w-full">
+            [ No horror titles match your current criteria ]
+          </div>
+        ) : (
+          <div className="space-y-8">
+            <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
+              {games.map((game, index) => (
+                <GameCard
+                  key={game.id}
+                  game={game}
+                  index={index}
+                  activeRegion={activeRegion}
+                  findCheapestDeal={findCheapestDeal}
+                  mobileLayout={mobileLayout}
+                  onClick={() => handleGameClick(game.id, index)}
+                />
+              ))}
             </div>
-          ) : (
-            /* Game Grid */
-            <div className="space-y-8">
-              <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
-                {games.map((game, index) => (
-                  <GameCard
-                    key={game.id}
-                    game={game}
-                    index={index}
-                    activeRegion={activeRegion}
-                    findCheapestDeal={findCheapestDeal}
-                    mobileLayout={mobileLayout}
-                    onClick={() => handleGameClick(game.id, index)}
-                  />
-                ))}
+
+            {nextCursor && (
+              <div className="flex justify-center pt-8">
+                <button
+                  onClick={loadMoreGames}
+                  disabled={loadingMore}
+                  className="font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-6 py-3 rounded-none font-bold disabled:opacity-50"
+                >
+                  {loadingMore ? "[ Hang On... ]" : "[ Load More ]"}
+                </button>
               </div>
-
-              {/* Load More Button */}
-              {nextCursor && (
-                <div className="flex justify-center pt-8">
-                  <button
-                    onClick={loadMoreGames}
-                    disabled={loadingMore}
-                    className="font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-6 py-3 rounded-none font-bold disabled:opacity-50"
-                  >
-                    {loadingMore ? "[ Hang On... ]" : "[ Load More ]"}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-
-
-
-      
+            )}
+          </div>
+        )}
+      </section>
     </>
   );
 }

@@ -1,0 +1,21 @@
+---
+import WaitlistClient from '../components/WaitlistClient';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en" class="h-full antialiased font-sans">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" href="/favicon.ico" />
+    <title>Join Waitlist | hoGAMEGATA</title>
+    <meta name="description" content="Request early access entry to the hoGAMEGATA horror game metadata discovery database." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
+	</head>
+	<body class="min-h-full flex flex-col bg-black text-white">
+    <WaitlistClient client:load />
+	</body>
+</html>

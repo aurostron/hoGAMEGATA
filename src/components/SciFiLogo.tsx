@@ -1,7 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { useSciFiScramble } from "@/hooks/useSciFiScramble";
+import { useSciFiScramble } from "../hooks/useSciFiScramble";
 
 interface SciFiLogoProps {
   withLink?: boolean;
@@ -22,9 +19,9 @@ export default function SciFiLogo({ withLink = true }: SciFiLogoProps) {
 
   if (withLink) {
     return (
-      <Link href="/" className="hover:opacity-85 block focus:outline-none">
+      <a href="/" className="hover:opacity-85 block focus:outline-none">
         {headerContent}
-      </Link>
+      </a>
     );
   }
 

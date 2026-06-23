@@ -1,0 +1,95 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GameCatalogClient from '../components/GameCatalogClient';
+import { getSupabaseServer } from '../lib/supabaseServer';
+import { getDbStats, getCheapestSnapshots } from '../lib/dbRpc';
+
+// 1. Fetch stats at build time
+const stats = await getDbStats();
+
+const gameSummarySelect = "id, title, slug, status, coverUrl, isTrending, rating, category, esrbRating, pegiRating, developerNames, genreNames, platformNames, releaseDate, tags:Tag(name, slug)";
+
+let initialGames: any[] = [];
+let nextCursor: string | null = null;
+
+// 2. Fetch the first page of 20 games at build time
+try {
+  const supabase = getSupabaseServer();
+  const { data: fetchedGames } = await supabase
+    .from("Game")
+    .select(gameSummarySelect)
+    .order("releaseDate", { ascending: false, nullsFirst: false })
+    .order("id", { ascending: false })
+    .limit(21);
+
+  if (fetchedGames) {
+    const limit = 20;
+    initialGames = fetchedGames.slice(0, limit);
+    if (fetchedGames.length > limit) {
+      const lastGame = initialGames[initialGames.length - 1];
+      nextCursor = lastGame ? `${lastGame.releaseDate ? new Date(lastGame.releaseDate).getTime() : "null"}_${lastGame.id}` : null;
+    }
+
+    const gameIds = initialGames.map((g: any) => g.id);
+    if (gameIds.length > 0) {
+      const snapshots = await getCheapestSnapshots(gameIds);
+      const snapshotMap = new Map<string, any[]>();
+      for (const row of snapshots) {
+        const { gameId, ...snapshot } = row;
+        if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
+        snapshotMap.get(gameId)!.push(snapshot);
+      }
+      for (const game of initialGames) {
+        game.priceSnapshots = snapshotMap.get(game.id) || [];
+      }
+    }
+  }
+} catch (err) {
+  console.error("Failed to fetch initial games:", err);
+}
+---
+
+<Layout title="hoGAMEGATA | Horror Game Discovery Database" withSearch={true}>
+  {/* Atmospheric Hero Banner */}
+  <div class="relative w-full overflow-hidden" style="min-height: 320px;">
+    <div class="absolute inset-0 bg-black"></div>
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(180,0,0,0.13) 0%, transparent 70%);"></div>
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 50% 40% at 20% 100%, rgba(80,0,0,0.10) 0%, transparent 60%);"></div>
+    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+    <div class="absolute bottom-0 left-0 right-0 h-px bg-white/20"></div>
+
+    <div class="relative z-10 max-w-5xl mx-auto px-6 flex flex-col items-center justify-center text-center py-16 gap-6">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] tracking-tight max-w-3xl select-none">
+        Probably the most curated horror games database
+        <span class="text-white/75"> you'll ever see.</span>
+      </h1>
+
+      <div class="flex flex-nowrap justify-center gap-px mt-4 border border-white/35 font-mono min-h-[74px] md:min-h-[82px] w-full max-w-[600px] select-none">
+        {
+          [
+            { label: "Games", value: stats?.games ? stats.games.toLocaleString() : "2,723" },
+            { label: "Devs", value: stats?.developers ? stats.developers.toLocaleString() : "542" },
+            { label: "Screenshots", value: stats?.screenshots ? stats.screenshots.toLocaleString() : "8,941" },
+            { label: "Game Tags", value: stats?.tags ? stats.tags.toLocaleString() : "34" },
+          ].map((stat) => (
+            <div class="flex flex-col items-center justify-center px-4 md:px-6 py-4 bg-white/[0.03] hover:bg-white/[0.06] transition-colors duration-200 border-r border-white/10 last:border-r-0 flex-1">
+              <span class="text-2xl md:text-3xl font-black text-white tabular-nums">
+                {stat.value}
+              </span>
+              <span class="text-[9px] text-white/60 uppercase tracking-widest mt-0.5 text-center">{stat.label}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-5xl mx-auto px-6 mt-10 space-y-12 flex-1 pb-24 w-full">
+    <GameCatalogClient 
+      client:load 
+      initialGames={initialGames} 
+      initialTotalGames={stats?.games || null}
+      initialNextCursor={nextCursor}
+    />
+  </main>
+</Layout>

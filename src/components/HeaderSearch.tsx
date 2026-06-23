@@ -1,7 +1,4 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
 
 interface GameSearchResult {
@@ -16,7 +13,6 @@ export default function HeaderSearch() {
   const [results, setResults] = useState<GameSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Debounced search logic
@@ -71,10 +67,10 @@ export default function HeaderSearch() {
   const handleSelectGame = (slug: string) => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("nextjs-route-start"));
+      window.location.assign(`/game/${slug}`);
     }
     setQuery("");
     setIsOpen(false);
-    router.push(`/game/${slug}`);
   };
 
   return (

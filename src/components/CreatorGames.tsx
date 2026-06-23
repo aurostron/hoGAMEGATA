@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Compass } from "lucide-react";
-import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
-import Image from "next/image";
-import PlatformLogos from "@/components/PlatformLogos";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "../lib/utils";
+import PlatformLogos from "./PlatformLogos";
 
 interface GameData {
   id: string;
@@ -132,19 +130,17 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {games.map((game) => (
-          <Link
+          <a
             key={game.slug}
             href={`/game/${game.slug}`}
             className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
           >
             <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
               {game.coverUrl ? (
-                <Image
+                <img
                   src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl)) || ""}
                   alt={game.title}
-                  fill={true}
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  className="object-cover w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
                   loading="lazy"
                 />
               ) : (
@@ -193,7 +189,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
                 </span>
               </div>
             </div>
-          </Link>
+          </a>
         ))}
       </div>
 
