@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { after } from "next/server";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ExternalLink, Calendar, Star, Compass, Tag, Monitor, Clock, Shield, Flame } from "lucide-react";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import TrackControls from "@/components/TrackControls";
 import VibeTracker from "@/components/VibeTracker";
 
@@ -29,22 +29,21 @@ interface GamePageProps {
   }>;
 }
 
-// Enable ISR: Revalidate pages at most once every 24 hours
 export const revalidate = 86400;
 
-// Pre-render game profiles at build time
 export async function generateStaticParams() {
   if (process.env.NODE_ENV === "development") {
-    // Return empty array in development to prevent fetching 2,700+ rows on every dynamic route check
     return [];
   }
   try {
-    const games = await db.game.findMany({
-      select: { slug: true },
-      orderBy: { popularity: "desc" },
-      take: 500,
-    });
-    return games.map((game) => ({
+    const supabase = getSupabaseServer();
+    const { data: games } = await supabase
+      .from("Game")
+      .select("slug")
+      .order("popularity", { ascending: false, nullsFirst: true })
+      .limit(500);
+
+    return (games || []).map((game) => ({
       slug: game.slug,
     }));
   } catch (error) {
@@ -60,13 +59,10 @@ function cleanRequirementsText(text: string): string {
 }
 
 async function lazyEnrichRawgMetadata(game: any) {
-  // If already enriched, return cached system requirements immediately
   if (game.rawgEnriched) {
     return { min: game.minRequirements, rec: game.recRequirements };
   }
 
-  // Bypass RAWG enrichment during Next.js build phase to prevent build-time network requests
-  // and database connection exhaustion. Pages will be lazily enriched at runtime.
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return { min: game.minRequirements, rec: game.recRequirements };
   }
@@ -85,7 +81,6 @@ async function lazyEnrichRawgMetadata(game: any) {
     if (response.ok) {
       data = await response.json();
     } else {
-      // Try title search fallback
       const searchUrl = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(game.title)}&page_size=1`;
       const searchRes = await fetch(searchUrl);
       if (searchRes.ok) {
@@ -108,7 +103,6 @@ async function lazyEnrichRawgMetadata(game: any) {
       const recRequirements = requirements?.recommended || null;
       const esrbRating = data.esrb_rating?.name || null;
 
-      // Update local memory reference
       game.rawgEnriched = true;
       game.rawgId = data.id || null;
       game.metacritic = data.metacritic || null;
@@ -121,13 +115,13 @@ async function lazyEnrichRawgMetadata(game: any) {
       game.rawgSlug = data.slug || null;
       game.minRequirements = minRequirements;
       game.recRequirements = recRequirements;
-      game.lastRawgSync = new Date();
+      game.lastRawgSync = new Date().toISOString();
 
-      // Cache the complete metadata in the database asynchronously
+      const supabase = getSupabaseServer();
       try {
-        await db.game.update({
-          where: { id: game.id },
-          data: {
+        await supabase
+          .from("Game")
+          .update({
             rawgEnriched: true,
             rawgId: game.rawgId,
             metacritic: game.metacritic,
@@ -140,9 +134,9 @@ async function lazyEnrichRawgMetadata(game: any) {
             rawgSlug: game.rawgSlug,
             minRequirements: game.minRequirements,
             recRequirements: game.recRequirements,
-            lastRawgSync: game.lastRawgSync
-          }
-        });
+            lastRawgSync: game.lastRawgSync,
+          })
+          .eq("id", game.id);
         console.log(`💾 RAWG metadata lazy-enriched and cached for game ID: ${game.id}`);
       } catch (dbErr) {
         console.error("Failed to save lazy-enriched RAWG metadata to DB:", dbErr);
@@ -158,8 +152,7 @@ async function lazyEnrichRawgMetadata(game: any) {
 }
 
 async function lazyEnrichSteamMetadata(game: any) {
-  // If the game has already been synced within the last 24 hours, return immediately
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   if (
     game.steamRating !== null && 
     game.lastSteamSync && 
@@ -168,27 +161,19 @@ async function lazyEnrichSteamMetadata(game: any) {
     return;
   }
 
-  // Bypass Steam API requests during Next.js build phase
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return;
   }
 
-  // Find the Steam purchase link from purchaseLinks relation
   const steamLink = game.purchaseLinks?.find((link: any) => 
     link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
   );
 
-  if (!steamLink) {
-    return;
-  }
+  if (!steamLink) return;
 
-  // Extract Steam AppID using regex
   const match = steamLink.url.match(/\/app\/(\d+)/);
   const steamAppId = match ? match[1] : null;
-
-  if (!steamAppId) {
-    return;
-  }
+  if (!steamAppId) return;
 
   try {
     const url = `https://store.steampowered.com/appreviews/${steamAppId}?json=1&num_per_page=0`;
@@ -208,21 +193,20 @@ async function lazyEnrichSteamMetadata(game: any) {
         const scoreDesc = summary.review_score_desc || "Mixed";
         const calculatedRating = (totalPositive / totalReviews) * 10;
 
-        // Update local memory reference
         game.steamRating = calculatedRating;
         game.steamRatingDesc = scoreDesc;
-        game.lastSteamSync = new Date();
+        game.lastSteamSync = new Date().toISOString();
 
-        // Update database asynchronously
+        const supabase = getSupabaseServer();
         try {
-          await db.game.update({
-            where: { id: game.id },
-            data: {
+          await supabase
+            .from("Game")
+            .update({
               steamRating: game.steamRating,
               steamRatingDesc: game.steamRatingDesc,
-              lastSteamSync: game.lastSteamSync
-            }
-          });
+              lastSteamSync: game.lastSteamSync,
+            })
+            .eq("id", game.id);
           console.log(`💾 Steam metadata lazy-enriched and cached for game ID: ${game.id}`);
         } catch (dbErr) {
           console.error("Failed to save lazy-enriched Steam metadata to DB:", dbErr);
@@ -235,8 +219,7 @@ async function lazyEnrichSteamMetadata(game: any) {
 }
 
 async function lazyEnrichProtonDbMetadata(game: any) {
-  // If the game has already been synced within the last 7 days, return immediately
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   if (
     game.protonDbTier !== null && 
     game.lastProtonDbSync && 
@@ -245,27 +228,19 @@ async function lazyEnrichProtonDbMetadata(game: any) {
     return;
   }
 
-  // Bypass requests during Next.js build phase
   if (process.env.NEXT_PHASE === "phase-production-build") {
     return;
   }
 
-  // Find the Steam purchase link from purchaseLinks relation
   const steamLink = game.purchaseLinks?.find((link: any) => 
     link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
   );
 
-  if (!steamLink) {
-    return;
-  }
+  if (!steamLink) return;
 
-  // Extract Steam AppID using regex
   const match = steamLink.url.match(/\/app\/(\d+)/);
   const steamAppId = match ? match[1] : null;
-
-  if (!steamAppId) {
-    return;
-  }
+  if (!steamAppId) return;
 
   try {
     const url = `https://www.protondb.com/api/v1/reports/summaries/${steamAppId}.json`;
@@ -278,48 +253,47 @@ async function lazyEnrichProtonDbMetadata(game: any) {
     if (response.ok) {
       const data = await response.json();
       
-      // Update local memory reference
       game.protonDbTier = data.tier || null;
       game.protonDbConfidence = data.confidence || null;
       game.protonDbScore = data.score !== undefined ? data.score : null;
       game.protonDbTotalReports = data.total !== undefined ? data.total : null;
-      game.lastProtonDbSync = new Date();
+      game.lastProtonDbSync = new Date().toISOString();
 
-      // Update database asynchronously
+      const supabase = getSupabaseServer();
       try {
-        await db.game.update({
-          where: { id: game.id },
-          data: {
+        await supabase
+          .from("Game")
+          .update({
             protonDbTier: game.protonDbTier,
             protonDbConfidence: game.protonDbConfidence,
             protonDbScore: game.protonDbScore,
             protonDbTotalReports: game.protonDbTotalReports,
-            lastProtonDbSync: game.lastProtonDbSync
-          }
-        });
+            lastProtonDbSync: game.lastProtonDbSync,
+          })
+          .eq("id", game.id);
         console.log(`💾 ProtonDB metadata lazy-enriched and cached for game ID: ${game.id}`);
       } catch (dbErr) {
         console.error("Failed to save lazy-enriched ProtonDB metadata to DB:", dbErr);
       }
     } else if (response.status === 404) {
-      // Game not found on ProtonDB (e.g. unreviewed or not a Steam game)
       game.protonDbTier = "unknown";
-      game.lastProtonDbSync = new Date();
+      game.lastProtonDbSync = new Date().toISOString();
+      const supabase = getSupabaseServer();
       try {
-        await db.game.update({
-          where: { id: game.id },
-          data: {
+        await supabase
+          .from("Game")
+          .update({
             protonDbTier: "unknown",
-            lastProtonDbSync: game.lastProtonDbSync
-          }
-        });
+            lastProtonDbSync: game.lastProtonDbSync,
+          })
+          .eq("id", game.id);
         console.log(`💾 Cached unknown ProtonDB status for game ID: ${game.id}`);
       } catch (dbErr) {
-        console.error("Failed to cache unknown ProtonDB status to DB:", dbErr);
+        console.error("Failed to cache unknown ProtonDB status:", dbErr);
       }
     }
   } catch (error) {
-    console.error(`⚠️ Failed to lazy-load ProtonDB reviews for ${game.title}:`, error);
+    console.error(`⚠️ Failed to load ProtonDB reviews for ${game.title}:`, error);
   }
 }
 
@@ -327,40 +301,54 @@ export default async function GameProfilePage({ params }: GamePageProps) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
-  // Query game details from database
-  const game = await db.game.findUnique({
-    where: { slug },
-    include: {
-      developers: true,
-      publishers: true,
-      genres: true,
-      tags: true,
-      platforms: true,
-      purchaseLinks: true,
-    },
-  });
+  const supabase = getSupabaseServer();
+
+  const { data: game } = await supabase
+    .from("Game")
+    .select(`
+      *,
+      developers:Developer(id, name, slug),
+      publishers:Publisher(id, name, slug),
+      genres:Genre(id, name, slug),
+      tags:Tag(id, name, slug),
+      platforms:Platform(id, name, slug),
+      purchaseLinks:PurchaseLink(id, storeName, url)
+    `)
+    .eq("slug", slug)
+    .limit(1)
+    .maybeSingle();
 
   if (!game) {
     notFound();
   }
 
+  // Redirect dry/unenriched itch.io games directly to their itch page (with purchase popup open)
+  if (game.slug.startsWith("itch-") && !game.rawgEnriched) {
+    const purchaseLinks = (game.purchaseLinks as any[]) || [];
+    const itchLink = purchaseLinks.find(link => link.storeName.toLowerCase() === "itch.io");
+    if (itchLink && itchLink.url) {
+      const directPurchaseUrl = itchLink.url.endsWith("/purchase")
+        ? itchLink.url
+        : `${itchLink.url.replace(/\/$/, "")}/purchase`;
+      redirect(directPurchaseUrl);
+    }
+  }
+
   // Extract Steam AppID if available
-  const steamLink = game.purchaseLinks?.find((link: any) => 
+  const purchaseLinks = game.purchaseLinks as any[];
+  const steamLink = purchaseLinks?.find((link: any) => 
     link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
   );
   const steamAppId = steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null;
 
-
-
-  // Retrieve cached system requirements from the database object
   const requirements = { min: game.minRequirements, rec: game.recRequirements };
 
-  // Schedule RAWG and Steam metadata lazy enrichment in the background (Non-blocking Stale-While-Revalidate)
+  // Schedule lazy enrichment in the background
   after(async () => {
-    const gameClone = { ...game };
+    const gameClone = { ...game, purchaseLinks };
     if (process.env.NODE_ENV === "development") {
       lazyEnrichProtonDbMetadata(gameClone);
-      return; // Skip background API queries to RAWG and Steam in dev mode to prevent blocking the local socket
+      return;
     }
     try {
       await Promise.all([
@@ -373,13 +361,15 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     }
   });
 
-  // Format rating display
   const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
 
-
-
-
   const isItchGame = game.slug.startsWith("itch-");
+
+  const tags = game.tags as any[];
+  const developers = game.developers as any[];
+  const publishers = game.publishers as any[];
+  const genres = game.genres as any[];
+  const platforms = game.platforms as any[];
 
   const descriptionSection = (
     <div className="pt-6 space-y-4 select-none">
@@ -405,13 +395,13 @@ export default async function GameProfilePage({ params }: GamePageProps) {
     </div>
   );
 
-  const moodSection = game.tags && game.tags.length > 0 && (
+  const moodSection = tags && tags.length > 0 && (
     <div className="pt-6 flex flex-wrap gap-4 items-center">
       <h2 className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
         <Tag className="w-3.5 h-3.5" /> Mood/Genre
       </h2>
       <div className="flex flex-wrap gap-2">
-        {game.tags.map(t => (
+        {tags.map((t: any) => (
           <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
             {t.name}
           </span>
@@ -435,16 +425,15 @@ export default async function GameProfilePage({ params }: GamePageProps) {
       gameId={game.id}
       gameSlug={game.slug}
       gameTitle={game.title}
-      purchaseLinks={game.purchaseLinks}
+      purchaseLinks={purchaseLinks}
     />
   );
 
-  const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
+  const linksSection = (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
     <div className="pt-6 space-y-4">
       <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</h2>
       <div className="flex flex-wrap gap-3">
-        {/* Purchase/Store Outlinks */}
-        {game.purchaseLinks.map(link => (
+        {purchaseLinks?.map((link: any) => (
           <a
             key={link.id}
             href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
@@ -457,7 +446,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </a>
         ))}
 
-        {/* Official Website */}
         {game.websiteUrl && (
           <a
             href={game.websiteUrl}
@@ -470,7 +458,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </a>
         )}
 
-        {/* Reddit Community */}
         {game.redditUrl && (
           <a
             href={game.redditUrl}
@@ -483,7 +470,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </a>
         )}
 
-        {/* RAWG Profile Attribution Link */}
         {game.rawgSlug && (
           <a
             href={`https://rawg.io/games/${game.rawgSlug}`}
@@ -519,7 +505,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black pb-24">
-      {/* Top Sticky Header */}
       <header className="border-b border-white bg-black sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -541,12 +526,8 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="max-w-5xl mx-auto px-6 mt-12 space-y-12">
-        {/* Core Layout Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          
-          {/* Left Column: Cover & Quick Stats */}
           <div className="md:col-span-1 space-y-6">
             <div className={`border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative w-full ${
               game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"
@@ -567,7 +548,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                   <span className="font-mono text-xs uppercase tracking-widest text-white">No Cover Art</span>
                 </div>
               )}
-              {/* Category Tag (Excluding Visual Novels) */}
               {(() => {
                 const badge = getCategoryBadge(game.category, game.title);
                 if (!badge || badge === "Visual Novel") return null;
@@ -579,7 +559,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               })()}
             </div>
 
-            {/* Quick Specs Container */}
             <div className="border border-white bg-black p-5 space-y-4 font-mono text-xs font-bold uppercase">
               <span className="font-mono text-[9px] text-white/50 tracking-widest block border-b border-white/20 pb-1">Quick Specs</span>
               
@@ -615,7 +594,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
 
               <div className="flex justify-between items-center gap-4">
                 <span className="text-white flex items-center gap-1.5 shrink-0"><Monitor className="w-3.5 h-3.5" /> Platforms:</span>
-                <PlatformLogos platforms={game.platforms} className="flex flex-wrap justify-end gap-2" solid={true} />
+                <PlatformLogos platforms={platforms} className="flex flex-wrap justify-end gap-2" solid={true} />
               </div>
 
               {steamAppId && (
@@ -697,7 +676,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             </div>
           </div>
 
-          {/* Right Column: Title, Developer & Tracking */}
           <div className="md:col-span-2 flex flex-col justify-between md:h-full">
             <div className="space-y-4 mb-6">
               <div className="flex flex-wrap items-center gap-2">
@@ -732,23 +710,42 @@ export default async function GameProfilePage({ params }: GamePageProps) {
               </div>
               <div className="flex flex-wrap gap-2 text-xs font-mono font-bold uppercase">
                 <span className="text-white/60">Developed by:</span>
-                <span className="text-white font-black">{game.developers.map(d => d.name).join(", ")}</span>
-                {game.publishers.length > 0 && (
+                <span className="text-white font-black">{developers.map((d: any) => d.name).join(", ")}</span>
+                {publishers.length > 0 && (
                   <>
                     <span className="text-white/60 ml-2">Published by:</span>
-                    <span className="text-white font-black">{game.publishers.map(p => p.name).join(", ")}</span>
+                    <span className="text-white font-black">{publishers.map((p: any) => p.name).join(", ")}</span>
                   </>
                 )}
               </div>
             </div>
 
-            {/* User registry control tools */}
-            <div className="flex-grow flex flex-col justify-end">
+            <div className="flex-grow flex flex-col justify-end gap-4">
+              {(() => {
+                const itchLink = purchaseLinks?.find((link: any) => link.storeName.toLowerCase() === "itch.io");
+                if (itchLink && itchLink.url) {
+                  const directPurchaseUrl = itchLink.url.endsWith("/purchase")
+                    ? itchLink.url
+                    : `${itchLink.url.replace(/\/$/, "")}/purchase`;
+                  return (
+                    <a
+                      href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(directPurchaseUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-4 py-3 bg-[#fa5c5c] text-black font-mono text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-none border border-[#fa5c5c]"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-black" />
+                      <span>Buy / Download on itch.io</span>
+                    </a>
+                  );
+                }
+                return null;
+              })()}
               <TrackControls
                 gameId={game.id}
                 gameSlug={game.slug}
                 gameTitle={game.title}
-                genres={game.genres.map(g => g.name)}
+                genres={genres.map((g: any) => g.name)}
                 siteRating={game.rating ? game.rating / 10 : null}
                 steamRating={game.steamRating}
               />
@@ -756,23 +753,18 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </div>
         </div>
 
-        {/* Bottom Sections: Vibes, Description, Mood, Deals, Links */}
         <div className="space-y-12 mt-12">
-          {/* Background Vibe Tracking */}
-          <VibeTracker tags={game.tags} genres={game.genres} />
-
+          <VibeTracker tags={tags} genres={genres} />
           {detailsContent}
         </div>
 
-        {/* Screenshots Gallery (If available) */}
-        {game.screenshots.length > 0 && (
+        {game.screenshots && game.screenshots.length > 0 && (
           <section className="border-t border-white pt-12 space-y-6">
             <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black">Screenshots</h2>
-            <ScreenshotGallery screenshots={game.screenshots.map(url => getCloudinaryFetchUrl(url, game.isTrending) || url)} title={game.title} />
+            <ScreenshotGallery screenshots={game.screenshots.map((url: string) => getCloudinaryFetchUrl(url, game.isTrending) || url)} title={game.title} />
           </section>
         )}
 
-        {/* Embedded Trailer Video (If available) */}
         {game.trailerUrl && (
           <section className="border-t border-white pt-12 space-y-6">
             <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black">Game trailers and videos</h2>
@@ -788,7 +780,6 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </section>
         )}
 
-        {/* PC System Requirements */}
         {(requirements.min || requirements.rec) && (
           <section className="border-t border-white pt-12 space-y-6">
             <h2 className="font-mono text-[10px] text-white uppercase tracking-widest font-black font-bold">PC System Specifications</h2>
@@ -835,17 +826,16 @@ export default async function GameProfilePage({ params }: GamePageProps) {
           </section>
         )}
 
-        {/* Creator Games Section */}
-        {game.developers.length > 0 ? (
+        {developers.length > 0 ? (
           <CreatorGames 
-            creatorIds={game.developers.map(d => d.id)}
-            creatorNames={game.developers.map(d => d.name)}
+            creatorIds={developers.map((d: any) => d.id)}
+            creatorNames={developers.map((d: any) => d.name)}
             excludeGameId={game.id}
           />
-        ) : game.publishers.length > 0 ? (
+        ) : publishers.length > 0 ? (
           <CreatorGames 
-            creatorIds={game.publishers.map(p => p.id)}
-            creatorNames={game.publishers.map(p => p.name)}
+            creatorIds={publishers.map((p: any) => p.id)}
+            creatorNames={publishers.map((p: any) => p.name)}
             excludeGameId={game.id}
           />
         ) : null}

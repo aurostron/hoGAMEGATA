@@ -60,8 +60,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],
-    staticGenerationMaxConcurrency: 1,
-    cpus: 1,
+    staticGenerationMaxConcurrency: 6,
+    cpus: 6,
     workerThreads: false,
   },
 };

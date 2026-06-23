@@ -36,11 +36,9 @@ function getPrismaClient(): PrismaClient {
     } else {
       const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1") || connectionString.includes("::1");
       
-      // Restrict each worker to 1 connection during production builds to prevent 
-      // database connection timeouts (ETIMEDOUT) and pool saturation.
-      let maxConnections = 10;
+      let maxConnections = 8;
       if (process.env.NEXT_PHASE === "phase-production-build") {
-        maxConnections = 1;
+        maxConnections = 2;
       } else {
         try {
           const parsedUrl = new URL(connectionString.replace("postgresql://", "http://"));

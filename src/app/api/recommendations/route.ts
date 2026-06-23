@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getServerUser } from "@/lib/serverAuth";
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -11,111 +11,109 @@ export async function GET(request: NextRequest) {
     let reasonString = "Personalized for you";
     let seedGameId: string | null = null;
 
-    // 1. Try to get logged-in user signals first (most recent wishlist item)
+    const supabase = getSupabaseServer();
     const user = await getServerUser();
     
     if (user) {
-      const latestWishlist = await db.wishlist.findFirst({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
-        include: { game: true }
-      });
+      // Get most recent wishlist item as seed
+      const { data: latestWishlist } = await supabase
+        .from("Wishlist")
+        .select("gameId, game:Game!inner(title)")
+        .eq("userId", user.id)
+        .order("createdAt", { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       if (latestWishlist) {
         seedGameId = latestWishlist.gameId;
-        reasonString = `Because you wishlisted ${latestWishlist.game.title}`;
+        const gameTitle = (latestWishlist.game as any)?.title;
+        reasonString = `Because you wishlisted ${gameTitle}`;
         
-        // Exclude all their wishlisted and collected games from recommendations
-        const allLists = await db.wishlist.findMany({ where: { userId: user.id }, select: { gameId: true } });
-        const allCollections = await db.collection.findMany({ where: { userId: user.id }, select: { gameId: true } });
-        excludeGameIds = [...allLists.map(w => w.gameId), ...allCollections.map(c => c.gameId)];
+        // Exclude all wishlisted and collected games
+        const [wishlistResult, collectionResult] = await Promise.all([
+          supabase.from("Wishlist").select("gameId").eq("userId", user.id),
+          supabase.from("Collection").select("gameId").eq("userId", user.id),
+        ]);
+        
+        excludeGameIds = [
+          ...(wishlistResult.data || []).map((w: any) => w.gameId),
+          ...(collectionResult.data || []).map((c: any) => c.gameId),
+        ];
       }
     }
 
-    // 2. Fallback to client-side affinities if no user or no items in lists
+    // Fallback to client-side affinities
     if (!seedGameId) {
       const clientTagsParam = searchParams.get("tags");
       if (clientTagsParam) {
         const topTags = clientTagsParam.split(",").filter(t => t.trim() !== "");
         if (topTags.length > 0) {
-          // Find a highly rated game matching their favorite vibe to use as the semantic seed
-          const seedCandidate = await db.game.findFirst({
-            where: {
-              OR: [
-                { tags: { some: { slug: topTags[0] } } },
-                { genres: { some: { slug: topTags[0] } } }
-              ]
-            },
-            orderBy: { rating: 'desc' },
-          });
+          // Find a highly rated game matching their favorite vibe
+          const { data: seedCandidate } = await supabase
+            .from("Game")
+            .select("id")
+            .or(`tags.slug.eq.${topTags[0]},genres.slug.eq.${topTags[0]}`)
+            .order("rating", { ascending: false, nullsFirst: true })
+            .limit(1)
+            .maybeSingle();
           
           if (seedCandidate) {
             seedGameId = seedCandidate.id;
-            reasonString = `Because you like ${topTags[0].replace(/-/g, ' ')} vibes`;
-            excludeGameIds.push(seedGameId);
+            reasonString = `Because you like ${topTags[0].replace(/-/g, " ")} vibes`;
+            excludeGameIds.push(seedCandidate.id);
           }
         }
       }
     }
 
-    // 3. If still no seed, we can't provide dynamic recommendations, return empty
     if (!seedGameId) {
       return NextResponse.json({ games: [], reason: null });
     }
 
-    // 4. Query precomputed recommendations from the database
+    // Query precomputed recommendations
     let recommendations;
-    
+
     if (searchParams.get("tags") && !user) {
-      // If filtering by specific vibes, enforce tag/genre filter
-      const topTag = searchParams.get("tags")!.split(",")[0].trim();
-      recommendations = await db.gameRecommendation.findMany({
-        where: {
-          gameId: seedGameId,
-          recommendedGameId: { notIn: excludeGameIds.length > 0 ? excludeGameIds : undefined },
-          recommendedGame: {
-            OR: [
-              { tags: { some: { slug: topTag } } },
-              { genres: { some: { slug: topTag } } }
-            ]
-          }
-        },
-        orderBy: { distance: 'asc' },
-        take: limit,
-        include: {
-          recommendedGame: {
-            include: {
-              developers: true,
-              genres: true,
-              tags: true,
-              platforms: true,
-            }
-          }
-        }
-      });
+      const { data } = await supabase
+        .from("GameRecommendation")
+        .select(`
+          distance,
+          recommendedGame:Game!inner(
+            *,
+            developers:Developer(id, name, slug),
+            genres:Genre(id, name, slug),
+            tags:Tag(id, name, slug),
+            platforms:Platform(id, name, slug)
+          )
+        `)
+        .eq("gameId", seedGameId)
+        .not("recommendedGameId", "in", `(${excludeGameIds.join(",")})`)
+        .order("distance", { ascending: true })
+        .limit(limit);
+      
+      recommendations = data || [];
     } else {
-      // General personalized recommendations
-      recommendations = await db.gameRecommendation.findMany({
-        where: {
-          gameId: seedGameId,
-          recommendedGameId: { notIn: excludeGameIds.length > 0 ? excludeGameIds : undefined }
-        },
-        orderBy: { distance: 'asc' },
-        take: limit,
-        include: {
-          recommendedGame: {
-            include: {
-              developers: true,
-              genres: true,
-              tags: true,
-              platforms: true,
-            }
-          }
-        }
-      });
+      const { data } = await supabase
+        .from("GameRecommendation")
+        .select(`
+          distance,
+          recommendedGame:Game!inner(
+            *,
+            developers:Developer(id, name, slug),
+            genres:Genre(id, name, slug),
+            tags:Tag(id, name, slug),
+            platforms:Platform(id, name, slug)
+          )
+        `)
+        .eq("gameId", seedGameId)
+        .not("recommendedGameId", "in", `(${excludeGameIds.join(",")})`)
+        .order("distance", { ascending: true })
+        .limit(limit);
+      
+      recommendations = data || [];
     }
 
-    const recommendedGames = recommendations.map(r => r.recommendedGame);
+    const recommendedGames = recommendations.map((r: any) => r.recommendedGame);
 
     if (recommendedGames.length === 0) {
       return NextResponse.json({ games: [], reason: null });

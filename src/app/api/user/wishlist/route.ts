@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import { getServerUser } from "@/lib/serverAuth";
 
 export async function POST(request: Request) {
@@ -14,21 +14,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing gameId" }, { status: 400 });
     }
 
-    const record = await db.wishlist.upsert({
-      where: {
-        userId_gameId: {
-          userId: user.id,
-          gameId,
-        },
-      },
-      update: {},
-      create: {
-        userId: user.id,
-        gameId,
-      },
-    });
+    const supabase = getSupabaseServer();
 
-    return NextResponse.json({ success: true, record });
+    // Upsert: try insert, ignore if already exists
+    const { error } = await supabase
+      .from("Wishlist")
+      .upsert(
+        { userId: user.id, gameId },
+        { onConflict: "userId,gameId", ignoreDuplicates: true }
+      );
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Wishlist add failed:", error instanceof Error ? error.message : "Unknown error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -47,13 +45,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Missing gameId" }, { status: 400 });
     }
 
-    // Use deleteMany or check existence to prevent crashing if it does not exist
-    await db.wishlist.deleteMany({
-      where: {
-        userId: user.id,
-        gameId,
-      },
-    });
+    const supabase = getSupabaseServer();
+    const { error } = await supabase
+      .from("Wishlist")
+      .delete()
+      .eq("userId", user.id)
+      .eq("gameId", gameId);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {

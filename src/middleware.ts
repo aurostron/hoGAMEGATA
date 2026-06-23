@@ -5,6 +5,7 @@ const PUBLIC_PATHS = [
   "/waitlist",
   "/api/waitlist/join",
   "/api/auth/token-login",
+  "/api/auth/dev-bypass",
   "/api/games/summary",
   "/api/stats",
   "/login",
@@ -12,8 +13,6 @@ const PUBLIC_PATHS = [
   "/privacy",
   "/legal"
 ];
-
-export const runtime = "experimental-edge";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -1,57 +1,34 @@
 import Link from "next/link";
 import Image from "next/image";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 import AuthButton from "@/components/AuthButton";
 import { ArrowLeft, Calendar, ExternalLink, Tag, Monitor } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
-
 export default async function UpcomingPage() {
-  const now = new Date();
+  const supabase = getSupabaseServer();
+  const now = new Date().toISOString();
 
-  // Query games that are marked upcoming or have future release dates
-  const upcomingGames = await db.game.findMany({
-    where: {
-      OR: [
-        { status: "upcoming" },
-        { releaseDate: { gt: now } }
-      ]
-    },
-    orderBy: {
-      releaseDate: "asc" // Closest release first
-    },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      coverUrl: true,
-      isTrending: true,
-      category: true,
-      developerNames: true,
-      releaseDate: true,
-      status: true,
-      tags: {
-        select: {
-          slug: true,
-          name: true,
-        }
-      },
-      purchaseLinks: {
-        select: {
-          url: true,
-          storeName: true,
-        }
-      }
-    }
-  });
+  const { data: upcomingGames } = await supabase
+    .from("Game")
+    .select(`
+      id, slug, title, coverUrl, isTrending, category, developerNames,
+      releaseDate, status,
+      tags:Tag(slug, name),
+      purchaseLinks:PurchaseLink(url, storeName)
+    `)
+    .or(`status.eq.upcoming,releaseDate.gt.${now}`)
+    .order("releaseDate", { ascending: true, nullsFirst: true });
 
-  // Group games by month/year for a chronological timeline
-  const groupedGames: { [key: string]: typeof upcomingGames } = {};
-  const tbaGames: typeof upcomingGames = [];
+  const games = upcomingGames || [];
 
-  for (const game of upcomingGames) {
+  // Group games by month/year
+  const groupedGames: { [key: string]: typeof games } = {};
+  const tbaGames: typeof games = [];
+
+  for (const game of games) {
     if (game.releaseDate) {
       const date = new Date(game.releaseDate);
       const monthYear = date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
@@ -100,7 +77,6 @@ export default async function UpcomingPage() {
 
       {/* Main Container */}
       <main className="max-w-5xl mx-auto px-6 mt-12 space-y-16">
-        
         {/* Intro */}
         <section className="pb-8 border-b border-white space-y-2">
           <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
@@ -115,13 +91,12 @@ export default async function UpcomingPage() {
         </section>
 
         {/* Timeline Grid */}
-        {upcomingGames.length === 0 ? (
+        {games.length === 0 ? (
           <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold">
             [ No upcoming horror titles currently indexed ]
           </div>
         ) : (
           <div className="space-y-16">
-            {/* Render chronological groups */}
             {sortedMonths.map((month) => (
               <section key={month} className="space-y-6">
                 <h3 className="font-mono text-xs text-white border-b border-white pb-2 tracking-widest uppercase font-black">
@@ -133,7 +108,6 @@ export default async function UpcomingPage() {
                       key={game.id}
                       className="border border-white bg-black p-5 flex gap-5 hover:bg-neutral-950/40 transition-all duration-150"
                     >
-                      {/* Image Block */}
                       <div className="w-24 h-32 relative bg-neutral-900 border border-white shrink-0 flex items-center justify-center overflow-hidden">
                         {game.coverUrl ? (
                           <Image
@@ -147,13 +121,11 @@ export default async function UpcomingPage() {
                         ) : (
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
                         )}
-                        {/* Category Tag */}
                         {getCategoryBadge(game.category, game.title) && (
                           <span className="absolute top-1 left-1 font-mono text-[7px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.2 z-10">
                             {getCategoryBadge(game.category, game.title)}
                           </span>
                         )}
-                        {/* itch.io Badge */}
                         {game.slug.startsWith("itch-") && (
                           <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                             itch.io
@@ -161,7 +133,6 @@ export default async function UpcomingPage() {
                         )}
                       </div>
 
-                      {/* Info Block */}
                       <div className="flex-1 flex flex-col justify-between min-w-0">
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-2">
@@ -177,7 +148,7 @@ export default async function UpcomingPage() {
                           </span>
 
                           <div className="flex flex-wrap gap-1.5 pt-1">
-                            {game.tags.slice(0, 2).map((t) => (
+                            {(game.tags as any[])?.slice(0, 2).map((t: any) => (
                               <span key={t.slug} className="font-mono text-[8px] border border-white/30 text-white/80 px-1.5 py-0.2 uppercase font-medium">
                                 {t.name}
                               </span>
@@ -191,14 +162,14 @@ export default async function UpcomingPage() {
                             {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString("en-US", { day: "numeric", month: "short" }) : "TBA"}
                           </span>
                           
-                          {game.purchaseLinks.length > 0 ? (
+                          {(game.purchaseLinks as any[])?.length > 0 ? (
                             <a
-                              href={game.purchaseLinks[0].url}
+                              href={(game.purchaseLinks as any[])[0].url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 hover:underline text-white font-black uppercase"
                             >
-                              <span>{game.purchaseLinks[0].storeName}</span>
+                              <span>{(game.purchaseLinks as any[])[0].storeName}</span>
                               <ExternalLink className="w-2.5 h-2.5" />
                             </a>
                           ) : (
@@ -212,7 +183,6 @@ export default async function UpcomingPage() {
               </section>
             ))}
 
-            {/* TBA / Undated Games */}
             {tbaGames.length > 0 && (
               <section className="space-y-6">
                 <h3 className="font-mono text-xs text-white border-b border-white pb-2 tracking-widest uppercase font-black">
@@ -224,7 +194,6 @@ export default async function UpcomingPage() {
                       key={game.id}
                       className="border border-white bg-black p-5 flex gap-5 hover:bg-neutral-950/40 transition-all duration-150"
                     >
-                      {/* Image Block */}
                       <div className="w-24 h-32 relative bg-neutral-900 border border-white shrink-0 flex items-center justify-center overflow-hidden">
                         {game.coverUrl ? (
                           <Image
@@ -238,13 +207,11 @@ export default async function UpcomingPage() {
                         ) : (
                           <span className="font-mono text-[8px] uppercase tracking-widest text-white/40">No Cover</span>
                         )}
-                        {/* Category Tag */}
                         {getCategoryBadge(game.category, game.title) && (
                           <span className="absolute top-1 left-1 font-mono text-[7px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.2 z-10">
                             {getCategoryBadge(game.category, game.title)}
                           </span>
                         )}
-                        {/* itch.io Badge */}
                         {game.slug.startsWith("itch-") && (
                           <span className="absolute top-1 right-1 font-mono text-[7px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
                             itch.io
@@ -252,7 +219,6 @@ export default async function UpcomingPage() {
                         )}
                       </div>
 
-                      {/* Info Block */}
                       <div className="flex-1 flex flex-col justify-between min-w-0">
                         <div className="space-y-2">
                           <Link href={`/game/${game.slug}`} className="hover:underline">
@@ -264,7 +230,7 @@ export default async function UpcomingPage() {
                             by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
                           </span>
                           <div className="flex flex-wrap gap-1.5 pt-1">
-                            {game.tags.slice(0, 2).map((t) => (
+                            {(game.tags as any[])?.slice(0, 2).map((t: any) => (
                               <span key={t.slug} className="font-mono text-[8px] border border-white/30 text-white/80 px-1.5 py-0.2 uppercase font-medium">
                                 {t.name}
                               </span>
@@ -278,14 +244,14 @@ export default async function UpcomingPage() {
                             TBA
                           </span>
                           
-                          {game.purchaseLinks.length > 0 ? (
+                          {(game.purchaseLinks as any[])?.length > 0 ? (
                             <a
-                              href={game.purchaseLinks[0].url}
+                              href={(game.purchaseLinks as any[])[0].url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1 hover:underline text-white font-black uppercase"
                             >
-                              <span>{game.purchaseLinks[0].storeName}</span>
+                              <span>{(game.purchaseLinks as any[])[0].storeName}</span>
                               <ExternalLink className="w-2.5 h-2.5" />
                             </a>
                           ) : (

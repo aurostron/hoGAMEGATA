@@ -6,13 +6,11 @@ import AuthButton from "@/components/AuthButton";
 import SettingsButton from "@/components/SettingsButton";
 import SciFiLogo from "@/components/SciFiLogo";
 import GameCatalogClient from "@/components/GameCatalogClient";
-import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { getSupabaseServer } from "@/lib/supabaseServer";
+import { getDbStats, getCheapestSnapshots } from "@/lib/dbRpc";
 
 
-export const dynamic = 'force-dynamic'; // always server-render, never pre-render at build time
-
-
+export const dynamic = 'force-dynamic';
 
 export interface StatsData {
   games: number;
@@ -22,77 +20,44 @@ export interface StatsData {
   screenshots: number;
 }
 
-
-
-
-
 export default async function Page() {
-  // Fetch stats directly from DB (simulating the /api/stats route)
-  const [games, developers, publishers, tags] = await Promise.all([
-    db.game.count(),
-    db.developer.count(),
-    db.publisher.count(),
-    db.tag.count()
-  ]);
+  const supabase = getSupabaseServer();
 
-  // Count total screenshots stored across PostgreSQL string arrays
-  const screenshotResult = await db.$queryRaw<{ sum: number | null }[]>`
-    SELECT SUM(cardinality(screenshots))::int as sum FROM "Game";
-  `;
-  const screenshots = screenshotResult[0]?.sum ?? 0;
-  
-  const stats: StatsData = { games, developers, publishers, tags, screenshots };
+  const stats = await getDbStats();
 
-  const gameSummarySelect = {
-    id: true,
-    title: true,
-    slug: true,
-    coverUrl: true,
-    releaseDate: true,
-    rating: true,
-    genreNames: true,
-    platformNames: true,
-    tags: { select: { name: true, slug: true } },
-  };
+  const gameSummarySelect = "id, title, slug, coverUrl, releaseDate, rating, genreNames, platformNames, tags:Tag(name, slug)";
 
   let initialGames: any[] = [];
   let nextCursor: string | null = null;
 
   try {
-    const fetchedGames = await db.game.findMany({
-      where: {},
-      select: gameSummarySelect,
-      take: 21,
-      orderBy: [{ releaseDate: { sort: "desc", nulls: "last" } }, { id: "desc" }],
-    });
-    const limit = 20;
-    initialGames = fetchedGames.slice(0, limit);
-    if (fetchedGames.length > limit) {
-      const lastGame = initialGames[initialGames.length - 1];
-      nextCursor = lastGame ? `${lastGame.releaseDate ? lastGame.releaseDate.getTime() : "null"}_${lastGame.id}` : null;
-    }
+    const { data: fetchedGames } = await supabase
+      .from("Game")
+      .select(gameSummarySelect)
+      .order("releaseDate", { ascending: false, nullsFirst: false })
+      .order("id", { ascending: false })
+      .limit(21);
 
-    const gameIds = initialGames.map((g: any) => g.id);
-    if (gameIds.length > 0) {
-      const rows = await db.$queryRaw<{
-        gameId: string; storeName: string; dealPrice: number; retailPrice: number;
-        discountPercent: number; dealUrl: string; currency: string; country: string;
-      }[]>`
-        SELECT "gameId", "storeName", "dealPrice", "retailPrice", "discountPercent", "dealUrl", "currency", "country"
-        FROM (
-          SELECT *, ROW_NUMBER() OVER (PARTITION BY "gameId" ORDER BY "dealPrice" ASC)::int as rn
-          FROM "PriceSnapshot"
-          WHERE "gameId" IN (${Prisma.join(gameIds)})
-        ) sub WHERE rn <= 3
-      `;
-      const snapshotMap = new Map<string, any[]>();
-      for (const row of rows) {
-        const { gameId, ...snapshot } = row;
-        if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
-        snapshotMap.get(gameId)!.push(snapshot);
+    if (fetchedGames) {
+      const limit = 20;
+      initialGames = fetchedGames.slice(0, limit);
+      if (fetchedGames.length > limit) {
+        const lastGame = initialGames[initialGames.length - 1];
+        nextCursor = lastGame ? `${lastGame.releaseDate ? new Date(lastGame.releaseDate).getTime() : "null"}_${lastGame.id}` : null;
       }
-      for (const game of initialGames) {
-        game.priceSnapshots = snapshotMap.get(game.id) || [];
+
+      const gameIds = initialGames.map((g: any) => g.id);
+      if (gameIds.length > 0) {
+        const snapshots = await getCheapestSnapshots(gameIds);
+        const snapshotMap = new Map<string, any[]>();
+        for (const row of snapshots) {
+          const { gameId, ...snapshot } = row;
+          if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
+          snapshotMap.get(gameId)!.push(snapshot);
+        }
+        for (const game of initialGames) {
+          game.priceSnapshots = snapshotMap.get(game.id) || [];
+        }
       }
     }
   } catch (err) {
@@ -121,30 +86,20 @@ export default async function Page() {
         </div>
       </header>
 
-      {/* Atmospheric Hero Banner — full-bleed, outside main container */}
+      {/* Atmospheric Hero Banner */}
       <div className="relative w-full overflow-hidden" style={{minHeight: "320px"}}>
-        {/* Layered radial gradient atmosphere */}
         <div className="absolute inset-0 bg-black" />
         <div className="absolute inset-0" style={{background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(180,0,0,0.13) 0%, transparent 70%)"}} />
         <div className="absolute inset-0" style={{background: "radial-gradient(ellipse 50% 40% at 20% 100%, rgba(80,0,0,0.10) 0%, transparent 60%)"}} />
-        {/* Thin top accent line */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        {/* Bottom border */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-white/20" />
 
-        {/* Hero Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-6 flex flex-col items-center justify-center text-center py-16 gap-6">
-          
-
-          {/* Main Headline */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] tracking-tight max-w-3xl">
             Probably the most curated horror games database
             <span className="text-white/75"> you&apos;ll ever see.</span>
           </h1>
 
-      
-
-          {/* Stats row — inline with hero */}
           <div className="flex flex-nowrap justify-center gap-px mt-4 border border-white/35 font-mono min-h-[74px] md:min-h-[82px] w-full max-w-[600px]">
             {stats ? (
               [

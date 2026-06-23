@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { db } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabaseServer";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -37,31 +37,47 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Exchange successful. Now check if the user is allowed (limit check)
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
         try {
-          const count = await db.user.count();
-          if (count >= 10000) {
-            const existing = await db.user.findUnique({ where: { id: user.id } });
+          const db = getSupabaseServer();
+
+          // Check user limit
+          const { count } = await db
+            .from("User")
+            .select("*", { count: "exact", head: true });
+
+          if ((count ?? 0) >= 10000) {
+            const { data: existing } = await db
+              .from("User")
+              .select("id")
+              .eq("id", user.id)
+              .limit(1)
+              .maybeSingle();
+
             if (!existing) {
               console.warn(`⚠️ User limit reached. Denying signup for user ${user.id}`);
-              // Sign out from Supabase Auth to destroy session
               await supabase.auth.signOut();
               return NextResponse.redirect(`${origin}/login?error=limit_reached`);
             }
           }
 
           // Sync user to database
-          await db.user.upsert({
-            where: { id: user.id },
-            update: { email: user.email || "" },
-            create: { id: user.id, email: user.email || "" },
-          });
+          const { error: upsertError } = await db
+            .from("User")
+            .upsert(
+              { id: user.id, email: user.email || "" },
+              { onConflict: "id" }
+            );
+
+          if (upsertError) {
+            console.error("❌ Sync error during OAuth callback:", upsertError);
+            await supabase.auth.signOut();
+            return NextResponse.redirect(`${origin}/login?error=limit_reached`);
+          }
         } catch (syncError) {
           console.error("❌ Sync error during OAuth callback:", syncError);
-          // If trigger failed, it will raise an exception, indicating cap reached or DB error
           await supabase.auth.signOut();
           return NextResponse.redirect(`${origin}/login?error=limit_reached`);
         }
