@@ -63,64 +63,66 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ games: [], reason: null });
     }
 
-    // 4. Perform AI Vector Search using pgvector
-    // We find games whose embeddings are geometrically closest to our seed game's embedding.
-    // Ensure we only recommend games that actually belong to the targeted genre/vibe.
-    let vectorResults;
+    // 4. Query precomputed recommendations from the database
+    let recommendations;
     
     if (searchParams.get("tags") && !user) {
-      // If filtering by specific vibes, explicitly join and enforce the tag/genre
+      // If filtering by specific vibes, enforce tag/genre filter
       const topTag = searchParams.get("tags")!.split(",")[0].trim();
-      vectorResults = await db.$queryRaw<{ id: string }[]>`
-        SELECT g.id
-        FROM "Game" g
-        LEFT JOIN "_GameToTag" gtt ON g.id = gtt."A"
-        LEFT JOIN "Tag" t ON gtt."B" = t.id
-        LEFT JOIN "_GameToGenre" gtg ON g.id = gtg."A"
-        LEFT JOIN "Genre" gen ON gtg."B" = gen.id
-        WHERE g.id != ${seedGameId}
-          AND (t.slug = ${topTag} OR gen.slug = ${topTag})
-          AND g.embedding IS NOT NULL
-          ${excludeGameIds.length > 0 ? Prisma.sql`AND g.id NOT IN (${Prisma.join(excludeGameIds)})` : Prisma.empty}
-        GROUP BY g.id, g.embedding
-        ORDER BY g.embedding <-> (SELECT embedding FROM "Game" WHERE id = ${seedGameId})
-        LIMIT ${limit}
-      `;
+      recommendations = await db.gameRecommendation.findMany({
+        where: {
+          gameId: seedGameId,
+          recommendedGameId: { notIn: excludeGameIds.length > 0 ? excludeGameIds : undefined },
+          recommendedGame: {
+            OR: [
+              { tags: { some: { slug: topTag } } },
+              { genres: { some: { slug: topTag } } }
+            ]
+          }
+        },
+        orderBy: { distance: 'asc' },
+        take: limit,
+        include: {
+          recommendedGame: {
+            include: {
+              developers: true,
+              genres: true,
+              tags: true,
+              platforms: true,
+            }
+          }
+        }
+      });
     } else {
-      // If personalized for the user generally, no strict tag constraint
-      vectorResults = await db.$queryRaw<{ id: string }[]>`
-        SELECT id
-        FROM "Game"
-        WHERE id != ${seedGameId}
-          AND embedding IS NOT NULL
-          ${excludeGameIds.length > 0 ? Prisma.sql`AND id NOT IN (${Prisma.join(excludeGameIds)})` : Prisma.empty}
-        ORDER BY embedding <-> (SELECT embedding FROM "Game" WHERE id = ${seedGameId})
-        LIMIT ${limit}
-      `;
+      // General personalized recommendations
+      recommendations = await db.gameRecommendation.findMany({
+        where: {
+          gameId: seedGameId,
+          recommendedGameId: { notIn: excludeGameIds.length > 0 ? excludeGameIds : undefined }
+        },
+        orderBy: { distance: 'asc' },
+        take: limit,
+        include: {
+          recommendedGame: {
+            include: {
+              developers: true,
+              genres: true,
+              tags: true,
+              platforms: true,
+            }
+          }
+        }
+      });
     }
 
-    const recommendedIds = vectorResults.map(v => v.id);
+    const recommendedGames = recommendations.map(r => r.recommendedGame);
 
-    if (recommendedIds.length === 0) {
+    if (recommendedGames.length === 0) {
       return NextResponse.json({ games: [], reason: null });
     }
 
-    // Fetch the full game objects with relations using Prisma
-    const recommendedGames = await db.game.findMany({
-      where: { id: { in: recommendedIds } },
-      include: {
-        developers: true,
-        genres: true,
-        tags: true,
-        platforms: true,
-      }
-    });
-
-    // Sort them back to the vector distance order
-    const sortedGames = recommendedGames.sort((a, b) => recommendedIds.indexOf(a.id) - recommendedIds.indexOf(b.id));
-
     return NextResponse.json({
-      games: sortedGames,
+      games: recommendedGames,
       reason: reasonString,
     });
     

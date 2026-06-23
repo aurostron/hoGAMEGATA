@@ -86,6 +86,8 @@ model Game {
   priceSnapshots PriceSnapshot[]
   referralClicks ReferralClick[]
   searchClicks   SearchClick[]
+  recommendations GameRecommendation[] @relation("GameToRecommendation")
+  recommendedBy   GameRecommendation[] @relation("RecommendedGame")
 
   @@index([releaseDate, id])
   @@index([rating])
@@ -232,6 +234,20 @@ model SearchClick {
 
   @@index([query])
 }
+
+model GameRecommendation {
+  gameId             String
+  recommendedGameId  String
+  distance           Float
+
+  game            Game @relation("GameToRecommendation", fields: [gameId], references: [id], onDelete: Cascade)
+  recommendedGame Game @relation("RecommendedGame", fields: [recommendedGameId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, recommendedGameId])
+  @@index([gameId])
+  @@index([recommendedGameId])
+}
+
 
 
 
