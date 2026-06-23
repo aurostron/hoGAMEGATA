@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { preprocessSearchQuery, embedQuery } from "@/lib/searchEngine";
+import { preprocessSearchQuery } from "@/lib/searchEngine";
 
 export const dynamic = "force-dynamic";
 
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
         const ftsMatches = await db.$queryRaw<{ id: string }[]>(
           Prisma.sql`
             SELECT id FROM "Game"
-            WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${cleanedQuery}))
+            WHERE to_tsvector('english', unaccent(title) || ' ' || COALESCE(unaccent(summary), '')) @@ plainto_tsquery('english', unaccent(${expandedQuery || cleanedQuery}))
                OR similarity(title, ${cleanedQuery}) > 0.18
                OR regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g') = regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g')
                OR similarity(regexp_replace(lower(unaccent(title)), '[^a-z0-9]', '', 'g'), regexp_replace(lower(unaccent(${cleanedQuery})), '[^a-z0-9]', '', 'g')) > 0.18
@@ -111,32 +111,7 @@ export async function GET(request: NextRequest) {
           `
         );
 
-        let vectorMatches: { id: string }[] = [];
-        try {
-          const queryVector = await embedQuery(expandedQuery || cleanedQuery || search);
-          if (queryVector && queryVector.length > 0) {
-            const vectorString = `[${queryVector.join(",")}]`;
-            vectorMatches = await db.$queryRawUnsafe<{ id: string }[]>(
-              `SELECT id FROM "Game" WHERE embedding IS NOT NULL ORDER BY embedding <-> '${vectorString}'::vector LIMIT 100;`
-            );
-          }
-        } catch (embedErr) {
-          console.error("Semantic embedding search failed:", embedErr);
-        }
-
-        const rrfScores = new Map<string, number>();
-        const k = 60;
-        ftsMatches.forEach((match, index) => {
-          const rank = index + 1;
-          rrfScores.set(match.id, (rrfScores.get(match.id) || 0) + 1 / (k + rank));
-        });
-        vectorMatches.forEach((match, index) => {
-          const rank = index + 1;
-          rrfScores.set(match.id, (rrfScores.get(match.id) || 0) + 1 / (k + rank));
-        });
-        matchedIds = Array.from(rrfScores.entries())
-          .sort((a, b) => b[1] - a[1])
-          .map(entry => entry[0]);
+        matchedIds = ftsMatches.map(match => match.id);
 
       } else {
         const rawMatches = await db.$queryRaw<{ id: string }[]>(

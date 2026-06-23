@@ -1,18 +1,3 @@
-let extractorInstance: any = null;
-
-// Caches queries to their generated number array vector embedding
-const queryVectorCache = new Map<string, number[]>();
-
-export async function getExtractor() {
-  if (!extractorInstance) {
-    // Dynamic import: @xenova/transformers is heavy (~141 MB source);
-    // lazy-loading it prevents nft from tracing the entire dep tree into the bundle.
-    const { pipeline } = await import("@xenova/transformers");
-    extractorInstance = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
-  }
-  return extractorInstance;
-}
-
 // Custom horror vocabulary mappings to expand query semantics
 const HORROR_VOCABULARY: Record<string, string> = {
   "backrooms": "liminal spaces, empty yellow rooms, fluorescent lights hum, endless hallways, creepypasta",
@@ -98,18 +83,4 @@ export function preprocessSearchQuery(query: string): PreprocessedQuery {
     expandedQuery: expanded,
     extractedSlugs
   };
-}
-
-export async function embedQuery(text: string): Promise<number[]> {
-  const cacheKey = text.toLowerCase().trim();
-  if (queryVectorCache.has(cacheKey)) {
-    return queryVectorCache.get(cacheKey)!;
-  }
-
-  const extractor = await getExtractor();
-  const output = await extractor(text, { pooling: "mean", normalize: true });
-  const vector = Array.from(output.data) as number[];
-  
-  queryVectorCache.set(cacheKey, vector);
-  return vector;
 }
