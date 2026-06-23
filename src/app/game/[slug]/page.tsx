@@ -383,7 +383,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
 
   const descriptionSection = (
     <div className="pt-6 space-y-4 select-none">
-      <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</span>
+      <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</h2>
       {game.summary ? (
         <div 
           className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
@@ -407,9 +407,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
 
   const moodSection = game.tags && game.tags.length > 0 && (
     <div className="pt-6 flex flex-wrap gap-4 items-center">
-      <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
+      <h2 className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
         <Tag className="w-3.5 h-3.5" /> Mood/Genre
-      </div>
+      </h2>
       <div className="flex flex-wrap gap-2">
         {game.tags.map(t => (
           <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
@@ -441,7 +441,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
 
   const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
     <div className="pt-6 space-y-4">
-      <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
+      <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</h2>
       <div className="flex flex-wrap gap-3">
         {/* Purchase/Store Outlinks */}
         {game.purchaseLinks.map(link => (
@@ -697,9 +697,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             </div>
           </div>
 
-          {/* Right Column: Descriptions & Details */}
-          <div className="md:col-span-2 space-y-8">
-            <div className="space-y-4">
+          {/* Right Column: Title, Developer & Tracking */}
+          <div className="md:col-span-2 flex flex-col justify-between md:h-full">
+            <div className="space-y-4 mb-6">
               <div className="flex flex-wrap items-center gap-2">
                 {game.status && game.status.trim() !== "" && (
                   <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
@@ -725,9 +725,9 @@ export default async function GameProfilePage({ params }: GamePageProps) {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
                   {cleanTitle(game.title)}
-                </h2>
+                </h1>
                 <ShareButton />
               </div>
               <div className="flex flex-wrap gap-2 text-xs font-mono font-bold uppercase">
@@ -743,269 +743,27 @@ export default async function GameProfilePage({ params }: GamePageProps) {
             </div>
 
             {/* User registry control tools */}
-            <TrackControls
-              gameId={game.id}
-              gameSlug={game.slug}
-            />
-            
-            {/* Background Vibe Tracking */}
-            <VibeTracker tags={game.tags} genres={game.genres} />
-
-            {(() => {
-               const isItchGame = game.slug.startsWith("itch-");
-
-               const descriptionSection = (
-                 <div className="pt-6 space-y-4 select-none">
-                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</span>
-                   {game.summary ? (
-                     <div 
-                       className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
-                       dangerouslySetInnerHTML={{ __html: game.summary }}
-                     />
-                   ) : (
-                     <p className="text-sm text-white font-medium leading-relaxed font-sans">
-                       No overview available for this title.
-                     </p>
-                   )}
-                   {game.storyline && (
-                     <div className="mt-4 pt-4 border-t border-white/20">
-                       <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
-                       <p className="text-xs text-white leading-relaxed font-sans font-medium">
-                         {game.storyline}
-                       </p>
-                     </div>
-                   )}
-                 </div>
-               );
-
-               const moodSection = game.tags && game.tags.length > 0 && (
-                 <div className="pt-6 flex flex-wrap gap-4 items-center">
-                   <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-                     <Tag className="w-3.5 h-3.5" /> Mood/Genre
-                   </div>
-                   <div className="flex flex-wrap gap-2">
-                     {game.tags.map(t => (
-                       <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
-                         {t.name}
-                       </span>
-                     ))}
-                   </div>
-                 </div>
-               );
-
-               const scareSection = game.scareRating !== null && game.scareProfile && (
-                 <div className="pt-6">
-                   <ScareMeter 
-                     scareRating={game.scareRating} 
-                     scareProfile={game.scareProfile as any} 
-                     reviewCount={game.scareReviewCount}
-                   />
-                 </div>
-               );
-
-               const priceSection = (
-                 <PriceComparison
-                   gameId={game.id}
-                   gameSlug={game.slug}
-                   gameTitle={game.title}
-                   purchaseLinks={game.purchaseLinks}
-                 />
-               );
-
-               const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
-                 <div className="pt-6 space-y-4">
-                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
-                   <div className="flex flex-wrap gap-3">
-                     {/* Purchase/Store Outlinks */}
-                     {game.purchaseLinks.map(link => (
-                       <a
-                         key={link.id}
-                         href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
-                       >
-                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                         <span>Support Creator ({link.storeName})</span>
-                       </a>
-                     ))}
-
-                     {/* Official Website */}
-                     {game.websiteUrl && (
-                       <a
-                         href={game.websiteUrl}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
-                       >
-                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                         <span>Official Website</span>
-                       </a>
-                     )}
-
-                     {/* Reddit Community */}
-                     {game.redditUrl && (
-                       <a
-                         href={game.redditUrl}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
-                       >
-                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                         <span>Reddit Community</span>
-                       </a>
-                     )}
-
-                     {/* RAWG Profile Attribution Link */}
-                     {game.rawgSlug && (
-                       <a
-                         href={`https://rawg.io/games/${game.rawgSlug}`}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
-                       >
-                         <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
-                         <span>RAWG Profile</span>
-                       </a>
-                     )}
-                   </div>
-                 </div>
-               );
-
-               const detailsContent = (
-                 <>
-                   {descriptionSection}
-                   {moodSection}
-                   {scareSection}
-                   {priceSection}
-                   {linksSection}
-                 </>
-               );
-
-               if (isItchGame) {
-                 return (
-                   <>
-                     {!isItchGame && detailsContent}
-                   </>
-                 );
-               } else {
-                 return (
-                   <>
-                     {detailsContent}
-                   </>
-                 );
-               }
-             })()}
-
+            <div className="flex-grow flex flex-col justify-end">
+              <TrackControls
+                gameId={game.id}
+                gameSlug={game.slug}
+              />
+            </div>
           </div>
         </div>
 
-        {game.slug.startsWith("itch-") && (
-          <div className="space-y-8 mt-12">
-            {/* Re-rendering details for Itch layout logic */}
-            {(() => {
-               const descriptionSection = (
-                 <div className="pt-6 space-y-4 select-none">
-                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</span>
-                   {game.summary ? (
-                     <div 
-                       className="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
-                       dangerouslySetInnerHTML={{ __html: game.summary }}
-                     />
-                   ) : (
-                     <p className="text-sm text-white font-medium leading-relaxed font-sans">
-                       No overview available for this title.
-                     </p>
-                   )}
-                   {game.storyline && (
-                     <div className="mt-4 pt-4 border-t border-white/20">
-                       <span className="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
-                       <p className="text-xs text-white leading-relaxed font-sans font-medium">
-                         {game.storyline}
-                       </p>
-                     </div>
-                   )}
-                 </div>
-               );
-               const moodSection = game.tags && game.tags.length > 0 && (
-                 <div className="pt-6 flex flex-wrap gap-4 items-center">
-                   <div className="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-                     <Tag className="w-3.5 h-3.5" /> Mood/Genre
-                   </div>
-                   <div className="flex flex-wrap gap-2">
-                     {game.tags.map(t => (
-                       <span key={t.slug} className="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
-                         {t.name}
-                       </span>
-                     ))}
-                   </div>
-                 </div>
-               );
-               const scareSection = game.scareRating !== null && game.scareProfile && (
-                 <div className="pt-6">
-                   <ScareMeter 
-                     scareRating={game.scareRating} 
-                     scareProfile={game.scareProfile as any} 
-                     reviewCount={game.scareReviewCount}
-                   />
-                 </div>
-               );
-               const priceSection = (
-                 <PriceComparison
-                   gameId={game.id}
-                   gameSlug={game.slug}
-                   gameTitle={game.title}
-                   purchaseLinks={game.purchaseLinks}
-                 />
-               );
-               const linksSection = (game.purchaseLinks.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
-                 <div className="pt-6 space-y-4">
-                   <span className="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</span>
-                   <div className="flex flex-wrap gap-3">
-                     {game.purchaseLinks.map(link => (
-                       <a key={link.id} href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold">
-                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                         <span>Support Creator ({link.storeName})</span>
-                       </a>
-                     ))}
-                     {game.websiteUrl && (
-                       <a href={game.websiteUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold">
-                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                         <span>Official Website</span>
-                       </a>
-                     )}
-                     {game.redditUrl && (
-                       <a href={game.redditUrl} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold">
-                         <ExternalLink className="w-3 h-3 text-white group-hover:text-black" />
-                         <span>Reddit Community</span>
-                       </a>
-                     )}
-                     {game.rawgSlug && (
-                       <a href={`https://rawg.io/games/${game.rawgSlug}`} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold">
-                         <ExternalLink className="w-3 h-3 text-white/70 group-hover:text-black" />
-                         <span>RAWG Profile</span>
-                       </a>
-                     )}
-                   </div>
-                 </div>
-               );
-               return (
-                 <>
-                   {moodSection}
-                   {priceSection}
-                   {linksSection}
-                   {descriptionSection}
-                   {scareSection}
-                 </>
-               );
-            })()}
-          </div>
-        )}
+        {/* Bottom Sections: Vibes, Description, Mood, Deals, Links */}
+        <div className="space-y-12 mt-12">
+          {/* Background Vibe Tracking */}
+          <VibeTracker tags={game.tags} genres={game.genres} />
+
+          {detailsContent}
+        </div>
 
         {/* Screenshots Gallery (If available) */}
         {game.screenshots.length > 0 && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-xs text-white uppercase tracking-widest font-black">Screenshots</h3>
+            <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black">Screenshots</h2>
             <ScreenshotGallery screenshots={game.screenshots.map(url => getCloudinaryFetchUrl(url, game.isTrending) || url)} title={game.title} />
           </section>
         )}
@@ -1013,7 +771,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         {/* Embedded Trailer Video (If available) */}
         {game.trailerUrl && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-xs text-white uppercase tracking-widest font-black">Game trailers and videos</h3>
+            <h2 className="font-mono text-xs text-white uppercase tracking-widest font-black">Game trailers and videos</h2>
             <div className="border border-white bg-black p-1 aspect-video w-full max-w-3xl mx-auto">
               <iframe
                 src={game.trailerUrl}
@@ -1029,7 +787,7 @@ export default async function GameProfilePage({ params }: GamePageProps) {
         {/* PC System Requirements */}
         {(requirements.min || requirements.rec) && (
           <section className="border-t border-white pt-12 space-y-6">
-            <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black font-bold">PC System Specifications</h3>
+            <h2 className="font-mono text-[10px] text-white uppercase tracking-widest font-black font-bold">PC System Specifications</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {requirements.min && (
                 <div className="border border-white bg-black p-6 space-y-4 rounded-none">
