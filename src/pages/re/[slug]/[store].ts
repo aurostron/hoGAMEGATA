@@ -82,6 +82,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     // 3. Log referral click in database
     try {
       await supabase.from("ReferralClick").insert({
+        id: crypto.randomUUID(),
         gameId: game.id,
         storeName: cleanLink?.storeName || targetStoreName,
         targetUrl: finalRedirectionUrl,

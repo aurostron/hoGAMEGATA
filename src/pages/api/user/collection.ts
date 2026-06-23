@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { error } = await supabase
       .from("Collection")
       .upsert(
-        { userId: user.id, gameId, status },
+        { id: crypto.randomUUID(), userId: user.id, gameId, status },
         { onConflict: "userId,gameId" }
       );
 

@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { error } = await supabase
       .from("Wishlist")
       .upsert(
-        { userId: user.id, gameId },
+        { id: crypto.randomUUID(), userId: user.id, gameId },
         { onConflict: "userId,gameId", ignoreDuplicates: true }
       );
 
