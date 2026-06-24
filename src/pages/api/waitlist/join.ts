@@ -36,6 +36,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { data, error } = await supabase
       .from("Waitlist")
       .insert({
+        id: crypto.randomUUID(),
         email: email.toLowerCase(),
         token,
         status: "PENDING",

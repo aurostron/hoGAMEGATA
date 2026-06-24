@@ -11,10 +11,11 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
     }
 
-    const supabase = getSupabaseServer();
+        const supabase = getSupabaseServer();
     const { data, error } = await supabase
       .from("SearchClick")
       .insert({
+        id: crypto.randomUUID(),
         query: query.trim(),
         gameId,
         position,
