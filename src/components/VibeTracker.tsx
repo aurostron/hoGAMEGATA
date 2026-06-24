@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useVibeTracker } from "@/hooks/useVibeTracker";
+import { useVibeTracker } from "../hooks/useVibeTracker";
 
 interface VibeTrackerProps {
   tags: { slug: string }[];

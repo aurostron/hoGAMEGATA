@@ -1,0 +1,21 @@
+---
+import LoginPageComponent from '../components/LoginPage';
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en" class="h-full antialiased font-sans">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" href="/favicon.ico" />
+    <title>Sign In | hoGAMEGATA</title>
+    <meta name="description" content="Sign in to your hoGAMEGATA tracking account." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
+	</head>
+	<body class="min-h-full flex flex-col bg-black text-white">
+    <LoginPageComponent client:load />
+	</body>
+</html>

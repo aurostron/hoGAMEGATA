@@ -1,15 +1,9 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export default function ReturnButton() {
-  const router = useRouter();
-
   const handleReturn = () => {
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event("nextjs-route-start"));
-    }
     if (
       typeof window !== "undefined" &&
       document.referrer &&
@@ -17,7 +11,7 @@ export default function ReturnButton() {
     ) {
       window.history.back();
     } else {
-      router.push("/");
+      window.location.assign("/");
     }
   };
 

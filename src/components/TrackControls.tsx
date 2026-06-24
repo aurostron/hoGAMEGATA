@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import { Heart } from "lucide-react";
 
 interface TrackControlsProps {
@@ -24,7 +23,7 @@ interface JournalItem {
   timestamp: number;
 }
 
-export default function TrackControls({
+function TrackControlsInner({
   gameId,
   gameSlug,
   gameTitle,
@@ -35,7 +34,6 @@ export default function TrackControls({
   initialCollectionStatus = null,
 }: TrackControlsProps) {
   const { user } = useAuth();
-  const router = useRouter();
 
   const [wishlisted, setWishlisted] = useState(initialWishlisted);
   const [collectionStatus, setCollectionStatus] = useState<string | null>(initialCollectionStatus);
@@ -144,7 +142,7 @@ export default function TrackControls({
   }, [gameId, wishlisted, collectionStatus]);
 
   const handleAuthRedirect = () => {
-    router.push(`/login?redirect=${encodeURIComponent(`/game/${gameSlug}`)}`);
+    window.location.assign(`/login?redirect=${encodeURIComponent(`/game/${gameSlug}`)}`);
   };
 
   const toggleWishlist = async () => {
@@ -196,7 +194,7 @@ export default function TrackControls({
         journal.unshift(entry);
         localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
 
-        router.refresh();
+        window.location.reload();
       }
     } catch (err) {
       console.error("Failed to update wishlist:", err);
@@ -256,7 +254,7 @@ export default function TrackControls({
         journal.unshift(entry);
         localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
 
-        router.refresh();
+        window.location.reload();
       }
     } catch (err) {
       console.error("Failed to update collection:", err);
@@ -462,5 +460,13 @@ export default function TrackControls({
         </span>
       )}
     </div>
+  );
+}
+
+export default function TrackControls(props: TrackControlsProps) {
+  return (
+    <AuthProvider>
+      <TrackControlsInner {...props} />
+    </AuthProvider>
   );
 }

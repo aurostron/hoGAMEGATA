@@ -1,8 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 
 interface User {
   id: string;
@@ -24,7 +23,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   // Helper to read cookie
   const getCookie = (name: string) => {
@@ -54,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               if (res.status === 403 || data.error?.toLowerCase().includes("limit")) {
                 await client.auth.signOut();
                 setUser(null);
-                router.push("/login?error=limit_reached");
+                window.location.assign("/login?error=limit_reached");
                 setLoading(false);
                 return;
               }
@@ -83,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 if (res.status === 403 || data.error?.toLowerCase().includes("limit")) {
                   await client.auth.signOut();
                   setUser(null);
-                  router.push("/login?error=limit_reached");
+                  window.location.assign("/login?error=limit_reached");
                   return;
                 }
               }
@@ -121,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     initAuth();
-  }, [router]);
+  }, []);
 
   const login = async (email: string, password?: string) => {
     try {
@@ -168,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         setUser({ id: mockId, email });
-        router.refresh();
+        window.location.reload();
         return { success: true };
       }
     } catch (err: any) {
@@ -236,8 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       document.cookie = "gamegata-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     }
     setUser(null);
-    router.push("/");
-    router.refresh();
+    window.location.assign("/");
   };
 
   return (

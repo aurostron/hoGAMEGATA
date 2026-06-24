@@ -1,0 +1,32 @@
+---
+import SciFiLogo from './SciFiLogo';
+import SettingsButton from './SettingsButton';
+import HeaderSearch from './HeaderSearch';
+
+interface Props {
+  withSearch?: boolean;
+  withLink?: boolean;
+}
+
+const { withSearch = false, withLink = true } = Astro.props;
+---
+<header class="border-b border-white bg-black sticky top-0 z-50">
+  <div class="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <SciFiLogo client:load withLink={withLink} />
+      <div class="flex items-center gap-2 font-mono text-[10px] tracking-widest text-white uppercase font-bold select-none">
+        <span>[Horror]</span>
+        <span class="text-white font-black">•</span>
+        <span>Game</span>
+        <span class="text-white font-black">•</span>
+        <span>Mega</span>
+        <span class="text-white font-black">•</span>
+        <span>Metadata</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap justify-end relative">
+      {withSearch && <HeaderSearch client:load />}
+      <SettingsButton client:load />
+    </div>
+  </div>
+</header>

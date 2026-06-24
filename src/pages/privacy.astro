@@ -1,0 +1,72 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ReturnButton from '../components/ReturnButton';
+---
+
+<Layout title="Privacy Policy | hoGAMEGATA" withSearch={false} withLink={true}>
+  <!-- Content -->
+  <main class="flex-1 flex items-center justify-center p-6 my-12 pb-24">
+    <div class="max-w-3xl w-full border-4 border-white bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-8 relative overflow-hidden">
+      
+      <!-- Back button at top of card -->
+      <div class="flex justify-end">
+        <ReturnButton client:load />
+      </div>
+
+      <div class="flex flex-col gap-2 pb-4 border-b border-white/10">
+        <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
+          PRIVACY POLICY
+        </h1>
+        <span class="font-mono text-xs text-white/50 uppercase tracking-widest">
+          Last Updated: June 2026
+        </span>
+      </div>
+
+      <div class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 1. Information We Collect</h2>
+          <p>
+            We only collect basic, necessary information to manage access to hoGAMEGATA:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400">
+            <li><strong class="text-white">Email Address:</strong> Captured only when requesting waitlist access or creating an account, used purely for user authentication.</li>
+            <li><strong class="text-white">Local Storage:</strong> Used locally on your device to remember game vibe preferences, sorting choices, layouts, and onboarding completions.</li>
+          </ul>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 2. Service Providers & Infrastructure</h2>
+          <p>
+            We utilize standard, secure external services to operate the database platform. Your information is stored and handled in compliance with their privacy guidelines:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400">
+            <li><strong class="text-white">Supabase & Neon:</strong> Database storage and user session credentials.</li>
+            <li><strong class="text-white">Resend:</strong> Single-click authentication link emails and system sign-up alerts.</li>
+            <li><strong class="text-white">Cloudinary:</strong> Image content delivery networks (CDNs) for horror game screenshots.</li>
+          </ul>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 3. Tracking & Third-Party Cookies</h2>
+          <p>
+            hoGAMEGATA does not deploy advertising trackers, analytical cookies, marketing tags, or custom tracking pixels. We believe in a clean, privacy-respecting games index.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 4. Account Deletion & Rights</h2>
+          <p>
+            Your data is yours. Since we only retain your email address, you can contact the system administrator at any time to request the complete deletion of your registration details, wishlist contents, and catalog preferences.
+          </p>
+        </section>
+      </div>
+
+      <!-- Footer inside card -->
+      <div class="border-t border-white/10 pt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest flex justify-between items-center w-full">
+        <span>© hoGAMEGATA</span>
+        <span>•</span>
+        <span>Indexing since 2026</span>
+      </div>
+    </div>
+  </main>
+</Layout>

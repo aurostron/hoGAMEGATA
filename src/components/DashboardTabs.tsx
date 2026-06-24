@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "@/lib/utils";
-import PlatformLogos from "@/components/PlatformLogos";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "../lib/utils";
+import PlatformLogos from "./PlatformLogos";
 
 interface Game {
   id: string;
@@ -96,7 +94,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {activeList.map((game) => (
-              <Link
+              <a
                 key={game.id}
                 href={`/game/${game.slug}`}
                 className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
@@ -104,12 +102,10 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                 {/* Cover Image */}
                 <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
                   {game.coverUrl ? (
-                    <Image
+                    <img
                       src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                       alt={game.title}
-                      fill={true}
-                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      className="object-cover w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
                       loading="lazy"
                     />
                   ) : (
@@ -136,7 +132,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                 </div>
 
                 {/* Game Details */}
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div className="p-4 flex-grow flex flex-col justify-between space-y-3">
                   <div>
                     <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
                       {game.title}
@@ -153,7 +149,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                     </span>
                   </div>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         )}
