@@ -25,3 +25,9 @@ pnpm-debug.log*
 .vscode/
 .idea/
 .DS_Store
+
+# Local Developer tools & database ORM
+/prisma/
+/scripts/
+/src/lib/db.ts
+

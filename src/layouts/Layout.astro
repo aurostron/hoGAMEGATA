@@ -1,6 +1,8 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import InteractiveTutorial from '../components/InteractiveTutorial';
+import OnboardingModal from '../components/OnboardingModal';
 import '../styles/global.css';
 
 interface Props {
@@ -40,5 +42,7 @@ const {
       <slot />
     </main>
     <Footer />
+    <InteractiveTutorial client:load />
+    <OnboardingModal client:load />
 	</body>
 </html>
