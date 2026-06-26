@@ -233,7 +233,7 @@ function InteractiveTutorialInner() {
     localStorage.setItem("gamegata_tutorial_completed", "true");
   };
 
-  if (authLoading || !user || ["/waitlist", "/login", "/auth/callback"].includes(pathname)) {
+  if (authLoading || ["/waitlist", "/login", "/auth/callback"].includes(pathname)) {
     return null;
   }
 

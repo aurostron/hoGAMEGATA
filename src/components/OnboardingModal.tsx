@@ -43,7 +43,7 @@ function OnboardingModalInner() {
     else setGreeting("Good evening");
   }, []);
 
-  if (authLoading || !user || ["/waitlist", "/login", "/auth/callback"].includes(pathname)) {
+  if (authLoading || ["/waitlist", "/login", "/auth/callback"].includes(pathname)) {
     return null;
   }
 
