@@ -190,30 +190,54 @@ function InteractiveTutorialInner() {
     }
   }, [stepIndex, isActive, calculatePositions]);
 
-  // Listen to start tutorial event
+  // Handle start tutorial trigger
   useEffect(() => {
     const handleStartTutorial = () => {
+      if (window.location.pathname !== "/") {
+        window.location.assign("/?start_tutorial=true");
+        return;
+      }
       setStepIndex(0);
       setIsActive(true);
     };
 
     window.addEventListener("gamegata_start_tutorial", handleStartTutorial);
-    
-    // Auto start check on mount for first-time users
-    const hasCompleted = localStorage.getItem("gamegata_tutorial_completed");
-    const hasOnboarded = localStorage.getItem("gamegata_onboarded");
-    
-    if (hasOnboarded === "true" && hasCompleted !== "true" && pathname === "/") {
-      // Run auto tour shortly after onboarding modal closes
-      const timer = setTimeout(() => {
-        setIsActive(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-
     return () => {
       window.removeEventListener("gamegata_start_tutorial", handleStartTutorial);
     };
+  }, []);
+
+  // Handle URL query parameter launch on homepage
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("start_tutorial") === "true") {
+        // Clean URL
+        searchParams.delete("start_tutorial");
+        const newSearch = searchParams.toString();
+        const newUrl = newSearch ? `/?${newSearch}` : "/";
+        window.history.replaceState(null, "", newUrl);
+
+        // Launch
+        setStepIndex(0);
+        setIsActive(true);
+      }
+    }
+  }, [pathname]);
+
+  // Auto start check on mount for first-time users (ONLY on homepage)
+  useEffect(() => {
+    if (pathname === "/") {
+      const hasCompleted = localStorage.getItem("gamegata_tutorial_completed");
+      const hasOnboarded = localStorage.getItem("gamegata_onboarded");
+      
+      if (hasOnboarded === "true" && hasCompleted !== "true") {
+        const timer = setTimeout(() => {
+          setIsActive(true);
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }
   }, [pathname]);
 
   const handleNext = () => {
