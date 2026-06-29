@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getSupabaseServer } from '../../../lib/supabaseServer';
 import { searchGamesExact, searchGamesSemantic, randomGameIds, getCheapestSnapshots } from '../../../lib/dbRpc';
-import { preprocessSearchQuery } from '../../../lib/searchEngine';
+import { preprocessSearchQuery, expandAbbreviations } from '../../../lib/searchEngine';
 
 export const prerender = false;
 
@@ -24,20 +24,30 @@ export const GET: APIRoute = async ({ request }) => {
     const excludeId = searchParams.get("excludeId")?.trim() || "";
     const limitParam = searchParams.get("limit");
     const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
+    const expand = searchParams.get("expand") !== "false";
 
     const supabase = getSupabaseServer();
 
     let matchedIds: string[] = [];
     let semanticExtractedSlugs: string[] = [];
+    let finalSearch = search;
+    let expandedQuery: string | null = null;
 
-    if (search) {
+    if (search && expand) {
+      expandedQuery = expandAbbreviations(search);
+      if (expandedQuery) {
+        finalSearch = expandedQuery;
+      }
+    }
+
+    if (finalSearch) {
       if (mode === "semantic") {
-        const { cleanedQuery, expandedQuery, extractedSlugs } = preprocessSearchQuery(search);
+        const { cleanedQuery, expandedQuery: semanticExpanded, extractedSlugs } = preprocessSearchQuery(finalSearch);
         semanticExtractedSlugs = extractedSlugs;
-        const results = await searchGamesSemantic(cleanedQuery, expandedQuery, 100);
+        const results = await searchGamesSemantic(cleanedQuery, semanticExpanded, 100);
         matchedIds = results.map(r => r.id);
       } else {
-        const results = await searchGamesExact(search, 100);
+        const results = await searchGamesExact(finalSearch, 100);
         matchedIds = results.map(r => r.id);
       }
     } else if (sort === "random") {
@@ -126,7 +136,7 @@ export const GET: APIRoute = async ({ request }) => {
     let games: any[] = [];
     let nextCursor: string | null = null;
 
-    if (search) {
+    if (finalSearch) {
       const { data: allSearchGames } = await query;
       games = allSearchGames || [];
 
@@ -223,7 +233,7 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     return new Response(
-      JSON.stringify({ games, nextCursor }),
+      JSON.stringify({ games, nextCursor, expandedQuery }),
       { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
     );
   } catch (error) {

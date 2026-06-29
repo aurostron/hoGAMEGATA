@@ -84,3 +84,34 @@ export function preprocessSearchQuery(query: string): PreprocessedQuery {
     extractedSlugs
   };
 }
+
+export const GAME_ABBREVIATIONS: Record<string, string> = {
+  re: "Resident Evil",
+  lou: "Last of Us",
+  tlou: "The Last of Us",
+  sh: "Silent Hill",
+  tew: "The Evil Within",
+  aw: "Alan Wake",
+  dl: "Dying Light",
+  l4d: "Left 4 Dead",
+  fnaf: "Five Nights at Freddy's",
+  dbd: "Dead by Daylight",
+};
+
+export function expandAbbreviations(query: string): string | null {
+  if (!query) return null;
+  const words = query.split(/\s+/);
+  let expanded = false;
+  const newWords = words.map(word => {
+    const cleanWord = word.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (GAME_ABBREVIATIONS[cleanWord]) {
+      expanded = true;
+      const prefix = word.match(/^[^a-zA-Z0-9]*/)?.[0] || "";
+      const suffix = word.match(/[^a-zA-Z0-9]*$/)?.[0] || "";
+      return `${prefix}${GAME_ABBREVIATIONS[cleanWord]}${suffix}`;
+    }
+    return word;
+  });
+  return expanded ? newWords.join(" ") : null;
+}
+

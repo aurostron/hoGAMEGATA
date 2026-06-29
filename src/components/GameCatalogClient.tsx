@@ -277,6 +277,14 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [isSemantic, setIsSemantic] = useState(false);
   const [pathname, setPathname] = useState("");
   const { vibes: explicitVibes } = usePreferences();
+  const [bypassExpansion, setBypassExpansion] = useState(false);
+  const [resolvedExpandedQuery, setResolvedExpandedQuery] = useState<string | null>(null);
+
+  // Reset expansion bypass when search query changes
+  useEffect(() => {
+    setBypassExpansion(false);
+    setResolvedExpandedQuery(null);
+  }, [searchQuery]);
 
   // Hydrate states from URL parameters and localStorage on mount
   useEffect(() => {
@@ -424,6 +432,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         if (debouncedSearch) {
           queryParams.set("search", debouncedSearch);
           if (isSemantic) queryParams.set("mode", "semantic");
+          if (bypassExpansion) queryParams.set("expand", "false");
         }
         if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {
           queryParams.set("tags", explicitVibes.join(","));
@@ -436,6 +445,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           const data = await response.json();
           setGames(data.games || []);
           setNextCursor(data.nextCursor || null);
+          setResolvedExpandedQuery(data.expandedQuery || null);
         }
       } catch (err) {
         console.error("❌ Error fetching catalog:", err);
@@ -444,7 +454,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       }
     }
     fetchCatalogGames();
-  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun, explicitVibes]);
+  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun, explicitVibes, bypassExpansion]);
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
@@ -454,6 +464,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       if (debouncedSearch) {
         queryParams.set("search", debouncedSearch);
         if (isSemantic) queryParams.set("mode", "semantic");
+        if (bypassExpansion) queryParams.set("expand", "false");
       }
       if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {
         queryParams.set("tags", explicitVibes.join(","));
@@ -553,6 +564,22 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
 
       {/* Catalog Mapping Grid */}
       <section className="space-y-6 relative mt-10">
+        {resolvedExpandedQuery && (
+          <div className="font-mono text-xs text-white/60 select-none pb-2 border-b border-white/10 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              Showing results for <span className="text-white font-bold italic">"{resolvedExpandedQuery}"</span>.
+            </div>
+            <div>
+              Did you mean to search for:{" "}
+              <button 
+                onClick={() => setBypassExpansion(true)}
+                className="text-red-400 hover:text-red-300 underline font-bold cursor-pointer transition-colors duration-150 decoration-dotted bg-transparent border-none p-0 outline-none"
+              >
+                "{debouncedSearch}"
+              </button>?
+            </div>
+          </div>
+        )}
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[10px] tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
             <div className="flex items-center gap-4 flex-wrap">
