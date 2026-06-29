@@ -5,6 +5,7 @@ import { Search, Calendar, Sparkles } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "../lib/utils";
 import PlatformLogos from "./PlatformLogos";
 import NyanLoader from "./NyanLoader";
+import { usePreferences } from "../hooks/usePreferences";
 
 export interface GameData {
   id: string;
@@ -275,6 +276,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [sortOpen, setSortOpen] = useState(false);
   const [isSemantic, setIsSemantic] = useState(false);
   const [pathname, setPathname] = useState("");
+  const { vibes: explicitVibes } = usePreferences();
 
   // Hydrate states from URL parameters and localStorage on mount
   useEffect(() => {
@@ -409,11 +411,10 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     }
   }, [debouncedSearch, isSemantic, sortBy, pathname]);
 
-  // Fetch games when search filters or sorting changes
   useEffect(() => {
     async function fetchCatalogGames() {
-      // Don't run fetch on initial paint if search/sort filters are empty/default
-      if (!hasInitialFetchRun && !debouncedSearch && sortBy === "latest") {
+      // Don't run fetch on initial paint if search/sort filters are empty/default and no vibes are set
+      if (!hasInitialFetchRun && !debouncedSearch && (!explicitVibes || explicitVibes.length === 0) && sortBy === "latest") {
         setHasInitialFetchRun(true);
         return;
       }
@@ -423,6 +424,9 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         if (debouncedSearch) {
           queryParams.set("search", debouncedSearch);
           if (isSemantic) queryParams.set("mode", "semantic");
+        }
+        if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {
+          queryParams.set("tags", explicitVibes.join(","));
         }
         if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
         queryParams.set("limit", "20");
@@ -440,7 +444,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       }
     }
     fetchCatalogGames();
-  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun]);
+  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun, explicitVibes]);
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
@@ -450,6 +454,9 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       if (debouncedSearch) {
         queryParams.set("search", debouncedSearch);
         if (isSemantic) queryParams.set("mode", "semantic");
+      }
+      if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {
+        queryParams.set("tags", explicitVibes.join(","));
       }
       if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
       queryParams.set("cursor", nextCursor);
