@@ -46,6 +46,19 @@ const getShortEsrbRating = (rating: string | null): string | null => {
   return rating.substring(0, 3).toUpperCase();
 };
 
+const formatPrice = (amount: number, currencyCode: string) => {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(amount);
+  } catch {
+    return `$${amount}`;
+  }
+};
+
 interface GameCardProps {
   game: GameData;
   index: number;
@@ -55,6 +68,176 @@ interface GameCardProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
+// ─── GOG-style List Row ───────────────────────────────────────────────────────
+function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps, "activeRegion" | "mobileLayout">) {
+  const [hoverCart, setHoverCart] = useState(false);
+  const [wished, setWished] = useState(false);
+  const [wishAnim, setWishAnim] = useState(false);
+  const finalDeal = findCheapestDeal(game);
+  const hasItchBadge = game.slug.startsWith("itch-");
+
+  // Load wishlist state from localStorage
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("gamegata_wishlist") || "[]");
+      setWished(Array.isArray(saved) && saved.includes(game.id));
+    } catch { /* ignore */ }
+  }, [game.id]);
+
+  const toggleWish = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const saved: string[] = JSON.parse(localStorage.getItem("gamegata_wishlist") || "[]");
+      const next = wished ? saved.filter(id => id !== game.id) : [...saved, game.id];
+      localStorage.setItem("gamegata_wishlist", JSON.stringify(next));
+    } catch { /* ignore */ }
+    setWished(p => !p);
+    setWishAnim(true);
+    setTimeout(() => setWishAnim(false), 400);
+  };
+
+  const badge = getCategoryBadge(game.category, game.title);
+  const isVN = badge === "Visual Novel";
+  const badgeBg = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
+
+  const storeKey = finalDeal ? finalDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+  const dealUrl = finalDeal ? `/re/${game.slug}/${storeKey}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(finalDeal.dealUrl)}` : "";
+  const hasDiscount = finalDeal && finalDeal.discountPercent > 0;
+
+  const handleCartClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dealUrl) window.open(dealUrl, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <a
+      href={`/game/${game.slug}`}
+      onClick={onClick}
+      data-tour={index === 0 ? "game-card" : undefined}
+      className="group flex flex-row items-stretch border border-white/20 hover:border-white bg-black hover:bg-[#0d0d0d] transition-all duration-200 rounded-none overflow-hidden relative select-none min-h-[105px] sm:min-h-[125px]"
+    >
+      {/* ── Cover thumbnail ── */}
+      <div className="relative shrink-0 w-[105px] sm:w-[125px] h-full overflow-hidden bg-neutral-900">
+        {game.coverUrl ? (
+          <img
+            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
+            alt={game.title}
+            className="object-cover object-top w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
+            loading={index < 6 ? undefined : "lazy"}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">No Cover</span>
+          </div>
+        )}
+
+        {/* Heart / Wishlist button — bottom-left of cover */}
+        <button
+          onClick={toggleWish}
+          title={wished ? "Remove from wishlist" : "Add to wishlist"}
+          className={`absolute bottom-1.5 left-1.5 z-20 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200
+            ${wishAnim ? "scale-125" : "scale-100"}
+            ${wished
+              ? "text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.9)]"
+              : "text-white/50 hover:text-red-400 hover:scale-110"
+            }`}
+          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill={wished ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+
+        {/* Category badge on cover */}
+        {badge && (
+          <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${badgeBg}`}>
+            {badge}
+          </span>
+        )}
+        {/* itch.io badge */}
+        {hasItchBadge && (
+          <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+            itch
+          </span>
+        )}
+      </div>
+
+      {/* ── Centre info ── */}
+      <div className="flex-grow flex flex-col justify-center px-4 sm:px-6 py-3 min-w-0 gap-1.5 sm:gap-2">
+        <h4 className="text-white group-hover:text-white text-base sm:text-[22px] font-extrabold tracking-wide uppercase line-clamp-1 leading-none">
+          {cleanTitle(game.title)}
+        </h4>
+        <span className="font-mono text-[11px] sm:text-[13px] text-white/50 block font-bold leading-none">
+          by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
+        </span>
+        <div className="flex items-center gap-2.5 mt-1 flex-wrap">
+          <PlatformLogos platformNames={game.platformNames} solid={true} />
+          <span className="font-mono text-[10px] sm:text-[11px] text-white/35 border border-white/15 px-2 py-0.5 uppercase font-bold tracking-wider leading-none">
+            {game.status}
+          </span>
+          {game.tags && game.tags.length > 0 && (
+            <span className="hidden sm:inline font-mono text-[10px] sm:text-[11px] text-white/35 uppercase tracking-wide">
+              {game.tags[0].name}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── Right price / cart block ── */}
+      <div className="shrink-0 flex flex-col items-end justify-center pr-4 sm:pr-6 pl-2 gap-2 min-w-[100px] sm:min-w-[130px]">
+        {finalDeal ? (
+          <>
+            {/* Discount badge */}
+            {hasDiscount && (
+              <span className="font-mono text-[11px] sm:text-[12px] font-black bg-[#7b3fc4] text-white px-2 py-0.5 tracking-wide self-end">
+                -{finalDeal.discountPercent}%
+              </span>
+            )}
+
+            {/* Price button — normal: shows price; hover: shows cart CTA */}
+            <button
+              onClick={handleCartClick}
+              onMouseEnter={() => setHoverCart(true)}
+              onMouseLeave={() => setHoverCart(false)}
+              className={`relative flex items-center justify-center gap-1.5 font-mono font-black uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 transition-all duration-200 overflow-hidden cursor-pointer rounded-none border w-full
+                ${hoverCart
+                  ? "bg-[#7b3fc4] border-[#7b3fc4] text-white"
+                  : "bg-emerald-950 border-emerald-700 text-emerald-400"
+                }`}
+              title={`Get on ${finalDeal.storeName}`}
+            >
+              {hoverCart ? (
+                <span className="flex items-center gap-1">
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                  </svg>
+                  GET IT
+                </span>
+              ) : (
+                <span>{formatPrice(finalDeal.dealPrice, finalDeal.currency)}</span>
+              )}
+            </button>
+
+            {/* Strikethrough retail price when discounted */}
+            {hasDiscount && finalDeal.retailPrice > finalDeal.dealPrice && (
+              <span className="font-mono text-[10px] sm:text-[11px] text-white/35 line-through self-end leading-none">
+                {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
+              </span>
+            )}
+          </>
+        ) : (
+          /* No price data — subtle placeholder */
+          <span className="font-mono text-[10px] sm:text-[12px] text-white/20 uppercase tracking-widest">—</span>
+        )}
+      </div>
+    </a>
+  );
+}
+
+// ─── Grid Card (original, untouched) ─────────────────────────────────────────
 function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = "grid", onClick }: GameCardProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -108,6 +291,19 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
 
   const finalDeal = resolvedDeal || findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
+
+  // In list mode, delegate to the GOG-style ListRow
+  if (mobileLayout === "list") {
+    return (
+      <ListRow
+        game={game}
+        index={index}
+        findCheapestDeal={findCheapestDeal}
+        onClick={onClick}
+      />
+    );
+  }
+
   return (
     <a 
       href={`/game/${game.slug}`}
@@ -115,18 +311,10 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
       data-tour={index === 0 ? "game-card" : undefined}
-      className={`border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex relative select-none ${
-        mobileLayout === "list"
-          ? "flex-row h-28 md:flex-col md:h-full"
-          : "flex-col h-full"
-      }`}
+      className="border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full relative select-none"
     >
       {/* Cover Image */}
-      <div className={`relative bg-neutral-900 overflow-hidden shrink-0 flex items-center justify-center ${
-        mobileLayout === "list"
-          ? "w-24 border-r border-b-0 h-full md:w-full md:border-b md:border-r-0 md:h-auto " + (game.slug.startsWith("itch-") ? "md:aspect-[5/4]" : "md:aspect-[3/4]")
-          : "w-full border-b border-white " + (game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]")
-      }`}>
+      <div className={`relative bg-neutral-900 overflow-hidden shrink-0 flex items-center justify-center w-full border-b border-white ${game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"}`}>
         {game.coverUrl ? (
           <img
             src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
@@ -146,34 +334,26 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
           const isVN = badge === "Visual Novel";
           const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
           return (
-            <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${
-              mobileLayout === "list" ? "hidden md:inline-block" : ""
-            } ${bgClass}`}>
+            <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
               {badge}
             </span>
           );
         })()}
         {/* itch.io Badge */}
         {hasItchBadge && (
-          <span className={`absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10 ${
-            mobileLayout === "list" ? "hidden md:inline-block" : ""
-          }`}>
+          <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
             itch.io
           </span>
         )}
         {/* Primary Mood Tag */}
         {game.tags && game.tags.length > 0 && (
-          <span className={`absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5 ${
-            mobileLayout === "list" ? "hidden md:inline-block" : ""
-          }`}>
+          <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
             {game.tags[0].name}
           </span>
         )}
         {/* Age Rating Badge */}
         {(game.esrbRating || game.pegiRating) && (
-          <span className={`absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150 ${
-            mobileLayout === "list" ? "hidden md:inline-block" : ""
-          }`}>
+          <span className="absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
             {game.esrbRating ? getShortEsrbRating(game.esrbRating) : game.pegiRating}
           </span>
         )}
@@ -199,9 +379,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       </div>
       
       {/* Game Details */}
-      <div className={`flex-grow flex flex-col justify-between ${
-        mobileLayout === "list" ? "p-3 md:p-4 space-y-2 md:space-y-3" : "p-4 space-y-3"
-      }`}>
+      <div className="flex-grow flex flex-col justify-between p-4 space-y-3">
         <div className="flex justify-between items-stretch gap-3 min-h-[32px]">
           <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
             <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none">
@@ -213,19 +391,6 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
           </div>
 
           {finalDeal && (() => {
-            const formatPrice = (amount: number, currencyCode: string) => {
-              try {
-                return new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: currencyCode,
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 2
-                }).format(amount);
-              } catch (e) {
-                return `$${amount}`;
-              }
-            };
-            
             const storeKey = finalDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "");
             const dealUrl = `/re/${game.slug}/${storeKey}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(finalDeal.dealUrl)}`;
             
@@ -664,7 +829,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           </div>
         ) : (
           <div className="space-y-8">
-            <div className={mobileLayout === "list" ? "flex flex-col gap-3 md:grid md:grid-cols-4 md:gap-4" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
+            <div className={mobileLayout === "list" ? "flex flex-col gap-2" : "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"}>
               {games.map((game, index) => (
                 <GameCard
                   key={game.id}
