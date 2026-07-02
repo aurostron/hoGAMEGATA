@@ -1,6 +1,12 @@
 import { defineMiddleware } from "astro:middleware";
 
 const PUBLIC_PATHS = [
+  "/",
+  "/game",
+  "/upcoming",
+  "/re",
+  "/api/games",
+  "/api/search",
   "/sitemap.xml",
   "/robots.txt",
   "/waitlist",
