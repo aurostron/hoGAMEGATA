@@ -14,42 +14,56 @@ import CreatorGames from '../../components/CreatorGames';
 import TrackControls from '../../components/TrackControls';
 import VibeTracker from '../../components/VibeTracker';
 
-export async function getStaticPaths() {
-  const supabase = getSupabaseServer();
-  const { data: games, error } = await supabase
-    .from("Game")
-    .select(`
-      *,
-      developers:Developer(id, name, slug),
-      publishers:Publisher(id, name, slug),
-      genres:Genre(id, name, slug),
-      tags:Tag(id, name, slug),
-      platforms:Platform(id, name, slug),
-      purchaseLinks:PurchaseLink(id, storeName, url)
-    `);
+// SSR: render every game on-demand instead of pre-building a limited static set.
+// Cloudflare will cache rendered pages at the edge via Cache-Control headers below,
+// so Supabase is only hit once per game per CDN node per 24 hours.
+export const prerender = false;
 
-  if (error) {
-    console.error("❌ Error fetching games for getStaticPaths:", error);
-    return [];
-  }
+const { slug } = Astro.params;
 
-  return (games || []).map((game) => ({
-    params: { slug: game.slug },
-    props: { game },
-  }));
+const supabase = getSupabaseServer();
+const { data: game, error } = await supabase
+  .from("Game")
+  .select(`
+    *,
+    developers:Developer(id, name, slug),
+    publishers:Publisher(id, name, slug),
+    genres:Genre(id, name, slug),
+    tags:Tag(id, name, slug),
+    platforms:Platform(id, name, slug),
+    purchaseLinks:PurchaseLink(id, storeName, url)
+  `)
+  .eq("slug", slug!)
+  .maybeSingle();
+
+if (error) {
+  console.error(`❌ Error fetching game "${slug}":`, error);
 }
-
-const { game } = Astro.props;
 
 if (!game) {
   return Astro.redirect('/404');
 }
 
+// Fetch cached prices from PriceSnapshot for instant server rendering
+const { data: priceSnapshotsData } = await supabase
+  .from("PriceSnapshot")
+  .select("*")
+  .eq("gameId", game.id);
+const priceSnapshots = priceSnapshotsData || [];
+
+// Cache this rendered page at the Cloudflare edge for 24 hours.
+// Stale pages are served for up to 7 days while Cloudflare revalidates in the background.
+// This means Supabase is only queried once per game per CDN PoP per day.
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, s-maxage=86400, stale-while-revalidate=604800'
+);
+
 const purchaseLinks = (game.purchaseLinks as any[]) || [];
 
 // Redirect dry/unenriched itch.io games directly to their itch page (with purchase popup open)
 if (game.slug.startsWith("itch-") && !game.rawgEnriched) {
-  const itchLink = purchaseLinks.find(link => link.storeName.toLowerCase() === "itch.io");
+  const itchLink = purchaseLinks.find((link: any) => link.storeName.toLowerCase() === "itch.io");
   if (itchLink && itchLink.url) {
     const directPurchaseUrl = itchLink.url.endsWith("/purchase")
       ? itchLink.url
@@ -79,9 +93,83 @@ function cleanRequirementsText(text: string): string {
     .replace(/^(Minimum|Recommended|Minimum Requirements|Recommended Requirements):\s*/i, "")
     .trim();
 }
+
+// Technical SEO & Structured Data (JSON-LD)
+const developerNames = developers.map((d: any) => d.name).join(", ");
+const genreNames = genres.map((g: any) => g.name).join(", ");
+const cleanTitleName = cleanTitle(game.title);
+
+let seoDescription = `Discover ${cleanTitleName} on hoGAMEGATA. `;
+if (developerNames) {
+  seoDescription += `Developed by ${developerNames}. `;
+}
+if (genreNames) {
+  seoDescription += `Genre: ${genreNames}. `;
+}
+if (game.summary) {
+  const cleanSummary = game.summary.replace(/<[^>]*>/g, "").substring(0, 120).trim();
+  seoDescription += `${cleanSummary}...`;
+} else {
+  seoDescription += `Check out screenshots, ratings, system requirements, and cheapest store prices/purchase links.`;
+}
+if (seoDescription.length > 160) {
+  seoDescription = seoDescription.substring(0, 157) + "...";
+}
+
+let ogImage = coverUrl;
+if (ogImage && ogImage.startsWith("//")) {
+  ogImage = "https:" + ogImage;
+}
+const ogUrl = `https://gamegata.xyz/game/${game.slug}`;
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": cleanTitleName,
+  "description": game.summary ? game.summary.replace(/<[^>]*>/g, "").substring(0, 300).trim() + "..." : undefined,
+  "image": ogImage,
+  "genre": genres.map((g: any) => g.name),
+  "gamePlatform": platforms.map((p: any) => p.name),
+  "author": developerNames ? {
+    "@type": "Organization",
+    "name": developerNames
+  } : undefined,
+  "publisher": publishers.map((pub: any) => ({
+    "@type": "Organization",
+    "name": pub.name
+  })),
+  "datePublished": game.releaseDate ? new Date(game.releaseDate).toISOString().split('T')[0] : undefined,
+  "aggregateRating": game.rating ? {
+    "@type": "AggregateRating",
+    "ratingValue": (game.rating / 10).toFixed(1),
+    "bestRating": "10",
+    "worstRating": "1",
+    "ratingCount": 1
+  } : undefined,
+  "offers": priceSnapshots.map((snap: any) => ({
+    "@type": "Offer",
+    "price": snap.dealPrice,
+    "priceCurrency": snap.currency || "USD",
+    "url": snap.dealUrl,
+    "category": "retail",
+    "seller": {
+      "@type": "Organization",
+      "name": snap.storeName
+    }
+  }))
+};
+const schemaJson = JSON.stringify(schema);
 ---
 
-<Layout title={`${cleanTitle(game.title)} | hoGAMEGATA`} withSearch={true}>
+<Layout 
+  title={`${cleanTitleName} | hoGAMEGATA`} 
+  description={seoDescription}
+  ogImage={ogImage}
+  ogUrl={ogUrl}
+  ogType="video.other"
+  withSearch={true}
+>
+  <script type="application/ld+json" is:inline set:html={schemaJson} />
   <VibeTracker client:load tags={tags} genres={genres} />
 
   <main class="max-w-5xl mx-auto px-6 mt-12 space-y-12">
@@ -340,6 +428,7 @@ function cleanRequirementsText(text: string): string {
             gameSlug={game.slug}
             gameTitle={game.title}
             purchaseLinks={purchaseLinks}
+            initialDeals={priceSnapshots}
           />
 
           <!-- Official/Creator Links -->
@@ -493,6 +582,7 @@ function cleanRequirementsText(text: string): string {
             gameSlug={game.slug}
             gameTitle={game.title}
             purchaseLinks={purchaseLinks}
+            initialDeals={priceSnapshots}
           />
 
           <!-- Official/Creator Links -->

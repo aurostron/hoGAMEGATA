@@ -10,13 +10,19 @@ interface Props {
   description?: string;
   withSearch?: boolean;
   withLink?: boolean;
+  ogImage?: string;
+  ogType?: string;
+  ogUrl?: string;
 }
 
 const { 
   title = "hoGAMEGATA | Horror Game Discovery Database", 
   description = "A fast, minimal, and premium metadata registry for survival horror, psychological horror, and indie nightmare games.",
   withSearch = false,
-  withLink = true
+  withLink = true,
+  ogImage,
+  ogType = "website",
+  ogUrl = "https://gamegata.xyz"
 } = Astro.props;
 ---
 <!doctype html>
@@ -31,6 +37,20 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="msvalidate.01" content="5F938F573CF16B17C56424DDB4413438" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={ogUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={ogUrl} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    {ogImage && <meta property="twitter:image" content={ogImage} />}
     
     
     <!-- Google Fonts: Montserrat -->
