@@ -79,6 +79,7 @@ const steamAppId = steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null;
 
 const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
 const isItchGame = game.slug.startsWith("itch-");
+const hasGogBadge = purchaseLinks?.some((link: any) => link.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
 
 const tags = (game.tags as any[]) || [];
 const developers = (game.developers as any[]) || [];
@@ -344,6 +345,11 @@ const schemaJson = JSON.stringify(schema);
             {game.slug.startsWith("itch-") && (
               <span class="font-mono text-[9px] text-black uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
                 itch.io
+              </span>
+            )}
+            {hasGogBadge && (
+              <span class="font-mono text-[9px] text-white uppercase tracking-widest border border-[#7b3fc4] px-2 py-0.5 font-bold bg-[#7b3fc4] w-fit block">
+                DRM-Free
               </span>
             )}
           </div>

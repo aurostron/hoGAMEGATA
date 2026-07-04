@@ -22,7 +22,12 @@ export interface GameData {
   developerNames: string | null;
   genreNames: string | null;
   platformNames: string | null;
+  rawgEnriched?: boolean;
   tags: Array<{ name: string; slug: string }>;
+  purchaseLinks?: Array<{
+    storeName: string;
+    url: string;
+  }>;
   priceSnapshots?: Array<{
     storeName: string;
     dealPrice: number;
@@ -59,6 +64,17 @@ const formatPrice = (amount: number, currencyCode: string) => {
   }
 };
 
+const getDirectLink = (game: GameData) => {
+  const itchLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "itch.io" || l.storeName.toLowerCase() === "itch");
+  if (itchLink?.url) return itchLink.url;
+  const gogLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "gog");
+  if (gogLink?.url) return gogLink.url;
+  const steamLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "steam");
+  if (steamLink?.url) return steamLink.url;
+  if (game.purchaseLinks && game.purchaseLinks.length > 0) return game.purchaseLinks[0].url;
+  return null;
+};
+
 interface GameCardProps {
   game: GameData;
   index: number;
@@ -75,6 +91,7 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
   const [wishAnim, setWishAnim] = useState(false);
   const finalDeal = findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
+  const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
 
   // Load wishlist state from localStorage
   useEffect(() => {
@@ -101,8 +118,16 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
   const isVN = badge === "Visual Novel";
   const badgeBg = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
 
+  const itchLink = game.purchaseLinks?.find(
+    l => l.storeName.toLowerCase() === "itch.io" || l.storeName.toLowerCase() === "itch"
+  )?.url;
+
   const storeKey = finalDeal ? finalDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
-  const dealUrl = finalDeal ? `/re/${game.slug}/${storeKey}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(finalDeal.dealUrl)}` : "";
+  const dealUrl = finalDeal
+    ? `/re/${game.slug}/${storeKey}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(finalDeal.dealUrl)}`
+    : itchLink
+    ? `/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(itchLink)}`
+    : "";
   const hasDiscount = finalDeal && finalDeal.discountPercent > 0;
 
   const handleCartClick = (e: React.MouseEvent) => {
@@ -111,10 +136,20 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
     if (dealUrl) window.open(dealUrl, "_blank", "noopener,noreferrer");
   };
 
+  const directLink = game.rawgEnriched === false ? getDirectLink(game) : null;
+
   return (
     <a
-      href={`/game/${game.slug}`}
-      onClick={onClick}
+      href={directLink || `/game/${game.slug}`}
+      target={directLink ? "_blank" : undefined}
+      rel={directLink ? "noopener noreferrer" : undefined}
+      onClick={(e) => {
+        if (directLink) {
+          e.stopPropagation();
+        } else if (onClick) {
+          onClick(e);
+        }
+      }}
       data-tour={index === 0 ? "game-card" : undefined}
       className="group flex flex-row items-stretch border border-white/20 hover:border-white bg-black hover:bg-[#0d0d0d] transition-all duration-200 rounded-none overflow-hidden relative select-none min-h-[105px] sm:min-h-[125px]"
     >
@@ -156,18 +191,22 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
             {badge}
           </span>
         )}
-        {/* itch.io badge */}
-        {hasItchBadge && (
-          <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
-            itch
-          </span>
-        )}
       </div>
 
       {/* ── Centre info ── */}
       <div className="flex-grow flex flex-col justify-center px-4 sm:px-6 py-3 min-w-0 gap-1.5 sm:gap-2">
-        <h4 className="text-white group-hover:text-white text-base sm:text-[22px] font-extrabold tracking-wide uppercase line-clamp-1 leading-none">
-          {cleanTitle(game.title)}
+        <h4 className="text-white group-hover:text-white text-base sm:text-[22px] font-extrabold tracking-wide uppercase line-clamp-1 leading-none flex items-center gap-2">
+          <span>{cleanTitle(game.title)}</span>
+          {hasItchBadge && (
+            <span className="font-mono text-[9px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 select-none shrink-0 leading-none">
+              itch.io
+            </span>
+          )}
+          {hasGogBadge && (
+            <span className="font-mono text-[9px] uppercase tracking-widest bg-[#7b3fc4] text-white border border-[#7b3fc4] font-black px-1.5 py-0.5 select-none shrink-0 leading-none">
+              DRM-Free
+            </span>
+          )}
         </h4>
         <span className="font-mono text-[11px] sm:text-[13px] text-white/50 block font-bold leading-none">
           by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
@@ -228,6 +267,31 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
               </span>
             )}
           </>
+        ) : itchLink ? (
+          /* Render Itch-red button */
+          <button
+            onClick={handleCartClick}
+            onMouseEnter={() => setHoverCart(true)}
+            onMouseLeave={() => setHoverCart(false)}
+            className={`relative flex items-center justify-center gap-1.5 font-mono font-black uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 transition-all duration-200 overflow-hidden cursor-pointer rounded-none border w-full
+              ${hoverCart
+                ? "bg-[#fa5c5c] border-[#fa5c5c] text-black"
+                : "bg-[#fa5c5c]/10 border-[#fa5c5c]/40 text-[#fa5c5c]"
+              }`}
+            title="Get on itch.io"
+          >
+            {hoverCart ? (
+              <span className="flex items-center gap-1">
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                BUY
+              </span>
+            ) : (
+              <span>GET IT</span>
+            )}
+          </button>
         ) : (
           /* No price data — subtle placeholder */
           <span className="font-mono text-[10px] sm:text-[12px] text-white/20 uppercase tracking-widest">—</span>
@@ -291,6 +355,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
 
   const finalDeal = resolvedDeal || findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
+  const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
 
   // In list mode, delegate to the GOG-style ListRow
   if (mobileLayout === "list") {
@@ -304,12 +369,22 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
     );
   }
 
+  const directLink = game.rawgEnriched === false ? getDirectLink(game) : null;
+
   return (
     <a 
-      href={`/game/${game.slug}`}
+      href={directLink || `/game/${game.slug}`}
+      target={directLink ? "_blank" : undefined}
+      rel={directLink ? "noopener noreferrer" : undefined}
       onContextMenu={handleContextMenu}
       onMouseLeave={handleMouseLeave}
-      onClick={onClick}
+      onClick={(e) => {
+        if (directLink) {
+          e.stopPropagation();
+        } else if (onClick) {
+          onClick(e);
+        }
+      }}
       data-tour={index === 0 ? "game-card" : undefined}
       className="border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full relative select-none"
     >
@@ -339,12 +414,6 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
             </span>
           );
         })()}
-        {/* itch.io Badge */}
-        {hasItchBadge && (
-          <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
-            itch.io
-          </span>
-        )}
         {/* Primary Mood Tag */}
         {game.tags && game.tags.length > 0 && (
           <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
@@ -382,8 +451,18 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       <div className="flex-grow flex flex-col justify-between p-4 space-y-3">
         <div className="flex justify-between items-stretch gap-3 min-h-[32px]">
           <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
-            <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none">
-              {cleanTitle(game.title)}
+            <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none flex items-center gap-1.5">
+              <span>{cleanTitle(game.title)}</span>
+              {hasItchBadge && (
+                <span className="font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1 py-0.5 select-none shrink-0 leading-none">
+                  itch.io
+                </span>
+              )}
+              {hasGogBadge && (
+                <span className="font-mono text-[8px] uppercase tracking-widest bg-[#7b3fc4] text-white border border-[#7b3fc4] font-black px-1 py-0.5 select-none shrink-0 leading-none">
+                  DRM-Free
+                </span>
+              )}
             </h4>
             <span className="font-mono text-[9px] text-white/60 group-hover:text-black/60 block font-bold mt-1 leading-none">
               by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
@@ -431,6 +510,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const [games, setGames] = useState<GameData[]>(initialGames);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [luckyLoading, setLuckyLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
@@ -494,7 +574,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       return;
     }
 
-    setLoading(true);
+    setLuckyLoading(true);
     try {
       const modeParam = isSemantic ? "&mode=semantic" : "";
       const response = await fetch(`/api/games?search=${encodeURIComponent(searchQuery)}&limit=10${modeParam}`);
@@ -531,7 +611,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     } catch (e) {
       console.error("I'm feeling lucky search failed", e);
     } finally {
-      setLoading(false);
+      setLuckyLoading(false);
     }
   };
 
@@ -699,10 +779,10 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           </div>
           <button
             onClick={handleFeelingLucky}
-            disabled={loading}
+            disabled={luckyLoading}
             className="px-4 py-3.5 bg-black border border-white/30 text-white hover:border-white hover:bg-white hover:text-black transition-all duration-150 rounded-none cursor-pointer font-mono text-xs font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[46px]"
           >
-            {loading ? "[ SEARCHING... ]" : "[ I'M FEELING LUCKY ]"}
+            [ I'M FEELING LUCKY ]
           </button>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-white/50 tracking-wider">
