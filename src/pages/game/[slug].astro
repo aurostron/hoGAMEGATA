@@ -117,7 +117,7 @@ if (seoDescription.length > 160) {
   seoDescription = seoDescription.substring(0, 157) + "...";
 }
 
-let ogImage = coverUrl;
+let ogImage = game.coverUrl ? getHighResCoverUrl(game.coverUrl) : null;
 if (ogImage && ogImage.startsWith("//")) {
   ogImage = "https:" + ogImage;
 }
