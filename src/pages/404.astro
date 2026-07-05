@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en" class="h-full antialiased font-sans">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" href="/favicon.ico" />
+    <title>Page Not Found | hoGAMEGATA</title>
+    <meta name="description" content="The requested page could not be found." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300..900&display=swap" rel="stylesheet" />
+	</head>
+	<body class="min-h-full bg-black text-white overflow-hidden flex flex-col justify-center">
+    <div class="relative min-h-screen w-full flex items-center justify-center overflow-hidden font-sans">
+      
+      <!-- Background gradients for slight depth -->
+      <div class="absolute inset-0 bg-black"></div>
+      <div class="absolute inset-0" style="background: radial-gradient(circle at 80% 50%, rgba(38, 178, 171, 0.08) 0%, transparent 60%);"></div>
+
+      <!-- Relaxed Dog Image in bottom left corner -->
+      <img
+        src="/images/dog.png"
+        alt="Relaxed dog looking peaceful"
+        class="absolute bottom-0 left-0 w-[55%] max-w-[280px] sm:max-w-[400px] md:max-w-[550px] h-auto object-contain select-none pointer-events-none z-10"
+      />
+
+      <!-- Content wrapper -->
+      <div class="relative z-20 w-full max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-center md:justify-end h-full py-16 md:py-24">
+        
+        <!-- Text and Actions -->
+        <div class="flex flex-col items-center md:items-start md:mr-16 lg:mr-24 text-center md:text-left select-none">
+          <h1 class="text-[120px] sm:text-[160px] md:text-[200px] font-black tracking-tighter leading-none text-white select-none">
+            404
+          </h1>
+          <p class="text-lg sm:text-2xl font-bold text-white/90 tracking-wide mt-2 sm:mt-4 leading-normal">
+            Uh oh we have a problem
+          </p>
+          <div class="mt-6 sm:mt-8">
+            <a
+              href="/"
+              class="inline-block bg-[#26b2ab] hover:bg-[#1e9690] text-white font-bold uppercase tracking-widest px-8 py-3.5 text-xs sm:text-sm transition-colors duration-150 select-none no-underline border-none rounded-none"
+            >
+              Take me away
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+	</body>
+</html>
