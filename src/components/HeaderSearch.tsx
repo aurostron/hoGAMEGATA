@@ -13,7 +13,9 @@ export default function HeaderSearch() {
   const [results, setResults] = useState<GameSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounced search logic
   useEffect(() => {
@@ -42,27 +44,33 @@ export default function HeaderSearch() {
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
-  // Click outside to close dropdown
+  // Click outside to close dropdown and collapse search if empty
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setIsOpen(false);
+        if (!query.trim()) {
+          setIsExpanded(false);
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [query]);
 
   // Handle ESC key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsOpen(false);
+        if (!query.trim()) {
+          setIsExpanded(false);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [query]);
 
   const handleSelectGame = (slug: string) => {
     if (typeof window !== "undefined") {
@@ -74,40 +82,54 @@ export default function HeaderSearch() {
   };
 
   return (
-    <div ref={searchRef} className="relative font-mono">
-      {/* Search Input Bar */}
-      <div className="relative w-40 sm:w-60">
-        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
-          {loading ? (
-            <Loader2 className="h-3.5 w-3.5 text-white/70 animate-spin" />
-          ) : (
-            <Search className="h-3.5 w-3.5 text-white/70" />
-          )}
-        </div>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.trim() && setIsOpen(true)}
-          placeholder="Search games..."
-          className="block w-full pl-8 pr-8 py-1.5 bg-black border border-white text-xs text-white placeholder-white/50 focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
-        />
-        {query && (
+    <div ref={searchRef} className="relative font-mono flex items-center">
+      {/* Collapsed Search Button */}
+      {!isExpanded ? (
+        <button
+          onClick={() => {
+            setIsExpanded(true);
+            setTimeout(() => inputRef.current?.focus(), 50);
+          }}
+          className="flex items-center justify-center font-mono text-xs text-white hover:bg-white hover:text-black transition-all duration-150 border border-transparent hover:border-white w-11 h-11 sm:w-12 sm:h-12 rounded-none font-bold cursor-pointer bg-black"
+          title="Search"
+        >
+          <Search className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+        </button>
+      ) : (
+        /* Expanded Search Input Bar */
+        <div className="relative w-40 sm:w-60">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            {loading ? (
+              <Loader2 className="h-4.5 w-4.5 text-white/70 animate-spin" />
+            ) : (
+              <Search className="h-4.5 w-4.5 text-white/70" />
+            )}
+          </div>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => query.trim() && setIsOpen(true)}
+            placeholder="Search games..."
+            className="block w-full h-11 sm:h-12 pl-10 pr-8 bg-black border border-white text-sm text-white placeholder-white/50 focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
+          />
           <button
             onClick={() => {
               setQuery("");
               setResults([]);
               setIsOpen(false);
+              setIsExpanded(false);
             }}
-            className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-white/40 hover:text-white transition-colors duration-150 cursor-pointer"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white transition-colors duration-150 cursor-pointer"
           >
-            <span className="text-[9px] font-bold">[✕]</span>
+            <span className="text-[10px] font-bold">[✕]</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Autocomplete Dropdown list */}
-      {isOpen && (
+      {isOpen && isExpanded && (
         <div className="absolute right-0 top-full mt-1.5 w-64 sm:w-80 bg-black border-2 border-white z-50 divide-y divide-white/20 max-h-64 overflow-y-auto shadow-[4px_4px_0px_0px_#ffffff] flex flex-col">
           {results.length > 0 ? (
             results.map((game) => (

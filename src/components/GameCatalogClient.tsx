@@ -1,11 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Calendar, Sparkles } from "lucide-react";
+import { Search, Calendar, Sparkles, Check, Heart, Trash2 } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "../lib/utils";
 import PlatformLogos from "./PlatformLogos";
 import NyanLoader from "./NyanLoader";
 import { usePreferences } from "../hooks/usePreferences";
+import HeroCarousel from "./HeroCarousel";
+import TabCatalog from "./TabCatalog";
+import StorefrontLists from "./StorefrontLists";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import { CartProvider, useCart } from "../context/CartContext";
+import HoverTrailer from "./HoverTrailer";
 
 export interface GameData {
   id: string;
@@ -23,6 +29,8 @@ export interface GameData {
   genreNames: string | null;
   platformNames: string | null;
   rawgEnriched?: boolean;
+  releaseDate?: string | Date | null;
+  trailerUrl?: string | null;
   tags: Array<{ name: string; slug: string }>;
   purchaseLinks?: Array<{
     storeName: string;
@@ -64,6 +72,20 @@ const formatPrice = (amount: number, currencyCode: string) => {
   }
 };
 
+const formatDate = (dateVal: string | Date | null | undefined) => {
+  if (!dateVal) return "";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short"
+    });
+  } catch {
+    return "";
+  }
+};
+
 const getDirectLink = (game: GameData) => {
   const itchLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "itch.io" || l.storeName.toLowerCase() === "itch");
   if (itchLink?.url) return itchLink.url;
@@ -93,6 +115,10 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
   const hasItchBadge = game.slug.startsWith("itch-");
   const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
 
+  const { user } = useAuth();
+  const { addToCart, removeFromCart, cartItems } = useCart();
+  const isInCart = cartItems.some(item => item.gameId === game.id);
+
   // Load wishlist state from localStorage
   useEffect(() => {
     try {
@@ -101,13 +127,22 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
     } catch { /* ignore */ }
   }, [game.id]);
 
-  const toggleWish = (e: React.MouseEvent) => {
+  const toggleWish = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       const saved: string[] = JSON.parse(localStorage.getItem("gamegata_wishlist") || "[]");
       const next = wished ? saved.filter(id => id !== game.id) : [...saved, game.id];
       localStorage.setItem("gamegata_wishlist", JSON.stringify(next));
+
+      if (user) {
+        const method = wished ? "DELETE" : "POST";
+        fetch("/api/user/wishlist", {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gameId: game.id }),
+        }).catch(err => console.error("Cloud wishlist sync toggle failed:", err));
+      }
     } catch { /* ignore */ }
     setWished(p => !p);
     setWishAnim(true);
@@ -130,10 +165,15 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
     : "";
   const hasDiscount = finalDeal && finalDeal.discountPercent > 0;
 
-  const handleCartClick = (e: React.MouseEvent) => {
+  const handleCartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (dealUrl) window.open(dealUrl, "_blank", "noopener,noreferrer");
+    if (isInCart) {
+      await removeFromCart(game.id);
+    } else {
+      await addToCart(game);
+      window.dispatchEvent(new Event("gamegata_open_cart"));
+    }
   };
 
   const directLink = game.rawgEnriched === false ? getDirectLink(game) : null;
@@ -151,10 +191,10 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
         }
       }}
       data-tour={index === 0 ? "game-card" : undefined}
-      className="group flex flex-row items-stretch border border-white/20 hover:border-white bg-black hover:bg-[#0d0d0d] transition-all duration-200 rounded-none overflow-hidden relative select-none min-h-[105px] sm:min-h-[125px]"
+      className="group flex flex-row items-stretch border border-white/20 hover:border-white bg-black hover:bg-[#0d0d0d] transition-all duration-200 rounded-none overflow-hidden relative select-none min-h-[115px] sm:min-h-[140px]"
     >
       {/* ── Cover thumbnail ── */}
-      <div className="relative shrink-0 w-[105px] sm:w-[125px] h-full overflow-hidden bg-neutral-900">
+      <div className="relative shrink-0 w-[115px] sm:w-[140px] h-full overflow-hidden bg-neutral-900">
         {game.coverUrl ? (
           <img
             src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
@@ -168,144 +208,140 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
           </div>
         )}
 
-        {/* Heart / Wishlist button — bottom-left of cover */}
-        <button
-          onClick={toggleWish}
-          title={wished ? "Remove from wishlist" : "Add to wishlist"}
-          className={`absolute bottom-1.5 left-1.5 z-20 w-7.5 h-7.5 flex items-center justify-center transition-all duration-200
-            ${wishAnim ? "scale-125" : "scale-100"}
-            ${wished
-              ? "text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.9)]"
-              : "text-white/50 hover:text-red-400 hover:scale-110"
-            }`}
-          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <svg viewBox="0 0 24 24" className="w-4.5 h-4.5" fill={wished ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-        </button>
-
         {/* Category badge on cover */}
         {badge && (
-          <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${badgeBg}`}>
+          <span className={`absolute top-2 left-2 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${badgeBg}`}>
             {badge}
           </span>
         )}
       </div>
 
-      {/* ── Centre info ── */}
-      <div className="flex-grow flex flex-col justify-center px-4 sm:px-6 py-3 min-w-0 gap-1.5 sm:gap-2">
-        <h4 className="text-white group-hover:text-white text-base sm:text-[22px] font-extrabold tracking-wide uppercase line-clamp-1 leading-none flex items-center gap-2">
-          <span>{cleanTitle(game.title)}</span>
-          {hasItchBadge && (
-            <span className="font-mono text-[9px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 select-none shrink-0 leading-none">
-              itch.io
-            </span>
+      {/* ── Centre info (Title + Price Details) ── */}
+      <div className="flex-grow flex flex-col justify-center px-4 sm:px-6 py-4 min-w-0 gap-2 sm:gap-2.5">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h4 className="text-white group-hover:text-white text-base sm:text-2xl font-extrabold tracking-wide uppercase line-clamp-1 leading-tight flex items-center gap-2">
+            <span>{cleanTitle(game.title)}</span>
+            {hasItchBadge && (
+              <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 select-none shrink-0 leading-none">
+                itch.io
+              </span>
+            )}
+            {hasGogBadge && (
+              <span className="font-mono text-[8px] sm:text-[9px] uppercase tracking-widest bg-[#7b3fc4] text-white border border-[#7b3fc4] font-black px-1.5 py-0.5 select-none shrink-0 leading-none">
+                DRM-Free
+              </span>
+            )}
+          </h4>
+
+          {/* Price displayed next to the game title */}
+          {finalDeal ? (
+            <div className="flex items-center gap-2 shrink-0 select-none">
+              {hasDiscount && (
+                <span className="font-sans text-[10px] sm:text-[11px] font-black bg-[#7b3fc4] text-white px-2 py-0.5 rounded">
+                  -{finalDeal.discountPercent}%
+                </span>
+              )}
+              <span className="text-white font-extrabold text-sm sm:text-xl">
+                {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
+              </span>
+              {hasDiscount && finalDeal.retailPrice > finalDeal.dealPrice && (
+                <span className="text-[10px] sm:text-xs text-white/35 line-through">
+                  {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
+                </span>
+              )}
+            </div>
+          ) : itchLink ? (
+            <div className="flex items-center gap-2 shrink-0 select-none">
+              <span className="text-[#fa5c5c] font-extrabold text-[10px] sm:text-xs tracking-wider border border-[#fa5c5c]/40 px-2 py-0.5 rounded bg-[#fa5c5c]/5">ITCH.IO</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 shrink-0 select-none">
+              <span className="text-white/25 font-extrabold text-xs sm:text-base">—</span>
+            </div>
           )}
-          {hasGogBadge && (
-            <span className="font-mono text-[9px] uppercase tracking-widest bg-[#7b3fc4] text-white border border-[#7b3fc4] font-black px-1.5 py-0.5 select-none shrink-0 leading-none">
-              DRM-Free
-            </span>
-          )}
-        </h4>
-        <span className="font-mono text-[11px] sm:text-[13px] text-white/50 block font-bold leading-none">
+        </div>
+
+        <span className="font-mono text-xs sm:text-[14px] text-white/50 block font-bold leading-normal">
           by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
         </span>
-        <div className="flex items-center gap-2.5 mt-1 flex-wrap">
+        <div className="flex items-center gap-3 mt-1.5 flex-wrap">
           <PlatformLogos platformNames={game.platformNames} solid={true} />
-          <span className="font-mono text-[10px] sm:text-[11px] text-white/35 border border-white/15 px-2 py-0.5 uppercase font-bold tracking-wider leading-none">
-            {game.status}
+          <span className="font-mono text-[11px] sm:text-xs text-white/35 border border-white/15 px-2 py-0.5 uppercase font-bold tracking-wider leading-normal">
+            {game.status === "released" && game.releaseDate ? `Released ${formatDate(game.releaseDate)}` : game.status}
           </span>
           {game.tags && game.tags.length > 0 && (
-            <span className="hidden sm:inline font-mono text-[10px] sm:text-[11px] text-white/35 uppercase tracking-wide">
+            <span className="hidden sm:inline font-mono text-[11px] sm:text-xs text-white/35 uppercase tracking-wide leading-normal">
               {game.tags[0].name}
             </span>
           )}
         </div>
       </div>
 
-      {/* ── Right price / cart block ── */}
-      <div className="shrink-0 flex flex-col items-end justify-center pr-4 sm:pr-6 pl-2 gap-2 min-w-[100px] sm:min-w-[130px]">
-        {finalDeal ? (
-          <>
-            {/* Discount badge */}
-            {hasDiscount && (
-              <span className="font-mono text-[11px] sm:text-[12px] font-black bg-[#7b3fc4] text-white px-2 py-0.5 tracking-wide self-end">
-                -{finalDeal.discountPercent}%
-              </span>
-            )}
+      {/* ── Right side block (Wishlist + Cart Buttons together) ── */}
+      <div className="shrink-0 flex items-center justify-end pr-4 sm:pr-6 pl-2 gap-2 min-w-[120px] sm:min-w-[170px]">
+        {/* Like / Wishlist Button */}
+        <button
+          onClick={toggleWish}
+          title={wished ? "Remove from wishlist" : "Add to wishlist"}
+          className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center border rounded-xl transition-all duration-150 cursor-pointer select-none shrink-0
+            ${wished
+              ? "bg-red-500/10 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white"
+              : "bg-neutral-900 border-white/10 text-white/50 hover:bg-white hover:text-black hover:border-white"
+            }`}
+        >
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill={wished ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
 
-            {/* Price button — normal: shows price; hover: shows cart CTA */}
-            <button
-              onClick={handleCartClick}
-              onMouseEnter={() => setHoverCart(true)}
-              onMouseLeave={() => setHoverCart(false)}
-              className={`relative flex items-center justify-center gap-1.5 font-mono font-black uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 transition-all duration-200 overflow-hidden cursor-pointer rounded-none border w-full
-                ${hoverCart
-                  ? "bg-[#7b3fc4] border-[#7b3fc4] text-white"
-                  : "bg-emerald-950 border-emerald-700 text-emerald-400"
-                }`}
-              title={`Get on ${finalDeal.storeName}`}
-            >
-              {hoverCart ? (
-                <span className="flex items-center gap-1">
-                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.2}>
-                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                  </svg>
-                  GET IT
-                </span>
-              ) : (
-                <span>{formatPrice(finalDeal.dealPrice, finalDeal.currency)}</span>
-              )}
-            </button>
-
-            {/* Strikethrough retail price when discounted */}
-            {hasDiscount && finalDeal.retailPrice > finalDeal.dealPrice && (
-              <span className="font-mono text-[10px] sm:text-[11px] text-white/35 line-through self-end leading-none">
-                {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
-              </span>
-            )}
-          </>
-        ) : itchLink ? (
-          /* Render Itch-red button */
-          <button
-            onClick={handleCartClick}
-            onMouseEnter={() => setHoverCart(true)}
-            onMouseLeave={() => setHoverCart(false)}
-            className={`relative flex items-center justify-center gap-1.5 font-mono font-black uppercase tracking-wide text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 transition-all duration-200 overflow-hidden cursor-pointer rounded-none border w-full
-              ${hoverCart
-                ? "bg-[#fa5c5c] border-[#fa5c5c] text-black"
-                : "bg-[#fa5c5c]/10 border-[#fa5c5c]/40 text-[#fa5c5c]"
-              }`}
-            title="Get on itch.io"
-          >
-            {hoverCart ? (
-              <span className="flex items-center gap-1">
-                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.2}>
-                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
-                BUY
-              </span>
-            ) : (
-              <span>GET IT</span>
-            )}
-          </button>
-        ) : (
-          /* No price data — subtle placeholder */
-          <span className="font-mono text-[10px] sm:text-[12px] text-white/20 uppercase tracking-widest">—</span>
-        )}
+        {/* Cart Button */}
+        <button
+          onClick={handleCartClick}
+          className={`h-9 sm:h-10 px-3 sm:px-4.5 flex items-center justify-center gap-1.5 border font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all duration-150 cursor-pointer select-none shrink-0
+            ${isInCart
+              ? "bg-[#7b3fc4]/10 border-[#7b3fc4]/50 text-[#7b3fc4] hover:bg-[#7b3fc4] hover:text-white"
+              : "bg-white text-black border-white hover:bg-neutral-200"
+            }`}
+          title={isInCart ? "Remove from cart" : "Add to cart"}
+        >
+          {isInCart ? (
+            <>
+              <Check className="w-3.5 h-3.5" />
+              <span>Cart</span>
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              <span>Cart</span>
+            </>
+          )}
+        </button>
       </div>
     </a>
   );
 }
 
-// ─── Grid Card (original, untouched) ─────────────────────────────────────────
 function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = "grid", onClick }: GameCardProps) {
   const [showPrompt, setShowPrompt] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resolvedDeal, setResolvedDeal] = useState<any>(null);
+
+  const { addToCart, removeFromCart, cartItems } = useCart();
+  const isInCart = cartItems.some(item => item.gameId === game.id);
+
+  const handleCartToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInCart) {
+      await removeFromCart(game.id);
+    } else {
+      await addToCart(game);
+      window.dispatchEvent(new Event("gamegata_open_cart"));
+    }
+  };
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -390,18 +426,29 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
     >
       {/* Cover Image */}
       <div className={`relative bg-neutral-900 overflow-hidden shrink-0 flex items-center justify-center w-full border-b border-white ${game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"}`}>
-        {game.coverUrl ? (
-          <img
-            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
-            alt={game.title}
-            className="object-cover w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
-            loading={index < 4 ? undefined : "lazy"}
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
-          </div>
-        )}
+        <HoverTrailer
+          trailerUrl={game.trailerUrl}
+          coverUrl={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending)}
+          altText={game.title}
+          aspectClass="w-full h-full"
+        />
+
+        {/* Floating Add to Cart Button */}
+        <button
+          onClick={handleCartToggle}
+          title={isInCart ? "Remove from cart" : "Add to cart"}
+          className={`absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center border transition-all duration-150 cursor-pointer select-none
+            ${isInCart
+              ? "bg-[#7b3fc4] border-[#7b3fc4] text-white shadow-[0_0_8px_rgba(123,63,196,0.9)]"
+              : "bg-black/60 border-white/20 text-white/70 hover:bg-white hover:text-black hover:border-white hover:scale-110"
+            }`}
+        >
+          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2}>
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </button>
+
         {/* Category Tag */}
         {(() => {
           const badge = getCategoryBadge(game.category, game.title);
@@ -409,20 +456,20 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
           const isVN = badge === "Visual Novel";
           const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe] border-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]";
           return (
-            <span className={`absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
+            <span className={`absolute top-2 left-2 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 ${bgClass}`}>
               {badge}
             </span>
           );
         })()}
         {/* Primary Mood Tag */}
         {game.tags && game.tags.length > 0 && (
-          <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+          <span className="absolute bottom-2 left-2 font-mono text-[9px] sm:text-[10px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
             {game.tags[0].name}
           </span>
         )}
         {/* Age Rating Badge */}
         {(game.esrbRating || game.pegiRating) && (
-          <span className="absolute bottom-2 right-2 font-mono text-[8px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
+          <span className="absolute bottom-2 right-2 font-mono text-[9px] sm:text-[10px] uppercase bg-black text-white border border-white font-black px-1.5 py-0.5 z-10 select-none group-hover:bg-white group-hover:text-black group-hover:border-black transition-all duration-150">
             {game.esrbRating ? getShortEsrbRating(game.esrbRating) : game.pegiRating}
           </span>
         )}
@@ -433,7 +480,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
             onClick={triggerPriceFetch}
             className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 z-30 cursor-pointer select-none"
           >
-            <span className="font-mono text-[10px] text-emerald-400 font-extrabold uppercase px-2 py-1.5 border border-emerald-400 bg-black tracking-wide hover:bg-white hover:text-black transition-colors duration-150">
+            <span className="font-mono text-[10px] sm:text-[11px] text-emerald-400 font-extrabold uppercase px-2 py-1.5 border border-emerald-400 bg-black tracking-wide hover:bg-white hover:text-black transition-colors duration-150">
               [ GET CHEAPEST PRICE? ]
             </span>
           </span>
@@ -442,16 +489,16 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
         {/* Loading Spinner / Fetch state */}
         {loading && (
           <span className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 z-30 select-none">
-            <span className="font-mono text-[9px] text-white/50 animate-pulse">[ FETCHING... ]</span>
+            <span className="font-mono text-[9px] sm:text-[10px] text-white/50 animate-pulse">[ FETCHING... ]</span>
           </span>
         )}
       </div>
       
       {/* Game Details */}
-      <div className="flex-grow flex flex-col justify-between p-4 space-y-3">
-        <div className="flex justify-between items-stretch gap-3 min-h-[32px]">
+      <div className="flex-grow flex flex-col justify-between p-4 sm:p-5 space-y-4">
+        <div className="flex justify-between items-stretch gap-3 min-h-[38px] sm:min-h-[42px]">
           <div className="flex-grow min-w-0 flex flex-col justify-between py-0.5">
-            <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1 leading-none flex items-center gap-1.5">
+            <h4 className="text-white group-hover:text-black text-sm sm:text-base font-bold tracking-wide uppercase line-clamp-1 leading-snug flex items-center gap-1.5">
               <span>{cleanTitle(game.title)}</span>
               {hasItchBadge && (
                 <span className="font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1 py-0.5 select-none shrink-0 leading-none">
@@ -464,7 +511,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
                 </span>
               )}
             </h4>
-            <span className="font-mono text-[9px] text-white/60 group-hover:text-black/60 block font-bold mt-1 leading-none">
+            <span className="font-mono text-[10px] sm:text-xs text-white/60 group-hover:text-black/60 block font-bold mt-1.5 leading-normal">
               by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
             </span>
           </div>
@@ -489,10 +536,10 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
           })()}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
+        <div className="flex items-center justify-between pt-2.5 border-t border-white/15 font-mono text-[10px] sm:text-xs">
           <PlatformLogos platformNames={game.platformNames} />
           <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
-            {game.status}
+            {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
           </span>
         </div>
       </div>
@@ -504,9 +551,31 @@ interface GameCatalogClientProps {
   initialGames: GameData[];
   initialTotalGames: number | null;
   initialNextCursor: string | null;
+  heroGames?: any[];
+  latestGames?: any[];
+  trendingGames?: any[];
+  upcomingGames?: any[];
+  topRatedGames?: any[];
+  catalogueTitle?: string;
+  catalogueDesc?: string;
+  supportTitle?: string;
+  supportDesc?: string;
 }
 
-export default function GameCatalogClient({ initialGames, initialTotalGames, initialNextCursor }: GameCatalogClientProps) {
+function GameCatalogClientInner({
+  initialGames,
+  initialTotalGames,
+  initialNextCursor,
+  heroGames = [],
+  latestGames = [],
+  trendingGames = [],
+  upcomingGames = [],
+  topRatedGames = [],
+  catalogueTitle,
+  catalogueDesc,
+  supportTitle,
+  supportDesc
+}: GameCatalogClientProps) {
   const [games, setGames] = useState<GameData[]>(initialGames);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -524,11 +593,16 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
   const { vibes: explicitVibes } = usePreferences();
   const [bypassExpansion, setBypassExpansion] = useState(false);
   const [resolvedExpandedQuery, setResolvedExpandedQuery] = useState<string | null>(null);
+  const [isBrowseAll, setIsBrowseAll] = useState(false);
+  const [forceFetchToggle, setForceFetchToggle] = useState(0);
 
-  // Reset expansion bypass when search query changes
+  // Reset expansion bypass and browse all when search query changes
   useEffect(() => {
     setBypassExpansion(false);
     setResolvedExpandedQuery(null);
+    if (searchQuery.trim() !== "") {
+      setIsBrowseAll(false);
+    }
   }, [searchQuery]);
 
   // Hydrate states from URL parameters and localStorage on mount
@@ -666,8 +740,8 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
 
   useEffect(() => {
     async function fetchCatalogGames() {
-      // Don't run fetch on initial paint if search/sort filters are empty/default and no vibes are set
-      if (!hasInitialFetchRun && !debouncedSearch && (!explicitVibes || explicitVibes.length === 0) && sortBy === "latest") {
+      // Don't run fetch on storefront page
+      if (!isBrowseAll && !debouncedSearch) {
         setHasInitialFetchRun(true);
         return;
       }
@@ -682,7 +756,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
         if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {
           queryParams.set("tags", explicitVibes.join(","));
         }
-        if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
+        if (sortBy) queryParams.set("sort", sortBy);
         queryParams.set("limit", "20");
 
         const response = await fetch(`/api/games?${queryParams.toString()}`);
@@ -699,7 +773,16 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       }
     }
     fetchCatalogGames();
-  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun, explicitVibes, bypassExpansion]);
+  }, [debouncedSearch, isSemantic, sortBy, hasInitialFetchRun, explicitVibes, bypassExpansion, isBrowseAll, forceFetchToggle]);
+
+  const handleBrowseAll = (tab: "latest" | "trending" | "top-rated" | "upcoming") => {
+    if (tab === "upcoming") {
+      window.location.assign("/upcoming");
+      return;
+    }
+    const targetSort = tab === "top-rated" ? "top-rated" : tab === "latest" ? "latest" : "trending";
+    window.location.assign(`/games?sort=${targetSort}`);
+  };
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
@@ -714,7 +797,7 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
       if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {
         queryParams.set("tags", explicitVibes.join(","));
       }
-      if (!debouncedSearch && sortBy) queryParams.set("sort", sortBy);
+      if (sortBy) queryParams.set("sort", sortBy);
       queryParams.set("cursor", nextCursor);
       queryParams.set("limit", "20");
 
@@ -753,62 +836,84 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
     return sorted[0];
   };
 
+  const showStorefront = !debouncedSearch && !isBrowseAll;
+
   return (
-    <>
-      <section className="max-w-2xl mx-auto space-y-4">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="relative flex-1" data-tour="search-bar">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-white/60" />
-            </div>
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isSemantic ? "Describe vibes, concepts, settings..." : "Search by title, developer, genre, vibe..."}
-              className="block w-full pl-10 pr-4 py-3.5 bg-black border border-white/30 focus:border-white rounded-none focus:outline-none text-sm text-white placeholder-white/30 transition-all duration-200 font-medium tracking-wide"
-            />
-            {debouncedSearch && (
+    <div className="space-y-8">
+      {showStorefront && heroGames && heroGames.length > 0 && (
+        <HeroCarousel games={heroGames} activeRegion={activeRegion} />
+      )}
+
+      {/* ── Search Section (Code kept for future use) ── */}
+      {false && (
+        <section className="space-y-3">
+          {/* Main search row */}
+          <div className="flex gap-2">
+            {/* Search input with vibe toggle embedded on the right */}
+            <div className="relative flex-1" data-tour="search-bar">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-white/50" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isSemantic ? "Describe vibes, concepts, settings... (e.g. 'alien isolation but co-op')" : "Search by title, developer, genre, tag..."}
+                className="block w-full pl-10 pr-36 py-3.5 bg-black border border-white/30 focus:border-white rounded-none focus:outline-none text-sm text-white placeholder-white/45 transition-all duration-200 font-medium tracking-wide"
+              />
+              {/* Vibe toggle — right side of the input */}
               <button
-                onClick={() => setSearchQuery("")}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-white/40 hover:text-white transition-colors duration-150"
+                onClick={() => setIsSemantic(prev => !prev)}
+                title={isSemantic ? "Switch to exact search" : "Switch to vibe / AI search"}
+                className={`absolute inset-y-0 right-0 flex items-center gap-1.5 px-3 border-l font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 cursor-pointer select-none ${
+                  isSemantic
+                    ? "bg-white text-black border-white"
+                    : "bg-black text-white/40 border-white/20 hover:text-white hover:border-white/50"
+                }`}
               >
-                <span className="font-mono text-[10px] font-bold">[✕]</span>
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">{isSemantic ? "VIBE ON" : "VIBE"}</span>
               </button>
-            )}
-          </div>
-          <button
-            onClick={handleFeelingLucky}
-            disabled={luckyLoading}
-            className="px-4 py-3.5 bg-black border border-white/30 text-white hover:border-white hover:bg-white hover:text-black transition-all duration-150 rounded-none cursor-pointer font-mono text-xs font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[46px]"
-          >
-            [ I'M FEELING LUCKY ]
-          </button>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-4 font-mono text-[10px] text-white/50 tracking-wider">
-          <div className="flex items-center gap-2">
+              {debouncedSearch && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute inset-y-0 right-20 pr-3.5 flex items-center text-white/40 hover:text-white transition-colors duration-150"
+                >
+                  <span className="font-mono text-[10px] font-bold">[✕]</span>
+                </button>
+              )}
+            </div>
+
+            {/* I'm Feeling Lucky — prominent standalone button */}
             <button
-              onClick={() => setIsSemantic(prev => !prev)}
-              className={`px-2.5 py-1 border transition-all duration-150 cursor-pointer ${
-                isSemantic 
-                  ? "bg-white text-black border-white font-bold" 
-                  : "bg-black text-white/50 border-white/20 hover:border-white/50 hover:text-white"
-              }`}
+              onClick={handleFeelingLucky}
+              disabled={luckyLoading}
+              title={searchQuery.trim() ? `Jump to best match for "${searchQuery}"` : "Open a random game"}
+              className="shrink-0 px-4 py-3.5 bg-black border border-white/30 text-white hover:border-white hover:bg-white hover:text-black transition-all duration-150 rounded-none cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[50px]"
             >
-              {isSemantic ? "[ VIBE SEARCH: ON ]" : "[ VIBE SEARCH: OFF ]"}
+              {luckyLoading ? (
+                <span className="animate-pulse">[ ... ]</span>
+              ) : (
+                <>
+                  <span className="text-base leading-none" aria-hidden="true">🎲</span>
+                  <span className="hidden sm:inline">I'M FEELING LUCKY</span>
+                  <span className="sm:hidden">LUCKY</span>
+                </>
+              )}
             </button>
-            <span className="hidden sm:inline text-[9px] text-white/40">
-              {isSemantic 
-                ? "Searches by descriptions, concepts & settings (e.g. 'alien isolation but co-op')"
-                : "Searches by exact titles, developers, or genres"
-              }
-            </span>
           </div>
-        </div>
-      </section>
+
+          {/* Vibe mode description — only visible when vibe is on */}
+          {isSemantic && (
+            <p className="font-mono text-[10px] text-white/40 tracking-wide">
+              Vibe Search is ON — describe any mood, setting, or concept and we'll find matching games.
+            </p>
+          )}
+        </section>
+      )}
 
       {/* Catalog Mapping Grid */}
-      <section className="space-y-6 relative mt-10">
+      <section className="space-y-6 relative mt-6">
         {resolvedExpandedQuery && (
           <div className="font-mono text-xs text-white/60 select-none pb-2 border-b border-white/10 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
@@ -825,83 +930,127 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
             </div>
           </div>
         )}
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[10px] tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              {!debouncedSearch ? (
-                <div className="relative">
+        {/* Back to storefront link (used when browsing all category tabs) */}
+        {isBrowseAll && (
+          <div className="flex justify-start mb-6">
+            <button
+              onClick={() => setIsBrowseAll(false)}
+              className="flex items-center gap-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-all duration-150 px-3 py-2 cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider animate-pulse"
+            >
+              [ BACK TO STOREFRONT ]
+            </button>
+          </div>
+        )}
+
+        {/* Sort and detail rows (Code kept for future use) */}
+        {false && (
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 font-mono text-[11px] sm:text-xs tracking-wider uppercase text-white font-bold border-b border-white/20 pb-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                {!debouncedSearch ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setSortOpen(!sortOpen)}
+                      className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
+                    >
+                      SORT: {sortBy} <span className="text-[9px] sm:text-[10px]">▼</span>
+                    </button>
+                    {sortOpen && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setSortOpen(false)} />
+                        <div className="absolute left-0 mt-1.5 w-32 bg-black border border-white z-40 flex flex-col divide-y divide-white/25">
+                          <button
+                            onClick={() => {
+                              setSortBy("latest");
+                              setSortOpen(false);
+                            }}
+                            className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                              sortBy === "latest" ? "bg-white/10 text-white" : "text-white"
+                            }`}
+                          >
+                            [ LATEST ]
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy("trending");
+                              setSortOpen(false);
+                            }}
+                            className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                              sortBy === "trending" ? "bg-white/10 text-white" : "text-white"
+                            }`}
+                          >
+                            [ TRENDING ]
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSortBy("top-rated");
+                              setSortOpen(false);
+                            }}
+                            className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
+                              sortBy === "top-rated" ? "bg-white/10 text-white" : "text-white"
+                            }`}
+                          >
+                            [ TOP RATED ]
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-white/70 font-bold py-1.5 font-mono">
+                    [ FOUND {games.length} GAME{games.length !== 1 ? "S" : ""} ]
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-[11px] sm:text-xs font-mono font-bold">
+                {isBrowseAll && (
                   <button
-                    onClick={() => setSortOpen(!sortOpen)}
-                    className="px-3 py-1.5 border border-white/30 text-white hover:border-white transition-all duration-150 rounded-none cursor-pointer flex items-center gap-1.5 uppercase font-bold"
+                    onClick={() => setIsBrowseAll(false)}
+                    className="flex items-center gap-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-all duration-150 px-2.5 py-1.5 cursor-pointer"
                   >
-                    SORT: {sortBy} <span className="text-[8px]">▼</span>
+                    [ STOREFRONT ]
                   </button>
-                  {sortOpen && (
-                    <>
-                      <div className="fixed inset-0 z-30" onClick={() => setSortOpen(false)} />
-                      <div className="absolute left-0 mt-1.5 w-32 bg-black border border-white z-40 flex flex-col divide-y divide-white/25">
-                        <button
-                          onClick={() => {
-                            setSortBy("latest");
-                            setSortOpen(false);
-                          }}
-                          className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
-                            sortBy === "latest" ? "bg-white/10 text-white" : "text-white"
-                          }`}
-                        >
-                          [ LATEST ]
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSortBy("trending");
-                            setSortOpen(false);
-                          }}
-                          className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
-                            sortBy === "trending" ? "bg-white/10 text-white" : "text-white"
-                          }`}
-                        >
-                          [ TRENDING ]
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSortBy("top-rated");
-                            setSortOpen(false);
-                          }}
-                          className={`px-3 py-2 text-left hover:bg-white hover:text-black transition-colors rounded-none cursor-pointer font-bold ${
-                            sortBy === "top-rated" ? "bg-white/10 text-white" : "text-white"
-                          }`}
-                        >
-                          [ TOP RATED ]
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="text-white/55 font-medium py-1.5">
-                  Search Results
-                </div>
-              )}
-            </div>
+                )}
+                <a
+                  href="/upcoming"
+                  className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
+                >
+                  <Calendar className="w-3.5 h-3.5" /> UPCOMING
+                </a>
+                <a
+                  href="/random"
+                  className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> RANDOM
+                </a>
+              </div>
+            </div>  
+          </div>
+        )}
 
-            <div className="flex items-center gap-2 text-[10px] font-mono font-bold">
-              <a
-                href="/upcoming"
-                className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
-              >
-                <Calendar className="w-3 h-3" /> UPCOMING
-              </a>
-              <a
-                href="/random"
-                className="flex items-center gap-1 border border-white/25 px-2.5 py-1.5 hover:border-white hover:bg-white hover:text-black transition-all duration-150"
-              >
-                <Sparkles className="w-3 h-3" /> RANDOM
-              </a>
-            </div>
-          </div>  
-        </div>
-
-        {loading ? (
+        {showStorefront ? (
+          <>
+            <TabCatalog
+              latest={latestGames}
+              trending={trendingGames}
+              upcoming={upcomingGames}
+              topRated={topRatedGames}
+              activeRegion={activeRegion}
+              onBrowseAll={handleBrowseAll}
+            />
+            <StorefrontLists
+              latest={latestGames}
+              trending={trendingGames}
+              activeRegion={activeRegion}
+              onExplore={() => handleBrowseAll("latest")}
+              catalogueTitle={catalogueTitle}
+              catalogueDesc={catalogueDesc}
+              supportTitle={supportTitle}
+              supportDesc={supportDesc}
+            />
+          </>
+        ) : loading ? (
           <NyanLoader message="INGESTING CATALOG CONTENT..." />
         ) : games.length === 0 ? (
           <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold w-full">
@@ -937,6 +1086,16 @@ export default function GameCatalogClient({ initialGames, initialTotalGames, ini
           </div>
         )}
       </section>
-    </>
+    </div>
+  );
+}
+
+export default function GameCatalogClient(props: GameCatalogClientProps) {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <GameCatalogClientInner {...props} />
+      </CartProvider>
+    </AuthProvider>
   );
 }

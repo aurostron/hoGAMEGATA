@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "../context/AuthContext";
-import { Heart } from "lucide-react";
+import { CartProvider, useCart } from "../context/CartContext";
+import { Heart, Check } from "lucide-react";
 
 interface TrackControlsProps {
   gameId: string;
@@ -13,6 +14,8 @@ interface TrackControlsProps {
   steamRating: number | null;
   initialWishlisted?: boolean;
   initialCollectionStatus?: string | null;
+  coverUrl?: string | null;
+  initialPriceSnapshots?: any[];
 }
 
 interface JournalItem {
@@ -32,8 +35,30 @@ function TrackControlsInner({
   steamRating = null,
   initialWishlisted = false,
   initialCollectionStatus = null,
+  coverUrl = null,
+  initialPriceSnapshots = [],
 }: TrackControlsProps) {
   const { user } = useAuth();
+  const { cartItems, addToCart, removeFromCart } = useCart();
+  const isInCart = cartItems.some(item => item.gameId === gameId);
+
+  const handleCartToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInCart) {
+      await removeFromCart(gameId);
+    } else {
+      const gameMock = {
+        id: gameId,
+        title: gameTitle,
+        slug: gameSlug,
+        coverUrl,
+        priceSnapshots: initialPriceSnapshots,
+      };
+      await addToCart(gameMock);
+      window.dispatchEvent(new Event("gamegata_open_cart"));
+    }
+  };
 
   const [wishlisted, setWishlisted] = useState(initialWishlisted);
   const [collectionStatus, setCollectionStatus] = useState<string | null>(initialCollectionStatus);
@@ -312,153 +337,192 @@ function TrackControlsInner({
   ];
 
   return (
-    <div className="border border-white p-5 bg-black text-xs flex flex-col justify-between h-full gap-5 min-h-[380px] md:min-h-[420px] flex-1">
-      {/* 1. Main Header */}
-      <div>
-        <span className="font-sans text-[11px] text-white/50 tracking-widest block border-b border-white/20 pb-1.5 uppercase font-extrabold">
-          My Tracking Journal
-        </span>
-      </div>
+    <div className="relative border border-white/5 p-5 bg-[#131316]/50 text-xs flex flex-col justify-between h-full gap-5 min-h-[380px] md:min-h-[420px] flex-1 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
+      {/* Background Graphic */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-20 filter blur-[2px] transition-all duration-500 hover:scale-105"
+        style={{ backgroundImage: "url('/graphic1.jpg')" }}
+      />
+      <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none" />
 
-      {/* 2. Controls Grid */}
-      <div className="space-y-4">
-        {/* Favorites */}
-        <div className="flex flex-col gap-1.5">
-          <span className="font-sans text-[10px] text-white/40 font-bold uppercase tracking-wider">
-            Favorite Status
+      <div className="relative z-10 flex flex-col justify-between h-full gap-5 flex-1">
+        {/* 1. Main Header */}
+        <div>
+          <span className="text-[12px] text-neutral-450 uppercase tracking-widest block border-b border-white/5 pb-2 font-bold">
+            My Tracking Journal
           </span>
-          <button
-            onClick={toggleWishlist}
-            disabled={loading}
-            className={`flex items-center justify-center gap-2 px-4 py-2 border font-bold uppercase transition-all duration-150 cursor-pointer h-[38px] select-none rounded-none text-[10px] sm:text-xs w-full ${
-              wishlisted
-                ? "bg-white text-black border-white"
-                : "bg-black text-white border-white hover:bg-white hover:text-black"
-            }`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-black text-black" : "fill-transparent text-white"}`} />
-            <span>{wishlisted ? "Favorited" : "Add to Favorites"}</span>
-          </button>
         </div>
 
-        {/* Play Status */}
-        <div className="flex flex-col gap-1.5">
-          <span className="font-sans text-[10px] text-white/40 font-bold uppercase tracking-wider">
-            My Progress
-          </span>
+        {/* 2. Controls Grid */}
+        <div className="space-y-4">
+          {/* Favorite & Cart Row */}
           <div className="grid grid-cols-2 gap-2">
-            {statuses.map((s) => {
-              const active = collectionStatus === s.value;
-              return (
-                <button
-                  key={s.value}
-                  onClick={() => handleStatusClick(s.value)}
-                  disabled={loading}
-                  className={`py-2 px-1 text-center font-bold text-[9px] uppercase tracking-wider transition-all duration-150 border cursor-pointer truncate h-[34px] flex items-center justify-center rounded-none ${
-                    active
-                      ? "bg-white text-black border-white"
-                      : "bg-black text-white border-white hover:bg-white hover:text-black"
-                  }`}
-                >
-                  {active ? `✓ ${s.label}` : s.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Personal Rating */}
-        <div className="flex flex-col gap-1.5">
-          <span className="font-sans text-[10px] text-white/40 font-bold uppercase tracking-wider">
-            My Rating
-          </span>
-          <select
-            value={rating || ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              handleRatingChange(val ? parseInt(val) : null);
-            }}
-            className="bg-black text-white border border-white p-2 text-xs font-bold uppercase w-full rounded-none focus:outline-none cursor-pointer h-[38px]"
-          >
-            <option value="">[ Select Rating ]</option>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-              <option key={num} value={num}>
-                {num} / 10
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* 3. Comparison Stats */}
-      <div className="border-t border-white/20 pt-4 flex flex-col gap-1">
-        <span className="font-sans text-[10px] text-white/40 font-bold uppercase tracking-wider mb-1">
-          Comparison to Similar Games
-        </span>
-        {mounted && similarStats ? (
-          <div className="space-y-1.5 text-white/80 font-mono text-[10px] uppercase">
-            <div>
-              • Similar Genres: <span className="text-white font-bold">{genres.slice(0, 2).join(", ") || "None"}</span>
+            {/* Favorites */}
+            <div className="flex flex-col gap-1.5">
+              
+              <button
+                onClick={toggleWishlist}
+                disabled={loading}
+                className={`flex items-center justify-center gap-1.5 px-3 py-2 border font-semibold transition-all duration-150 cursor-pointer h-[38px] select-none rounded-xl text-xs w-full ${
+                  wishlisted
+                    ? "bg-white text-black border-white"
+                    : "bg-white/5 text-white border-white/10 hover:bg-white hover:text-black"
+                }`}
+              >
+                <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-black text-black" : "fill-transparent text-white"}`} />
+                <span>{wishlisted ? "Favorited" : "Favorite"}</span>
+              </button>
             </div>
-            <div>
-              • Games Played/Rated: <span className="text-white font-bold">{similarStats.count}</span>
-            </div>
-            {similarStats.avgRating !== null ? (
-              <div>
-                • Your Average: <span className="text-white font-bold">{similarStats.avgRating.toFixed(1)}/10</span>
-                {rating !== null && (
-                  <span className="text-white/50 ml-1.5">
-                    ({rating > similarStats.avgRating ? "+" : ""}{(rating - similarStats.avgRating).toFixed(1)} vs avg)
-                  </span>
+
+            {/* Shopping Cart */}
+            <div className="flex flex-col gap-1.5">
+            
+              <button
+                onClick={handleCartToggle}
+                disabled={loading}
+                className={`flex items-center justify-center gap-1.5 px-3 py-2 border font-semibold transition-all duration-150 cursor-pointer h-[38px] select-none rounded-xl text-xs w-full ${
+                  isInCart
+                    ? "bg-emerald-600/90 text-white border-emerald-600/10"
+                    : "bg-white/5 text-white border-white/10 hover:bg-white hover:text-black"
+                }`}
+              >
+                {isInCart ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>In Cart</span>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                    <span>Add to Cart</span>
+                  </>
                 )}
-              </div>
-            ) : (
-              <div>
-                • Your Average: <span className="text-white/40 italic">N/A</span>
-              </div>
-            )}
-            {siteRating !== null && (
-              <div>
-                • Site Average: <span className="text-white font-bold">{siteRating.toFixed(1)}/10</span>
-              </div>
-            )}
+              </button>
+            </div>
           </div>
-        ) : (
-          <span className="text-white/30 italic text-[10px] uppercase font-mono">[ Loading Stats... ]</span>
-        )}
-      </div>
 
-      {/* 4. Play History Log */}
-      <div className="border-t border-white/20 pt-4 flex-1 flex flex-col gap-1">
-        <span className="font-sans text-[10px] text-white/40 font-bold uppercase tracking-wider mb-1">
-          Activity Log
-        </span>
-        <div className="space-y-2 overflow-y-auto max-h-[85px] pr-1 scrollbar-thin">
-          {mounted ? (
-            history.length > 0 ? (
-              history.slice(0, 3).map((item, idx) => (
-                <div key={idx} className="flex justify-between items-baseline text-[9px] font-mono text-white/70 uppercase">
-                  <span className="truncate max-w-[170px]">{item.value}</span>
-                  <span className="text-white/40 shrink-0 text-[8px] ml-1">
-                    {new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  </span>
+          {/* Play Status */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[9px] text-neutral-450 font-semibold uppercase tracking-wider">
+              My Progress
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {statuses.map((s) => {
+                const active = collectionStatus === s.value;
+                return (
+                  <button
+                    key={s.value}
+                    onClick={() => handleStatusClick(s.value)}
+                    disabled={loading}
+                    className={`py-2 px-1 text-center font-medium text-[11px] transition-all duration-150 border cursor-pointer truncate h-[34px] flex items-center justify-center rounded-xl ${
+                      active
+                        ? "bg-white text-black border-white font-semibold"
+                        : "bg-white/5 text-white border-white/5 hover:bg-white hover:text-black"
+                    }`}
+                  >
+                    {active ? `✓ ${s.label}` : s.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Personal Rating */}
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[9px] text-neutral-450 font-semibold uppercase tracking-wider">
+              My Rating
+            </span>
+            <select
+              value={rating || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleRatingChange(val ? parseInt(val) : null);
+              }}
+              className="bg-white/5 text-white border border-white/10 p-2 text-xs font-medium w-full rounded-xl focus:outline-none cursor-pointer h-[38px] focus:border-white/30"
+            >
+              <option value="" className="bg-zinc-950">Select Rating</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                <option key={num} value={num} className="bg-zinc-950">
+                  {num} / 10
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 3. Comparison Stats */}
+        <div className="border-t border-white/5 pt-4 flex flex-col gap-1">
+          <span className="text-[10px] text-neutral-455 font-bold uppercase tracking-widest mb-1">
+            Comparison to Similar Games
+          </span>
+          {mounted && similarStats ? (
+            <div className="space-y-1.5 text-neutral-350 font-mono text-[10px] uppercase">
+              <div>
+                • Similar Genres: <span className="text-white font-medium">{genres.slice(0, 2).join(", ") || "None"}</span>
+              </div>
+              <div>
+                • Games Played/Rated: <span className="text-white font-medium">{similarStats.count}</span>
+              </div>
+              {similarStats.avgRating !== null ? (
+                <div>
+                  • Your Average: <span className="text-white font-medium">{similarStats.avgRating.toFixed(1)}/10</span>
+                  {rating !== null && (
+                    <span className="text-white/40 ml-1.5">
+                      ({rating > similarStats.avgRating ? "+" : ""}{(rating - similarStats.avgRating).toFixed(1)} vs avg)
+                    </span>
+                  )}
                 </div>
-              ))
-            ) : (
-              <span className="text-white/30 italic text-[9px] uppercase font-mono block">No activity logged yet.</span>
-            )
+              ) : (
+                <div>
+                  • Your Average: <span className="text-white/30 italic">N/A</span>
+                </div>
+              )}
+              {siteRating !== null && (
+                <div>
+                  • Site Average: <span className="text-white font-medium">{siteRating.toFixed(1)}/10</span>
+                </div>
+              )}
+            </div>
           ) : (
-            <span className="text-white/30 italic text-[9px] uppercase font-mono block">[ Loading Log... ]</span>
+            <span className="text-white/30 italic text-[10px] uppercase font-mono">[ Loading Stats... ]</span>
           )}
         </div>
-      </div>
 
-      {/* Footer Info */}
-      {!user && (
-        <span className="font-sans text-[9px] text-white/30 block border-t border-white/10 pt-2 leading-snug">
-          * Sign in to sync your status to the server database.
-        </span>
-      )}
+        {/* 4. Play History Log */}
+        <div className="border-t border-white/5 pt-4 flex-1 flex flex-col gap-1">
+          <span className="text-[10px] text-neutral-450 font-bold uppercase tracking-widest mb-1">
+            Activity Log
+          </span>
+          <div className="space-y-2 overflow-y-auto max-h-[85px] pr-1 scrollbar-thin">
+            {mounted ? (
+              history.length > 0 ? (
+                history.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-baseline text-[9px] font-mono text-neutral-350 uppercase">
+                    <span className="truncate max-w-[170px]">{item.value}</span>
+                    <span className="text-white/30 shrink-0 text-[8px] ml-1">
+                      {new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <span className="text-white/35 italic text-[9px] uppercase font-mono block">No activity logged yet.</span>
+              )
+            ) : (
+              <span className="text-white/35 italic text-[9px] uppercase font-mono block">[ Loading Log... ]</span>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Info */}
+        {!user && (
+          <span className="text-[12px] text-white/55 block border-t border-white/5 pt-2 leading-snug">
+            * Sign in to sync your status to the server database.
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -466,7 +530,9 @@ function TrackControlsInner({
 export default function TrackControls(props: TrackControlsProps) {
   return (
     <AuthProvider>
-      <TrackControlsInner {...props} />
+      <CartProvider>
+        <TrackControlsInner {...props} />
+      </CartProvider>
     </AuthProvider>
   );
 }

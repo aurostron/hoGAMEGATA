@@ -31,3 +31,16 @@ pnpm-debug.log*
 /scripts/
 /src/lib/db.ts
 
+# local sqlite databases
+*.db
+*.db-journal
+*.sqlite
+
+# temporary scratch and ingestion files
+/scratch/
+ingest_cursor.json
+gamegata-sync/
+hogamegata/
+
+
+

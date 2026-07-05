@@ -1,0 +1,55 @@
+---
+import Layout from '../layouts/Layout.astro';
+import GataCatalogClient from '../components/GataCatalogClient';
+import { turso } from '../lib/turso';
+import { games, genres, tags, platforms } from '../db/schema';
+import { count } from 'drizzle-orm';
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=15, s-maxage=60, stale-while-revalidate=120'
+);
+
+let totalGames: number | null = null;
+let allGenres: any[] = [];
+let allTags: any[] = [];
+let allPlatforms: any[] = [];
+
+try {
+  // Query database counts and lists in parallel
+  const [
+    [{ count: gamesCount }],
+    genresList,
+    tagsList,
+    platformsList
+  ] = await Promise.all([
+    turso.select({ count: count() }).from(games),
+    turso.select({ name: genres.name, slug: genres.slug }).from(genres).orderBy(genres.name),
+    turso.select({ name: tags.name, slug: tags.slug }).from(tags).orderBy(tags.name),
+    turso.select({ name: platforms.name, slug: platforms.slug }).from(platforms).orderBy(platforms.name)
+  ]);
+
+  totalGames = gamesCount;
+  allGenres = genresList;
+  allTags = tagsList;
+  allPlatforms = platformsList;
+} catch (err) {
+  console.error("Failed to query catalog metadata from Turso:", err);
+}
+---
+
+<Layout 
+  title="Horror Games Registry | hoGAMEGATA" 
+  description="Explore the complete horror database registry. Advanced filters, catalog lists, price comparisons, and steam rating metrics."
+  withSearch={false}
+>
+  <div class="max-w-[1400px] mx-auto px-6 sm:px-10 mt-10 flex-1 pb-24 w-full">
+    <GataCatalogClient
+      client:only="react"
+      initialTotalGames={totalGames}
+      initialGenres={allGenres}
+      initialTags={allTags}
+      initialPlatforms={allPlatforms}
+    />
+  </div>
+</Layout>

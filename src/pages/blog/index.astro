@@ -1,0 +1,124 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { sanityClient, urlFor } from '../../lib/sanity';
+import { BookOpen, Calendar, ArrowRight } from 'lucide-react';
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=60, s-maxage=120, stale-while-revalidate=300'
+);
+
+let posts: any[] = [];
+let error = false;
+
+try {
+  posts = await sanityClient.fetch(`
+    *[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+      title,
+      "slug": slug.current,
+      publishedAt,
+      excerpt,
+      coverImage
+    }
+  `);
+} catch (err) {
+  console.error("Failed to fetch posts from Sanity:", err);
+  error = true;
+}
+---
+
+<Layout
+  title="Changelog & Blog | hoGAMEGATA"
+  description="Stay updated with the latest blogs and changelogs on hoGAMEGATA."
+  withSearch={false}
+>
+  <main class="max-w-5xl mx-auto px-6 mt-12 pb-24 flex-1 w-full">
+    <!-- Logbook Header -->
+    <header class="pb-8 border-b border-white/10 space-y-4 mb-12">
+      <div class="flex items-center gap-3">
+      </div>
+      <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter text-white">
+        Blogs and Changelogs
+      </h1>
+      <p class="text-sm text-white/50 max-w-xl leading-relaxed font-medium">
+        Updates, database changelogs, and developer notes all at one place.
+      </p>
+    </header>
+
+    {error && (
+      <div class="border-2 border-red-500 bg-red-950/20 p-6 text-center space-y-4">
+        <p class="font-mono text-sm text-red-500 uppercase font-black">Connection Failure</p>
+        <p class="text-xs text-white/60">Could not retrieve data from our servers. Please try again later.</p>
+      </div>
+    )}
+
+    {!error && posts.length === 0 && (
+      <div class="border border-white/15 bg-black/40 p-12 text-center space-y-4">
+        <div class="relative flex items-center justify-center w-12 h-12 bg-white/5 border border-white/10 rounded-full mx-auto">
+          <BookOpen class="w-5 h-5 text-white/40" />
+        </div>
+        <p class="font-mono text-xs uppercase tracking-widest text-white/40">Not Found</p>
+        <p class="text-xs text-white/60 max-w-sm mx-auto leading-relaxed">
+          Currently empty. Check back soon!
+        </p>
+      </div>
+    )}
+
+    {!error && posts.length > 0 && (
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {posts.map((post) => {
+          const formattedDate = post.publishedAt
+            ? new Date(post.publishedAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "Transmission Date Unknown";
+
+          return (
+            <article class="group flex flex-col border border-white/10 bg-[#08080a] hover:border-white/30 transition-all duration-150 relative overflow-hidden flex-1">
+              {post.coverImage && (
+                <div class="aspect-video w-full overflow-hidden border-b border-white/10 relative">
+                  <img
+                    src={urlFor(post.coverImage).width(800).height(450).fit("crop").url()}
+                    alt={post.title}
+                    class="object-cover w-full h-full group-hover:scale-[1.02] transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-60"></div>
+                </div>
+              )}
+              
+              <div class="p-6 flex flex-col flex-1 gap-4 justify-between">
+                <div class="space-y-3">
+                  <div class="flex items-center gap-2 font-bold text-[10px] text-white/40 uppercase font-black">
+                    <Calendar class="w-3.5 h-3.5 text-[#ff2a2a]" />
+                    <span>{formattedDate}</span>
+                  </div>
+                  
+                  <h2 class="font-sans font-mono text-xl text-white group-hover:text-[#ff2a2a] transition-colors leading-tight uppercase tracking-tight">
+                    {post.title}
+                  </h2>
+                  
+                  {post.excerpt && (
+                    <p class="text-xs text-white/60 leading-relaxed line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                  )}
+                </div>
+
+                <a
+                  href={`/blog/${post.slug}`}
+                  class="w-fit flex items-center gap-2 font-bold text-[10px] text-white hover:text-[#ff2a2a] uppercase tracking-wider font-bold mt-2 transition-colors"
+                >
+                  <span>Continue reading!</span>
+                  <ArrowRight class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    )}
+  </main>
+</Layout>

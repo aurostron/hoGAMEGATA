@@ -1,6 +1,10 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../../lib/supabaseServer';
 import { generateAffiliateLink } from '../../../lib/affiliate';
+import { turso } from '../../../lib/turso';
+import { tursoAuth } from '../../../lib/tursoAuth';
+import { referralClick as referralClickTable } from '../../../db/auth-schema';
+import { games as gamesTable, purchaseLinks as purchaseLinksTable } from '../../../db/schema';
+import { eq } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -25,28 +29,40 @@ export const GET: APIRoute = async ({ params, request }) => {
   const gameId = searchParams.get("gameId") || "";
 
   try {
-    const supabase = getSupabaseServer();
-
-    // 1. Resolve the Game from database
+    // 1. Resolve the Game from database (Turso Catalog DB)
     let game = null;
     if (gameId) {
-      const { data } = await supabase
-        .from("Game")
-        .select("id, slug, purchaseLinks:PurchaseLink(id, storeName, url)")
-        .eq("id", gameId)
-        .limit(1)
-        .maybeSingle();
-      game = data;
+      const [gameRow] = await turso
+        .select({ id: gamesTable.id, slug: gamesTable.slug })
+        .from(gamesTable)
+        .where(eq(gamesTable.id, gameId))
+        .limit(1);
+      
+      if (gameRow) {
+        const links = await turso
+          .select({ storeName: purchaseLinksTable.storeName, url: purchaseLinksTable.url })
+          .from(purchaseLinksTable)
+          .where(eq(purchaseLinksTable.gameId, gameRow.id));
+        
+        game = { ...gameRow, purchaseLinks: links };
+      }
     }
 
     if (!game && slug) {
-      const { data } = await supabase
-        .from("Game")
-        .select("id, slug, purchaseLinks:PurchaseLink(id, storeName, url)")
-        .eq("slug", slug)
-        .limit(1)
-        .maybeSingle();
-      game = data;
+      const [gameRow] = await turso
+        .select({ id: gamesTable.id, slug: gamesTable.slug })
+        .from(gamesTable)
+        .where(eq(gamesTable.slug, slug))
+        .limit(1);
+      
+      if (gameRow) {
+        const links = await turso
+          .select({ storeName: purchaseLinksTable.storeName, url: purchaseLinksTable.url })
+          .from(purchaseLinksTable)
+          .where(eq(purchaseLinksTable.gameId, gameRow.id));
+        
+        game = { ...gameRow, purchaseLinks: links };
+      }
     }
 
     if (!game) {
@@ -79,9 +95,9 @@ export const GET: APIRoute = async ({ params, request }) => {
       finalRedirectionUrl = cleanLink?.url || fallbackUrl || new URL("/", request.url).toString();
     }
 
-    // 3. Log referral click in database
+    // 3. Log referral click in database (separate Auth/User DB)
     try {
-      await supabase.from("ReferralClick").insert({
+      await tursoAuth.insert(referralClickTable).values({
         id: crypto.randomUUID(),
         gameId: game.id,
         storeName: cleanLink?.storeName || targetStoreName,

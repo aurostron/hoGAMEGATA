@@ -1,0 +1,1484 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
+import { 
+  Search, 
+  LayoutGrid, 
+  List, 
+  ChevronLeft, 
+  ChevronRight, 
+  SlidersHorizontal, 
+  Star, 
+  X, 
+  Check, 
+  Loader2,
+  Calendar,
+  ExternalLink,
+  ShoppingCart,
+  CheckCheck
+} from "lucide-react";
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from "../lib/utils";
+import PlatformLogos from "./PlatformLogos";
+import NyanLoader from "./NyanLoader";
+import { CartProvider, useCart } from "../context/CartContext";
+import { AuthProvider } from "../context/AuthContext";
+import HoverTrailer from "./HoverTrailer";
+
+const formatDate = (dateVal: string | Date | null | undefined) => {
+  if (!dateVal) return "";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short"
+    });
+  } catch {
+    return "";
+  }
+};
+
+export interface GameData {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string | null;
+  status: string;
+  coverUrl: string | null;
+  isTrending: boolean;
+  rating: number | null;
+  category: number | null;
+  esrbRating: string | null;
+  pegiRating: string | null;
+  developerNames: string | null;
+  genreNames: string | null;
+  platformNames: string | null;
+  releaseDate: string | null;
+  trailerUrl?: string | null;
+  screenshots: string[];
+  tags: Array<{ name: string; slug: string }>;
+  purchaseLinks?: Array<{ storeName: string; url: string }>;
+  displayRating?: number | null;
+  isAbsoluteCinema?: boolean;
+  priceSnapshots?: Array<{
+    storeName: string;
+    dealPrice: number;
+    retailPrice: number;
+    discountPercent: number;
+    dealUrl: string;
+    currency: string;
+    country: string;
+  }>;
+}
+
+interface GataCatalogClientProps {
+  initialTotalGames: number | null;
+  initialGenres: Array<{ name: string; slug: string }>;
+  initialTags: Array<{ name: string; slug: string }>;
+  initialPlatforms: Array<{ name: string; slug: string }>;
+}
+
+const CATEGORIES = [
+  { 
+    name: "Classic", 
+    filterType: "tags", 
+    filterValue: "retro", 
+    gradient: "from-red-950/75 via-neutral-900/80 to-black/90 border-red-950/30 hover:border-red-600/60", 
+    desc: "Retro psychological dread",
+    bgImage: "https://img.itch.zone/aW1hZ2UvMTg2NTI5Mi8xMDk2MzMwNy5wbmc=/original/MwuFZC.png"
+  },
+  { 
+    name: "Strategy", 
+    filterType: "genres", 
+    filterValue: "strategy", 
+    gradient: "from-indigo-950/75 via-neutral-900/80 to-black/90 border-indigo-950/30 hover:border-indigo-600/60", 
+    desc: "Tactical resources & planning",
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sciazw.jpg"
+  },
+  { 
+    name: "Adventure", 
+    filterType: "genres", 
+    filterValue: "adventure", 
+    gradient: "from-emerald-950/75 via-neutral-900/80 to-black/90 border-emerald-950/30 hover:border-emerald-600/60", 
+    desc: "Narrative & exploration",
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scrris.jpg"
+  },
+  { 
+    name: "Indie", 
+    filterType: "genres", 
+    filterValue: "indie", 
+    gradient: "from-fuchsia-950/75 via-neutral-900/80 to-black/90 border-fuchsia-950/30 hover:border-fuchsia-600/60", 
+    desc: "Lo-fi experimental nightmares",
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc9d42.jpg"
+  },
+  { 
+    name: "Role-Playing", 
+    filterType: "genres", 
+    filterValue: "role-playing-rpg", 
+    gradient: "from-amber-950/75 via-neutral-900/80 to-black/90 border-amber-950/30 hover:border-amber-600/60", 
+    desc: "RPG survival elements",
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/zsco1iaj6riez8rpzphh.jpg"
+  },
+];
+
+const HORROR_SUBGENRES = [
+  { name: "Survival Horror", slug: "survival-horror" },
+  { name: "Psychological", slug: "psychological" },
+  { name: "Action Horror", slug: "action-horror" },
+  { name: "Cosmic & Eldritch", slug: "cosmic-horror" },
+  { name: "Folk Horror", slug: "folk-horror" },
+  { name: "Body Horror", slug: "body-horror" },
+  { name: "Slasher", slug: "slasher" },
+  { name: "Supernatural", slug: "supernatural" },
+  { name: "Zombie & Apocalypse", slug: "zombie-apocalypse" },
+  { name: "Puzzle", slug: "puzzle-horror" },
+  { name: "Narrative", slug: "narrative-horror" },
+  { name: "Comedy & Parody", slug: "comedy-horror" }
+];
+
+const COMMON_FEATURES = [
+  { name: "Single-player", slug: "singleplayer" },
+  { name: "Multiplayer", slug: "multiplayer" },
+  { name: "Co-op", slug: "co-op" },
+];
+
+const DECADES = [
+  { name: "2020s", slug: "2020s" },
+  { name: "2010s", slug: "2010s" },
+  { name: "2000s", slug: "2000s" },
+  { name: "1990s", slug: "1990s" },
+  { name: "Older", slug: "older" },
+];
+
+const SORT_OPTIONS = [
+  { label: "Bestselling (Trending)", value: "trending" },
+  { label: "Release Date (Latest)", value: "latest" },
+  { label: "Release Date (Upcoming)", value: "upcoming" },
+  { label: "Rating (Top Rated)", value: "top-rated" },
+  { label: "Title (A-Z)", value: "title" },
+  { label: "Price (Low to High)", value: "price-asc" },
+  { label: "Price (High to Low)", value: "price-desc" },
+];
+
+const formatPrice = (amount: number, currencyCode: string = "USD") => {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(amount);
+  } catch {
+    return `$${amount}`;
+  }
+};
+
+const getDirectLink = (game: GameData) => {
+  const itchLink = game.purchaseLinks?.find(l => l.storeName?.toLowerCase()?.includes("itch"));
+  if (itchLink?.url) return itchLink.url;
+  const steamLink = game.purchaseLinks?.find(l => l.storeName?.toLowerCase()?.includes("steam"));
+  if (steamLink?.url) return steamLink.url;
+  if (game.purchaseLinks && game.purchaseLinks.length > 0) return game.purchaseLinks[0].url;
+  return null;
+};
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error("GataCatalogClient Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="border border-red-500 bg-red-950 p-6 font-mono text-xs text-red-200 space-y-4 rounded-none">
+          <h2 className="text-sm font-bold uppercase">Uhh ohh, something crashed</h2>
+          <p className="font-bold">Error: {this.state.error?.message}</p>
+          <pre className="bg-black/50 p-3 overflow-auto max-h-60 whitespace-pre-wrap text-left">
+            {this.state.error?.stack}
+          </pre>
+          <button 
+            onClick={() => window.location.reload()}
+            className="border border-red-500/30 px-3 py-1.5 hover:bg-red-500 hover:text-black font-bold uppercase transition-colors cursor-pointer"
+          >
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default function GataCatalogClient(props: GataCatalogClientProps) {
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <ErrorBoundary>
+          <GataCatalogClientInner {...props} />
+        </ErrorBoundary>
+      </CartProvider>
+    </AuthProvider>
+  );
+}
+
+function GataCatalogClientInner({
+  initialTotalGames,
+  initialGenres = [],
+  initialTags = [],
+  initialPlatforms = []
+}: GataCatalogClientProps) {
+  const { addToCart, cartItems } = useCart();
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const [games, setGames] = useState<GameData[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [dbMaxPrice, setDbMaxPrice] = useState<number>(60);
+  const [loading, setLoading] = useState(true);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
+
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState("trending");
+  const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
+  const [hideDlcs, setHideDlcs] = useState(true);
+  const [freeOnly, setFreeOnly] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [priceSlider, setPriceSlider] = useState(60);
+  const [titleLimit, setTitleLimit] = useState(500);
+  
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedSystems, setSelectedSystems] = useState<string[]>([]);
+  const [selectedDecades, setSelectedDecades] = useState<string[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
+  // Correction Suggestion
+  const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
+  const [originalSearch, setOriginalSearch] = useState<string>("");
+
+  // UI Accordion Toggles
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    price: true,
+    genres: true,
+    systems: true,
+    features: true,
+    decades: true
+  });
+
+  // Hover Card Popover State
+  const [hoveredGame, setHoveredGame] = useState<GameData | null>(null);
+  const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number; side: "left" | "right" }>({ x: 0, y: 0, side: "right" });
+  const [activeScreenshotIdx, setActiveScreenshotIdx] = useState(0);
+  const screenshotIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const gamesPerPage = 24;
+
+  // Hydrate from URL query parameters on mount & popstate
+  useEffect(() => {
+    const hydrateFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      setSearchQuery(params.get("search") || "");
+      setDebouncedSearch(params.get("search") || "");
+      setSortBy(params.get("sort") || "trending");
+      setHideDlcs(params.get("hideDlcs") !== "false");
+      setFreeOnly(params.get("freeOnly") === "true");
+      setMinPrice(params.get("minPrice") || "");
+      setMaxPrice(params.get("maxPrice") || "");
+      
+      const pageVal = parseInt(params.get("page") || "1", 10);
+      setCurrentPage(isNaN(pageVal) ? 1 : pageVal);
+
+      const genresVal = params.get("genres");
+      setSelectedGenres(genresVal ? genresVal.split(",").filter(Boolean) : []);
+
+      const systemsVal = params.get("systems");
+      setSelectedSystems(systemsVal ? systemsVal.split(",").filter(Boolean) : []);
+
+      const decadesVal = params.get("decades");
+      setSelectedDecades(decadesVal ? decadesVal.split(",").filter(Boolean) : []);
+
+      const featuresVal = params.get("features");
+      setSelectedFeatures(featuresVal ? featuresVal.split(",").filter(Boolean) : []);
+    };
+
+    if (typeof window !== "undefined") {
+      hydrateFromUrl();
+      window.addEventListener("popstate", hydrateFromUrl);
+      
+      const savedLayout = localStorage.getItem("gata-layout-mode");
+      if (savedLayout === "list" || savedLayout === "grid") {
+        setLayoutMode(savedLayout);
+      }
+
+      return () => window.removeEventListener("popstate", hydrateFromUrl);
+    }
+  }, []);
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // When search changes, reset to page 1 and titleLimit to 500
+  useEffect(() => {
+    setCurrentPage(1);
+    setCorrectedQuery(null);
+    setTitleLimit(500);
+  }, [debouncedSearch]);
+
+  // Reset title limit when sorting changes
+  useEffect(() => {
+    setTitleLimit(500);
+  }, [sortBy]);
+
+  // Sync state to URL and Fetch Games
+  useEffect(() => {
+    const fetchGames = async () => {
+      setLoading(true);
+      try {
+        const queryParams = new URLSearchParams();
+        if (debouncedSearch) queryParams.set("search", debouncedSearch);
+        if (sortBy) queryParams.set("sort", sortBy);
+        if (!hideDlcs) queryParams.set("hideDlcs", "false");
+        if (freeOnly) queryParams.set("freeOnly", "true");
+        if (minPrice) queryParams.set("minPrice", minPrice);
+        
+        // Use slider price if not explicitly overridden by maxPrice input
+        const finalMaxPrice = maxPrice || (priceSlider < dbMaxPrice ? priceSlider.toString() : "");
+        if (finalMaxPrice) queryParams.set("maxPrice", finalMaxPrice);
+
+        if (selectedGenres.length > 0) queryParams.set("genres", selectedGenres.join(","));
+        if (selectedSystems.length > 0) queryParams.set("systems", selectedSystems.join(","));
+        if (selectedDecades.length > 0) queryParams.set("decades", selectedDecades.join(","));
+        if (selectedFeatures.length > 0) queryParams.set("features", selectedFeatures.join(","));
+
+        // Pagination
+        const limitVal = sortBy === "title" ? titleLimit : gamesPerPage;
+        const offset = sortBy === "title" ? 0 : (currentPage - 1) * gamesPerPage;
+        queryParams.set("offset", offset.toString());
+        queryParams.set("limit", limitVal.toString());
+
+        // Update URL bar
+        if (typeof window !== "undefined") {
+          const urlParams = new URLSearchParams(queryParams);
+          urlParams.set("page", currentPage.toString());
+          if (hideDlcs) urlParams.set("hideDlcs", "true");
+          const urlQuery = urlParams.toString();
+          const targetUrl = urlQuery ? `/games?${urlQuery}` : "/games";
+          if (window.location.search !== `?${urlQuery}`) {
+            window.history.replaceState(null, "", targetUrl);
+          }
+        }
+
+        const res = await fetch(`/api/games?${queryParams.toString()}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          setGames(data.games || []);
+          setTotalCount(data.totalCount || 0);
+          if (data.maxPrice && data.maxPrice > 0) {
+            setDbMaxPrice(data.maxPrice);
+            // Default slider to max if never moved
+            if (priceSlider === 60) setPriceSlider(data.maxPrice);
+          }
+
+          if (data.correctedQuery) {
+            setCorrectedQuery(data.correctedQuery);
+            setOriginalSearch(debouncedSearch);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to query catalog:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
+  }, [
+    debouncedSearch,
+    currentPage,
+    sortBy,
+    hideDlcs,
+    freeOnly,
+    minPrice,
+    maxPrice,
+    priceSlider,
+    selectedGenres,
+    selectedSystems,
+    selectedDecades,
+    selectedFeatures,
+    titleLimit
+  ]);
+
+  // Category cards click handlers
+  const handleCategoryClick = (category: typeof CATEGORIES[0]) => {
+    setCurrentPage(1);
+    if (category.filterType === "genres") {
+      setSelectedGenres(prev => 
+        prev.includes(category.filterValue) 
+          ? prev.filter(g => g !== category.filterValue)
+          : [...prev, category.filterValue]
+      );
+    } else if (category.filterType === "tags") {
+      setSelectedFeatures(prev => 
+        prev.includes(category.filterValue)
+          ? prev.filter(f => f !== category.filterValue)
+          : [...prev, category.filterValue]
+      );
+    }
+  };
+
+  const isCategoryActive = (category: typeof CATEGORIES[0]) => {
+    if (category.filterType === "genres") {
+      return selectedGenres.includes(category.filterValue);
+    } else if (category.filterType === "tags") {
+      return selectedFeatures.includes(category.filterValue);
+    }
+    return false;
+  };
+
+  // Checkbox toggle handlers
+  const toggleGenre = (slug: string) => {
+    setCurrentPage(1);
+    setSelectedGenres(prev => 
+      prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+    );
+  };
+
+  const toggleSystem = (slug: string) => {
+    setCurrentPage(1);
+    setSelectedSystems(prev => 
+      prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+    );
+  };
+
+  const toggleDecade = (slug: string) => {
+    setCurrentPage(1);
+    setSelectedDecades(prev => 
+      prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+    );
+  };
+
+  const toggleFeature = (slug: string) => {
+    setCurrentPage(1);
+    setSelectedFeatures(prev => 
+      prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setCurrentPage(1);
+    setSortBy("trending");
+    setHideDlcs(true);
+    setFreeOnly(false);
+    setMinPrice("");
+    setMaxPrice("");
+    setPriceSlider(dbMaxPrice);
+    setSelectedGenres([]);
+    setSelectedSystems([]);
+    setSelectedDecades([]);
+    setSelectedFeatures([]);
+    setCorrectedQuery(null);
+  };
+
+  const totalPages = Math.ceil(totalCount / gamesPerPage) || 1;
+
+  // Layout preference sync
+  const changeLayoutMode = (mode: "grid" | "list") => {
+    setLayoutMode(mode);
+    localStorage.setItem("gata-layout-mode", mode);
+  };
+
+  // Hover popover events
+  const handleCardMouseEnter = (e: React.MouseEvent, game: GameData) => {
+    if (window.innerWidth < 1024) return; // Disable hover cards on mobile/tablets
+    const rect = e.currentTarget.getBoundingClientRect();
+    const screenWidth = window.innerWidth;
+    const side = screenWidth - rect.right < 360 ? "left" : "right";
+    
+    setHoveredGame(game);
+    setHoverPosition({
+      x: side === "right" ? rect.right + window.scrollX + 12 : rect.left + window.scrollX - 352,
+      y: rect.top + window.scrollY - 10,
+      side
+    });
+    setActiveScreenshotIdx(0);
+
+    // Auto rotate screenshots in popover
+    if (screenshotIntervalRef.current) clearInterval(screenshotIntervalRef.current);
+    if (game.screenshots && game.screenshots.length > 1) {
+      screenshotIntervalRef.current = setInterval(() => {
+        setActiveScreenshotIdx(prev => (prev + 1) % Math.min(game.screenshots.length, 4));
+      }, 2200);
+    }
+  };
+
+  const handleCardMouseLeave = () => {
+    setHoveredGame(null);
+    if (screenshotIntervalRef.current) {
+      clearInterval(screenshotIntervalRef.current);
+      screenshotIntervalRef.current = null;
+    }
+  };
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const cheapestPriceSnapshot = (game: GameData) => {
+    if (!game.priceSnapshots || game.priceSnapshots.length === 0) return null;
+    return [...game.priceSnapshots].sort((a, b) => a.dealPrice - b.dealPrice)[0];
+  };
+
+  const changePage = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const renderRatingBadge = (game: GameData) => {
+    if (game.displayRating === undefined || game.displayRating === null) return null;
+    
+    const score = game.displayRating;
+    let borderColor = "border-neutral-700 text-neutral-400";
+    let badgeText = "";
+    
+    if (score >= 90) {
+      borderColor = "border-emerald-500 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.45)]";
+      badgeText = "ABSOLUTE CINEMA";
+    } else if (score >= 75) {
+      borderColor = "border-blue-500 text-blue-400";
+    } else if (score >= 50) {
+      borderColor = "border-amber-500 text-amber-400";
+    } else {
+      borderColor = "border-red-500 text-red-400";
+    }
+
+    return (
+      <div className="absolute top-2.5 right-2.5 z-10 flex flex-col items-end gap-1 select-none pointer-events-none">
+        <div className={`w-9 h-9 rounded-full bg-black/85 backdrop-blur-sm border-2 ${borderColor} flex items-center justify-center font-mono text-[11px] font-black uppercase`}>
+          {Math.round(score)}
+        </div>
+        {badgeText && (
+          <span className="font-mono text-[7px] tracking-widest bg-emerald-600/90 text-white font-black px-1.5 py-0.5 uppercase border border-emerald-400/30">
+            {badgeText}
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  // Render pagination buttons
+  const renderPaginationNumbers = () => {
+    const numbers = [];
+    const delta = 2; // numbers to show before/after current page
+    
+    let start = Math.max(1, currentPage - delta);
+    let end = Math.min(totalPages, currentPage + delta);
+
+    if (start > 1) {
+      numbers.push(
+        <button
+          key={1}
+          onClick={() => changePage(1)}
+          className={`w-9 h-9 border font-mono text-xs uppercase font-bold flex items-center justify-center transition-colors
+            ${currentPage === 1 
+              ? "bg-white border-white text-black" 
+              : "border-white/10 text-white/60 hover:text-white hover:border-white"}`}
+        >
+          1
+        </button>
+      );
+      if (start > 2) {
+        numbers.push(<span key="ellipsis-start" className="text-white/30 font-mono self-end px-1 leading-8">...</span>);
+      }
+    }
+
+    for (let i = start; i <= end; i++) {
+      numbers.push(
+        <button
+          key={i}
+          onClick={() => changePage(i)}
+          className={`w-9 h-9 border font-mono text-xs uppercase font-bold flex items-center justify-center transition-colors
+            ${currentPage === i 
+              ? "bg-white border-white text-black" 
+              : "border-white/10 text-white/60 hover:text-white hover:border-white"}`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (end < totalPages) {
+      if (end < totalPages - 1) {
+        numbers.push(<span key="ellipsis-end" className="text-white/30 font-mono self-end px-1 leading-8">...</span>);
+      }
+      numbers.push(
+        <button
+          key={totalPages}
+          onClick={() => changePage(totalPages)}
+          className={`w-9 h-9 border font-mono text-xs uppercase font-bold flex items-center justify-center transition-colors
+            ${currentPage === totalPages 
+              ? "bg-white border-white text-black" 
+              : "border-white/10 text-white/60 hover:text-white hover:border-white"}`}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return numbers;
+  };
+
+  return (
+    <div className="space-y-8 select-none">
+      {/* ── Top Category Cards ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        {CATEGORIES.map((cat, i) => {
+          const active = isCategoryActive(cat);
+          return (
+            <button
+              key={i}
+              onClick={() => handleCategoryClick(cat)}
+              className={`border p-4.5 text-left flex flex-col justify-between transition-all duration-300 relative group min-h-[110px] cursor-pointer bg-gradient-to-br ${cat.gradient} overflow-hidden
+                ${active 
+                  ? "shadow-[0_0_20px_rgba(255,255,255,0.08)] scale-102 border-white! text-white" 
+                  : "text-white/70 hover:text-white"
+                }`}
+            >
+              {cat.bgImage && (
+                <div className="absolute inset-0 w-full h-full z-0 transition-transform duration-500 group-hover:scale-105 pointer-events-none overflow-hidden">
+                  <img
+                    src={cat.bgImage}
+                    alt=""
+                    className="w-full h-full object-cover filter brightness-[0.55] group-hover:brightness-[0.70] contrast-[1.05] transition-all duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/15 group-hover:bg-black/5 transition-colors" />
+                </div>
+              )}
+              <div className="flex justify-between items-start w-full relative z-10">
+                <span className="font-mono text-[9px] uppercase tracking-widest text-white/35 font-bold group-hover:text-white/50 transition-colors">
+                  // 0{i + 1}
+                </span>
+                {active && (
+                  <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_#dc2626]" />
+                )}
+              </div>
+              <div className="mt-3 relative z-10">
+                <h4 className="font-sans font-black uppercase text-base tracking-wider leading-none text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)]">
+                  {cat.name}
+                </h4>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Main Catalog Frame ── */}
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+        
+        {/* ── Left Sidebar Filters ── */}
+        <aside className="w-full lg:w-64 shrink-0 space-y-6 bg-[#131316] border border-[#222227] p-5 rounded-none">
+          <div className="flex justify-between items-center pb-3 border-b border-white/15">
+            <span className="font-mono text-xs text-white uppercase font-black tracking-widest flex items-center gap-1.5">
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              Filters
+            </span>
+            <button 
+              onClick={clearAllFilters}
+              className="font-mono text-[15px] text-white/40 hover:text-white uppercase font-bold tracking-wider hover:underline"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div className="space-y-4 text-xs font-mono">
+            {/* Filter checkboxes: DLC / Free */}
+            <div className="space-y-2.5 pt-1.5 pb-2.5">
+              <label className="flex items-center gap-2.5 cursor-pointer text-white/70 hover:text-white select-none">
+                <input
+                  type="checkbox"
+                  checked={hideDlcs}
+                  onChange={(e) => {
+                    setCurrentPage(1);
+                    setHideDlcs(e.target.checked);
+                  }}
+                  className="accent-white cursor-pointer w-3.5 h-3.5"
+                />
+                <span>Hide DLCs & Extras</span>
+              </label>
+
+              <label className="flex items-center gap-2.5 cursor-pointer text-white/70 hover:text-white select-none">
+                <input
+                  type="checkbox"
+                  checked={freeOnly}
+                  onChange={(e) => {
+                    setCurrentPage(1);
+                    setFreeOnly(e.target.checked);
+                  }}
+                  className="accent-white cursor-pointer w-3.5 h-3.5"
+                />
+                <span>Show Only Free Games</span>
+              </label>
+            </div>
+
+            {/* Price Accordion */}
+            <div className="border-t border-white/10 pt-3">
+              <button 
+                onClick={() => toggleSection("price")}
+                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+              >
+                <span>Price Range</span>
+                <span className="text-[15px]">{openSections.price ? "-" : "+"}</span>
+              </button>
+              {openSections.price && (
+                <div className="space-y-3 mt-2">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="number"
+                      value={minPrice}
+                      onChange={(e) => {
+                        setCurrentPage(1);
+                        setMinPrice(e.target.value);
+                      }}
+                      placeholder="Min"
+                      className="w-1/2 bg-[#1b1b22] border border-[#2d2d38] px-2 py-1.5 text-[12px] rounded-none focus:outline-none focus:border-white/50 focus:bg-[#20202a] transition-all font-mono text-center text-white placeholder:text-white/20"
+                    />
+                    <span className="text-white/30">—</span>
+                    <input
+                      type="number"
+                      value={maxPrice}
+                      onChange={(e) => {
+                        setCurrentPage(1);
+                        setMaxPrice(e.target.value);
+                      }}
+                      placeholder="Max"
+                      className="w-1/2 bg-[#1b1b22] border border-[#2d2d38] px-2 py-1.5 text-[12px] rounded-none focus:outline-none focus:border-white/50 focus:bg-[#20202a] transition-all font-mono text-center text-white placeholder:text-white/20"
+                    />
+                  </div>
+                  {!freeOnly && !maxPrice && (
+                    <div className="space-y-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max={dbMaxPrice}
+                        step="1"
+                        value={priceSlider}
+                        onChange={(e) => {
+                          setCurrentPage(1);
+                          setPriceSlider(parseInt(e.target.value, 10));
+                        }}
+                        className="w-full accent-white cursor-pointer h-1 bg-white/10 appearance-none"
+                      />
+                      <div className="flex justify-between text-[10px] text-white/40">
+                        <span>Free</span>
+                        <span className="text-white font-bold">Max: {formatPrice(priceSlider)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Genres Accordion (Curated Horror Sub-genres) */}
+            <div className="border-t border-white/10 pt-3">
+              <button 
+                onClick={() => toggleSection("genres")}
+                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+              >
+                <span>Genres</span>
+                <span>{openSections.genres ? "-" : "+"}</span>
+              </button>
+              {openSections.genres && (
+                <div className="space-y-2 mt-2 max-h-56 overflow-y-auto pr-1">
+                  {HORROR_SUBGENRES.map((sub) => (
+                    <label key={sub.slug} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.includes(sub.slug)}
+                        onChange={() => toggleFeature(sub.slug)}
+                        className="accent-white cursor-pointer w-3.5 h-3.5"
+                      />
+                      <span>{sub.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Systems Accordion */}
+            <div className="border-t border-white/10 pt-3">
+              <button 
+                onClick={() => toggleSection("systems")}
+                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+              >
+                <span>Operating Systems</span>
+                <span>{openSections.systems ? "-" : "+"}</span>
+              </button>
+              {openSections.systems && (
+                <div className="space-y-2 mt-2">
+                  {["win", "mac", "linux"].map((sys) => {
+                    const label = sys === "win" ? "Windows" : sys === "mac" ? "macOS" : "Linux";
+                    return (
+                      <label key={sys} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
+                        <input
+                          type="checkbox"
+                          checked={selectedSystems.includes(sys)}
+                          onChange={() => toggleSystem(sys)}
+                          className="accent-white cursor-pointer w-3.5 h-3.5"
+                        />
+                        <span>{label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Features Accordion */}
+            <div className="border-t border-white/10 pt-3">
+              <button 
+                onClick={() => toggleSection("features")}
+                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+              >
+                <span>Features</span>
+                <span>{openSections.features ? "-" : "+"}</span>
+              </button>
+              {openSections.features && (
+                <div className="space-y-2 mt-2">
+                  {COMMON_FEATURES.map((feature) => (
+                    <label key={feature.slug} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.includes(feature.slug)}
+                        onChange={() => toggleFeature(feature.slug)}
+                        className="accent-white cursor-pointer w-3.5 h-3.5"
+                      />
+                      <span>{feature.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Decades Accordion */}
+            <div className="border-t border-white/10 pt-3">
+              <button 
+                onClick={() => toggleSection("decades")}
+                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+              >
+                <span>Release Date</span>
+                <span>{openSections.decades ? "-" : "+"}</span>
+              </button>
+              {openSections.decades && (
+                <div className="space-y-2 mt-2">
+                  {DECADES.map((dec) => (
+                    <label key={dec.slug} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
+                      <input
+                        type="checkbox"
+                        checked={selectedDecades.includes(dec.slug)}
+                        onChange={() => toggleDecade(dec.slug)}
+                        className="accent-white cursor-pointer w-3.5 h-3.5"
+                      />
+                      <span>{dec.name}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </aside>
+
+        {/* ── Right Content Area ── */}
+        <div className="flex-grow w-full space-y-6">
+          
+          {/* Prominent Search bar - Highlighted & Centered visually at the top */}
+          <div className="relative bg-[#131316] border border-[#222227] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)] select-none animate-fade-in">
+            <div className="flex flex-col gap-2">
+              <div className="relative">
+                <Search className="w-4 h-4 text-white/30 absolute left-4.5 top-3.5" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="SEARCH GAMES HERE..."
+                  className="w-full bg-[#1b1b22] border border-white/15 pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/45 rounded-none focus:outline-none focus:border-white/35 focus:bg-[#20202a] transition-all font-mono uppercase tracking-wider font-medium"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-3.5 text-white/40 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Spelling auto-correction banner (Google styled) */}
+          {correctedQuery && (
+            <div className="border border-emerald-500/30 bg-emerald-500/5 p-4 font-mono text-xs uppercase flex items-center justify-between gap-3 text-white/80 animate-fade-in">
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>
+                  Showing results for <strong className="text-white underline">{correctedQuery}</strong>{" "}
+                  <span className="text-white/40">(searched instead for "{originalSearch}")</span>
+                </span>
+              </span>
+              <button 
+                onClick={() => {
+                  setSearchQuery(originalSearch);
+                  setCorrectedQuery(null);
+                }}
+                className="text-[10px] border border-white/20 px-2 py-0.5 hover:bg-white hover:text-black font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                Search "{originalSearch}" instead
+              </button>
+            </div>
+          )}
+
+          {/* Header titles & counts */}
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-4 border-b border-white/10">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black uppercase text-white tracking-wide">
+                PC games / All Games ({totalCount})
+              </h2>
+              {initialTotalGames && (
+                <span className="font-mono text-[10px] text-white/40 block mt-1 uppercase font-bold tracking-wider">
+                  of {initialTotalGames} games in total
+                </span>
+              )}
+            </div>
+
+            {/* Top Pagination controls inside header row */}
+            {sortBy !== "title" && (
+              <div className="flex items-center gap-3 self-end sm:self-auto select-none">
+                <span className="font-mono text-[11px] text-white/50">
+                  Page <span className="text-white font-bold">{currentPage}</span> of {totalPages}
+                </span>
+                <div className="flex border border-white/10">
+                  <button
+                    disabled={currentPage === 1 || loading}
+                    onClick={() => changePage(Math.max(1, currentPage - 1))}
+                    className="px-2.5 py-1.5 border-r border-white/10 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    disabled={currentPage === totalPages || loading}
+                    onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
+                    className="px-2.5 py-1.5 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Sort & Layout Controls Top Bar ── */}
+          <div className="flex items-center justify-between bg-[#0f0f12] border border-[#222227] p-3 flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-[10px] text-white/45 uppercase tracking-widest font-bold">
+                Sort by:
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setCurrentPage(1);
+                  setSortBy(e.target.value);
+                }}
+                className="bg-[#1b1b22] border border-[#2d2d38] px-3 py-1.5 text-xs text-white font-mono rounded-none focus:outline-none focus:border-white/50 font-bold cursor-pointer"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Layout Mode Toggles */}
+            <div className="flex border border-[#2d2d38]">
+              <button
+                onClick={() => changeLayoutMode("grid")}
+                className={`p-1.5 transition-colors cursor-pointer
+                  ${layoutMode === "grid" 
+                    ? "bg-white text-black" 
+                    : "text-white/60 hover:text-white hover:bg-[#20202a]"}`}
+                title="Grid layout"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => changeLayoutMode("list")}
+                className={`p-1.5 transition-colors cursor-pointer border-l border-[#2d2d38]
+                  ${layoutMode === "list" 
+                    ? "bg-white text-black" 
+                    : "text-white/60 hover:text-white hover:bg-[#20202a]"}`}
+                title="List layout"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* ── Game List Layouts ── */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 min-h-[300px]">
+              <Loader2 className="w-8 h-8 animate-spin text-white mb-2" />
+              <span className="font-mono text-xs uppercase tracking-widest text-white/40 font-bold animate-pulse">
+                Hang on...
+              </span>
+            </div>
+          ) : games.length === 0 ? (
+            <div className="border border-white/10 text-center py-24 min-h-[300px] flex flex-col justify-center items-center">
+              <span className="font-mono text-xs text-white/50 uppercase font-black tracking-widest mb-2">NO GAMES FOUND</span>
+              <p className="font-mono text-[10px] text-white/30 max-w-sm leading-relaxed uppercase">
+                Modify your active filters or clear search query.
+              </p>
+            </div>
+          ) : (
+            <div className="relative">
+              {sortBy === "title" ? (
+                /* Simple text list for A-Z catalog sorting (no images) */
+                <div className="max-w-3xl mx-auto flex flex-col gap-1 w-full">
+                  {(() => {
+                    let lastLetter = "";
+                    const sortedGames = [...games].sort((a, b) => {
+                      const titleA = cleanTitle(a.title || "").toLowerCase();
+                      const titleB = cleanTitle(b.title || "").toLowerCase();
+                      return titleA.localeCompare(titleB);
+                    });
+                    
+                    return sortedGames.map((game) => {
+                      const finalDeal = cheapestPriceSnapshot(game);
+                      
+                      // Calculate starting letter
+                      const title = cleanTitle(game.title || "");
+                      let currentLetter = title.trim().charAt(0).toUpperCase();
+                      if (!currentLetter || !/[A-Z]/.test(currentLetter)) {
+                        currentLetter = "#";
+                      }
+
+                      const showHeader = currentLetter !== lastLetter;
+                      if (showHeader) {
+                        lastLetter = currentLetter;
+                      }
+
+                      return (
+                        <React.Fragment key={game.id}>
+                          {showHeader && (
+                            <div className="border-b border-white/20 pb-1.5 mt-8 mb-3 select-none">
+                              <h3 className="font-mono text-lg sm:text-xl font-black text-white tracking-widest uppercase">
+                                [ {currentLetter} ]
+                              </h3>
+                            </div>
+                          )}
+                          <a
+                            href={`/game/${game.slug}`}
+                            className="group flex items-center justify-between py-2 border-b border-white/5 hover:bg-white/5 px-2 transition-all duration-150 cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="font-sans text-sm sm:text-base font-bold text-white uppercase group-hover:text-red-500 transition-colors truncate">
+                                {cleanTitle(game.title)}
+                              </span>
+                              {game.developerNames && (
+                                <span className="hidden sm:inline font-mono text-[10px] sm:text-xs text-white/40 truncate">
+                                  ({game.developerNames.split(", ")[0]})
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 shrink-0 font-mono text-xs sm:text-sm">
+                              {finalDeal && (
+                                <span className="text-white font-bold uppercase tracking-wider">
+                                  {finalDeal.storeName} — {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
+                                </span>
+                              )}
+                            </div>
+                          </a>
+                        </React.Fragment>
+                      );
+                    });
+                  })()}
+
+                  {/* Load more controls for A-Z */}
+                  <div className="mt-12 pt-6 border-t border-white/10 text-center select-none">
+                    {loading ? (
+                      <span className="font-mono text-xs uppercase tracking-widest text-white/40 animate-pulse block">
+                        [ LOADING CATALOGUE INDEX... ]
+                      </span>
+                    ) : games.length < totalCount ? (
+                      <button
+                        onClick={() => setTitleLimit(prev => prev + 500)}
+                        className="px-6 py-2.5 bg-white text-black hover:bg-red-500 hover:text-white border border-white font-mono text-xs font-black uppercase tracking-widest transition-colors cursor-pointer"
+                      >
+                        [ LOAD MORE ]
+                      </button>
+                    ) : (
+                      <span className="font-mono text-xs uppercase tracking-widest text-white/30 font-bold block">
+                        [ END OF CATALOGUE ]
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : layoutMode === "grid" ? (
+                /* Grid view cards */
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+                  {(() => {
+                    let lastLetter = "";
+                    return games.map((game, idx) => {
+                      const finalDeal = cheapestPriceSnapshot(game);
+                    const itchLink = game.purchaseLinks?.find(l => l.storeName?.toLowerCase()?.includes("itch"))?.url;
+                    const directLink = getDirectLink(game);
+                    const badge = getCategoryBadge(game.category, game.title);
+                    
+                      // Calculate current letter for breaks
+                      const title = cleanTitle(game.title || "");
+                      let currentLetter = title.trim().charAt(0).toUpperCase();
+                      if (!currentLetter || !/[A-Z]/.test(currentLetter)) {
+                        currentLetter = "#";
+                      }
+
+                      const showHeader = sortBy === "title" && currentLetter !== lastLetter;
+                      if (showHeader) {
+                        lastLetter = currentLetter;
+                      }
+
+                      return (
+                        <React.Fragment key={game.id}>
+                          {showHeader && (
+                            <div className="col-span-full border-b border-white/20 pb-2 mt-8 mb-4">
+                              <h3 className="font-mono text-xl sm:text-2xl font-black text-white tracking-widest uppercase">
+                                [ {currentLetter} ]
+                              </h3>
+                            </div>
+                          )}
+                          <a
+                            href={`/game/${game.slug}`}
+                            className="group flex flex-col h-full bg-[#131316] border border-[#222227] hover:border-[#3a3a42] rounded-none transition-all duration-300 relative select-none overflow-hidden text-left shadow-[0_4px_12px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] hover:-translate-y-0.5 cursor-pointer"
+                          >
+                            {/* Cover aspect ratio */}
+                            <div className="aspect-[3/4] relative overflow-hidden bg-neutral-950 border-b border-[#222227] shrink-0">
+                               <HoverTrailer
+                                trailerUrl={game.trailerUrl}
+                                coverUrl={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending)}
+                                altText={game.title}
+                                aspectClass="w-full h-full"
+                              />
+
+                              {/* Category Badge on cover */}
+                              {badge && (
+                                <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7a3bfa] text-white font-bold px-1.5 py-0.5 z-10 select-none">
+                                  {badge}
+                                </span>
+                              )}
+
+                              {/* Rating Badge on cover */}
+                              {renderRatingBadge(game)}
+
+                              {/* Platform symbols bottom left */}
+                              <div className="absolute bottom-2 left-2 z-10 flex gap-1 select-none">
+                                <PlatformLogos platformNames={game.platformNames} />
+                              </div>
+                            </div>
+
+                            {/* Text and Pricing */}
+                            <div className="p-4 flex-grow flex flex-col justify-between gap-3 bg-[#18181c]">
+                              <div className="space-y-1">
+                                <h4 className="text-white font-bold uppercase text-xs tracking-wider line-clamp-1 group-hover:underline">
+                                  {cleanTitle(game.title)}
+                                </h4>
+                                <span className="font-mono text-[10px] text-white/40 block leading-tight">
+                                  {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center justify-between mt-1 min-h-[28px]">
+                                {/* Price / Cart block */}
+                                {finalDeal ? (
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    {finalDeal.discountPercent > 0 && (
+                                      <span className="font-mono text-[10px] font-black bg-[#7a3bfa] text-white px-1.5 py-0.5 select-none">
+                                        -{finalDeal.discountPercent}%
+                                      </span>
+                                    )}
+                                    <div className="flex flex-col items-start leading-none">
+                                      <span className="font-mono text-xs font-bold text-white leading-none">
+                                        {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
+                                      </span>
+                                      {finalDeal.discountPercent > 0 && (
+                                        <span className="font-mono text-[9px] text-white/30 line-through mt-0.5">
+                                          {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : itchLink ? (
+                                  <span className="font-mono text-[10px] text-[#fa5c5c] font-black border border-[#fa5c5c]/30 bg-[#fa5c5c]/5 px-2 py-1 select-none uppercase tracking-wider">
+                                    Itch.io
+                                  </span>
+                                ) : (
+                                  <span className="font-mono text-[10px] text-white/20 uppercase select-none">—</span>
+                                )}
+
+                                <div className="flex items-center gap-1.5">
+                                  {/* Release status tag */}
+                                  <span className="font-mono text-[9px] text-white/75 border border-white/20 bg-white/5 px-2 py-0.5 uppercase tracking-widest font-black select-none">
+                                    {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
+                                  </span>
+
+                                  {/* Add to Cart button */}
+                                  {finalDeal && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        addToCart(game);
+                                        setAddedIds(prev => new Set(prev).add(game.id));
+                                        setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(game.id); return n; }), 1800);
+                                      }}
+                                      title="Add to cart"
+                                      className={`shrink-0 p-1 border transition-all duration-200 cursor-pointer ${
+                                        addedIds.has(game.id)
+                                          ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-400"
+                                          : "border-white/15 bg-white/5 text-white/50 hover:border-white/50 hover:bg-white/10 hover:text-white"
+                                      }`}
+                                    >
+                                      {addedIds.has(game.id)
+                                        ? <CheckCheck className="w-3 h-3" />
+                                        : <ShoppingCart className="w-3 h-3" />}
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </a>
+                        </React.Fragment>
+                      );
+                    });
+                  })()}
+                </div>
+              ) : (
+                /* List view rows */
+                <div className="flex flex-col gap-3">
+                  {(() => {
+                    let lastLetter = "";
+                    return games.map((game, idx) => {
+                      const finalDeal = cheapestPriceSnapshot(game);
+                    const itchLink = game.purchaseLinks?.find(l => l.storeName?.toLowerCase()?.includes("itch"))?.url;
+                    const directLink = getDirectLink(game);
+                    const badge = getCategoryBadge(game.category, game.title);
+
+                      // Calculate current letter for breaks
+                      const title = cleanTitle(game.title || "");
+                      let currentLetter = title.trim().charAt(0).toUpperCase();
+                      if (!currentLetter || !/[A-Z]/.test(currentLetter)) {
+                        currentLetter = "#";
+                      }
+
+                      const showHeader = sortBy === "title" && currentLetter !== lastLetter;
+                      if (showHeader) {
+                        lastLetter = currentLetter;
+                      }
+
+                      return (
+                        <React.Fragment key={game.id}>
+                          {showHeader && (
+                            <div className="border-b border-white/20 pb-2 mt-8 mb-4">
+                              <h3 className="font-mono text-xl sm:text-2xl font-black text-white tracking-widest uppercase">
+                                [ {currentLetter} ]
+                              </h3>
+                            </div>
+                          )}
+                          <a
+                            href={`/game/${game.slug}`}
+                            className="group flex flex-row items-center justify-between border border-[#222227] hover:border-[#3a3a42] bg-[#131316] hover:bg-[#18181c] p-3 select-none text-left gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                          >
+                            {/* Cover thumbnail */}
+                            <div className="relative shrink-0 w-12 h-16 bg-neutral-950 border border-[#222227] overflow-hidden flex items-center justify-center select-none">
+                              {game.coverUrl && !failedImages[game.id] ? (
+                                <img
+                                  src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
+                                  alt={game.title}
+                                  className="object-cover w-full h-full"
+                                  loading="lazy"
+                                  onError={() => setFailedImages(prev => ({ ...prev, [game.id]: true }))}
+                                />
+                              ) : (
+                                <span className="font-mono text-[8px] uppercase tracking-widest text-white/40 font-bold">[ NA ]</span>
+                              )}
+                            </div>
+
+                            {/* Title and details */}
+                            <div className="flex-grow min-w-0 space-y-1">
+                              <h4 className="text-white font-bold uppercase text-xs tracking-wider line-clamp-1 group-hover:underline flex items-center gap-2">
+                                <span>{cleanTitle(game.title)}</span>
+                                {badge && (
+                                  <span className="font-mono text-[8px] uppercase tracking-widest bg-[#7a3bfa] text-white font-bold px-1 py-0.2 select-none">
+                                    {badge}
+                                  </span>
+                                )}
+                              </h4>
+                              <span className="font-mono text-[10px] text-white/40 block leading-tight truncate max-w-sm">
+                                by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
+                              </span>
+                            </div>
+
+                            {/* Platform symbols list */}
+                            <div className="hidden md:flex gap-1 shrink-0 select-none">
+                              <PlatformLogos platformNames={game.platformNames} />
+                            </div>
+
+                            {/* Status */}
+                            <div className="hidden sm:block shrink-0 min-w-[75px] text-right font-mono text-[9px] text-white/70 uppercase">
+                              <span className="border border-white/20 bg-white/5 px-1.5 py-0.5 tracking-wider font-bold select-none">
+                                {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
+                              </span>
+                            </div>
+
+                            {/* Rating badge - List view */}
+                            <div className="shrink-0 min-w-[95px] flex flex-col items-center justify-center font-mono select-none">
+                              {game.displayRating !== null && game.displayRating !== undefined ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <div className={`px-2 py-0.5 border text-[10px] font-black tracking-wider ${
+                                    game.displayRating >= 90
+                                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                                      : game.displayRating >= 75
+                                      ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
+                                      : game.displayRating >= 50
+                                      ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
+                                      : "border-red-500/50 bg-red-500/10 text-red-400"
+                                  }`}>
+                                    {Math.round(game.displayRating)} / 100
+                                  </div>
+                                  {game.isAbsoluteCinema && (
+                                    <span className="text-[7px] text-emerald-400 font-black tracking-widest uppercase leading-none mt-0.5">
+                                      ABSOLUTE CINEMA
+                                    </span>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-white/20 text-xs font-mono">—</span>
+                              )}
+                            </div>
+
+                            {/* Price block */}
+                            <div className="shrink-0 min-w-[110px] flex flex-col items-end justify-center select-none gap-1.5">
+                              {finalDeal ? (
+                                <div className="flex items-center gap-2 justify-end">
+                                  {finalDeal.discountPercent > 0 && (
+                                    <span className="font-mono text-[10px] font-black bg-[#7a3bfa] text-white px-1.5 py-0.5">
+                                      -{finalDeal.discountPercent}%
+                                    </span>
+                                  )}
+                                  <div className="text-right leading-none">
+                                    <span className="font-mono text-xs font-bold text-white">
+                                      {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
+                                    </span>
+                                    {finalDeal.discountPercent > 0 && (
+                                      <span className="font-mono text-[9px] text-white/30 line-through block mt-0.5">
+                                        {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : itchLink ? (
+                                <span className="font-mono text-[9px] text-[#fa5c5c] font-black border border-[#fa5c5c]/30 bg-[#fa5c5c]/5 px-2 py-0.5 uppercase tracking-wider">
+                                  Itch.io
+                                </span>
+                              ) : (
+                                <span className="font-mono text-xs text-white/20 uppercase">—</span>
+                              )}
+
+                              {/* Add to Cart button — list view */}
+                              {finalDeal && (
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    addToCart(game);
+                                    setAddedIds(prev => new Set(prev).add(game.id));
+                                    setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(game.id); return n; }), 1800);
+                                  }}
+                                  title="Add to cart"
+                                  className={`flex items-center gap-1 px-2 py-1 border font-mono text-[9px] uppercase tracking-wider font-bold transition-all duration-200 cursor-pointer ${
+                                    addedIds.has(game.id)
+                                      ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400"
+                                      : "border-white/15 bg-white/5 text-white/40 hover:border-white/50 hover:bg-white/10 hover:text-white"
+                                  }`}
+                                >
+                                  {addedIds.has(game.id)
+                                    ? <><CheckCheck className="w-3 h-3" /> Added</>  
+                                    : <><ShoppingCart className="w-3 h-3" /> Cart</>}
+                                </button>
+                              )}
+                            </div>
+                          </a>
+                        </React.Fragment>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+
+              {/* Hover popover card removed */}
+            </div>
+          )}
+
+          {/* ── Bottom Pagination Bar ── */}
+          {totalPages > 1 && !loading && sortBy !== "title" && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
+              <span className="font-mono text-xs text-white/50">
+                Showing games <span className="text-white font-bold">{Math.min(totalCount, (currentPage - 1) * gamesPerPage + 1)}</span> to{" "}
+                <span className="text-white font-bold">{Math.min(totalCount, currentPage * gamesPerPage)}</span> of{" "}
+                <span className="text-white font-bold">{totalCount}</span> entries
+              </span>
+
+              {/* Bottom Pagination full list */}
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                <button
+                  disabled={currentPage === 1 || loading}
+                  onClick={() => changePage(Math.max(1, currentPage - 1))}
+                  className="w-9 h-9 border border-white/10 text-white flex items-center justify-center hover:bg-neutral-900 hover:border-white disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                {renderPaginationNumbers()}
+
+                <button
+                  disabled={currentPage === totalPages || loading}
+                  onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
+                  className="w-9 h-9 border border-white/10 text-white flex items-center justify-center hover:bg-neutral-900 hover:border-white disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}

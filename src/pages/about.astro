@@ -1,0 +1,95 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ReturnButton from '../components/ReturnButton';
+import { ShieldAlert, BookOpen, Heart } from "lucide-react";
+---
+
+<Layout 
+  title="About us | hoGAMEGATA" 
+  description="Learn more about hoGAMEGATA, a minimalist, ad-free horror game database preserving survival horror, psychological terror, and indie games metadata." 
+  withSearch={false} 
+  withLink={true}
+>
+  <main class="flex-1 max-w-5xl w-full mx-auto px-6 my-12 pb-24 flex flex-col gap-12">
+    <!-- Top Bar with Navigation -->
+    <div class="flex justify-between items-center pb-6">
+      <div class="flex flex-col">
+        <span class="font-mono text-xs uppercase tracking-widest text-[#ff2a2a] font-black">by aurostron</span>
+        <span class="font-mono text-[9px] text-white/50 uppercase tracking-widest">21st june, 2026</span>
+      </div>
+      <ReturnButton client:only="react" />
+    </div>
+
+    <!-- Editorial Header Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div class="lg:col-span-8 flex flex-col gap-4">
+        <h1 class="font-sans font-black text-6xl sm:text-7xl md:text-8xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
+          ABOUT <br class="hidden sm:inline" /><span class="text-[#ff2a2a]"></span>
+        </h1>
+        <p class="font-sans font-light text-xl sm:text-2xl text-white/90 leading-relaxed border-l-4 border-[#ff2a2a] pl-6 mt-4 italic">
+          hoGAMEGATA is a minimalist database and discovery site just for horror games. Preserving over 16,000 interactive horror titles, fully detailed game metadata and information waiting for you!
+        </p>
+      </div> 
+    </div>
+
+    <!-- Magazine-style Columns -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-6">
+      <!-- Column 1: The Philosophy -->
+      <div class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+          <h2 class="text-white font-sans font-black text-lg uppercase tracking-tight">The Philosophy</h2>
+        </div>
+        
+        <p class="text-base text-white/90 font-medium">
+          hoGAMEGATA is a clean, super-fast horror only database catalog designed specifically to be less cluttered and more useful.
+        </p>
+        
+        <p>
+          Horror is a unique genre. It thrives on atmosphere, tension, and sound design, and tons of other unique elements. Our custom taxonomy system, scare profile ratings, and complex information processing and presentation are built to catalog not just names and release dates, but more specificity like sub-genres, developer trees, scare metre, and much more.
+        </p>
+
+        <p>
+          Every title in our database is categorized using a multi-dimensional mapping engine that classifies gameplay features, settings, visuals, and emotions and feedback loops. This ensures you discover exactly the kind of game you're looking, by chance you don't know the game's name and sorting through irrelevant genres.
+        </p>
+      </div>
+
+      <!-- Column 2: Curation & Integrity -->
+      <div class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+          <h2 class="text-white font-sans font-black text-lg uppercase tracking-tight">Preservation & Freedom</h2>
+        </div>
+
+        <p class="text-base text-white/90 font-medium">
+          hoGAMEGATA is completely non-commercial. We do not display ads, sell user data, or keep features behind paywalls.
+        </p>
+
+        <p>
+          We are committed to archiving the history of horror games. From long-lost DOS titles and PlayStation classics to upcoming AAA titles, we track official links, pricing updates, and system specifications very frequently. Thanks to IGDB.
+        </p>
+
+        <p>
+         No account is needed to use the website! Only cloud features like synced wishlist, game logging and shopping cart require you to create an account.
+        </p>
+      </div>
+    </div>
+
+    <!-- Data Provider & Third-Party Credits (Simple Text) -->
+    <div class="mt-12 space-y-6 font-sans text-sm text-gray-300 leading-relaxed">
+      <div class="border-b border-white/10 pb-3">
+        <h2 class="font-sans font-black text-xl uppercase tracking-tight text-white">Data Sources & Attribution</h2>
+      </div>
+      <p>
+        Data provided by  <a href="https://www.igdb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">IGDB</a>.
+      </p>
+      <p>
+        Reviews taken from <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Steam</a>. 
+       </p>
+      <p>
+         Linux compatibility data by <a href="https://www.protondb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">ProtonDB</a>.
+      </p>
+      <p>
+        This platform is built using <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold font-bold">Astro</a>, <a href="https://react.dev" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold font-bold">React</a>, and <a href="https://orm.drizzle.team" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold font-bold">Drizzle ORM</a>.
+      </p>
+    </div>
+  </main>
+</Layout>

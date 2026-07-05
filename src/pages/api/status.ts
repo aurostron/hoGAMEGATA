@@ -1,5 +1,4 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../lib/supabaseServer';
 
 export const prerender = false;
 
@@ -10,10 +9,9 @@ const CACHE_DURATION_MS = 15000;
 async function checkDatabase(): Promise<{ status: "ONLINE" | "OFFLINE"; latency: number }> {
   const start = performance.now();
   try {
-    const supabase = getSupabaseServer();
-    const { error } = await supabase.rpc("health_check");
+    const { libsqlClient } = await import("../../lib/turso");
+    await libsqlClient.execute("SELECT 1;");
     const latency = Math.round(performance.now() - start);
-    if (error) throw error;
     return { status: "ONLINE", latency };
   } catch (err) {
     console.error("Database status check failed:", err);

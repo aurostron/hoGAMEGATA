@@ -1,24 +1,24 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getSupabaseServer } from '../lib/supabaseServer';
+import { turso } from '../lib/turso';
+import { games as gamesTable } from '../db/schema';
+import { eq, or, gt } from 'drizzle-orm';
+import { enrichGamesWithRelations } from '../lib/gameQueries';
 import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from '../lib/utils';
 
-const supabase = getSupabaseServer();
-const now = new Date().toISOString();
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=10, s-maxage=30, stale-while-revalidate=60'
+);
 
-const { data: upcomingGames } = await supabase
-  .from("Game")
-  .select(`
-    id, slug, title, coverUrl, isTrending, category, developerNames,
-    releaseDate, status,
-    tags:Tag(slug, name),
-    purchaseLinks:PurchaseLink(url, storeName)
-  `)
-  .or(`status.eq.upcoming,releaseDate.gt.${now}`)
-  .order("releaseDate", { ascending: true, nullsFirst: true });
+const rawGames = await turso
+  .select()
+  .from(gamesTable)
+  .where(or(eq(gamesTable.status, "upcoming"), gt(gamesTable.releaseDate, new Date())))
+  .orderBy(gamesTable.releaseDate);
 
-const games = upcomingGames || [];
+const games = await enrichGamesWithRelations(rawGames);
 
 // Group games by month/year
 const groupedGames: { [key: string]: typeof games } = {};
@@ -42,7 +42,12 @@ const sortedMonths = Object.keys(groupedGames).sort((a, b) => {
 });
 ---
 
-<Layout title="Upcoming Horror Release Calendar | hoGAMEGATA" withSearch={false} withLink={true}>
+<Layout 
+  title="Upcoming Horror Release Calendar | hoGAMEGATA" 
+  description="Browse the upcoming horror game release calendar on hoGAMEGATA. Stay updated on the latest indie and AAA nightmares." 
+  withSearch={false} 
+  withLink={true}
+>
   <!-- Main Container -->
   <main class="max-w-5xl mx-auto px-6 mt-12 space-y-16 flex-1 pb-24">
     <!-- Intro -->

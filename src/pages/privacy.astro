@@ -3,14 +3,19 @@ import Layout from '../layouts/Layout.astro';
 import ReturnButton from '../components/ReturnButton';
 ---
 
-<Layout title="Privacy Policy | hoGAMEGATA" withSearch={false} withLink={true}>
+<Layout 
+  title="Privacy Policy | hoGAMEGATA" 
+  description="Privacy policy and data protection details for visitors of hoGAMEGATA horror database." 
+  withSearch={false} 
+  withLink={true}
+>
   <!-- Content -->
   <main class="flex-1 flex items-center justify-center p-6 my-12 pb-24">
     <div class="max-w-3xl w-full border-4 border-white bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-8 relative overflow-hidden">
       
       <!-- Back button at top of card -->
       <div class="flex justify-end">
-        <ReturnButton client:load />
+        <ReturnButton client:only="react" />
       </div>
 
       <div class="flex flex-col gap-2 pb-4 border-b border-white/10">
@@ -18,47 +23,101 @@ import ReturnButton from '../components/ReturnButton';
           PRIVACY POLICY
         </h1>
         <span class="font-mono text-xs text-white/50 uppercase tracking-widest">
-          Last Updated: June 2026
+          Effective Date: June 28, 2026
         </span>
       </div>
 
       <div class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
+        <p>
+          This privacy policy applies to the **hoGAMEGATA** website, directory, and related services operated by **AUROSTRON** (collectively, the "Website" or "Service"). AUROSTRON is referred to as the "Service Provider".
+        </p>
+
         <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 1. Information We Collect</h2>
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 1. Information We Collect & Use</h2>
           <p>
-            We only collect basic, necessary information to manage access to hoGAMEGATA:
+            We believe in collecting only the absolute minimum amount of data required to run the Service:
           </p>
           <ul class="list-disc pl-5 space-y-1 text-gray-400">
-            <li><strong class="text-white">Email Address:</strong> Captured only when requesting waitlist access or creating an account, used purely for user authentication.</li>
-            <li><strong class="text-white">Local Storage:</strong> Used locally on your device to remember game vibe preferences, sorting choices, layouts, and onboarding completions.</li>
+            <li><strong class="text-white">Email Address:</strong> Captured only when you request waitlist access or create an account. This is used solely for secure authentication and system notifications.</li>
+            <li><strong class="text-white">Automatically Collected Data:</strong> Standard server log information is automatically logged, such as your Internet Protocol (IP) address, browser type, operating system, and pages visited. This is used strictly to prevent abuse (like rate-limiting scraping attempts) and monitor website performance.</li>
           </ul>
         </section>
 
         <section class="space-y-2">
           <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 2. Service Providers & Infrastructure</h2>
           <p>
-            We utilize standard, secure external services to operate the database platform. Your information is stored and handled in compliance with their privacy guidelines:
+            We utilize secure external infrastructure providers to run the Website. Your information is processed in accordance with their respective security guidelines:
           </p>
           <ul class="list-disc pl-5 space-y-1 text-gray-400">
-            <li><strong class="text-white">Supabase & Neon:</strong> Database storage and user session credentials.</li>
-            <li><strong class="text-white">Resend:</strong> Single-click authentication link emails and system sign-up alerts.</li>
-            <li><strong class="text-white">Cloudinary:</strong> Image content delivery networks (CDNs) for horror game screenshots.</li>
+            <li><strong class="text-white">Supabase & Neon:</strong> Secure database storage and user session credentials.</li>
+            <li><strong class="text-white">Resend:</strong> Managing waitlist confirmation alerts and secure authentication emails.</li>
+            <li><strong class="text-white">Cloudinary:</strong> Content delivery network (CDN) for storing game cover art and screenshots.</li>
           </ul>
         </section>
 
         <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 3. Tracking & Third-Party Cookies</h2>
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 3. Cookies & Tracking Technologies</h2>
           <p>
-            hoGAMEGATA does not deploy advertising trackers, analytical cookies, marketing tags, or custom tracking pixels. We believe in a clean, privacy-respecting games index.
+            hoGAMEGATA respects your privacy:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400">
+            <li>We <strong>do not</strong> deploy advertising trackers, marketing pixels, social media tags, or third-party analytics cookies (such as Google Analytics).</li>
+            <li>We use only <strong>essential functional cookies</strong> or local browser storage strictly to manage your login sessions, search preferences, and interface settings.</li>
+          </ul>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 4. Backend Artificial Intelligence (AI)</h2>
+          <p>
+            The Website utilizes Artificial Intelligence (AI) and automation technologies within its data curation pipeline to summarize and categorize game listing metadata. No personal user data (like your email address) is processed by or shared with these AI pipeline systems.
           </p>
         </section>
 
         <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 4. Account Deletion & Rights</h2>
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 5. Data Retention Policy</h2>
           <p>
-            Your data is yours. Since we only retain your email address, you can contact the system administrator at any time to request the complete deletion of your registration details, wishlist contents, and catalog preferences.
+            We retain your personal data only as long as necessary:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400">
+            <li><strong class="text-white">Email & Account Data:</strong> Retained for the duration of your active use of the website. If you delete your account or request data deletion, we will remove this data within 30 days.</li>
+            <li><strong class="text-white">Server Logs:</strong> Automatically collected traffic logs are retained for a maximum of 24 months to help diagnose server issues and prevent security threats, after which they are deleted or anonymized.</li>
+          </ul>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 6. Your Rights (GDPR & CCPA/CPRA)</h2>
+          <p>
+            Regardless of your location, we support your right to control your data. You may request to access the personal data we hold about you (which is typically just your email address), correct any inaccurate personal details, or request the complete deletion of your account, waitlist details, and catalog preferences.
+          </p>
+          <p>
+            To exercise these rights, please contact the Service Provider at <a href="mailto:hello@gamegata.xyz" class="text-white underline hover:text-[#f3f4f6]">hello@gamegata.xyz</a>.
           </p>
         </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 7. Children's Privacy</h2>
+          <p>
+            The Website is not designed for or targeted at children under 16 years of age. We do not knowingly collect personal information from children. If you believe a child has provided us with personal details, please contact us so we can immediately delete it.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 8. Data Breach Notification</h2>
+          <p>
+            In the unlikely event of a security breach that impacts your personal data (such as database access), the Service Provider will notify you via your registered email address within legal timelines, detailing the nature of the breach and steps taken to secure your data.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 9. Changes to This Policy</h2>
+          <p>
+            We may update this Privacy Policy from time to time. The Service Provider will notify you of material changes by updating the "Effective Date" at the bottom of this page.
+          </p>
+        </section>
+
+        <p class="pt-4 text-xs font-mono text-white/50">
+          If you have any questions about this Privacy Policy, please contact us at <a href="mailto:hello@gamegata.xyz" class="text-white underline hover:text-[#f3f4f6]">hello@gamegata.xyz</a>.
+        </p>
       </div>
 
       <!-- Footer inside card -->

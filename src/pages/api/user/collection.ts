@@ -1,33 +1,52 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../../lib/supabaseServer';
 import { getServerUser } from '../../../lib/serverAuth';
+import { tursoAuth } from '../../../lib/tursoAuth';
+import { collection as collectionTable } from '../../../db/auth-schema';
+import { eq, desc, and } from 'drizzle-orm';
 
 export const prerender = false;
 
 const VALID_STATUSES = ["OWNED", "PLAYING", "COMPLETED", "WANT_TO_PLAY"] as const;
 
-export const GET: APIRoute = async ({ cookies }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
   try {
-    const user = await getServerUser(cookies);
+    const user = await getServerUser(request, cookies);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const supabase = getSupabaseServer();
-    const { data: collectionItems, error } = await supabase
-      .from("Collection")
-      .select("status, createdAt, game:Game(*)")
-      .eq("userId", user.id)
-      .order("createdAt", { ascending: false });
+    // Query separate Auth Database for collection items
+    const collectionItems = await tursoAuth
+      .select({ gameId: collectionTable.gameId, status: collectionTable.status, createdAt: collectionTable.createdAt })
+      .from(collectionTable)
+      .where(eq(collectionTable.userId, user.id))
+      .orderBy(desc(collectionTable.createdAt));
 
-    if (error) throw error;
+    const gameIds = collectionItems.map((item) => item.gameId);
+    let collectionGames: any[] = [];
 
-    const collectionGames = (collectionItems || [])
-      .map((item: any) => ({
-        status: item.status,
-        game: item.game,
-      }))
-      .filter((item: any) => !!item.game);
+    if (gameIds.length > 0) {
+      const { turso } = await import('../../../lib/turso');
+      const { games } = await import('../../../db/schema');
+      const { inArray } = await import('drizzle-orm');
+      const { enrichGamesWithRelations } = await import('../../../lib/gameQueries');
+
+      // Query Catalog Database for metadata details
+      const rawGames = await turso
+        .select()
+        .from(games)
+        .where(inArray(games.id, gameIds));
+      
+      const enrichedGames = await enrichGamesWithRelations(rawGames);
+      const gameMap = new Map(enrichedGames.map(g => [g.id, g]));
+
+      collectionGames = collectionItems
+        .map((item) => ({
+          status: item.status,
+          game: gameMap.get(item.gameId),
+        }))
+        .filter((item) => !!item.game);
+    }
 
     return new Response(JSON.stringify({ collection: collectionGames }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
@@ -38,7 +57,7 @@ export const GET: APIRoute = async ({ cookies }) => {
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    const user = await getServerUser(cookies);
+    const user = await getServerUser(request, cookies);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
@@ -52,17 +71,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "Invalid status value" }), { status: 400 });
     }
 
-    const supabase = getSupabaseServer();
-
-    // Upsert: insert or update on conflict
-    const { error } = await supabase
-      .from("Collection")
-      .upsert(
-        { id: crypto.randomUUID(), userId: user.id, gameId, status },
-        { onConflict: "userId,gameId" }
-      );
-
-    if (error) throw error;
+    // Upsert into separate Auth Database
+    await tursoAuth
+      .insert(collectionTable)
+      .values({
+        id: crypto.randomUUID(),
+        userId: user.id,
+        gameId,
+        status,
+      })
+      .onConflictDoUpdate({
+        target: [collectionTable.userId, collectionTable.gameId],
+        set: { status, updatedAt: new Date() },
+      });
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
@@ -73,7 +94,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 export const DELETE: APIRoute = async ({ request, cookies }) => {
   try {
-    const user = await getServerUser(cookies);
+    const user = await getServerUser(request, cookies);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
@@ -83,14 +104,15 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "Missing gameId" }), { status: 400 });
     }
 
-    const supabase = getSupabaseServer();
-    const { error } = await supabase
-      .from("Collection")
-      .delete()
-      .eq("userId", user.id)
-      .eq("gameId", gameId);
-
-    if (error) throw error;
+    // Delete from separate Auth Database
+    await tursoAuth
+      .delete(collectionTable)
+      .where(
+        and(
+          eq(collectionTable.userId, user.id),
+          eq(collectionTable.gameId, gameId)
+        )
+      );
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {

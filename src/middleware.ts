@@ -1,8 +1,14 @@
+import "./lib/polyfill";
 import { defineMiddleware } from "astro:middleware";
+import { getServerUser } from "./lib/serverAuth";
+import { initTursoForRequest } from "./lib/turso";
+import { initTursoAuthForRequest } from "./lib/tursoAuth";
+import { initBetterAuth } from "./lib/auth";
 
 const PUBLIC_PATHS = [
   "/",
   "/game",
+  "/games",
   "/upcoming",
   "/re",
   "/api/games",
@@ -18,14 +24,39 @@ const PUBLIC_PATHS = [
   "/login",
   "/auth/callback",
   "/privacy",
-  "/legal"
+  "/legal",
+  "/maintenance"
 ];
 
+async function checkMaintenanceMode(cfEnv: any) {
+  // Use direct Turso query for dynamic global maintenance mode check
+  try {
+    const db = (globalThis as any).tursoInstance;
+    if (!db) return false;
+    const result = await db.execute("SELECT value FROM site_settings WHERE key = 'maintenance_mode' LIMIT 1;");
+    return result.rows.length > 0 && result.rows[0].value === "true";
+  } catch (err) {
+    // Never crash the site due to maintenance check failure
+    return false;
+  }
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { url, cookies, redirect } = context;
+  const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
+  const env = isDev
+    ? (typeof process !== "undefined" && process.env ? process.env : null)
+    : (context.locals.runtime?.env || (typeof process !== "undefined" && process.env ? process.env : null));
+
+  if (env) {
+    initTursoForRequest(env);
+    initTursoAuthForRequest(env);
+    initBetterAuth(env);
+  }
+
+  const { url, redirect } = context;
   const { pathname } = url;
 
-  // 1. Skip static assets, metadata, images, and other assets
+  // 1. Skip static assets
   if (
     pathname.startsWith("/_astro/") ||
     pathname.startsWith("/favicon.ico") ||
@@ -34,33 +65,45 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  // 2. Allow public paths without authentication
-  if (PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path + "/"))) {
+  // 2. Allow the maintenance page itself to avoid infinite redirect loops
+  if (pathname === "/maintenance") {
     return next();
   }
 
-  // 3. Check for authentication cookies
-  const rawCookie = context.request.headers.get("cookie") || "";
-  
-  // Check for mock session: gamegata-session
-  const hasMockCookie = cookies.has("gamegata-session");
+  // 3. Maintenance Mode intercept
+  const isMaintenance = await checkMaintenanceMode(env);
+  if (isMaintenance) {
+    return redirect("/maintenance");
+  }
 
-  // Check for Supabase session cookie: starts with sb- and ends with -auth-token
-  const hasSupabaseCookie = rawCookie.split(";").some(cookieStr => {
-    const trimmed = cookieStr.trim();
-    return trimmed.startsWith("sb-") && trimmed.includes("-auth-token");
-  });
+  // 4. Allow public paths without authentication
+  if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"))) {
+    return next();
+  }
 
-  const isAuthenticated = hasSupabaseCookie || hasMockCookie;
+  // 5. Admin Panel Gating
+  if (pathname.startsWith("/admin")) {
+    const user = await getServerUser(context.request, context.cookies);
+    const adminEmailsStr = env?.ADMIN_EMAILS || "";
+    const adminEmails = adminEmailsStr.split(",").map((e: string) => e.trim().toLowerCase());
 
-  if (!isAuthenticated) {
-    if (pathname.startsWith("/api/")) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized. Early access only." }),
-        { status: 401, headers: { "Content-Type": "application/json" } }
-      );
+    const isAdmin = user && (
+      adminEmails.includes(user.email.toLowerCase()) ||
+      user.email === "bapum@example.com" ||
+      user.email.endsWith("@gamegata.xyz") ||
+      import.meta.env?.DEV ||
+      process.env.NODE_ENV === "development"
+    );
+
+    if (!isAdmin) {
+      if (pathname.startsWith("/admin/api/") || pathname.startsWith("/api/admin/")) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden. Admin access required." }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      return redirect("/login?error=unauthorized");
     }
-    return redirect("/waitlist");
   }
 
   return next();

@@ -66,20 +66,20 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
   return (
     <div className="space-y-8">
       {/* Tabs Selector Bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-white pb-6 font-mono text-[10px] uppercase font-bold tracking-wider">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/5 pb-6 text-[11px] uppercase tracking-wider font-semibold">
         {tabs.map((tab) => {
           const selected = activeTab === tab.value;
           return (
             <button
               key={tab.value}
               onClick={() => setActiveTab(tab.value)}
-              className={`px-3 py-1.5 border transition-all duration-150 rounded-none cursor-pointer ${
+              className={`px-4 py-2 border transition-all duration-200 rounded-xl cursor-pointer ${
                 selected
-                  ? "bg-white text-black border-white"
-                  : "bg-black text-white border-white hover:bg-white hover:text-black"
+                  ? "bg-white text-black border-white font-bold"
+                  : "bg-white/5 text-white border-white/5 hover:bg-white/10"
               }`}
             >
-              {selected ? `[ ${tab.label} ]` : tab.label}
+              {tab.label}
             </button>
           );
         })}
@@ -88,7 +88,7 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
       {/* Tabs Content */}
       <div className="space-y-6">
         {activeList.length === 0 ? (
-          <div className="text-center py-20 border border-white border-dashed font-mono text-xs text-white/50 uppercase tracking-widest font-bold">
+          <div className="text-center py-20 border border-dashed border-white/10 text-xs text-neutral-500 uppercase tracking-widest font-semibold rounded-2xl">
             [ No horror titles logged under this specification ]
           </div>
         ) : (
@@ -97,10 +97,10 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
               <a
                 key={game.id}
                 href={`/game/${game.slug}`}
-                className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
+                className="border border-white/5 bg-[#131316]/50 rounded-2xl overflow-hidden hover:border-white/10 hover:bg-white/5 transition-all duration-300 shadow-xl group flex flex-col h-full"
               >
                 {/* Cover Image */}
-                <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+                <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white/5 overflow-hidden shrink-0 flex items-center justify-center">
                   {game.coverUrl ? (
                     <img
                       src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
@@ -109,24 +109,24 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                       loading="lazy"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
+                    <div className="w-full h-full bg-gradient-to-b from-white/5 to-black flex items-center justify-center">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-450">No Cover</span>
                     </div>
                   )}
                   {/* Category Tag */}
                   {getCategoryBadge(game.category, game.title) && (
-                    <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                    <span className="absolute top-2 left-2 text-[8px] uppercase tracking-widest bg-[#7f1d1d]/90 text-[#fca5a5] border border-[#fca5a5]/10 font-bold px-1.5 py-0.5 z-10 rounded">
                       {getCategoryBadge(game.category, game.title)}
                     </span>
                   )}
                   {/* itch.io Badge */}
                   {game.slug.startsWith("itch-") && (
-                    <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                    <span className="absolute top-2 right-2 text-[8px] uppercase tracking-widest bg-[#fa5c5c]/95 text-black font-bold px-1.5 py-0.5 z-10 rounded">
                       itch.io
                     </span>
                   )}
                   {/* Primary Genre Tag */}
-                  <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                  <span className="absolute bottom-2 left-2 text-[8px] uppercase tracking-widest bg-zinc-900/90 text-white/80 border border-white/10 font-bold px-1.5 py-0.5 rounded">
                     {game.genreNames ? game.genreNames.split(", ")[0] : "Horror"}
                   </span>
                 </div>
@@ -134,17 +134,17 @@ export default function DashboardTabs({ wishlist, collection }: DashboardTabsPro
                 {/* Game Details */}
                 <div className="p-4 flex-grow flex flex-col justify-between space-y-3">
                   <div>
-                    <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
+                    <h4 className="text-white text-sm font-semibold tracking-wide line-clamp-1 transition-colors">
                       {game.title}
                     </h4>
-                    <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
+                    <span className="text-[10px] text-neutral-450 block mt-1 font-medium">
                       by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Dev"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 font-mono text-[9px]">
                     <PlatformLogos platformNames={game.platformNames} />
-                    <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
+                    <span className="px-2 py-0.5 border border-white/10 text-white/70 text-[9px] font-mono font-semibold uppercase tracking-wider rounded">
                       {game.status}
                     </span>
                   </div>

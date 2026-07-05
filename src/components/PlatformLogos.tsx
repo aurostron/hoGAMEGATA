@@ -72,11 +72,9 @@ export default function PlatformLogos({
     return s.includes("ios") || s.includes("ipad") || s.includes("iphone") || n.includes("ios") || n.includes("ipad") || n.includes("iphone");
   })) || lowerNames.includes("ios") || lowerNames.includes("ipad") || lowerNames.includes("iphone");
 
-  // filter: brightness(0) invert(1) makes the SVG completely solid white.
-  // When card is hovered (group), we cancel invert (invert-0), making it solid black.
-  // Opacity controls the grayscale intensity.
-  const opacityClass = solid ? "opacity-100" : "opacity-50";
-  const imgClass = `w-3.5 h-3.5 shrink-0 filter brightness-0 invert ${opacityClass} group-hover:invert-0 group-hover:opacity-75 transition-all duration-150 select-none`;
+  // Grid cards and List rows both flip logos to black on group-hover to match the white card hover state
+  const opacityClass = solid ? "opacity-70" : "opacity-50";
+  const imgClass = `w-4 h-4 shrink-0 filter brightness-0 invert ${opacityClass} group-hover:invert-0 group-hover:opacity-75 transition-all duration-150 select-none`;
 
   return (
     <div className={className}>

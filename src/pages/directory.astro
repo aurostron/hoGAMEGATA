@@ -1,0 +1,124 @@
+---
+export const prerender = true;
+
+import Layout from '../layouts/Layout.astro';
+import ReturnButton from '../components/ReturnButton';
+import { turso } from '../lib/turso';
+import { games as gamesTable } from '../db/schema';
+import { asc } from 'drizzle-orm';
+
+// Fetch all games ordered alphabetically
+const allGames = await turso
+  .select({
+    title: gamesTable.title,
+    slug: gamesTable.slug,
+    developerNames: gamesTable.developerNames,
+  })
+  .from(gamesTable)
+  .orderBy(asc(gamesTable.title));
+
+// Group games into alphabet buckets
+const groups: Record<string, typeof allGames> = {};
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+groups["0-9"] = [];
+for (const char of alphabet) {
+  groups[char] = [];
+}
+
+for (const game of allGames) {
+  const title = game.title.trim();
+  if (!title) continue;
+  const firstChar = title.charAt(0).toUpperCase();
+  if (/[A-Z]/.test(firstChar)) {
+    groups[firstChar].push(game);
+  } else {
+    groups["0-9"].push(game);
+  }
+}
+
+// Clean empty groups
+const activeKeys = ["0-9", ...alphabet].filter(key => groups[key] && groups[key].length > 0);
+---
+
+<Layout 
+  title="Games Directory | hoGAMEGATA" 
+  description="Browse our complete database of horror games in alphabetical order (A-Z list). Access over 18,000+ horror game titles, developers, and details." 
+  withSearch={false} 
+  withLink={true}
+>
+  <main class="flex-1 max-w-[1400px] w-full mx-auto px-6 sm:px-10 my-10 pb-24 flex flex-col gap-10">
+    <!-- Top Header -->
+    <div class="flex justify-between items-center border-b border-white/10 pb-6">
+      <div class="flex flex-col gap-1">
+        <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter text-white">
+          {allGames.length.toLocaleString()} GAMES
+        </h1>
+        <span class="font-mono text-xs lowercase tracking-widest text-white/40">
+          Use ctrl + F (search tool) to search
+        </span>
+        
+      </div>
+      <ReturnButton client:only="react" />
+    </div>
+
+    <!-- Sticky Navigation Jump Bar -->
+    <div class="sticky top-14 sm:top-16 z-40 bg-[#08080a]/90 backdrop-blur-md border border-white/10 p-3 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 select-none">
+      <a href="#group-0-9" class="px-2.5 py-1 sm:px-3 sm:py-1.5 border border-white/5 hover:border-white/40 hover:bg-white/5 transition-all font-mono text-[10px] sm:text-xs font-bold text-white/60 hover:text-white">
+        0-9
+      </a>
+      {alphabet.map((char) => {
+        const hasGames = groups[char] && groups[char].length > 0;
+        return hasGames ? (
+          <a href={`#group-${char}`} class="px-2.5 py-1 sm:px-3 sm:py-1.5 border border-white/5 hover:border-white/40 hover:bg-white/5 transition-all font-mono text-[10px] sm:text-xs font-bold text-white/60 hover:text-white">
+            {char}
+          </a>
+        ) : (
+          <span class="px-2.5 py-1 sm:px-3 sm:py-1.5 border border-transparent font-mono text-[10px] sm:text-xs font-bold text-white/15 cursor-not-allowed">
+            {char}
+          </span>
+        );
+      })}
+    </div>
+
+    <!-- Alphabetical Directory Sections -->
+    <div class="space-y-16">
+      {activeKeys.map((key) => {
+        const list = groups[key];
+        return (
+          <section id={`group-${key}`} class="scroll-mt-28 sm:scroll-mt-32">
+            {/* Group Header */}
+            <div class="border-b-2 border-white/15 pb-2 mb-6 flex items-baseline justify-between">
+              <h2 class="font-mono text-3xl sm:text-4xl font-black text-white tracking-widest uppercase">
+                [ {key} ]
+              </h2>
+              <span class="font-mono text-xs text-white/30 font-bold uppercase tracking-wider">
+                {list.length} {list.length === 1 ? "game" : "games"}
+              </span>
+            </div>
+
+            {/* List Grid (3 columns) */}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
+              {list.map((game) => (
+                <div class="flex flex-col gap-0.5 group">
+                  <a 
+                    href={`/game/${game.slug}`} 
+                    class="text-white/70 hover:text-white font-mono text-xs font-bold transition-colors truncate block group-hover:underline"
+                    title={game.title}
+                  >
+                    • {game.title}
+                  </a>
+                  {game.developerNames && (
+                    <span class="text-[9px] text-white/30 font-mono pl-3 tracking-wide truncate">
+                      by {game.developerNames.split(", ")[0]}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  </main>
+</Layout>

@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import DashboardTabs from "./DashboardTabs";
+import DashboardStats from "./DashboardStats";
 import NyanLoader from "./NyanLoader";
-import AuthButton from "./AuthButton";
-import { ArrowLeft } from "lucide-react";
+import SciFiLogo from "./SciFiLogo";
+import HeaderSearch from "./HeaderSearch";
+import CartButton from "./CartButton";
+import SettingsButton from "./SettingsButton";
 
 function DashboardClientInner() {
   const { user, loading } = useAuth();
@@ -59,46 +62,38 @@ function DashboardClientInner() {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black pb-24">
       {/* Header */}
-      <header className="border-b border-white bg-black sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 py-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <a href="/" className="hover:opacity-85">
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                <span className="italic">ho</span>GAMEGATA.
-              </h1>
-            </a>
-            <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white uppercase font-bold">
-              <span>Personal Console</span>
-              <span className="text-white font-black">•</span>
-              <span>Developer Registry</span>
-            </div>
+      <header className="border-b border-white/5 bg-black sticky top-0 z-50 w-full">
+        <div className="w-full px-6 md:px-12 py-2 flex items-center justify-between gap-6 h-14 sm:h-16">
+          {/* Left Section: Logo */}
+          <div className="flex items-center gap-6 shrink-0">
+            <SciFiLogo />
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <AuthButton />
-            <a 
-              href="/" 
-              className="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>[ Back to Search ]</span>
-            </a>
+
+          {/* Right Section: Search & Options */}
+          <div className="flex items-center gap-3 shrink-0">
+            <HeaderSearch />
+            <CartButton />
+            <SettingsButton />
           </div>
         </div>
       </header>
 
       {/* Main Dashboard Container */}
-      <main className="max-w-5xl mx-auto px-6 mt-12 space-y-12">
-        <section className="pb-8 border-b border-white space-y-2">
-          <span className="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
-            Terminal Active
-          </span>
-          <h2 className="text-3xl font-extrabold uppercase tracking-tight">
-            Dashboard Specs: {user?.email}
+      <main className="max-w-6xl mx-auto px-6 mt-12 space-y-12">
+        <section className="pb-8 border-b border-white/5">
+          <h2 className="text-2xl font-bold tracking-tight text-white">
+            Dashboard
           </h2>
-          <p className="text-xs text-white/60 font-mono uppercase tracking-wider">
-            Access credentials: {user?.id}
+          <p className="text-xs text-neutral-400 mt-1.5">
+            Logged in as {user?.email}
           </p>
         </section>
+
+        {/* User Analytics Statistics Dashboard Section */}
+        <DashboardStats
+          wishlist={wishlist}
+          collection={collection}
+        />
 
         <DashboardTabs
           wishlist={wishlist}

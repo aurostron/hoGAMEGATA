@@ -1,0 +1,22 @@
+---
+import { urlFor } from '../lib/sanity';
+
+const { node } = Astro.props;
+const imageUrl = node ? urlFor(node).width(1000).fit('max').auto('format').url() : '';
+---
+
+{imageUrl && (
+  <figure class="my-8 space-y-2 border border-white/10 p-1 bg-black w-full">
+    <img 
+      src={imageUrl} 
+      alt={node.alt || 'Changelog image'} 
+      class="w-full h-auto border border-white/5 object-cover" 
+      loading="lazy"
+    />
+    {node.caption && (
+      <figcaption class="font-mono text-[9px] text-white/40 uppercase tracking-widest px-2 py-1">
+        // {node.caption}
+      </figcaption>
+    )}
+  </figure>
+)}

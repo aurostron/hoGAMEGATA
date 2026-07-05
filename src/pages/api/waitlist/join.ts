@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../../lib/supabaseServer';
+import { tursoAuth } from '../../../lib/tursoAuth';
+import { waitlist as waitlistTable } from '../../../db/auth-schema';
+import { eq } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -15,38 +17,34 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: "Invalid email address format" }), { status: 400 });
     }
 
-    const supabase = getSupabaseServer();
+    const normalizedEmail = email.toLowerCase();
 
-    // Check if email already exists
-    const { data: existing } = await supabase
-      .from("Waitlist")
-      .select("id")
-      .eq("email", email.toLowerCase())
-      .limit(1)
-      .maybeSingle();
+    // Check if email already exists in separate Auth Database
+    const existing = await tursoAuth
+      .select({ id: waitlistTable.id })
+      .from(waitlistTable)
+      .where(eq(waitlistTable.email, normalizedEmail))
+      .limit(1);
 
-    if (existing) {
+    if (existing.length > 0) {
       return new Response(JSON.stringify({ success: true, message: "Already joined" }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     // Generate secure random access token
     const token = crypto.randomUUID();
+    const entryId = crypto.randomUUID();
 
-    // Create waitlist entry
-    const { data, error } = await supabase
-      .from("Waitlist")
-      .insert({
-        id: crypto.randomUUID(),
-        email: email.toLowerCase(),
+    // Create waitlist entry in separate Auth Database
+    await tursoAuth
+      .insert(waitlistTable)
+      .values({
+        id: entryId,
+        email: normalizedEmail,
         token,
         status: "PENDING",
-      })
-      .select("id")
-      .single();
+      });
 
-    if (error) throw error;
-
-    return new Response(JSON.stringify({ success: true, id: data.id }), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, id: entryId }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("❌ Failed to join waitlist:", error instanceof Error ? error.message : "Unknown error");
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });

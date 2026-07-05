@@ -1,4 +1,6 @@
-import { getSupabaseServer } from "./supabaseServer";
+import { turso } from "./turso";
+import { priceSnapshots as priceSnapshotsTable } from "../db/schema";
+import { eq, and } from "drizzle-orm";
 
 const CHEAPSHARK_STORE_MAP: Record<string, string> = {
   "1": "Steam",
@@ -207,7 +209,7 @@ async function fetchItadPrices(apiKey: string, itadId: string, country: string):
   if (Date.now() < itadCoolDownUntil) return [];
 
   try {
-    const url = `https://api.isthereanydeal.com/games/prices/v3?key=${apiKey}&country=${country}&deals=true`;
+    const url = `https://api.isthereanydeal.com/games/prices/v3?key=${apiKey}&country=${country}`;
     const res = await fetchWithBackoff(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -292,35 +294,39 @@ export async function fetchAggregatedDeals(steamId: string | null, title: string
   return sortedDeals;
 }
 
+// Safe ID generator for PriceSnapshot client-side inserts (as id field is not generated at DB level)
+const generatePriceSnapshotId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
 // 4. Lazy Cache Getter using direct Supabase queries
 export async function lazyGetPrices(
   gameId: string,
   title: string,
   purchaseLinks: { storeName: string; url: string }[],
-  country: string = "US"
+  country: string = "US",
+  forceRefresh: boolean = false
 ): Promise<PriceDeal[]> {
   const upperCountry = (country || "US").toUpperCase();
   const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   try {
-    const supabase = getSupabaseServer();
-
-    // A. Check database cache
-    const { data: cachedData, error: cacheError } = await supabase
-      .from("PriceSnapshot")
-      .select("*")
-      .eq("gameId", gameId)
-      .eq("country", upperCountry)
-      .order("dealPrice", { ascending: true });
-
-    if (cacheError) {
-      console.warn("⚠️ Failed to retrieve cached prices from Supabase:", cacheError);
-    }
-
-    const cached = cachedData || [];
+    // A. Check database cache in Turso
+    const cached = await turso
+      .select()
+      .from(priceSnapshotsTable)
+      .where(
+        and(
+          eq(priceSnapshotsTable.gameId, gameId),
+          eq(priceSnapshotsTable.country, upperCountry)
+        )
+      )
+      .orderBy(priceSnapshotsTable.dealPrice);
 
     // Bypass API calls during production pre-render to avoid build limits
-    // In Astro, we check import.meta.env.SSR or check if we are building
     const isBuildPhase = process.env.NODE_ENV === "production" && typeof window === "undefined" && !process.env.CF_PAGES;
     if (isBuildPhase) {
       return cached.map(c => ({
@@ -333,7 +339,7 @@ export async function lazyGetPrices(
       }));
     }
 
-    if (cached.length > 0) {
+    if (cached.length > 0 && !forceRefresh) {
       const oldestUpdate = Math.min(...cached.map(c => new Date(c.updatedAt).getTime()));
       const isFresh = (Date.now() - oldestUpdate) < CACHE_TTL_MS;
 
@@ -363,35 +369,39 @@ export async function lazyGetPrices(
     const freshDeals = await fetchAggregatedDeals(steamId, title, upperCountry);
 
     if (freshDeals.length > 0) {
-      // D. Update local cached data in Supabase (simulate transaction via Delete then Insert)
-      const { error: deleteError } = await supabase
-        .from("PriceSnapshot")
-        .delete()
-        .eq("gameId", gameId)
-        .eq("country", upperCountry);
-
-      if (deleteError) {
-        console.warn("⚠️ Failed to delete stale prices from Supabase:", deleteError);
+      // D. Update local cached data in Turso (Delete stale, then Insert fresh)
+      try {
+        await turso
+          .delete(priceSnapshotsTable)
+          .where(
+            and(
+              eq(priceSnapshotsTable.gameId, gameId),
+              eq(priceSnapshotsTable.country, upperCountry)
+            )
+          );
+      } catch (deleteError) {
+        console.warn("⚠️ Failed to delete stale prices from Turso:", deleteError);
       }
 
-      const { error: insertError } = await supabase
-        .from("PriceSnapshot")
-        .insert(
-          freshDeals.map(deal => ({
-            gameId,
-            storeName: deal.storeName,
-            dealPrice: deal.dealPrice,
-            retailPrice: deal.retailPrice,
-            discountPercent: deal.discountPercent,
-            dealUrl: deal.dealUrl,
-            currency: deal.currency,
-            country: upperCountry,
-            updatedAt: new Date().toISOString()
-          }))
-        );
-
-      if (insertError) {
-        console.warn("⚠️ Failed to write fresh prices to Supabase:", insertError);
+      try {
+        await turso
+          .insert(priceSnapshotsTable)
+          .values(
+            freshDeals.map(deal => ({
+              id: generatePriceSnapshotId(),
+              gameId,
+              storeName: deal.storeName,
+              dealPrice: deal.dealPrice,
+              retailPrice: deal.retailPrice,
+              discountPercent: deal.discountPercent,
+              dealUrl: deal.dealUrl,
+              currency: deal.currency,
+              country: upperCountry,
+              updatedAt: new Date()
+            }))
+          );
+      } catch (insertError) {
+        console.warn("⚠️ Failed to write fresh prices to Turso:", insertError);
       }
 
       return freshDeals;

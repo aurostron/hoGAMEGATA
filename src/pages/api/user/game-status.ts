@@ -1,12 +1,14 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../../lib/supabaseServer';
 import { getServerUser } from '../../../lib/serverAuth';
+import { tursoAuth } from '../../../lib/tursoAuth';
+import { wishlist as wishlistTable, collection as collectionTable } from '../../../db/auth-schema';
+import { eq, and } from 'drizzle-orm';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies }) => {
   try {
-    const user = await getServerUser(cookies);
+    const user = await getServerUser(request, cookies);
     if (!user) {
       return new Response(JSON.stringify({ loggedIn: false }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -18,30 +20,35 @@ export const GET: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "Missing gameId" }), { status: 400 });
     }
 
-    const supabase = getSupabaseServer();
-
-    const [wishlistResult, collectionResult] = await Promise.all([
-      supabase
-        .from("Wishlist")
-        .select("id")
-        .eq("userId", user.id)
-        .eq("gameId", gameId)
+    // Query separate Auth Database for wishlist & collection status
+    const [wishlistItem, collectionItem] = await Promise.all([
+      tursoAuth
+        .select({ id: wishlistTable.id })
+        .from(wishlistTable)
+        .where(
+          and(
+            eq(wishlistTable.userId, user.id),
+            eq(wishlistTable.gameId, gameId)
+          )
+        )
+        .limit(1),
+      tursoAuth
+        .select({ status: collectionTable.status })
+        .from(collectionTable)
+        .where(
+          and(
+            eq(collectionTable.userId, user.id),
+            eq(collectionTable.gameId, gameId)
+          )
+        )
         .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("Collection")
-        .select("status")
-        .eq("userId", user.id)
-        .eq("gameId", gameId)
-        .limit(1)
-        .maybeSingle(),
     ]);
 
     return new Response(
       JSON.stringify({
         loggedIn: true,
-        wishlisted: !!wishlistResult.data,
-        collectionStatus: collectionResult.data?.status || null,
+        wishlisted: wishlistItem.length > 0,
+        collectionStatus: collectionItem[0]?.status || null,
       }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );

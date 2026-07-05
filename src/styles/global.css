@@ -20,27 +20,29 @@
 
   --font-sans: var(--font-sans);
   --font-heading: var(--font-sans);
+  --font-mono: var(--font-mono);
 
   --shadow-glow: 0 0 15px rgba(200, 10, 10, 0.3);
   --shadow-glow-strong: 0 0 25px rgba(255, 42, 42, 0.5);
 }
 
 :root {
-  --font-sans: 'Montserrat', sans-serif;
-  --background: #030303;
+  --font-sans: 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --background: #0d0d0f;
   --foreground: #f3f4f6;
 
   --primary: #b30909;
   --primary-foreground: #ffffff;
 
-  --muted: #0b0b0d;
+  --muted: #111114;
   --muted-foreground: #9ca3af;
 
-  --card: #08080a;
+  --card: #151518;
   --card-foreground: #f3f4f6;
-  --card-border: #1a1a22;
+  --card-border: #24242c;
   
-  --popover: #08080a;
+  --popover: #151518;
   --popover-foreground: #f3f4f6;
   
   --secondary: #121217;
@@ -52,8 +54,8 @@
   --destructive: #b30909;
   --destructive-foreground: #ffffff;
   
-  --border: #1a1a22;
-  --input: #1a1a22;
+  --border: #202027;
+  --input: #121215;
   --ring: #ff2a2a;
   
   --radius: 0.625rem;
@@ -61,21 +63,22 @@
 
 /* Enforce same dark theme for .dark class as well */
 .dark {
-  --font-sans: 'Montserrat', sans-serif;
-  --background: #030303;
+  --font-sans: 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  --background: #0d0d0f;
   --foreground: #f3f4f6;
 
   --primary: #b30909;
   --primary-foreground: #ffffff;
 
-  --muted: #0b0b0d;
+  --muted: #111114;
   --muted-foreground: #9ca3af;
 
-  --card: #08080a;
+  --card: #151518;
   --card-foreground: #f3f4f6;
-  --card-border: #1a1a22;
+  --card-border: #24242c;
   
-  --popover: #08080a;
+  --popover: #151518;
   --popover-foreground: #f3f4f6;
   
   --secondary: #121217;
@@ -87,8 +90,8 @@
   --destructive: #b30909;
   --destructive-foreground: #ffffff;
   
-  --border: #1a1a22;
-  --input: #1a1a22;
+  --border: #202027;
+  --input: #121215;
   --ring: #ff2a2a;
 }
 
@@ -145,6 +148,11 @@ body {
 
 .glitch-hover:hover {
   animation: glitch 0.3s linear infinite;
+}
+
+/* Prevent body scroll when tutorial is active */
+body.tutorial-active {
+  overflow: hidden;
 }
 
 /* Custom scrollbars */

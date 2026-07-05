@@ -115,3 +115,85 @@ export function expandAbbreviations(query: string): string | null {
   return expanded ? newWords.join(" ") : null;
 }
 
+export function levenshteinDistance(s1: string, s2: string): number {
+  const m = s1.length;
+  const n = s2.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+
+  const dp: number[][] = [];
+  for (let i = 0; i <= m; i++) {
+    dp[i] = [i];
+  }
+  for (let j = 0; j <= n; j++) {
+    dp[0][j] = j;
+  }
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,      // Deletion
+        dp[i][j - 1] + 1,      // Insertion
+        dp[i - 1][j - 1] + cost // Substitution
+      );
+    }
+  }
+
+  return dp[m][n];
+}
+
+export function suggestCorrection(query: string, allTitles: string[]): string | null {
+  if (!query || query.length < 3) return null;
+  
+  const cleanQuery = query.toLowerCase().trim().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
+  if (!cleanQuery) return null;
+
+  let bestTitle: string | null = null;
+  let minDistance = Infinity;
+  let bestSimilarity = 0;
+
+  for (const title of allTitles) {
+    if (!title) continue;
+    const cleanTitle = title.toLowerCase().trim().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
+    if (!cleanTitle) continue;
+
+    // Exact match on alphanumeric representation
+    if (cleanTitle === cleanQuery) {
+      return title; // Found exact match
+    }
+
+    // Compute Levenshtein distance
+    const dist = levenshteinDistance(cleanQuery, cleanTitle);
+    
+    // Calculate similarity index: 1 - (distance / maxLength)
+    const maxLen = Math.max(cleanQuery.length, cleanTitle.length);
+    const similarity = maxLen > 0 ? 1 - dist / maxLen : 0;
+
+    // Check for substring match (e.g. "resident ev" in "resident evil") which has high weight
+    const isSubstring = cleanTitle.includes(cleanQuery) || cleanQuery.includes(cleanTitle);
+
+    if (similarity > bestSimilarity || (isSubstring && similarity + 0.12 > bestSimilarity)) {
+      let score = similarity;
+      if (isSubstring) score += 0.12; // Give boost to substring overlaps
+      
+      if (score > bestSimilarity) {
+        bestSimilarity = score;
+        minDistance = dist;
+        bestTitle = title;
+      }
+    }
+  }
+
+  // Threshold: only suggest if similarity score is high enough (e.g. > 0.72)
+  if (bestTitle && bestSimilarity >= 0.72) {
+    // Avoid correcting if the distance is too large relative to query length
+    if (minDistance <= Math.max(2, Math.floor(cleanQuery.length / 2))) {
+      return bestTitle;
+    }
+  }
+
+  return null;
+}
+
+

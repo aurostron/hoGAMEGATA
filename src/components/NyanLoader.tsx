@@ -34,7 +34,7 @@ export default function NyanLoader({
       
       {/* Blinking Message */}
       <div className={`font-mono text-white uppercase tracking-[0.2em] font-black animate-pulse text-center ${textSize}`}>
-        [ {message} ]
+        {message}
       </div>
     </div>
   );

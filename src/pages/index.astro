@@ -1,95 +1,203 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import GameCatalogClient from '../components/GameCatalogClient';
-import { getSupabaseServer } from '../lib/supabaseServer';
-import { getDbStats, getCheapestSnapshots } from '../lib/dbRpc';
+import { turso } from '../lib/turso';
+import {
+  games,
+  developers,
+  tags,
+  priceSnapshots
+} from '../db/schema';
+import { count, isNull, isNotNull, desc, and, or, eq, ne, gt, lt, lte, inArray } from 'drizzle-orm';
+import { enrichGamesWithRelations } from '../lib/gameQueries';
+import { getContentMap } from '../lib/siteContent';
 
-// 1. Fetch stats at build time
-const stats = await getDbStats();
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=10, s-maxage=30, stale-while-revalidate=60'
+);
 
-const gameSummarySelect = "id, title, slug, status, coverUrl, isTrending, rating, category, esrbRating, pegiRating, developerNames, genreNames, platformNames, releaseDate, tags:Tag(name, slug)";
+let stats: { games: number; developers: number; tags: number; deals: number } | null = null;
+let heroGames: any[] = [];
+let latestGames: any[] = [];
+let trendingGames: any[] = [];
+let upcomingGames: any[] = [];
+let topRatedGames: any[] = [];
+let content: Record<string, string> = {};
 
-let initialGames: any[] = [];
-let nextCursor: string | null = null;
-
-// 2. Fetch the first page of 20 games at build time
 try {
-  const supabase = getSupabaseServer();
-  const { data: fetchedGames } = await supabase
-    .from("Game")
-    .select(gameSummarySelect)
-    .order("releaseDate", { ascending: false, nullsFirst: false })
-    .order("id", { ascending: false })
-    .limit(21);
+  // Query site content copy map
+  content = await getContentMap();
+  // 1. Fetch database stats in parallel from Turso
+  const [
+    [{ count: gamesCount }],
+    [{ count: devsCount }],
+    [{ count: tagsCount }],
+    [{ count: dealsCount }],
+  ] = await Promise.all([
+    turso.select({ count: count() }).from(games),
+    turso.select({ count: count() }).from(developers),
+    turso.select({ count: count() }).from(tags),
+    turso.select({ count: count() }).from(priceSnapshots),
+  ]);
 
-  if (fetchedGames) {
-    const limit = 20;
-    initialGames = fetchedGames.slice(0, limit);
-    if (fetchedGames.length > limit) {
-      const lastGame = initialGames[initialGames.length - 1];
-      nextCursor = lastGame ? `${lastGame.releaseDate ? new Date(lastGame.releaseDate).getTime() : "null"}_${lastGame.id}` : null;
+  stats = {
+    games: gamesCount,
+    developers: devsCount,
+    tags: tagsCount,
+    deals: dealsCount,
+  };
+
+  // 2. Fetch raw game lists in parallel from Turso
+  const [
+    heroRaw,
+    latestRaw,
+    trendingRaw,
+    upcomingRaw,
+    topRatedRaw
+  ] = await Promise.all([
+    turso
+      .select()
+      .from(games)
+      .where(
+        and(
+          isNotNull(games.screenshots),
+          or(isNull(games.status), ne(games.status, "upcoming")),
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+        )
+      )
+      .orderBy(desc(games.isTrending), desc(games.rating))
+      .limit(15),
+    turso
+      .select()
+      .from(games)
+      .where(
+        and(
+          or(isNull(games.status), ne(games.status, "upcoming")),
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+        )
+      )
+      .orderBy(desc(games.releaseDate), desc(games.id))
+      .limit(30),
+    turso
+      .select()
+      .from(games)
+      .where(
+        and(
+          or(isNull(games.status), ne(games.status, "upcoming")),
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+        )
+      )
+      .orderBy(desc(games.isTrending), desc(games.popularity), desc(games.id))
+      .limit(30),
+    turso
+      .select()
+      .from(games)
+      .where(or(eq(games.status, "upcoming"), gt(games.releaseDate, new Date())))
+      .orderBy(games.releaseDate)
+      .limit(8),
+    turso
+      .select()
+      .from(games)
+      .where(
+        and(
+          or(isNull(games.status), ne(games.status, "upcoming")),
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+        )
+      )
+      .orderBy(desc(games.rating), desc(games.id))
+      .limit(8)
+  ]);
+
+  // 3. Enrich games with their tags and purchase links
+  const [
+    heroEnriched,
+    latestEnriched,
+    trendingEnriched,
+    upcomingEnriched,
+    topRatedEnriched
+  ] = await Promise.all([
+    enrichGamesWithRelations(heroRaw),
+    enrichGamesWithRelations(latestRaw),
+    enrichGamesWithRelations(trendingRaw),
+    enrichGamesWithRelations(upcomingRaw),
+    enrichGamesWithRelations(topRatedRaw)
+  ]);
+
+  latestGames = latestEnriched;
+  trendingGames = trendingEnriched;
+  upcomingGames = upcomingEnriched;
+  topRatedGames = topRatedEnriched;
+
+  // Filter hero games to ensure screenshots are populated
+  heroGames = heroEnriched
+    .filter((g: any) => g.screenshots && g.screenshots.length > 0)
+    .slice(0, 6);
+
+  // Fallback hero games if we don't have enough
+  if (heroGames.length < 6) {
+    const fallbacks = [...latestGames, ...trendingGames]
+      .filter((g: any) => g.screenshots && g.screenshots.length > 0 && !heroGames.some((hg: any) => hg.id === g.id));
+    heroGames.push(...fallbacks.slice(0, 6 - heroGames.length));
+  }
+
+  // Gather all unique game IDs across all groups to fetch cheapest snapshots
+  const allGames = [...heroGames, ...latestGames, ...trendingGames, ...upcomingGames, ...topRatedGames];
+  const allGameIds = Array.from(new Set(allGames.map((g: any) => g.id)));
+
+  if (allGameIds.length > 0) {
+    const snapshots = await turso
+      .select()
+      .from(priceSnapshots)
+      .where(inArray(priceSnapshots.gameId, allGameIds));
+
+    const snapshotMap = new Map<string, any[]>();
+    for (const row of snapshots) {
+      const { gameId, ...snapshot } = row;
+      if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
+      snapshotMap.get(gameId)!.push(snapshot);
     }
-
-    const gameIds = initialGames.map((g: any) => g.id);
-    if (gameIds.length > 0) {
-      const snapshots = await getCheapestSnapshots(gameIds);
-      const snapshotMap = new Map<string, any[]>();
-      for (const row of snapshots) {
-        const { gameId, ...snapshot } = row;
-        if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
-        snapshotMap.get(gameId)!.push(snapshot);
-      }
-      for (const game of initialGames) {
-        game.priceSnapshots = snapshotMap.get(game.id) || [];
-      }
+    for (const game of allGames) {
+      game.priceSnapshots = snapshotMap.get(game.id) || [];
     }
   }
 } catch (err) {
-  console.error("Failed to fetch initial games:", err);
+  console.error("Failed to fetch homepage games from Turso:", err);
+}
+
+// Set up cursor for client-side pagination fallback (Latest tab initial set)
+let nextCursor: string | null = null;
+if (latestGames.length > 0) {
+  const lastGame = latestGames[latestGames.length - 1];
+  nextCursor = lastGame ? `${lastGame.releaseDate ? new Date(lastGame.releaseDate).getTime() : "null"}_${lastGame.id}` : null;
 }
 ---
 
-<Layout title="hoGAMEGATA | Horror Game Discovery Database" withSearch={true}>
-  {/* Atmospheric Hero Banner */}
-  <div class="relative w-full overflow-hidden" style="min-height: 320px;">
-    <div class="absolute inset-0 bg-black"></div>
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(180,0,0,0.13) 0%, transparent 70%);"></div>
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse 50% 40% at 20% 100%, rgba(80,0,0,0.10) 0%, transparent 60%);"></div>
-    <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-    <div class="absolute bottom-0 left-0 right-0 h-px bg-white/20"></div>
-
-    <div class="relative z-10 max-w-5xl mx-auto px-6 flex flex-col items-center justify-center text-center py-16 gap-6">
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-[1.05] tracking-tight max-w-3xl select-none">
-        Probably the most curated horror games database
-        <span class="text-white/75"> you'll ever see.</span>
-      </h1>
-
-      <div class="flex flex-nowrap justify-center gap-px mt-4 border border-white/35 font-mono min-h-[74px] md:min-h-[82px] w-full max-w-[600px] select-none">
-        {
-          [
-            { label: "Games", value: stats?.games ? stats.games.toLocaleString() : "2,723" },
-            { label: "Devs", value: stats?.developers ? stats.developers.toLocaleString() : "542" },
-            { label: "Screenshots", value: stats?.screenshots ? stats.screenshots.toLocaleString() : "8,941" },
-            { label: "Game Tags", value: stats?.tags ? stats.tags.toLocaleString() : "34" },
-          ].map((stat) => (
-            <div class="flex flex-col items-center justify-center px-4 md:px-6 py-4 bg-white/[0.03] hover:bg-white/[0.06] transition-colors duration-200 border-r border-white/10 last:border-r-0 flex-1">
-              <span class="text-2xl md:text-3xl font-black text-white tabular-nums">
-                {stat.value}
-              </span>
-              <span class="text-[9px] text-white/60 uppercase tracking-widest mt-0.5 text-center">{stat.label}</span>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </div>
-
-  <main class="max-w-5xl mx-auto px-6 mt-10 space-y-12 flex-1 pb-24 w-full">
-    <GameCatalogClient 
-      client:load 
-      initialGames={initialGames} 
+<Layout
+  title={content.hero_title ? `${content.hero_title} | Horror Game Discovery Database` : "hoGAMEGATA | Horror Game Discovery Database"}
+  description={content.hero_subtitle}
+  withSearch={false}
+  statsGames={stats?.games}
+  statsDevelopers={stats?.developers}
+  statsDeals={stats?.deals}
+  statsTags={stats?.tags}
+>
+  <main class="max-w-5xl mx-auto px-6 mt-6 flex-1 pb-24 w-full">
+    <GameCatalogClient
+      client:only="react"
+      initialGames={latestGames}
       initialTotalGames={stats?.games || null}
       initialNextCursor={nextCursor}
+      heroGames={heroGames}
+      latestGames={latestGames}
+      trendingGames={trendingGames}
+      upcomingGames={upcomingGames}
+      topRatedGames={topRatedGames}
+      catalogueTitle={content.catalogue_title}
+      catalogueDesc={content.catalogue_desc}
+      supportTitle={content.support_title}
+      supportDesc={content.support_desc}
     />
   </main>
 </Layout>
+

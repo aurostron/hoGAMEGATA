@@ -1,6 +1,22 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getSupabaseServer } from '../../lib/supabaseServer';
+import { turso } from '../../lib/turso';
+import {
+  games as gamesTable,
+  developers as developersTable,
+  gamesToDevelopers,
+  publishers as publishersTable,
+  gamesToPublishers,
+  genres as genresTable,
+  gamesToGenres,
+  tags as tagsTable,
+  gamesToTags,
+  platforms as platformsTable,
+  gamesToPlatforms,
+  purchaseLinks as purchaseLinksTable,
+  priceSnapshots as priceSnapshotsTable
+} from '../../db/schema';
+import { eq } from 'drizzle-orm';
 import { Calendar, Star, Monitor, Clock, Shield, Flame, Tag, ExternalLink } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from '../../lib/utils';
 
@@ -15,45 +31,83 @@ import TrackControls from '../../components/TrackControls';
 import VibeTracker from '../../components/VibeTracker';
 
 // SSR: render every game on-demand instead of pre-building a limited static set.
-// Cloudflare will cache rendered pages at the edge via Cache-Control headers below,
-// so Supabase is only hit once per game per CDN node per 24 hours.
 export const prerender = false;
 
 const { slug } = Astro.params;
 
-const supabase = getSupabaseServer();
-const { data: game, error } = await supabase
-  .from("Game")
-  .select(`
-    *,
-    developers:Developer(id, name, slug),
-    publishers:Publisher(id, name, slug),
-    genres:Genre(id, name, slug),
-    tags:Tag(id, name, slug),
-    platforms:Platform(id, name, slug),
-    purchaseLinks:PurchaseLink(id, storeName, url)
-  `)
-  .eq("slug", slug!)
-  .maybeSingle();
+// 1. Fetch raw game from Turso
+const [rawGame] = await turso
+  .select()
+  .from(gamesTable)
+  .where(eq(gamesTable.slug, slug!))
+  .limit(1);
 
-if (error) {
-  console.error(`❌ Error fetching game "${slug}":`, error);
-}
-
-if (!game) {
+if (!rawGame) {
   return Astro.redirect('/404');
 }
 
-// Fetch cached prices from PriceSnapshot for instant server rendering
-const { data: priceSnapshotsData } = await supabase
-  .from("PriceSnapshot")
-  .select("*")
-  .eq("gameId", game.id);
+// 2. Fetch game relations from Turso in parallel
+const [
+  devsData,
+  pubsData,
+  genresData,
+  tagsData,
+  platsData,
+  linksData,
+  priceSnapshotsData
+] = await Promise.all([
+  turso
+    .select({ id: developersTable.id, name: developersTable.name, slug: developersTable.slug })
+    .from(gamesToDevelopers)
+    .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id))
+    .where(eq(gamesToDevelopers.gameId, rawGame.id)),
+  turso
+    .select({ id: publishersTable.id, name: publishersTable.name, slug: publishersTable.slug })
+    .from(gamesToPublishers)
+    .innerJoin(publishersTable, eq(gamesToPublishers.publisherId, publishersTable.id))
+    .where(eq(gamesToPublishers.gameId, rawGame.id)),
+  turso
+    .select({ id: genresTable.id, name: genresTable.name, slug: genresTable.slug })
+    .from(gamesToGenres)
+    .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
+    .where(eq(gamesToGenres.gameId, rawGame.id)),
+  turso
+    .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
+    .from(gamesToTags)
+    .innerJoin(tagsTable, eq(gamesToTags.tagId, tagsTable.id))
+    .where(eq(gamesToTags.gameId, rawGame.id)),
+  turso
+    .select({ id: platformsTable.id, name: platformsTable.name, slug: platformsTable.slug })
+    .from(gamesToPlatforms)
+    .innerJoin(platformsTable, eq(gamesToPlatforms.platformId, platformsTable.id))
+    .where(eq(gamesToPlatforms.gameId, rawGame.id)),
+  turso
+    .select()
+    .from(purchaseLinksTable)
+    .where(eq(purchaseLinksTable.gameId, rawGame.id)),
+  turso
+    .select()
+    .from(priceSnapshotsTable)
+    .where(eq(priceSnapshotsTable.gameId, rawGame.id))
+]);
+
+// 3. Assemble full game object with parsed json structures matching previous schema
+const game = {
+  ...rawGame,
+  screenshots: rawGame.screenshots ? JSON.parse(rawGame.screenshots) : [],
+  scareProfile: rawGame.scareProfile ? JSON.parse(rawGame.scareProfile) : null,
+  taxonomyScores: rawGame.taxonomyScores ? JSON.parse(rawGame.taxonomyScores) : null,
+  developers: devsData,
+  publishers: pubsData,
+  genres: genresData,
+  tags: tagsData,
+  platforms: platsData,
+  purchaseLinks: linksData
+};
+
 const priceSnapshots = priceSnapshotsData || [];
 
 // Cache this rendered page at the Cloudflare edge for 24 hours.
-// Stale pages are served for up to 7 days while Cloudflare revalidates in the background.
-// This means Supabase is only queried once per game per CDN PoP per day.
 Astro.response.headers.set(
   'Cache-Control',
   'public, s-maxage=86400, stale-while-revalidate=604800'
@@ -82,8 +136,25 @@ const isItchGame = game.slug.startsWith("itch-");
 const hasGogBadge = purchaseLinks?.some((link: any) => link.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
 
 const tags = (game.tags as any[]) || [];
-const developers = (game.developers as any[]) || [];
-const publishers = (game.publishers as any[]) || [];
+
+const STOREFRONT_NAMES = new Set([
+  "gog.com", "gog", "steam", "itch.io", "itch", "epic games", "epic games store", "nintendo eshop", "playstation store", "xbox store", "humble bundle", "playstation", "xbox", "nintendo"
+]);
+
+const cleanEntityList = (entities: any[]) => {
+  const seenNames = new Set<string>();
+  return entities.filter((e: any) => {
+    if (!e || !e.name) return false;
+    const nameLower = e.name.toLowerCase().trim();
+    if (STOREFRONT_NAMES.has(nameLower)) return false;
+    if (seenNames.has(nameLower)) return false;
+    seenNames.add(nameLower);
+    return true;
+  });
+};
+
+const developers = cleanEntityList((game.developers as any[]) || []);
+const publishers = cleanEntityList((game.publishers as any[]) || []);
 const genres = (game.genres as any[]) || [];
 const platforms = (game.platforms as any[]) || [];
 
@@ -173,11 +244,19 @@ const schemaJson = JSON.stringify(schema);
   <script type="application/ld+json" is:inline set:html={schemaJson} />
   <VibeTracker client:load tags={tags} genres={genres} />
 
-  <main class="max-w-5xl mx-auto px-6 mt-12 space-y-12">
+  <style is:global>
+    /* Let default case rendering apply on the game detail pages */
+    .game-page-override, 
+    .game-page-override * {
+      text-transform: none;
+    }
+  </style>
+ 
+  <main class="game-page-override max-w-6xl mx-auto px-6 mt-12 space-y-16 select-none">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
       <!-- Left Column: Cover Art and Quick Specs -->
       <div class="md:col-span-1 space-y-6">
-        <div class={`border border-white bg-black p-1 rounded-none overflow-hidden shrink-0 relative w-full ${
+        <div class={`border border-white/5 bg-[#131316]/50 rounded-2xl overflow-hidden shrink-0 relative w-full ${
           isItchGame ? "aspect-[5/4]" : "aspect-[3/4]"
         }`}>
           {game.coverUrl ? (
@@ -185,67 +264,66 @@ const schemaJson = JSON.stringify(schema);
               <img 
                 src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""} 
                 alt={game.title} 
-                class="object-cover w-full h-full border border-white"
+                class="object-cover w-full h-full border border-white/5 rounded-2xl shadow-2xl"
               />
             </div>
           ) : (
-            <div class="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center border border-white">
-              <span class="font-mono text-xs uppercase tracking-widest text-white">No Cover Art</span>
+            <div class="w-full h-full bg-gradient-to-b from-white/5 to-black flex items-center justify-center border border-white/5 rounded-2xl">
+              <span class="text-xs tracking-wider text-neutral-400">No Cover Art</span>
             </div>
           )}
           {(() => {
             const badge = getCategoryBadge(game.category, game.title);
             if (!badge || badge === "Visual Novel") return null;
             return (
-              <span class="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest border font-black px-1.5 py-0.5 z-10 bg-[#7f1d1d] text-[#fca5a5] border-[#fca5a5]">
+              <span class="absolute top-3 left-3 text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 z-10 bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] rounded">
                 {badge}
               </span>
             );
           })()}
         </div>
 
-        <div class="border border-white bg-black p-5 space-y-4 font-mono text-xs font-bold uppercase">
-          <span class="font-mono text-[9px] text-white/50 tracking-widest block border-b border-white/20 pb-1">Quick Specs</span>
-          
-          <div class="flex justify-between items-center">
-            <span class="text-white flex items-center gap-1.5"><Calendar class="w-3.5 h-3.5" /> Release:</span>
-            <span class="text-white font-black">
+        <!-- Quick Specs overhauled card styling -->
+        <div class="border border-white/5 bg-[#131316]/50 backdrop-blur-md p-6 space-y-4 rounded-2xl shadow-2xl">
+           <div class="flex justify-between items-center border-b border-white/5 pb-2">
+            <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Calendar class="w-3.5 h-3.5 text-neutral-400" /> Release Date</span>
+            <span class="font-mono text-xs text-white font-medium">
               {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString("en-US", { year: "numeric", month: "short" }) : "N/A"}
             </span>
           </div>
 
-          <div class="flex justify-between items-center">
-            <span class="text-white flex items-center gap-1.5"><Star class="w-3.5 h-3.5" /> Avg. Rating:</span>
-            <span class="text-white font-black">{ratingDisplay}</span>
+          <div class="flex justify-between items-center border-b border-white/5 pb-2">
+            <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Star class="w-3.5 h-3.5 text-neutral-400" /> Average Rating</span>
+            <span class="font-mono text-xs text-white font-medium">{ratingDisplay}</span>
           </div>
 
           {game.steamRating !== null && (
-            <div class="flex justify-between items-center">
-              <span class="text-white flex items-center gap-1.5"><Star class="w-3.5 h-3.5" /> [STEAM]</span>
-              <span class="text-white font-black text-right">
-                {game.steamRating.toFixed(1)}/10 <span class="text-white/50 text-[10px] font-bold">[{game.steamRatingDesc}]</span>
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Star class="w-3.5 h-3.5 text-neutral-400" /> Steam Rating</span>
+              <span class="font-mono text-xs text-white font-medium text-right">
+                {game.steamRating.toFixed(1)}/10 <span class="text-white/40 text-[10px]">({game.steamRatingDesc})</span>
               </span>
             </div>
           )}
 
           {game.scareRating !== null && (
-            <div class="flex justify-between items-center border-t border-white/20 pt-3 mt-1">
-              <span class="text-white flex items-center gap-1.5"><Flame class="w-3.5 h-3.5" /> SCARE SCORE:</span>
-              <span class="text-white font-black text-right">
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Flame class="w-3.5 h-3.5 text-neutral-400" /> Scare Score</span>
+              <span class="font-mono text-xs text-white font-medium text-right">
                 {game.scareRating} / 100
               </span>
             </div>
           )}
 
-          <div class="flex justify-between items-center gap-4">
-            <span class="text-white flex items-center gap-1.5 shrink-0"><Monitor class="w-3.5 h-3.5" /> Platforms:</span>
+          <div class="flex justify-between items-center gap-4 border-b border-white/5 pb-2">
+            <span class="text-neutral-400 font-medium flex items-center gap-1.5 shrink-0"><Monitor class="w-3.5 h-3.5 text-neutral-400" /> Platforms</span>
             <PlatformLogos platforms={platforms} class="flex flex-wrap justify-end gap-2" solid={true} />
           </div>
 
           {steamAppId && (
-            <div class="flex justify-between items-baseline gap-2">
-              <span class="text-white flex items-center gap-1.5 shrink-0">
-                <Monitor class="w-3.5 h-3.5" /> Linux compatibility:
+            <div class="flex justify-between items-baseline gap-2 border-b border-white/5 pb-2">
+              <span class="text-neutral-400 font-medium flex items-center gap-1.5 shrink-0">
+                <Monitor class="w-3.5 h-3.5 text-neutral-400" /> Linux Compatibility
               </span>
               <div class="text-right">
                 {game.protonDbTier ? (
@@ -260,62 +338,76 @@ const schemaJson = JSON.stringify(schema);
                         : "View detailed Linux compatibility reports on ProtonDB"
                     }
                   >
-                    <span class={`font-mono text-[9px] uppercase tracking-wider px-1.5 py-0.5 ${
+                    <span class={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-bold ${
                       game.protonDbTier === "native" || game.protonDbTier === "platinum"
-                        ? "bg-emerald-500 text-black font-black"
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                         : game.protonDbTier === "gold"
-                        ? "bg-white text-black font-black"
+                        ? "bg-white/10 text-white border border-white/20"
                         : game.protonDbTier === "silver"
-                        ? "border border-white text-white font-bold"
+                        ? "border border-white/20 text-white/60"
                         : game.protonDbTier === "bronze" || game.protonDbTier === "borked"
-                        ? "border border-red-500 text-red-500 line-through font-bold"
-                        : "border border-white/20 text-white/40 font-bold"
+                        ? "border border-red-500/30 text-red-500/60 line-through"
+                        : "border border-white/10 text-white/30"
                     }`}>
                       {game.protonDbTier}
                     </span>
                     {game.protonDbTotalReports !== null && game.protonDbTotalReports > 0 && (
-                      <span class="text-[9px] text-white/50 font-bold tracking-tight lowercase">
+                      <span class="font-mono text-[9px] text-white/50 tracking-tight lowercase">
                         ({game.protonDbTotalReports} reports)
                       </span>
                     )}
                   </a>
                 ) : (
-                  <span class="text-white/30 font-mono italic">[ Syncing ]</span>
+                  <span class="text-white/35 font-medium italic">Syncing...</span>
                 )}
               </div>
             </div>
           )}
 
           {game.playtime !== null && game.playtime > 0 && (
-            <div class="flex justify-between items-center">
-              <span class="text-white flex items-center gap-1.5"><Clock class="w-3.5 h-3.5" /> Playtime:</span>
-              <span class="text-white font-black">{game.playtime} hrs</span>
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Clock class="w-3.5 h-3.5 text-neutral-400" /> Average Playtime</span>
+              <span class="font-mono text-xs text-white font-medium">{game.playtime} hrs</span>
             </div>
           )}
 
           {game.esrbRating && (
-            <div class="flex justify-between items-center">
-              <span class="text-white flex items-center gap-1.5"><Shield class="w-3.5 h-3.5" /> ESRB:</span>
-              <span class="text-white font-black">{game.esrbRating}</span>
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Shield class="w-3.5 h-3.5 text-neutral-400" /> ESRB Rating</span>
+              <span class="font-mono text-xs text-white font-medium">{game.esrbRating}</span>
             </div>
           )}
 
           {game.metacritic !== null && (
             <div class="flex justify-between items-center">
-              <span class="text-white flex items-center gap-1.5"><Star class="w-3.5 h-3.5" /> Metacritic:</span>
+              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Star class="w-3.5 h-3.5 text-neutral-400" /> Metacritic</span>
               {game.metacriticUrl ? (
                 <a 
                   href={game.metacriticUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-white hover:underline font-black flex items-center gap-1 group/meta"
+                  class="font-mono text-xs text-white hover:underline font-medium flex items-center gap-1 group/meta"
                 >
                   <span>{game.metacritic} / 100</span>
                   <ExternalLink class="w-2.5 h-2.5 opacity-65 group-hover/meta:opacity-100" />
                 </a>
               ) : (
-                <span class="text-white font-black">{game.metacritic} / 100</span>
+                <span class="font-mono text-xs text-white font-medium">{game.metacritic} / 100</span>
               )}
+            </div>
+          )}
+
+          {game.igdbId && (
+            <div class="border-t border-white/5 pt-3 mt-1">
+              <a
+                href={`https://www.igdb.com/games/${game.slug.replace(/^(steam|itch|gog)-/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between w-full px-3 py-2.5 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all text-xs font-semibold rounded-xl"
+              >
+                <span>View on IGDB</span>
+                <ExternalLink class="w-3.5 h-3.5" />
+              </a>
             </div>
           )}
         </div>
@@ -326,7 +418,7 @@ const schemaJson = JSON.stringify(schema);
         <div class="space-y-4 mb-6">
           <div class="flex flex-wrap items-center gap-2">
             {game.status && game.status.trim() !== "" && (
-              <span class="font-mono text-[9px] text-white uppercase tracking-widest border border-white px-2 py-0.5 font-bold bg-white text-black w-fit block">
+              <span class="text-[9px] text-black uppercase tracking-wider font-extrabold bg-white border border-white px-2 py-0.5 rounded">
                 {game.status}
               </span>
             )}
@@ -337,35 +429,45 @@ const schemaJson = JSON.stringify(schema);
               const borderClass = isVN ? "border-[#581c87]" : "border-[#7f1d1d]";
               const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5]";
               return (
-                <span class={`font-mono text-[9px] uppercase tracking-widest border px-2 py-0.5 font-bold w-fit block ${borderClass} ${bgClass}`}>
+                <span class={`text-[9px] uppercase tracking-wider border px-2 py-0.5 font-extrabold rounded ${borderClass} ${bgClass}`}>
                   {badge}
                 </span>
               );
             })()}
             {game.slug.startsWith("itch-") && (
-              <span class="font-mono text-[9px] text-black uppercase tracking-widest border border-[#fa5c5c] px-2 py-0.5 font-bold bg-[#fa5c5c] w-fit block">
+              <span class="text-[9px] text-black uppercase tracking-wider border border-[#fa5c5c] px-2 py-0.5 font-extrabold bg-[#fa5c5c] rounded">
                 itch.io
               </span>
             )}
             {hasGogBadge && (
-              <span class="font-mono text-[9px] text-white uppercase tracking-widest border border-[#7b3fc4] px-2 py-0.5 font-bold bg-[#7b3fc4] w-fit block">
+              <span class="text-[9px] text-white uppercase tracking-wider border border-[#7b3fc4] px-2 py-0.5 font-extrabold bg-[#7b3fc4] rounded">
                 DRM-Free
               </span>
             )}
           </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase leading-tight">
-              {cleanTitle(game.title)}
+          
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <!-- Decently sized, elegant standard casing title -->
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              {cleanTitleName}
             </h1>
             <ShareButton client:load />
           </div>
-          <div class="flex flex-wrap gap-2 text-xs font-mono font-bold uppercase">
-            <span class="text-white/60">Developed by:</span>
-            <span class="text-white font-black">{developers.map((d: any) => d.name).join(", ")}</span>
+
+          <div class="flex flex-wrap gap-2 text-xs font-semibold">
+            <span class="text-white/60">Developed by</span>
+            <span class="text-white font-extrabold">
+              {developers.map((d: any, idx: number) => (
+                <>
+                  {idx > 0 && ", "}
+                  <a href={`/developer/${d.slug}`} class="hover:text-red-400 underline transition-colors">{d.name}</a>
+                </>
+              ))}
+            </span>
             {publishers.length > 0 && (
               <>
-                <span class="text-white/60 ml-2">Published by:</span>
-                <span class="text-white font-black">{publishers.map((p: any) => p.name).join(", ")}</span>
+                <span class="text-white/60 ml-2">Published by</span>
+                <span class="text-white font-extrabold">{publishers.map((p: any) => p.name).join(", ")}</span>
               </>
             )}
           </div>
@@ -383,7 +485,7 @@ const schemaJson = JSON.stringify(schema);
                   href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(directPurchaseUrl)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex items-center justify-center gap-2 px-4 py-3 bg-[#fa5c5c] text-black font-mono text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-none border border-[#fa5c5c]"
+                  class="flex items-center justify-center gap-2 px-4 py-3 bg-[#fa5c5c] text-black text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-xl border border-[#fa5c5c]"
                 >
                   <ExternalLink class="w-3.5 h-3.5 text-black" />
                   <span>Buy / Download on itch.io</span>
@@ -401,6 +503,8 @@ const schemaJson = JSON.stringify(schema);
             genres={genres.map((g: any) => g.name)}
             siteRating={game.rating ? game.rating / 10 : null}
             steamRating={game.steamRating}
+            coverUrl={game.coverUrl}
+            initialPriceSnapshots={priceSnapshots}
           />
         </div>
       </div>
@@ -408,18 +512,17 @@ const schemaJson = JSON.stringify(schema);
 
     <!-- Details Section -->
     <div class="space-y-12 mt-12">
-      {/* Dynamic contents dependent on itch vs regular */}
       {isItchGame ? (
         <>
           <!-- Mood Section -->
           {tags && tags.length > 0 && (
             <div class="pt-6 flex flex-wrap gap-4 items-center">
-              <h2 class="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-                <Tag class="w-3.5 h-3.5" /> Mood/Genre
+              <h2 class="flex items-center gap-1.5 text-lg text-white font-bold">
+                <Tag class="w-3.5 h-3.5" /> Mood & Genres
               </h2>
               <div class="flex flex-wrap gap-2">
                 {tags.map((t: any) => (
-                  <span class="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
+                  <span class="bg-white text-black text-[9px] uppercase tracking-wider px-2.5 py-1 font-extrabold border border-white rounded">
                     {t.name}
                   </span>
                 ))}
@@ -440,16 +543,16 @@ const schemaJson = JSON.stringify(schema);
           <!-- Official/Creator Links -->
           { (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
             <div class="pt-6 space-y-4">
-              <h2 class="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</h2>
+              <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Official & Creator Links</h2>
               <div class="flex flex-wrap gap-3">
                 {purchaseLinks?.map((link: any) => (
                   <a
                     href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Support Creator ({link.storeName})</span>
                   </a>
                 ))}
@@ -459,9 +562,9 @@ const schemaJson = JSON.stringify(schema);
                     href={game.websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Official Website</span>
                   </a>
                 )}
@@ -471,9 +574,9 @@ const schemaJson = JSON.stringify(schema);
                     href={game.redditUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Reddit Community</span>
                   </a>
                 )}
@@ -483,9 +586,9 @@ const schemaJson = JSON.stringify(schema);
                     href={`https://rawg.io/games/${game.rawgSlug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white/80 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/60 group-hover:text-black" />
                     <span>RAWG Profile</span>
                   </a>
                 )}
@@ -494,22 +597,22 @@ const schemaJson = JSON.stringify(schema);
           )}
 
           <!-- Description Section -->
-          <div class="pt-6 space-y-4 select-none">
-            <h2 class="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</h2>
+          <div class="pt-6 space-y-4">
+            <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Description & Overview</h2>
             {game.summary ? (
               <div 
-                class="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
+                class="text-sm text-neutral-300 font-medium leading-relaxed prose prose-invert max-w-none"
                 set:html={game.summary}
               />
             ) : (
-              <p class="text-sm text-white font-medium leading-relaxed font-sans">
+              <p class="text-sm text-neutral-400 font-medium leading-relaxed">
                 No overview available for this title.
               </p>
             )}
             {game.storyline && (
-              <div class="mt-4 pt-4 border-t border-white/20">
-                <span class="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
-                <p class="text-xs text-white leading-relaxed font-sans font-medium">
+              <div class="mt-4 pt-4 border-t border-white/5">
+                <span class="text-[10px] text-white/40 uppercase tracking-widest block mb-2 font-semibold">Storyline</span>
+                <p class="storyline-text text-xs text-neutral-300 leading-relaxed font-medium">
                   {game.storyline}
                 </p>
               </div>
@@ -531,22 +634,22 @@ const schemaJson = JSON.stringify(schema);
       ) : (
         <>
           <!-- Description Section -->
-          <div class="pt-6 space-y-4 select-none">
-            <h2 class="font-mono text-xs text-white uppercase tracking-widest font-black block">Description & Overview</h2>
+          <div class="pt-6 space-y-4">
+            <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Description & Overview</h2>
             {game.summary ? (
               <div 
-                class="text-sm text-white font-medium leading-relaxed font-sans prose prose-invert max-w-none"
+                class="text-sm text-neutral-300 font-medium leading-relaxed prose prose-invert max-w-none"
                 set:html={game.summary}
               />
             ) : (
-              <p class="text-sm text-white font-medium leading-relaxed font-sans">
+              <p class="text-sm text-neutral-400 font-medium leading-relaxed">
                 No overview available for this title.
               </p>
             )}
             {game.storyline && (
-              <div class="mt-4 pt-4 border-t border-white/20">
-                <span class="font-mono text-[9px] text-white/50 uppercase tracking-widest block mb-2 font-bold">Storyline</span>
-                <p class="text-xs text-white leading-relaxed font-sans font-medium">
+              <div class="mt-4 pt-4 border-t border-white/5">
+                <span class="text-[10px] text-white/40 uppercase tracking-widest block mb-2 font-semibold">Storyline</span>
+                <p class="storyline-text text-xs text-neutral-300 leading-relaxed font-medium">
                   {game.storyline}
                 </p>
               </div>
@@ -556,12 +659,12 @@ const schemaJson = JSON.stringify(schema);
           <!-- Mood Section -->
           {tags && tags.length > 0 && (
             <div class="pt-6 flex flex-wrap gap-4 items-center">
-              <h2 class="flex items-center gap-1.5 font-mono text-[10px] text-white uppercase tracking-widest font-black">
-                <Tag class="w-3.5 h-3.5" /> Mood/Genre
+              <h2 class="flex items-center gap-1.5 text-[11px] uppercase tracking-widest font-bold text-white/50">
+                <Tag class="w-3.5 h-3.5 text-neutral-400" /> Mood & Genres
               </h2>
               <div class="flex flex-wrap gap-2">
                 {tags.map((t: any) => (
-                  <span class="bg-white text-black font-mono text-[9px] uppercase tracking-wider px-2.5 py-0.5 font-bold border border-white">
+                  <span class="bg-zinc-900 border border-white/10 text-white/85 hover:border-white/35 text-xs px-3 py-1 font-medium transition-colors rounded-full">
                     {t.name}
                   </span>
                 ))}
@@ -594,16 +697,16 @@ const schemaJson = JSON.stringify(schema);
           <!-- Official/Creator Links -->
           { (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
             <div class="pt-6 space-y-4">
-              <h2 class="font-mono text-xs text-white uppercase tracking-widest font-black block">Official & Creator Links</h2>
+              <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Official & Creator Links</h2>
               <div class="flex flex-wrap gap-3">
                 {purchaseLinks?.map((link: any) => (
                   <a
                     href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Support Creator ({link.storeName})</span>
                   </a>
                 ))}
@@ -613,9 +716,9 @@ const schemaJson = JSON.stringify(schema);
                     href={game.websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Official Website</span>
                   </a>
                 )}
@@ -625,9 +728,9 @@ const schemaJson = JSON.stringify(schema);
                     href={game.redditUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Reddit Community</span>
                   </a>
                 )}
@@ -637,9 +740,9 @@ const schemaJson = JSON.stringify(schema);
                     href={`https://rawg.io/games/${game.rawgSlug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 font-mono text-[10px] text-white/70 hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white/50 hover:border-white px-3 py-2 font-bold"
+                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white/80 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <ExternalLink class="w-3.5 h-3.5 text-white/60 group-hover:text-black" />
                     <span>RAWG Profile</span>
                   </a>
                 )}
@@ -652,8 +755,8 @@ const schemaJson = JSON.stringify(schema);
 
     <!-- Screenshots Gallery -->
     {game.screenshots && game.screenshots.length > 0 && (
-      <section class="border-t border-white pt-12 space-y-6">
-        <h2 class="font-mono text-xs text-white uppercase tracking-widest font-black">Screenshots</h2>
+      <section class="border-t border-white/5 pt-12 space-y-6">
+        <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Screenshots</h2>
         <ScreenshotGallery 
           client:load 
           screenshots={game.screenshots.map((url: string) => getCloudinaryFetchUrl(url, game.isTrending) || url)} 
@@ -664,15 +767,15 @@ const schemaJson = JSON.stringify(schema);
 
     <!-- Trailers and Videos -->
     {game.trailerUrl && (
-      <section class="border-t border-white pt-12 space-y-6">
-        <h2 class="font-mono text-xs text-white uppercase tracking-widest font-black">Game trailers and videos</h2>
-        <div class="border border-white bg-black p-1 aspect-video w-full max-w-3xl mx-auto">
+      <section class="border-t border-white/5 pt-12 space-y-6">
+        <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Game Trailers & Videos</h2>
+        <div class="border border-white/5 bg-[#131316]/50 p-1 aspect-video w-full max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-2xl">
           <iframe
             src={game.trailerUrl}
             title={`${game.title} trailer`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
-            class="w-full h-full border border-white"
+            class="w-full h-full border border-white/5 rounded-2xl"
           ></iframe>
         </div>
       </section>
@@ -680,43 +783,43 @@ const schemaJson = JSON.stringify(schema);
 
     <!-- System Requirements Specifications -->
     {(requirements.min || requirements.rec) && (
-      <section class="border-t border-white pt-12 space-y-6">
-        <h2 class="font-mono text-[10px] text-white uppercase tracking-widest font-black font-bold">PC System Specifications</h2>
+      <section class="border-t border-white/5 pt-12 space-y-6">
+        <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">PC System Specifications</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           {requirements.min && (
-            <div class="border border-white bg-black p-6 space-y-4 rounded-none">
-              <span class="font-mono text-[9px] bg-white text-black px-2 py-0.5 uppercase tracking-widest inline-block font-black">Minimum Requirements</span>
-              <div class="text-xs text-white leading-relaxed font-mono space-y-2.5 pt-2">
+            <div class="border border-white/5 bg-[#131316]/50 p-6 space-y-4 rounded-2xl shadow-2xl">
+              <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold block border-b border-white/5 pb-2">Minimum Requirements</span>
+              <div class="text-xs text-neutral-300 leading-relaxed space-y-2.5 pt-2">
                 {cleanRequirementsText(requirements.min).split("\n").map((line) => {
                   const parts = line.split(/:(.*)/);
                   if (parts.length >= 2) {
                     return (
-                      <div class="flex flex-col sm:flex-row sm:justify-between border-b border-white/10 pb-1.5 gap-1">
-                        <span class="text-white/60 font-bold tracking-wider uppercase text-[10px]">{parts[0].trim()}</span>
-                        <span class="text-white font-black text-right">{parts[1].trim()}</span>
+                      <div class="flex flex-col sm:flex-row sm:justify-between border-b border-white/5 pb-2 gap-1">
+                        <span class="text-neutral-400 font-medium text-[10px] uppercase tracking-wider">{parts[0].trim()}</span>
+                        <span class="font-mono text-xs text-white font-semibold text-right">{parts[1].trim()}</span>
                       </div>
                     );
                   }
-                  return <p class="text-white font-medium pl-1">{line}</p>;
+                  return <p class="text-neutral-300 font-medium pl-1">{line}</p>;
                 })}
               </div>
             </div>
           )}
           {requirements.rec && (
-            <div class="border border-white bg-black p-6 space-y-4 rounded-none">
-              <span class="font-mono text-[9px] bg-white text-black px-2 py-0.5 uppercase tracking-widest inline-block font-black">Recommended Requirements</span>
-              <div class="text-xs text-white leading-relaxed font-mono space-y-2.5 pt-2">
+            <div class="border border-white/5 bg-[#131316]/50 p-6 space-y-4 rounded-2xl shadow-2xl">
+              <span class="text-[10px] text-neutral-400 uppercase tracking-widest font-bold block border-b border-white/5 pb-2">Recommended Requirements</span>
+              <div class="text-xs text-neutral-300 leading-relaxed space-y-2.5 pt-2">
                 {cleanRequirementsText(requirements.rec).split("\n").map((line) => {
                   const parts = line.split(/:(.*)/);
                   if (parts.length >= 2) {
                     return (
-                      <div class="flex flex-col sm:flex-row sm:justify-between border-b border-white/10 pb-1.5 gap-1">
-                        <span class="text-white/60 font-bold tracking-wider uppercase text-[10px]">{parts[0].trim()}</span>
-                        <span class="text-white font-black text-right">{parts[1].trim()}</span>
+                      <div class="flex flex-col sm:flex-row sm:justify-between border-b border-white/5 pb-2 gap-1">
+                        <span class="text-neutral-400 font-medium text-[10px] uppercase tracking-wider">{parts[0].trim()}</span>
+                        <span class="font-mono text-xs text-white font-semibold text-right">{parts[1].trim()}</span>
                       </div>
                     );
                   }
-                  return <p class="text-white font-medium pl-1">{line}</p>;
+                  return <p class="text-neutral-300 font-medium pl-1">{line}</p>;
                 })}
               </div>
             </div>

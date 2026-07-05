@@ -1,9 +1,11 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import InteractiveTutorial from '../components/InteractiveTutorial';
 import OnboardingModal from '../components/OnboardingModal';
 import '../styles/global.css';
+import { count } from 'drizzle-orm';
+import { turso } from '../lib/turso';
+import { games, developers, priceSnapshots, tags } from '../db/schema';
 
 interface Props {
   title?: string;
@@ -13,7 +15,13 @@ interface Props {
   ogImage?: string;
   ogType?: string;
   ogUrl?: string;
+  statsGames?: number;
+  statsDevelopers?: number;
+  statsDeals?: number;
+  statsTags?: number;
 }
+
+const canonicalUrl = new URL(Astro.url.pathname, 'https://gamegata.xyz').href;
 
 const { 
   title = "hoGAMEGATA | Horror Game Discovery Database", 
@@ -22,8 +30,41 @@ const {
   withLink = true,
   ogImage,
   ogType = "website",
-  ogUrl = "https://gamegata.xyz"
+  ogUrl = canonicalUrl,
+  statsGames,
+  statsDevelopers,
+  statsDeals,
+  statsTags,
 } = Astro.props;
+
+const isHomepage = Astro.url.pathname === "/";
+
+let sGames = isHomepage ? statsGames : undefined;
+let sDevs = isHomepage ? statsDevelopers : undefined;
+let sDeals = isHomepage ? statsDeals : undefined;
+let sTags = isHomepage ? statsTags : undefined;
+
+if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === undefined || sTags === undefined)) {
+  try {
+    const [
+      [{ count: gCount }],
+      [{ count: dCount }],
+      [{ count: tCount }],
+      [{ count: dlCount }],
+    ] = await Promise.all([
+      turso.select({ count: count() }).from(games),
+      turso.select({ count: count() }).from(developers),
+      turso.select({ count: count() }).from(tags),
+      turso.select({ count: count() }).from(priceSnapshots),
+    ]);
+    sGames = gCount;
+    sDevs = dCount;
+    sTags = tCount;
+    sDeals = dlCount;
+  } catch (err) {
+    console.error("Failed to query global header statistics in Layout.astro:", err);
+  }
+}
 ---
 <!doctype html>
 <html lang="en" class="h-full antialiased font-sans">
@@ -32,6 +73,9 @@ const {
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={canonicalUrl} />
     
     <!-- SEO Meta Tags -->
     <title>{title}</title>
@@ -53,18 +97,17 @@ const {
     {ogImage && <meta property="twitter:image" content={ogImage} />}
     
     
-    <!-- Google Fonts: Montserrat -->
+    <!-- Google Fonts: Geist Sans & Geist Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet" />
 	</head>
 	<body class="min-h-full flex flex-col bg-background text-foreground selection:bg-white selection:text-black">
-    <Header withSearch={withSearch} withLink={withLink} />
-    <main class="flex-1 flex flex-col w-full">
+    <Header withSearch={withSearch} withLink={withLink} statsGames={sGames} statsDevelopers={sDevs} statsDeals={sDeals} statsTags={sTags} />
+    <div class="flex-1 flex flex-col w-full">
       <slot />
-    </main>
+    </div>
     <Footer />
-    <InteractiveTutorial client:load />
-    <OnboardingModal client:load />
+    <OnboardingModal client:only="react" />
 	</body>
 </html>

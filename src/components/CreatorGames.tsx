@@ -5,6 +5,20 @@ import { Compass } from "lucide-react";
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "../lib/utils";
 import PlatformLogos from "./PlatformLogos";
 
+const formatDate = (dateVal: string | Date | null | undefined) => {
+  if (!dateVal) return "";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short"
+    });
+  } catch {
+    return "";
+  }
+};
+
 interface GameData {
   id: string;
   title: string;
@@ -18,6 +32,8 @@ interface GameData {
   platforms?: Array<{ name: string; slug: string }>;
   developerNames?: string | null;
   platformNames?: string | null;
+  releaseDate?: string | Date | null;
+  trailerUrl?: string | null;
 }
 
 interface CreatorGamesProps {
@@ -185,7 +201,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
               <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
                 <PlatformLogos platforms={game.platforms} platformNames={game.platformNames} />
                 <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
-                  {game.status}
+                  {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
                 </span>
               </div>
             </div>

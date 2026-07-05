@@ -1,240 +1,573 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../../lib/supabaseServer';
-import { searchGamesExact, searchGamesSemantic, randomGameIds, getCheapestSnapshots } from '../../../lib/dbRpc';
-import { preprocessSearchQuery, expandAbbreviations } from '../../../lib/searchEngine';
+import { turso } from '../../../lib/turso';
+import {
+  games as gamesTable,
+  developers as developersTable,
+  gamesToDevelopers,
+  publishers as publishersTable,
+  gamesToPublishers,
+  tags as tagsTable,
+  gamesToTags,
+  genres as genresTable,
+  gamesToGenres,
+  priceSnapshots as priceSnapshotsTable
+} from '../../../db/schema';
+import { enrichGamesWithRelations } from '../../../lib/gameQueries';
+import { count, isNull, isNotNull, desc, asc, and, or, eq, gt, gte, lt, lte, inArray, like, ne, sql } from 'drizzle-orm';
+import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngine';
 
 export const prerender = false;
 
-const gameSummarySelect = "id, title, slug, status, coverUrl, isTrending, rating, category, esrbRating, pegiRating, developerNames, genreNames, platformNames, releaseDate, tags:Tag(name, slug)";
+let cachedGameTitles: string[] | null = null;
+async function getGameTitles(): Promise<string[]> {
+  if (cachedGameTitles) return cachedGameTitles;
+  try {
+    const rows = await turso
+      .select({ title: gamesTable.title })
+      .from(gamesTable);
+    cachedGameTitles = rows.map(r => r.title).filter(Boolean);
+    return cachedGameTitles;
+  } catch (err) {
+    console.error("Failed to fetch game titles for spelling correction:", err);
+    return [];
+  }
+}
 
 export const GET: APIRoute = async ({ request }) => {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
-    const mode = searchParams.get("mode")?.trim() || "exact";
+    
+    // Advanced Filters
+    const genresParam = searchParams.get("genres")?.trim() || "";
+    const selectedGenres = genresParam ? genresParam.split(",").map(g => g.trim()).filter(Boolean) : [];
+    
+    const systemsParam = searchParams.get("systems")?.trim() || "";
+    const selectedSystems = systemsParam ? systemsParam.split(",").map(s => s.trim()).filter(Boolean) : [];
+    
+    const decadesParam = (searchParams.get("decades") || searchParams.get("releaseDecades"))?.trim() || "";
+    const selectedDecades = decadesParam ? decadesParam.split(",").map(d => d.trim()).filter(Boolean) : [];
+    
+    const featuresParam = searchParams.get("features")?.trim() || "";
+    const selectedFeatures = featuresParam ? featuresParam.split(",").map(f => f.trim()).filter(Boolean) : [];
+    
     const tagsParam = searchParams.get("tags")?.trim() || "";
     const tag = searchParams.get("tag")?.trim() || "";
     const activeTagsString = tagsParam || tag;
     const selectedTags = activeTagsString
       ? activeTagsString.split(",").map(t => t.trim()).filter(Boolean)
       : [];
+    
+    // Combine selected tags and features
+    const allActiveTags = Array.from(new Set([...selectedTags, ...selectedFeatures]));
+
+    const hideDlcs = searchParams.get("hideDlcs") === "true";
+    const freeOnly = searchParams.get("freeOnly") === "true";
+    
+    const minPriceParam = searchParams.get("minPrice")?.trim() || "";
+    const maxPriceParam = searchParams.get("maxPrice")?.trim() || "";
+
     const cursor = searchParams.get("cursor")?.trim() || "";
-    const sort = searchParams.get("sort")?.trim() || "latest";
+    const sort = searchParams.get("sort")?.trim() || "trending";
     const creatorIdsParam = searchParams.get("creatorIds")?.trim() || "";
     const excludeId = searchParams.get("excludeId")?.trim() || "";
+    
+    // Pagination offset & limit
     const limitParam = searchParams.get("limit");
-    const limit = Math.min(Math.max(parseInt(limitParam || "20", 10) || 20, 1), 100);
-    const expand = searchParams.get("expand") !== "false";
-
-    const supabase = getSupabaseServer();
-
-    let matchedIds: string[] = [];
-    let semanticExtractedSlugs: string[] = [];
-    let finalSearch = search;
-    let expandedQuery: string | null = null;
-
-    if (search && expand) {
-      expandedQuery = expandAbbreviations(search);
-      if (expandedQuery) {
-        finalSearch = expandedQuery;
+    const maxLimit = sort === "title" ? 20000 : 120;
+    const limit = Math.min(Math.max(parseInt(limitParam || "24", 10) || 24, 1), maxLimit);
+    
+    const offsetParam = searchParams.get("offset")?.trim() || "";
+    let offset = Math.max(parseInt(offsetParam, 10) || 0, 0);
+    if (cursor) {
+      const parts = cursor.split("_");
+      const parsedOffset = parseInt(parts[0], 10);
+      if (!isNaN(parsedOffset)) {
+        offset = parsedOffset;
       }
     }
 
-    if (finalSearch) {
-      if (mode === "semantic") {
-        const { cleanedQuery, expandedQuery: semanticExpanded, extractedSlugs } = preprocessSearchQuery(finalSearch);
-        semanticExtractedSlugs = extractedSlugs;
-        const results = await searchGamesSemantic(cleanedQuery, semanticExpanded, 100);
-        matchedIds = results.map(r => r.id);
-      } else {
-        const results = await searchGamesExact(finalSearch, 100);
-        matchedIds = results.map(r => r.id);
-      }
-    } else if (sort === "random") {
-      const results = await randomGameIds(
-        selectedTags.length > 0 ? selectedTags : null,
-        limit
-      );
-      matchedIds = results.map(r => r.id);
-    }
-
-    // Build query
-    let query = supabase.from("Game").select(gameSummarySelect);
-
-    // Filter by matched IDs (search or random)
-    if (matchedIds.length > 0) {
-      query = query.in("id", matchedIds);
-    }
-
-    // Exclude specific game
-    if (excludeId) {
-      query = query.neq("id", excludeId);
-    }
-
-    // Filter by creator IDs
+    // 1. Resolve Creator IDs Filter
+    let creatorGameIds: string[] | null = null;
     if (creatorIdsParam) {
       const creatorIds = creatorIdsParam.split(",").filter(Boolean);
       if (creatorIds.length > 0) {
-        const { data: creatorGames } = await supabase
-          .from("_GameToDeveloper")
-          .select("A")
-          .in("B", creatorIds);
-        
-        const { data: publisherGames } = await supabase
-          .from("_GameToPublisher")
-          .select("A")
-          .in("B", creatorIds);
-
-        const gameIds = [
-          ...(creatorGames || []).map((r: any) => r.A),
-          ...(publisherGames || []).map((r: any) => r.A),
-        ];
-
-        if (gameIds.length > 0) {
-          query = query.in("id", gameIds);
-        } else {
-          return new Response(
-            JSON.stringify({ games: [], nextCursor: null }),
-            { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
-          );
-        }
+        const [devGames, pubGames] = await Promise.all([
+          turso
+            .select({ gameId: gamesToDevelopers.gameId })
+            .from(gamesToDevelopers)
+            .where(inArray(gamesToDevelopers.developerId, creatorIds)),
+          turso
+            .select({ gameId: gamesToPublishers.gameId })
+            .from(gamesToPublishers)
+            .where(inArray(gamesToPublishers.publisherId, creatorIds))
+        ]);
+        creatorGameIds = Array.from(new Set([
+          ...devGames.map(dg => dg.gameId),
+          ...pubGames.map(pg => pg.gameId)
+        ]));
       }
     }
 
-    // Filter by tag slugs (AND logic)
-    const combinedTags = [...selectedTags, ...semanticExtractedSlugs];
-    if (combinedTags.length > 0) {
-      const { data: tagGames } = await supabase
-        .from("_GameToTag")
-        .select("A, B:Tag!inner(slug)")
-        .in("B.slug", combinedTags);
+    // 2. Resolve Tag/Feature Slugs Filter (AND logic)
+    let tagGameIds: string[] | null = null;
+    if (allActiveTags.length > 0) {
+      const matchedTags = await turso
+        .select({ id: tagsTable.id })
+        .from(tagsTable)
+        .where(inArray(tagsTable.slug, allActiveTags));
 
-      const tagCounts = new Map<string, Set<string>>();
-      for (const row of tagGames || []) {
-        const gameId = row.A;
-        const tagSlug = (row.B as any)?.slug;
-        if (tagSlug) {
-          if (!tagCounts.has(gameId)) tagCounts.set(gameId, new Set());
-          tagCounts.get(gameId)!.add(tagSlug);
-        }
-      }
-
-      const validGameIds = Array.from(tagCounts.entries())
-        .filter((entry) => entry[1].size >= combinedTags.length)
-        .map((entry) => entry[0]);
-
-      if (validGameIds.length === 0) {
+      const tagIds = matchedTags.map(t => t.id);
+      if (tagIds.length === 0) {
         return new Response(
-          JSON.stringify({ games: [], nextCursor: null }),
-          { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
         );
       }
 
-      query = query.in("id", validGameIds);
+      const rows = await turso
+        .select({ gameId: gamesToTags.gameId, tagId: gamesToTags.tagId })
+        .from(gamesToTags)
+        .where(inArray(gamesToTags.tagId, tagIds));
+
+      const tagCounts = new Map<string, number>();
+      for (const r of rows) {
+        tagCounts.set(r.gameId, (tagCounts.get(r.gameId) || 0) + 1);
+      }
+
+      tagGameIds = Array.from(tagCounts.entries())
+        .filter(([_, count]) => count >= tagIds.length)
+        .map(([id]) => id);
+      
+      if (tagGameIds.length === 0) {
+        return new Response(
+          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
     }
 
-    let games: any[] = [];
-    let nextCursor: string | null = null;
-
-    if (finalSearch) {
-      const { data: allSearchGames } = await query;
-      games = allSearchGames || [];
-
-      if (matchedIds.length > 0) {
-        games.sort((a: any, b: any) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
+    // 3. Resolve Genre Slugs Filter (OR logic)
+    let genreGameIds: string[] | null = null;
+    if (selectedGenres.length > 0) {
+      const matchedGenres = await turso
+        .select({ id: genresTable.id })
+        .from(genresTable)
+        .where(inArray(genresTable.slug, selectedGenres));
+      const genreIds = matchedGenres.map(g => g.id);
+      if (genreIds.length === 0) {
+        return new Response(
+          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
       }
 
-      if (cursor) {
-        const cursorIndex = games.findIndex((g: any) => g.id === cursor);
-        if (cursorIndex !== -1) {
-          games = games.slice(cursorIndex + 1);
+      const rows = await turso
+        .select({ gameId: gamesToGenres.gameId })
+        .from(gamesToGenres)
+        .where(inArray(gamesToGenres.genreId, genreIds));
+      
+      genreGameIds = Array.from(new Set(rows.map(r => r.gameId)));
+      if (genreGameIds.length === 0) {
+        return new Response(
+          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // 4. Resolve Price Range Filter
+    let priceGameIds: string[] | null = null;
+    if (minPriceParam || maxPriceParam) {
+      const minPrice = parseFloat(minPriceParam || "0") || 0;
+      const maxPrice = parseFloat(maxPriceParam || "999999") || 999999;
+      const matchingPriceRows = await turso
+        .select({ gameId: priceSnapshotsTable.gameId })
+        .from(priceSnapshotsTable)
+        .where(and(
+          sql`${priceSnapshotsTable.dealPrice} >= ${minPrice}`,
+          sql`${priceSnapshotsTable.dealPrice} <= ${maxPrice}`
+        ));
+      priceGameIds = matchingPriceRows.map(r => r.gameId);
+      if (priceGameIds.length === 0) {
+        return new Response(
+          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // 5. Intersect Filter IDs
+    let filterGameIds: string[] | null = null;
+    const activeFilters = [creatorGameIds, tagGameIds, genreGameIds, priceGameIds].filter(f => f !== null) as string[][];
+    if (activeFilters.length > 0) {
+      // Find intersection of all active filter lists
+      filterGameIds = activeFilters.reduce((a, b) => a.filter(id => b.includes(id)));
+      if (filterGameIds.length === 0) {
+        return new Response(
+          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Pre-fetch game IDs matching developers or publishers by name
+    let searchGameIds: string[] = [];
+    if (search.trim()) {
+      const searchTerm = search.trim();
+      try {
+        // 1. Search Developers
+        const matchedDevs = await turso
+          .select({ id: developersTable.id })
+          .from(developersTable)
+          .where(like(developersTable.name, `%${searchTerm}%`));
+        
+        const devIds = matchedDevs.map(d => d.id);
+        let devGameIds: string[] = [];
+        if (devIds.length > 0) {
+          const devRows = await turso
+            .select({ gameId: gamesToDevelopers.gameId })
+            .from(gamesToDevelopers)
+            .where(inArray(gamesToDevelopers.developerId, devIds));
+          devGameIds = devRows.map(r => r.gameId);
         }
-      }
 
-      const paginatedGames = games.slice(0, limit);
-      if (games.length > limit) {
-        nextCursor = paginatedGames[paginatedGames.length - 1]?.id || null;
+        // 2. Search Publishers
+        const matchedPubs = await turso
+          .select({ id: publishersTable.id })
+          .from(publishersTable)
+          .where(like(publishersTable.name, `%${searchTerm}%`));
+        
+        const pubIds = matchedPubs.map(p => p.id);
+        let pubGameIds: string[] = [];
+        if (pubIds.length > 0) {
+          const pubRows = await turso
+            .select({ gameId: gamesToPublishers.gameId })
+            .from(gamesToPublishers)
+            .where(inArray(gamesToPublishers.publisherId, pubIds));
+          pubGameIds = pubRows.map(r => r.gameId);
+        }
+        
+        searchGameIds = Array.from(new Set([...devGameIds, ...pubGameIds]));
+      } catch (err) {
+        console.error("Failed to query devs/publishers for search:", err);
       }
-      games = paginatedGames;
-    } else if (sort === "random") {
-      const { data: fetchedGames } = await query.limit(limit);
-      games = fetchedGames || [];
-      if (matchedIds.length > 0) {
-        games.sort((a: any, b: any) => matchedIds.indexOf(a.id) - matchedIds.indexOf(b.id));
-      }
-      nextCursor = "more-random";
-    } else {
-      if (sort === "trending") {
-        query = query.order("isTrending", { ascending: false });
-        query = query.order("popularity", { ascending: false, nullsFirst: false });
-        query = query.order("id", { ascending: false });
-      } else if (sort === "top-rated") {
-        query = query.order("rating", { ascending: false, nullsFirst: false });
-        query = query.order("id", { ascending: false });
+    }
+
+    // 6. Search Preprocessing & Correction
+    let finalSearch = search;
+    let correctedQuery: string | null = null;
+
+    const expandedAbbr = expandAbbreviations(search);
+    if (expandedAbbr) {
+      finalSearch = expandedAbbr;
+    }
+
+    const buildConditions = (searchTerm: string, activeFilterIds: string[] | null) => {
+      const conds = [];
+      // Filter out corrupt ratings
+      conds.push(or(isNull(gamesTable.rating), lte(gamesTable.rating, 100)));
+      
+      const todayDate = new Date();
+      if (sort === "upcoming") {
+        conds.push(
+          or(
+            eq(gamesTable.status, "upcoming"),
+            gt(gamesTable.releaseDate, todayDate)
+          )
+        );
       } else {
-        query = query.order("releaseDate", { ascending: false, nullsFirst: false });
-        query = query.order("id", { ascending: false });
+        conds.push(
+          and(
+            or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
+            or(isNull(gamesTable.releaseDate), lte(gamesTable.releaseDate, todayDate))
+          )
+        );
       }
 
-      if (cursor && sort !== "trending") {
-        const sep = cursor.lastIndexOf("_");
-        const cursorVal = cursor.substring(0, sep);
-        const cursorId = cursor.substring(sep + 1);
-
-        if (sort === "top-rated") {
-          if (cursorVal === "null") {
-            query = query.or(`rating.is.null,and(rating.eq.0,id.lt.${cursorId})`);
-          } else {
-            query = query.or(`and(rating.lt.${cursorVal}),and(rating.eq.${cursorVal},id.lt.${cursorId})`);
+      if (excludeId) {
+        conds.push(ne(gamesTable.id, excludeId));
+      }
+      if (activeFilterIds !== null) {
+        conds.push(inArray(gamesTable.id, activeFilterIds));
+      }
+      if (searchTerm) {
+        const searchOrConds = [
+          like(gamesTable.title, `%${searchTerm}%`),
+          like(gamesTable.developerNames, `%${searchTerm}%`),
+          like(gamesTable.slug, `%${searchTerm}%`)
+        ];
+        if (searchGameIds.length > 0) {
+          searchOrConds.push(inArray(gamesTable.id, searchGameIds));
+        }
+        conds.push(or(...searchOrConds));
+      }
+      if (hideDlcs) {
+        conds.push(or(isNull(gamesTable.category), sql`${gamesTable.category} NOT IN (1, 2, 3, 10, 13)`));
+      }
+      if (freeOnly) {
+        conds.push(
+          inArray(
+            gamesTable.id,
+            turso
+              .select({ gameId: priceSnapshotsTable.gameId })
+              .from(priceSnapshotsTable)
+              .where(eq(priceSnapshotsTable.dealPrice, 0))
+          )
+        );
+      }
+      if (selectedSystems.length > 0) {
+        const sysConds = selectedSystems.map(sys => {
+          if (sys === "win") {
+            return or(
+              like(gamesTable.platformNames, "%win%"),
+              like(gamesTable.platformNames, "%pc%"),
+              like(gamesTable.platformNames, "%windows%")
+            );
           }
-        } else {
-          const cursorDate = new Date(parseInt(cursorVal, 10)).toISOString();
-          if (cursorVal === "null") {
-            query = query.or(`releaseDate.is.null,id.lt.${cursorId}`);
-          } else {
-            query = query.or(`and(releaseDate.lt.${cursorDate}),and(releaseDate.eq.${cursorDate},id.lt.${cursorId})`);
+          if (sys === "mac") {
+            return or(
+              like(gamesTable.platformNames, "%mac%"),
+              like(gamesTable.platformNames, "%os x%"),
+              like(gamesTable.platformNames, "%macos%")
+            );
           }
+          if (sys === "linux") {
+            return like(gamesTable.platformNames, "%linux%");
+          }
+          return null;
+        }).filter(Boolean);
+        if (sysConds.length > 0) {
+          conds.push(or(...sysConds));
         }
       }
-
-      if (cursor && sort === "trending") {
-        query = query.lt("id", cursor);
+      if (selectedDecades.length > 0) {
+        const decConds = selectedDecades.map(dec => {
+          if (dec === "2020s") return and(gte(gamesTable.releaseDate, new Date("2020-01-01")), lt(gamesTable.releaseDate, new Date("2030-01-01")));
+          if (dec === "2010s") return and(gte(gamesTable.releaseDate, new Date("2010-01-01")), lt(gamesTable.releaseDate, new Date("2020-01-01")));
+          if (dec === "2000s") return and(gte(gamesTable.releaseDate, new Date("2000-01-01")), lt(gamesTable.releaseDate, new Date("2010-01-01")));
+          if (dec === "1990s") return and(gte(gamesTable.releaseDate, new Date("1990-01-01")), lt(gamesTable.releaseDate, new Date("2000-01-01")));
+          if (dec === "1980s" || dec === "older") return lt(gamesTable.releaseDate, new Date("1990-01-01"));
+          return null;
+        }).filter(Boolean);
+        if (decConds.length > 0) conds.push(or(...decConds));
       }
+      return conds;
+    };
 
-      query = query.limit(limit + 1);
+    let conditions = buildConditions(finalSearch, filterGameIds);
 
-      const { data: fetchedGames } = await query;
-      const allGames = fetchedGames || [];
+    // Get Total Matching Count
+    let countQuery = turso.select({ count: count() }).from(gamesTable);
+    if (conditions.length > 0) {
+      countQuery = countQuery.where(and(...conditions)) as any;
+    }
+    let [{ count: totalCount }] = await countQuery;
 
-      if (allGames.length > limit) {
-        const nextItem = allGames.pop()!;
-        if (sort === "trending") {
-          nextCursor = nextItem.id;
-        } else if (sort === "top-rated") {
-          nextCursor = `${nextItem.rating ?? "null"}_${nextItem.id}`;
-        } else {
-          nextCursor = `${nextItem.releaseDate ? new Date(nextItem.releaseDate).getTime() : "null"}_${nextItem.id}`;
-        }
+    // Run Typo Correction if no results found
+    if (totalCount === 0 && finalSearch && finalSearch.length > 3) {
+      const allTitles = await getGameTitles();
+      const correction = suggestCorrection(finalSearch, allTitles);
+      if (correction && correction.toLowerCase() !== finalSearch.toLowerCase()) {
+        correctedQuery = correction;
+        finalSearch = correction;
+        conditions = buildConditions(finalSearch, filterGameIds);
+        const [{ count: newCount }] = await turso
+          .select({ count: count() })
+          .from(gamesTable)
+          .where(and(...conditions));
+        totalCount = newCount;
       }
-      games = allGames;
     }
 
-    // Fetch price snapshots
-    const gameIds = games.map((g: any) => g.id);
-    const snapshotMap = await getCheapestSnapshots(gameIds);
-    const snapshotGrouped = new Map<string, any[]>();
-    for (const row of snapshotMap) {
+    // Query Max Price in DB (for slider ranges)
+    let maxPrice = 60;
+    try {
+      const [maxPriceRow] = await turso
+        .select({ maxPrice: sql<number>`max(${priceSnapshotsTable.dealPrice})` })
+        .from(priceSnapshotsTable);
+      if (maxPriceRow && maxPriceRow.maxPrice) {
+        maxPrice = maxPriceRow.maxPrice;
+      }
+    } catch (err) {
+      console.warn("Failed to fetch max price snapshot:", err);
+    }
+
+    // 7. Query Games List
+    let baseQuery;
+    if (sort === "price-asc" || sort === "price-desc") {
+      baseQuery = turso
+        .select({ game: gamesTable })
+        .from(gamesTable)
+        .leftJoin(priceSnapshotsTable, eq(priceSnapshotsTable.gameId, gamesTable.id))
+        .groupBy(gamesTable.id);
+    } else {
+      baseQuery = turso.select({ game: gamesTable }).from(gamesTable);
+    }
+
+    if (conditions.length > 0) {
+      baseQuery = baseQuery.where(and(...conditions)) as any;
+    }
+
+    // Define Bayesian rating SQL helper and sources count helper for robust sorting
+    const bayesianRatingSql = sql`
+      (
+        coalesce(case when ${gamesTable.rating} <= 100 then ${gamesTable.rating} else null end, 0) +
+        coalesce(${gamesTable.steamRating} * 10, 0) +
+        coalesce(${gamesTable.metacritic}, 0) +
+        coalesce(${gamesTable.rawgRating} * 20, 0) +
+        140.0
+      ) / (
+        case when ${gamesTable.rating} <= 100 then 1.0 else 0.0 end +
+        case when ${gamesTable.steamRating} is not null then 1.0 else 0.0 end +
+        case when ${gamesTable.metacritic} is not null then 1.0 else 0.0 end +
+        case when ${gamesTable.rawgRating} is not null then 1.0 else 0.0 end +
+        2.0
+      )
+    `;
+
+    const sourcesCountSql = sql`
+      (
+        case when ${gamesTable.rating} <= 100 then 1 else 0 end +
+        case when ${gamesTable.steamRating} is not null then 1 else 0 end +
+        case when ${gamesTable.metacritic} is not null then 1 else 0 end +
+        case when ${gamesTable.rawgRating} is not null then 1 else 0 end
+      )
+    `;
+
+    // Apply Sorting
+    if (sort === "trending") {
+      baseQuery = baseQuery.orderBy(
+        desc(gamesTable.isTrending),
+        desc(sourcesCountSql),
+        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(gamesTable.id)
+      ) as any;
+    } else if (sort === "top-rated") {
+      baseQuery = baseQuery.orderBy(
+        desc(bayesianRatingSql),
+        desc(sourcesCountSql),
+        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(gamesTable.id)
+      ) as any;
+    } else if (sort === "upcoming") {
+      baseQuery = baseQuery.orderBy(
+        sql`${gamesTable.releaseDate} ASC NULLS LAST`,
+        desc(sourcesCountSql),
+        desc(gamesTable.id)
+      ) as any;
+    } else if (sort === "title") {
+      baseQuery = baseQuery.orderBy(
+        sql`${gamesTable.title} COLLATE NOCASE`
+      ) as any;
+    } else if (sort === "price-asc") {
+      baseQuery = baseQuery.orderBy(
+        sql`CASE WHEN min(${priceSnapshotsTable.dealPrice}) IS NULL THEN 1 ELSE 0 END`,
+        sql`min(${priceSnapshotsTable.dealPrice}) ASC`,
+        desc(gamesTable.id)
+      ) as any;
+    } else if (sort === "price-desc") {
+      baseQuery = baseQuery.orderBy(
+        sql`CASE WHEN min(${priceSnapshotsTable.dealPrice}) IS NULL THEN 1 ELSE 0 END`,
+        sql`min(${priceSnapshotsTable.dealPrice}) DESC`,
+        desc(gamesTable.id)
+      ) as any;
+    } else if (sort === "latest") {
+      baseQuery = baseQuery.orderBy(
+        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(sourcesCountSql),
+        desc(bayesianRatingSql),
+        desc(gamesTable.id)
+      ) as any;
+    } else {
+      // default: trending
+      baseQuery = baseQuery.orderBy(
+        desc(gamesTable.isTrending),
+        desc(sourcesCountSql),
+        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(gamesTable.id)
+      ) as any;
+    }
+
+    // Apply Pagination (Limit + Offset)
+    let fetchedGames = [];
+    let finalQuery = baseQuery.limit(limit);
+    if (offset > 0) {
+      finalQuery = finalQuery.offset(offset) as any;
+    }
+    const rows = await finalQuery;
+    fetchedGames = rows.map((r: any) => r.game);
+
+    // Enrich with relations (tags, purchase links)
+    const enrichedGames = await enrichGamesWithRelations(fetchedGames);
+
+    // Fetch price snapshots for fetched games
+    const gameIds = enrichedGames.map((g: any) => g.id);
+    const snapshots = gameIds.length > 0
+      ? await turso
+          .select()
+          .from(priceSnapshotsTable)
+          .where(inArray(priceSnapshotsTable.gameId, gameIds))
+      : [];
+
+    const snapshotMap = new Map<string, any[]>();
+    for (const row of snapshots) {
       const { gameId, ...snapshot } = row;
-      if (!snapshotGrouped.has(gameId)) snapshotGrouped.set(gameId, []);
-      snapshotGrouped.get(gameId)!.push(snapshot);
+      if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
+      snapshotMap.get(gameId)!.push(snapshot);
     }
-    for (const game of games) {
-      game.priceSnapshots = snapshotGrouped.get(game.id) || [];
+    for (const game of enrichedGames) {
+      game.priceSnapshots = snapshotMap.get(game.id) || [];
+      
+      // Calculate displayRating and isAbsoluteCinema status
+      const igdb = (game.rating && game.rating <= 100) ? game.rating : null;
+      const steam = game.steamRating ? game.steamRating * 10 : null;
+      const meta = game.metacritic || null;
+      const rawg = game.rawgRating ? game.rawgRating * 20 : null;
+
+      const ratings = [igdb, steam, meta, rawg].filter((r): r is number => r !== null);
+      const sourcesCount = ratings.length;
+
+      if (sourcesCount > 0) {
+        const avg = ratings.reduce((sum, val) => sum + val, 0) / sourcesCount;
+        if (sourcesCount >= 2) {
+          game.displayRating = Math.round(avg * 10) / 10;
+          game.isAbsoluteCinema = avg >= 90;
+        } else {
+          // 1 source: deflate towards 70
+          const weightedScore = (avg + 70) / 2;
+          game.displayRating = Math.round(weightedScore * 10) / 10;
+          game.isAbsoluteCinema = false; // Require at least 2 sources for Absolute Cinema
+        }
+      } else {
+        game.displayRating = null;
+        game.isAbsoluteCinema = false;
+      }
+    }
+
+    // Calculate nextCursor containing both offset and ID for compatibility and correct pagination
+    let nextCursor: string | null = null;
+    if (fetchedGames.length >= limit) {
+      const nextOffset = offset + fetchedGames.length;
+      const lastItem = fetchedGames[fetchedGames.length - 1];
+      nextCursor = `${nextOffset}_${lastItem.id}`;
     }
 
     return new Response(
-      JSON.stringify({ games, nextCursor, expandedQuery }),
-      { status: 200, headers: { "Content-Type": "application/json", "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+      JSON.stringify({
+        games: enrichedGames,
+        totalCount,
+        maxPrice,
+        correctedQuery,
+        nextCursor
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120"
+        }
+      }
     );
   } catch (error) {
     console.error("Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");

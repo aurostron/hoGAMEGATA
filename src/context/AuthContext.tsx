@@ -1,19 +1,21 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { authClient } from "../lib/auth-client";
+import NyanLoader from "../components/NyanLoader";
 
 interface User {
   id: string;
   email: string;
+  avatarUrl?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  isSupabase: boolean;
-  login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  isSupabase: boolean; // Retained for compatibility with components checking Supabase Mode
+  login: (email: string, password?: string, captchaToken?: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password?: string, captchaToken?: string) => Promise<{ success: boolean; error?: string }>;
   loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Helper to read cookie
   const getCookie = (name: string) => {
@@ -35,210 +38,191 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function initAuth() {
-      if (isSupabaseConfigured && supabase) {
-        const client = supabase;
-        // Supabase Auth session syncing
-        const { data: { session } } = await client.auth.getSession();
+      try {
+        // 1. Check for active session using Better Auth client
+        const { data: session } = await authClient.getSession();
         if (session?.user) {
-          try {
-            // Verify and sync user state with database
-            const res = await fetch("/api/user/sync", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: session.user.id, email: session.user.email }),
-            });
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              if (res.status === 403 || data.error?.toLowerCase().includes("limit")) {
-                await client.auth.signOut();
-                setUser(null);
-                window.location.assign("/login?error=limit_reached");
-                setLoading(false);
-                return;
-              }
-            }
-
-            setUser({
-              id: session.user.id,
-              email: session.user.email || "",
-            });
-          } catch (syncErr) {
-            console.error("Initial auth sync failed:", syncErr);
-          }
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            avatarUrl: session.user.image || undefined,
+          });
+          setLoading(false);
+          return;
         }
-        
-        // Listen for changes
-        const { data: { subscription } } = client.auth.onAuthStateChange(async (event, session) => {
-          if (session?.user) {
-            try {
-              const res = await fetch("/api/user/sync", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: session.user.id, email: session.user.email }),
-              });
-              if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                if (res.status === 403 || data.error?.toLowerCase().includes("limit")) {
-                  await client.auth.signOut();
-                  setUser(null);
-                  window.location.assign("/login?error=limit_reached");
-                  return;
-                }
-              }
-
-              setUser({
-                id: session.user.id,
-                email: session.user.email || "",
-              });
-            } catch (syncErr) {
-              console.error("Auth state change sync failed:", syncErr);
-            }
-          } else {
-            setUser(null);
-          }
-        });
-
-        setLoading(false);
-        return () => subscription.unsubscribe();
-      } else {
-        // Local Mock Auth session syncing
-        const sessionVal = getCookie("gamegata-session");
-        if (sessionVal) {
-          try {
-            const decoded = decodeURIComponent(sessionVal);
-            const [id, email] = decoded.split(":");
-            if (id && email) {
-              setUser({ id, email });
-            }
-          } catch (e) {
-            console.error("Error parsing mock session cookie:", e);
-          }
-        }
-        setLoading(false);
+      } catch (err) {
+        console.error("Initial Better Auth session retrieval failed:", err);
       }
+
+      // 2. Mock session fallback (development fallback)
+      const sessionVal = getCookie("gamegata-session");
+      if (sessionVal) {
+        try {
+          const decoded = decodeURIComponent(sessionVal);
+          const [id, email] = decoded.split(":");
+          if (id && email) {
+            setUser({ id, email });
+          }
+        } catch (e) {
+          console.error("Error parsing mock session cookie:", e);
+        }
+      }
+      setLoading(false);
     }
 
     initAuth();
   }, []);
 
-  const login = async (email: string, password?: string) => {
-    try {
-      if (isSupabaseConfigured && supabase) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password: password || "",
-        });
-        if (error) throw error;
-        if (data.user) {
-          setUser({
-            id: data.user.id,
-            email: data.user.email || "",
-          });
-        }
-        return { success: true };
-      } else {
-        // Mock login: Generate a deterministic mock user ID based on email
-        const mockId = "mock-" + Math.abs(email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)).toString(16);
-        const cookieVal = encodeURIComponent(`${mockId}:${email}`);
-        document.cookie = `gamegata-session=${cookieVal}; path=/; max-age=31536000; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
-        
-        // Check database limit before syncing
-        const checkRes = await fetch("/api/user/check-limit");
-        const checkData = await checkRes.json().catch(() => ({ capped: false }));
-        
-        if (checkData.capped) {
-          // If the user already exists, let them log in
-          const checkUserSync = await fetch("/api/user/sync", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: mockId, email }),
-          });
-          if (!checkUserSync.ok) {
-            document.cookie = "gamegata-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-            return { success: false, error: "Registration limit of 10,000 users has been reached." };
+  // Sync guest wishlist items to the Turso Auth database on login, and pull cloud wishlists to local cache
+  useEffect(() => {
+    async function syncWishlist() {
+      if (!user) return;
+      try {
+        const res = await fetch("/api/user/wishlist");
+        if (res.ok) {
+          const data = await res.json();
+          const cloudIds = (data.wishlist || []).map((g: any) => g.id);
+          
+          const localRaw = localStorage.getItem("gamegata_wishlist");
+          const localIds = localRaw ? JSON.parse(localRaw) : [];
+          
+          const merged = Array.from(new Set([...localIds, ...cloudIds]));
+          localStorage.setItem("gamegata_wishlist", JSON.stringify(merged));
+          
+          const newLocalIds = localIds.filter((id: string) => !cloudIds.includes(id));
+          if (newLocalIds.length > 0) {
+            await fetch("/api/user/wishlist", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ items: newLocalIds }),
+            });
           }
-        } else {
-          await fetch("/api/user/sync", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: mockId, email }),
-          });
         }
-
-        setUser({ id: mockId, email });
-        window.location.reload();
-        return { success: true };
+      } catch (err) {
+        console.error("Failed to sync guest wishlist on login/mount:", err);
       }
-    } catch (err: any) {
-      return { success: false, error: err.message || "Failed to authenticate" };
     }
-  };
 
-  const signUp = async (email: string, password?: string) => {
+    syncWishlist();
+  }, [user]);
+
+  const login = async (email: string, password?: string, captchaToken?: string) => {
     try {
-      // Check user limit first
+      // Check database limit before signing in
       const checkRes = await fetch("/api/user/check-limit");
       const checkData = await checkRes.json().catch(() => ({ capped: false }));
       if (checkData.capped) {
         return { success: false, error: "Registration limit of 10,000 users has been reached." };
       }
 
-      if (isSupabaseConfigured && supabase) {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password: password || "",
+      // Call Better Auth client signIn
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password: password || "",
+      }, {
+        headers: captchaToken ? { "x-captcha-token": captchaToken } : undefined
+      });
+
+      if (error) throw error;
+
+      if (data?.user) {
+        setUser({
+          id: data.user.id,
+          email: data.user.email,
+          avatarUrl: data.user.image || undefined,
         });
-        if (error) throw error;
-        return { success: true };
-      } else {
-        // Mock sign up behaves the same as login
-        return login(email, password);
       }
+      return { success: true };
     } catch (err: any) {
+      // Mock Login Fallback (For local email-only testing, or if credentials are mock profiles)
+      if (import.meta.env.DEV && (email.startsWith("mock") || !password)) {
+        const mockId = "mock-" + Math.abs(email.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)).toString(16);
+        const cookieVal = encodeURIComponent(`${mockId}:${email}`);
+        document.cookie = `gamegata-session=${cookieVal}; path=/; max-age=31536000; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
+        
+        setUser({ id: mockId, email });
+        window.location.reload();
+        return { success: true };
+      }
+      return { success: false, error: err.message || "Failed to authenticate" };
+    }
+  };
+
+  const signUp = async (email: string, password?: string, captchaToken?: string) => {
+    try {
+      // Check database limit before registering
+      const checkRes = await fetch("/api/user/check-limit");
+      const checkData = await checkRes.json().catch(() => ({ capped: false }));
+      if (checkData.capped) {
+        return { success: false, error: "Registration limit of 10,000 users has been reached." };
+      }
+
+      // Call Better Auth client signUp
+      const { data, error } = await authClient.signUp.email({
+        email,
+        password: password || "",
+        name: email.split("@")[0],
+      }, {
+        headers: captchaToken ? { "x-captcha-token": captchaToken } : undefined
+      });
+
+      if (error) throw error;
+      return { success: true };
+    } catch (err: any) {
+      if (import.meta.env.DEV && (email.startsWith("mock") || !password)) {
+        return login(email, password, captchaToken);
+      }
       return { success: false, error: err.message || "Failed to sign up" };
     }
   };
 
   const loginWithGoogle = async () => {
     try {
+      // Check database limit before registering
       const checkRes = await fetch("/api/user/check-limit");
       const checkData = await checkRes.json().catch(() => ({ capped: false }));
       if (checkData.capped) {
         return { success: false, error: "Registration limit of 10,000 users has been reached." };
       }
 
-      if (isSupabaseConfigured && supabase) {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        if (error) throw error;
-        return { success: true };
-      } else {
-        // Mock Google Login: Generate a random google-mock user
+      // Call Better Auth client social signin (Google)
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+      return { success: true };
+    } catch (err: any) {
+      // Mock Google Login Fallback
+      if (import.meta.env.DEV) {
         const randId = "g-mock-" + Math.floor(Math.random() * 10000);
         const mockEmail = `google.user.${randId}@gmail.com`;
         return login(mockEmail);
       }
-    } catch (err: any) {
       return { success: false, error: err.message || "Failed to initiate Google sign in" };
     }
   };
 
   const logout = async () => {
-    if (isSupabaseConfigured && supabase) {
-      await supabase.auth.signOut();
-    } else {
-      document.cookie = "gamegata-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    setLoggingOut(true);
+    // Visual pause to render session termination animation
+    await new Promise(resolve => setTimeout(resolve, 1800));
+
+    try {
+      await authClient.signOut();
+    } catch (e) {
+      console.warn("Better Auth signOut failed, proceeding to clear local state:", e);
     }
+    // Always clear local fallback mock cookies & local wishlist cache
+    document.cookie = "gamegata-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    localStorage.removeItem("gamegata_wishlist");
     setUser(null);
+    setLoggingOut(false);
     window.location.assign("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isSupabase: isSupabaseConfigured, login, signUp, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, isSupabase: true, login, signUp, loginWithGoogle, logout }}>
+      {loggingOut && <NyanLoader message="SEE YOU AGAIN" fullScreen={true} />}
       {children}
     </AuthContext.Provider>
   );

@@ -2,31 +2,69 @@
 import SciFiLogo from './SciFiLogo';
 import SettingsButton from './SettingsButton';
 import HeaderSearch from './HeaderSearch';
+import CartButton from './CartButton';
 
 interface Props {
   withSearch?: boolean;
   withLink?: boolean;
+  statsGames?: number;
+  statsDevelopers?: number;
+  statsDeals?: number;
+  statsTags?: number;
 }
 
-const { withSearch = false, withLink = true } = Astro.props;
+const { withSearch = false, withLink = true, statsGames, statsDevelopers, statsDeals, statsTags } = Astro.props;
+
+const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
 ---
-<header class="border-b border-white bg-black sticky top-0 z-50">
-  <div class="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
-    <div class="flex flex-col gap-1">
-      <SciFiLogo client:load withLink={withLink} />
-      <div class="flex items-center gap-2 font-mono text-[10px] tracking-widest text-white uppercase font-bold select-none">
-        <span>[Horror]</span>
-        <span class="text-white font-black">•</span>
-        <span>Game</span>
-        <span class="text-white font-black">•</span>
-        <span>Mega</span>
-        <span class="text-white font-black">•</span>
-        <span>Metadata</span>
+<header class="border-b border-white/10 bg-[#08080a] sticky top-0 z-50 w-full h-14 sm:h-16 select-none">
+  <div class="w-full h-full flex items-center justify-between">
+    <!-- Left Section: Logo & Badge -->
+    <div class="flex items-center h-full gap-4 sm:gap-6 pl-4 sm:pl-6">
+      <div class="flex items-center gap-3">
+        <SciFiLogo client:only="react" withLink={withLink} />
+        <span class="border border-red-500/20 text-red-400 px-2 py-0.5 font-mono italic text-[9px] tracking-widest lowercase bg-red-500/5 select-none shrink-0 rounded-none">
+          open beta
+        </span>
       </div>
     </div>
-    <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap justify-end relative">
-      {withSearch && <HeaderSearch client:load />}
-      <SettingsButton client:load />
+
+    <!-- Middle Section: Telemetry Stats (hidden on mobile) -->
+    {hasStats && (
+      <div class="hidden md:flex items-center border-x border-white/10 h-full px-8 gap-6 font-mono text-[12px] tracking-wider text-white/50 select-none">
+        <div class="flex items-center gap-2">
+          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsGames?.toLocaleString() ?? "—"}</strong>
+          <span class="text-white/30 lowercase">games</span>
+        </div>
+        <span class="text-white/15">/</span>
+        <div class="flex items-center gap-2">
+          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsDevelopers?.toLocaleString() ?? "—"}</strong>
+          <span class="text-white/30 lowercase">developers</span>
+        </div>
+        <span class="text-white/15">/</span>
+        <div class="flex items-center gap-2">
+          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsDeals?.toLocaleString() ?? "—"}</strong>
+          <span class="text-white/30 lowercase">deals</span>
+        </div>
+        <span class="text-white/15">/</span>
+        <div class="flex items-center gap-2">
+          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsTags?.toLocaleString() ?? "—"}</strong>
+          <span class="text-white/30 lowercase">tags</span>
+        </div>
+      </div>
+    )}
+
+    <!-- Right Section: Actions -->
+    <div class="flex items-center h-full border-l border-white/10">
+      <div class="border-r border-white/10 h-full flex items-center justify-center w-12 sm:w-14 hover:bg-white/5 transition-colors duration-150">
+        <HeaderSearch client:only="react" />
+      </div>
+      <div class="border-r border-white/10 h-full flex items-center justify-center w-12 sm:w-14 hover:bg-white/5 transition-colors duration-150">
+        <CartButton client:only="react" />
+      </div>
+      <div class="h-full flex items-center justify-center w-12 sm:w-14 hover:bg-white/5 transition-colors duration-150">
+        <SettingsButton client:only="react" />
+      </div>
     </div>
   </div>
 </header>

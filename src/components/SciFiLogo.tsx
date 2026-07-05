@@ -1,19 +1,13 @@
-import { useSciFiScramble } from "../hooks/useSciFiScramble";
-
 interface SciFiLogoProps {
   withLink?: boolean;
 }
 
 export default function SciFiLogo({ withLink = true }: SciFiLogoProps) {
-  const { displayText: logoText, startScramble: scrambleLogo } = useSciFiScramble("hoGAMEGATA.");
-
   const headerContent = (
     <h1
-      onMouseEnter={scrambleLogo}
-      className="text-2xl md:text-3xl font-black text-white tracking-tight cursor-pointer select-none inline-block min-w-[180px] md:min-w-[220px]"
+      className="text-2xl md:text-3xl font-black text-white tracking-tight cursor-pointer select-none inline-block"
     >
-      <span className="italic">{logoText.substring(0, 2)}</span>
-      {logoText.substring(2)}
+      <span className="italic">ho</span>GAMEGATA.
     </h1>
   );
 

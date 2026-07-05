@@ -1,14 +1,33 @@
 {
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"compatibility_date": "2026-06-23",
-	"compatibility_flags": ["global_fetch_strictly_public"],
+	"compatibility_flags": [
+		"global_fetch_strictly_public",
+		"nodejs_compat"
+	],
 	"name": "gamegata-v1",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
+	"vars": {
+		"NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "ddcng6qh3",
+		"PUBLIC_SANITY_PROJECT_ID": "b85krrfu",
+		"PUBLIC_SANITY_DATASET": "production",
+		"GOOGLE_CLIENT_ID": "",
+		"BETTER_AUTH_URL": "https://gamegata.xyz"
+	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"routes": [
+		{
+			"pattern": "gamegata.xyz",
+			"zone_name": "gamegata.xyz",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		}
+	]
 }

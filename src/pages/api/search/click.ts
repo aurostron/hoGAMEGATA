@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { getSupabaseServer } from '../../../lib/supabaseServer';
+import { tursoAuth } from '../../../lib/tursoAuth';
+import { searchClick as searchClickTable } from '../../../db/auth-schema';
 
 export const prerender = false;
 
@@ -11,21 +12,19 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
     }
 
-        const supabase = getSupabaseServer();
-    const { data, error } = await supabase
-      .from("SearchClick")
-      .insert({
-        id: crypto.randomUUID(),
+    const clickId = crypto.randomUUID();
+
+    // Insert search click into separate Auth Database
+    await tursoAuth
+      .insert(searchClickTable)
+      .values({
+        id: clickId,
         query: query.trim(),
         gameId,
         position,
-      })
-      .select("id")
-      .single();
+      });
 
-    if (error) throw error;
-
-    return new Response(JSON.stringify({ success: true, id: data.id }), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, id: clickId }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("❌ Search click logging failed:", error);
     return new Response(JSON.stringify({ error: "Failed to log search click" }), { status: 500 });

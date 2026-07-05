@@ -1,0 +1,87 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ReturnButton from '../components/ReturnButton';
+import { Mail, ExternalLink, MessageSquare } from "lucide-react";
+---
+
+<Layout 
+  title="Contact Us | hoGAMEGATA" 
+  description="Get in touch with the hoGAMEGATA team. Report bugs, suggest database entries, or send general inquiries." 
+  withSearch={false} 
+  withLink={true}
+>
+  <main class="flex-1 flex items-center justify-center p-6 my-12 pb-24">
+    <div class="max-w-xl w-full border-4 border-white bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-8 relative overflow-hidden">
+      
+      <!-- Top nav inside card -->
+      <div class="flex justify-between items-center border-b border-white/10 pb-4">
+        <div class="flex flex-col">
+          <span class="font-mono text-[9px] text-[#ff2a2a] uppercase tracking-widest font-black">Support</span>
+          <span class="font-mono text-[8px] text-white/50 uppercase tracking-widest">Get In Touch</span>
+        </div>
+        <ReturnButton client:only="react" />
+      </div>
+
+      <!-- Header Title -->
+      <div class="flex flex-col gap-2">
+        <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
+          CONTACT
+        </h1>
+        <span class="font-mono text-xs text-white/50 uppercase tracking-widest">
+          Wanna say hello or report a bug?
+        </span>
+      </div>
+
+      <!-- Contact details list -->
+      <div class="space-y-6">
+        <!-- Email Link -->
+        <a
+          href="mailto:hello@gamegata.xyz"
+          class="group flex items-center gap-4 p-4 border border-white/15 bg-black/40 hover:bg-white hover:text-black hover:border-white transition-all duration-150 rounded-none"
+        >
+          <div class="p-3 border border-white/20 group-hover:border-black/20 group-hover:bg-black/5">
+            <Mail class="w-5 h-5 text-[#ff2a2a] group-hover:text-black transition-colors" />
+          </div>
+          <div class="flex-grow flex flex-col">
+            <span class="font-mono text-[10px] text-white/40 uppercase tracking-wider font-bold group-hover:text-black/60 transition-colors">Say Hello / Inquiries</span>
+            <span class="font-sans font-black text-base tracking-tight transition-colors">hello@gamegata.xyz</span>
+          </div>
+          <ExternalLink class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+        </a>
+
+        <!-- Twitter Link -->
+        <a
+          href="https://x.com/hoGAMEGATA"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="group flex items-center gap-4 p-4 border border-white/15 bg-black/40 hover:bg-white hover:text-black hover:border-white transition-all duration-150 rounded-none"
+        >
+          <div class="p-3 border border-white/20 group-hover:border-black/20 group-hover:bg-black/5">
+            <svg class="w-5 h-5 text-[#ff2a2a] group-hover:text-black transition-colors" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </div>
+          <div class="flex-grow flex flex-col">
+            <span class="font-mono text-[10px] text-white/40 uppercase tracking-wider font-bold group-hover:text-black/60 transition-colors">Follow / Direct Message</span>
+            <span class="font-sans font-black text-base tracking-tight transition-colors">@hoGAMEGATA</span>
+          </div>
+          <ExternalLink class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
+        </a>
+      </div>
+
+      <!-- Info warning box -->
+      <div class="border border-white/10 p-4 bg-[#0d0d0f] flex gap-3">
+        <div class="space-y-1 font-sans text-xs text-gray-400 leading-relaxed">
+          <span class="text-white font-bold uppercase block font-mono text-[12px] tracking-wide">Notice</span>
+          <p>We try to review all emails and bug reports within 48 hours. If you need urgent contact, please DM @auros.tron on Discord for a faster reply.</p>
+          <p>
+          <p>•</p>
+            If you are a game developer, and you need to make corrections or if your
+            game is missing, you can contribute directly at the IGDB website. </p>
+            <p>•</p>
+            <p>Changes that are done there are automatically synced to hoGAMEGATA.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

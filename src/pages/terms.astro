@@ -1,0 +1,133 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ReturnButton from '../components/ReturnButton';
+---
+
+<Layout 
+  title="Terms & Conditions | hoGAMEGATA" 
+  description="Terms and conditions of service for using hoGAMEGATA, the horror game metadata registry." 
+  withSearch={false} 
+  withLink={true}
+>
+  <!-- Content -->
+  <main class="flex-1 flex items-center justify-center p-6 my-12 pb-24">
+    <div class="max-w-3xl w-full border-4 border-white bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-8 relative overflow-hidden">
+      
+      <!-- Back button at top of card -->
+      <div class="flex justify-end">
+        <ReturnButton client:only="react" />
+      </div>
+
+      <div class="flex flex-col gap-2 pb-4 border-b border-white/10">
+        <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
+          TERMS & CONDITIONS
+        </h1>
+        <span class="font-mono text-xs text-white/50 uppercase tracking-widest">
+          Terms of Service & User Agreement
+        </span>
+      </div>
+
+      <div class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
+        <p>
+          These terms and conditions apply to the **hoGAMEGATA** website and directory, together with any related services operated by **AUROSTRON** (collectively, the "Website" or "Service"). AUROSTRON is hereby referred to as the "Service Provider".
+        </p>
+        <p>
+          By accessing or using the Website, you agree to these Terms and Conditions. If you do not agree to these terms, please do not use the Service.
+        </p>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 1. License to Use the Website</h2>
+          <p>
+            Subject to your compliance with these Terms, the Service Provider grants you a limited, non-exclusive, non-transferable, revocable license to access and use the Website for personal, non-commercial informational purposes.
+          </p>
+          <p>You agree not to:</p>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400">
+            <li>Reproduce, distribute, modify, or create derivative works from the Website's codebase.</li>
+            <li>Scrape, crawl, spider, or extract data from the Website's directory database or database APIs for commercial use or external search platforms without prior written consent.</li>
+            <li>Attempt to reverse engineer, decompile, or disrupt the operation of the Website.</li>
+          </ul>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 2. Intellectual Property & Custom Schema</h2>
+          <p>
+            The Service Provider retains all intellectual property rights in the Website, including its custom codebase, structural design, trademarks, service marks, logo, branding, and proprietary database formats. This includes the unique **Custom Scare Meter Ratings** (scare scores, rating reviews, confidence metrics, and taxonomy mappings).
+          </p>
+          <p>
+            Your use of the Website does not grant you any license or right to use the trademarks, logos, or branding of hoGAMEGATA or AUROSTRON.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 3. Artificial Intelligence (AI) Technology</h2>
+          <p>
+            The Website incorporates Artificial Intelligence (AI) and automation technologies within its data curation pipeline to help catalog, organize, and summarize game information. By using the Service, you acknowledge and agree that AI technologies are utilized in the backend processing of directory metadata.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 4. User-Generated Content</h2>
+          <p>
+            The Website is currently a curated directory and does not support user accounts, public posting, comments, or user-generated submissions. Should such features be added in the future, these Terms will be updated to govern user contributions.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 5. Website Access & Maintenance</h2>
+          <p>
+            As a community-focused resource, the Service is provided for free. The Service Provider reserves the right to modify, suspend, or terminate the Website or any part of the service at any time without notice.
+          </p>
+          <p>
+            The Website requires an active internet connection to retrieve catalog directory updates. The Service Provider is not responsible for any issues or data charges you incur from your internet service provider while accessing the Service.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 6. Disclaimer of Warranties</h2>
+          <p>
+            The Website and its directory information are provided on an "as-is" and "as-available" basis. While we strive to maintain accurate horror game listings:
+          </p>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400">
+            <li>We do not warrant the completeness, accuracy, or real-time status of game details, storefront links, platform availability, or system requirements.</li>
+            <li>You acknowledge that storefront transaction links lead to third-party websites (e.g., Steam, itch.io) governed by their own terms, and the Service Provider is not responsible for any transaction issues on external stores.</li>
+          </ul>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 7. Limitation of Liability</h2>
+          <p>
+            To the fullest extent permitted by law, the Service Provider (including AUROSTRON as a solo operator) shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of data, profits, or goodwill arising from your use of or inability to use the Website.
+          </p>
+          <p>
+            Where liability cannot be excluded by law, the Service Provider's total liability for any claim shall be limited to the minimum amount permitted under applicable law, or £0/€0/$0, as the Website is provided entirely free of charge.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 8. Governing Law</h2>
+          <p>
+            These Terms and Conditions are governed by the laws of the jurisdiction in which the Service Provider is established, excluding its conflict of law principles. Any dispute arising out of or relating to these Terms will be brought before the competent courts of that jurisdiction.
+          </p>
+        </section>
+
+        <section class="space-y-2">
+          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 9. Changes to These Terms</h2>
+          <p>
+            The Service Provider may periodically update these Terms and Conditions. We will notify you of changes by updating the "Effective Date" at the bottom of this page. You are advised to review this page regularly.
+          </p>
+        </section>
+
+        <p class="pt-4 text-xs font-mono text-white/50">
+          If you have any questions or suggestions about these Terms and Conditions, please contact us at <a href="mailto:hello@gamegata.xyz" class="text-white underline hover:text-[#f3f4f6]">hello@gamegata.xyz</a>.
+        </p>
+      </div>
+
+      <!-- Footer inside card -->
+      <div class="border-t border-white/10 pt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest flex justify-between items-center w-full">
+        <span>© hoGAMEGATA</span>
+        <span>•</span>
+        <span>Effective Date: June 28, 2026</span>
+      </div>
+    </div>
+  </main>
+</Layout>

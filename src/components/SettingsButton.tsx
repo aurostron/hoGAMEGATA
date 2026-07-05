@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { MoreVertical, BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -48,9 +48,12 @@ function SettingsButtonInner() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={
-        <button data-tour="options-button" className="flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold cursor-pointer bg-black" title="Settings">
-          <Settings className="w-3.5 h-3.5" />
-          <span>[ Options ]</span>
+        <button data-tour="options-button" className="flex items-center justify-center font-mono text-xs text-white hover:bg-white hover:text-black transition-all duration-150 border border-transparent hover:border-white w-11 h-11 sm:w-12 sm:h-12 rounded-none font-bold cursor-pointer bg-black" title="More Options">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt="User Profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/20" referrerpolicy="no-referrer" />
+          ) : (
+            <MoreVertical className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+          )}
         </button>
       } />
       
@@ -78,23 +81,11 @@ function SettingsButtonInner() {
         <DropdownMenuItem onClick={openModal} className="flex items-center gap-1.5 cursor-pointer">
           <Sliders className="w-3.5 h-3.5" /> Preferences
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => {
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("gamegata_start_tutorial"));
-          }
-        }} className="flex items-center gap-1.5 cursor-pointer">
-          <Sliders className="w-3.5 h-3.5" /> Start Tour
-        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
-        {/* Technical Docs */}
+        {/* Resources */}
         <DropdownMenuLabel>Resources</DropdownMenuLabel>
-        <DropdownMenuItem className="p-0">
-          <a href="/docs" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
-            <BookOpen className="w-3.5 h-3.5" /> Technical Docs
-          </a>
-        </DropdownMenuItem>
         <DropdownMenuItem className="p-0">
           <a href="/status" className="flex items-center gap-1.5 w-full h-full px-3 py-2 text-inherit decoration-none">
             <Sliders className="w-3.5 h-3.5" /> System Status

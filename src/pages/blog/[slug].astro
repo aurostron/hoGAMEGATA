@@ -1,0 +1,171 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { sanityClient, urlFor } from '../../lib/sanity';
+import { PortableText } from 'astro-portabletext';
+import PortableTextImage from '../../components/PortableTextImage.astro';
+import { Calendar, ArrowLeft } from 'lucide-react';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect('/404');
+}
+
+let post: any = null;
+try {
+  post = await sanityClient.fetch(`
+    *[_type == "post" && slug.current == $slug][0] {
+      title,
+      publishedAt,
+      excerpt,
+      body,
+      coverImage
+    }
+  `, { slug });
+} catch (err) {
+  console.error("Failed to query post from Sanity:", err);
+}
+
+if (!post) {
+  return Astro.redirect('/404');
+}
+
+const formattedDate = post.publishedAt
+  ? new Date(post.publishedAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : "Transmission Date Unknown";
+
+const components = {
+  type: {
+    image: PortableTextImage,
+  }
+};
+---
+
+<Layout
+  title={`${post.title} | hoGAMEGATA Logbook`}
+  description={post.excerpt || `Read the latest log: ${post.title} on hoGAMEGATA`}
+  ogImage={post.coverImage ? urlFor(post.coverImage).width(1200).height(630).url() : undefined}
+  withSearch={false}
+>
+  <main class="max-w-3xl mx-auto px-6 mt-12 pb-24 flex-1 w-full">
+    <!-- Back Button -->
+    <div class="mb-8">
+      <a 
+        href="/blog" 
+        class="group flex items-center gap-2 font-bold text-[10px] text-white hover:text-[#ff2a2a] uppercase tracking-wider transition-colors font-bold w-fit"
+      >
+        <ArrowLeft class="w-3.5 h-3.5" />
+        <span> Return to Logs </span>
+      </a>
+    </div>
+
+    <!-- Article Header -->
+    <header class="space-y-4 pb-8 border-b border-white/10 mb-8">
+      <div class="flex items-center gap-2 font-mono text-[10px] text-white/40 uppercase font-black">
+        <Calendar class="w-3.5 h-3.5 text-[#ff2a2a]" />
+        <span>{formattedDate}</span>
+      </div>
+      
+      <h1 class="font-sans font-black text-3xl sm:text-4xl md:text-5xl uppercase tracking-tighter text-white leading-none">
+        {post.title}
+      </h1>
+      
+      {post.excerpt && (
+        <p class="text-sm text-white/60 leading-relaxed font-medium italic border-l-2 border-white/20 pl-4 mt-4">
+          {post.excerpt}
+        </p>
+      )}
+    </header>
+
+    <!-- Cover Art -->
+    {post.coverImage && (
+      <div class="border border-white/10 p-1 bg-black mb-8 w-full">
+        <img
+          src={urlFor(post.coverImage).width(1200).height(675).fit("crop").url()}
+          alt={post.title}
+          class="w-full h-auto border border-white/5"
+        />
+      </div>
+    )}
+
+    <!-- Content Blocks (Portable Text) -->
+    <article class="changelog-content">
+      {post.body ? (
+        <PortableText value={post.body} components={components} />
+      ) : (
+        <p class="text-xs text-white/40 font-mono italic">// Empty transmission content.</p>
+      )}
+    </article>
+  </main>
+</Layout>
+
+<style is:global>
+  .changelog-content p {
+    font-size: 0.875rem; /* text-sm */
+    line-height: 1.7; /* leading-relaxed */
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.25rem;
+  }
+  .changelog-content h2 {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-weight: 900; /* font-black */
+    font-size: 1.5rem; /* text-2xl */
+    text-transform: uppercase;
+    letter-spacing: -0.025em; /* tracking-tight */
+    color: #ffffff;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #ff2a2a;
+    padding-left: 1rem;
+  }
+  .changelog-content h3 {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-weight: 900; /* font-black */
+    font-size: 1.125rem; /* text-lg */
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+  .changelog-content ul {
+    list-style-type: square;
+    padding-left: 1.5rem;
+    margin-bottom: 1.25rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .changelog-content li {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+  .changelog-content li::marker {
+    color: #ff2a2a;
+  }
+  .changelog-content blockquote {
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
+    padding-left: 1.25rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 1.5rem 0;
+  }
+  .changelog-content strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+  .changelog-content a {
+    color: #ff2a2a;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    font-weight: 600;
+    transition: color 0.15s ease;
+  }
+  .changelog-content a:hover {
+    color: #ffffff;
+  }
+</style>
