@@ -4,6 +4,7 @@ import { getServerUser } from "./lib/serverAuth";
 import { initTursoForRequest } from "./lib/turso";
 import { initTursoAuthForRequest } from "./lib/tursoAuth";
 import { initBetterAuth } from "./lib/auth";
+import { env as cfEnv } from "cloudflare:workers";
 
 const PUBLIC_PATHS = [
   "/",
@@ -44,8 +45,8 @@ async function checkMaintenanceMode(cfEnv: any) {
 export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
   const env = isDev
-    ? (typeof process !== "undefined" && process.env ? process.env : null)
-    : (context.locals.runtime?.env || (typeof process !== "undefined" && process.env ? process.env : null));
+    ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
+    : cfEnv;
 
   if (env) {
     initTursoForRequest(env);
