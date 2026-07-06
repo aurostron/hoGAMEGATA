@@ -82,7 +82,7 @@ export default function HeaderSearch() {
   };
 
   return (
-    <div ref={searchRef} className="relative font-mono flex items-center">
+    <div ref={searchRef} className="relative h-full flex items-center">
       {/* Collapsed Search Button */}
       {!isExpanded ? (
         <button
@@ -90,41 +90,43 @@ export default function HeaderSearch() {
             setIsExpanded(true);
             setTimeout(() => inputRef.current?.focus(), 50);
           }}
-          className="flex items-center justify-center font-mono text-xs text-white hover:bg-white hover:text-black transition-all duration-150 border border-transparent hover:border-white w-11 h-11 sm:w-12 sm:h-12 rounded-none font-bold cursor-pointer bg-black"
+          className="flex items-center justify-center text-white hover:bg-white/5 w-12 sm:w-14 h-full transition-colors duration-150 cursor-pointer"
           title="Search"
         >
-          <Search className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+          <Search className="w-5 h-5" />
         </button>
       ) : (
         /* Expanded Search Input Bar */
-        <div className="relative w-40 sm:w-60">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            {loading ? (
-              <Loader2 className="h-4.5 w-4.5 text-white/70 animate-spin" />
-            ) : (
-              <Search className="h-4.5 w-4.5 text-white/70" />
-            )}
+        <div className="relative w-44 sm:w-64 px-3 flex items-center h-full">
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              {loading ? (
+                <Loader2 className="h-4.5 w-4.5 text-white/70 animate-spin" />
+              ) : (
+                <Search className="h-4.5 w-4.5 text-white/70" />
+              )}
+            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => query.trim() && setIsOpen(true)}
+              placeholder="Search games..."
+              className="block w-full h-9 pl-9 pr-8 bg-[#0f0f12] border border-white/15 focus:border-white/35 text-xs text-white placeholder-white/40 focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
+            />
+            <button
+              onClick={() => {
+                setQuery("");
+                setResults([]);
+                setIsOpen(false);
+                setIsExpanded(false);
+              }}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white transition-colors duration-150 cursor-pointer"
+            >
+              <span className="text-[10px] font-bold">[✕]</span>
+            </button>
           </div>
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => query.trim() && setIsOpen(true)}
-            placeholder="Search games..."
-            className="block w-full h-11 sm:h-12 pl-10 pr-8 bg-black border border-white text-sm text-white placeholder-white/50 focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
-          />
-          <button
-            onClick={() => {
-              setQuery("");
-              setResults([]);
-              setIsOpen(false);
-              setIsExpanded(false);
-            }}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white transition-colors duration-150 cursor-pointer"
-          >
-            <span className="text-[10px] font-bold">[✕]</span>
-          </button>
         </div>
       )}
 
