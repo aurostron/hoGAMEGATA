@@ -16,6 +16,7 @@ export const games = sqliteTable(
     rating: real("rating"),
     trailerUrl: text("trailerUrl"),
     screenshots: text("screenshots"), // JSON array of string URLs
+    catboxAlbumId: text("catboxAlbumId"),
     isTrending: integer("isTrending", { mode: "boolean" }).default(false).notNull(),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
     updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),

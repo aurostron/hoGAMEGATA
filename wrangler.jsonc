@@ -16,7 +16,8 @@
 		"PUBLIC_SANITY_PROJECT_ID": "b85krrfu",
 		"PUBLIC_SANITY_DATASET": "production",
 		"GOOGLE_CLIENT_ID": "",
-		"BETTER_AUTH_URL": "https://gamegata.xyz"
+		"BETTER_AUTH_URL": "https://gamegata.xyz",
+		"CATBOX_USERHASH": ""
 	},
 	"observability": {
 		"enabled": true

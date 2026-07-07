@@ -37,6 +37,15 @@ try {
 if (!game) {
   return Astro.redirect('/404');
 }
+
+let existingScreenshots: string[] = [];
+if (game.screenshots) {
+  try {
+    existingScreenshots = JSON.parse(game.screenshots);
+  } catch (e) {
+    console.error("Failed to parse screenshots JSON:", e);
+  }
+}
 ---
 
 <AdminLayout title={`Edit "${game.title}"`} activeTab="games">
@@ -129,6 +138,48 @@ if (!game) {
           ></div>
         </div>
 
+        <!-- Screenshots Card -->
+        <div class="border-t border-[#1a1a24] pt-6 space-y-4">
+          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider">
+            Game Screenshots
+          </label>
+
+          <!-- Drag & Drop Zone -->
+          <div
+            id="screenshot-dropzone"
+            class="border-2 border-dashed border-[#1a1a24] hover:border-[#ff2a2a] p-8 rounded-lg text-center cursor-pointer transition duration-150 flex flex-col items-center justify-center space-y-2 bg-[#050508]"
+          >
+            <svg class="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-xs text-gray-400 font-medium">Drag & drop screenshots here, or click to browse files</span>
+            <span class="text-[10px] text-gray-600 uppercase font-mono font-bold">[ Batch uploads supported ]</span>
+            <input
+              type="file"
+              id="screenshot-file-input"
+              multiple
+              accept="image/*"
+              class="hidden"
+            />
+          </div>
+
+          <!-- Thumbnails list -->
+          <div id="screenshots-list" class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+            {existingScreenshots.map((url: string) => (
+              <div class="relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12]">
+                <img src={`/api/image-proxy?url=${encodeURIComponent(url)}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                <button
+                  type="button"
+                  data-url={url}
+                  class="remove-screenshot-btn absolute top-1 right-1 bg-black/80 hover:bg-[#ff2a2a] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition duration-150 cursor-pointer"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <!-- Submit Button -->
         <div class="pt-4 flex items-center justify-between">
           <span id="form-feedback" class="text-xs font-mono text-gray-500"></span>
@@ -202,6 +253,132 @@ if (!game) {
   const devRenameInput = document.getElementById('dev-rename-input') as HTMLInputElement;
   const devRenameSubmitBtn = document.getElementById('dev-rename-submit-btn') as HTMLButtonElement;
   const renameFeedback = document.getElementById('rename-feedback') as HTMLSpanElement;
+
+  // Screenshots state and drag & drop selectors
+  let uploadedScreenshots: string[] = Array.from(document.querySelectorAll('.remove-screenshot-btn'))
+    .map((btn: any) => btn.getAttribute('data-url'))
+    .filter(Boolean);
+    
+  const dropzone = document.getElementById('screenshot-dropzone') as HTMLDivElement;
+  const fileInput = document.getElementById('screenshot-file-input') as HTMLInputElement;
+  const screenshotsList = document.getElementById('screenshots-list') as HTMLDivElement;
+
+  // Bind deletion listeners to existing items loaded on server-side
+  document.querySelectorAll('.remove-screenshot-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const urlToRemove = (e.currentTarget as HTMLButtonElement).getAttribute('data-url');
+      if (urlToRemove) {
+        uploadedScreenshots = uploadedScreenshots.filter(url => url !== urlToRemove);
+        (e.currentTarget as HTMLButtonElement).parentElement?.remove();
+      }
+    });
+  });
+
+  // Click dropzone to trigger hidden file input selector
+  dropzone.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // Drag and drop border highlights
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-[#ff2a2a]', 'bg-[#121217]/50');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-[#ff2a2a]', 'bg-[#121217]/50');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt?.files;
+    if (files) {
+      handleFilesUpload(files);
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    const files = fileInput.files;
+    if (files) {
+      handleFilesUpload(files);
+    }
+  });
+
+  // Concurrent Batch Uploading
+  async function handleFilesUpload(files: FileList) {
+    Array.from(files).forEach(async (file) => {
+      const placeholderId = 'uploading-' + Math.random().toString(36).substr(2, 9);
+      
+      const thumb = document.createElement('div');
+      thumb.id = placeholderId;
+      thumb.className = 'relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12] flex items-center justify-center';
+      
+      const previewUrl = URL.createObjectURL(file);
+      thumb.innerHTML = `
+        <img src="${previewUrl}" class="w-full h-full object-cover opacity-30" />
+        <div class="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
+          <span class="text-[9px] font-mono text-gray-400 truncate w-full uppercase tracking-wider">${file.name}</span>
+          <span class="text-[9px] font-mono font-bold text-[#ff2a2a] uppercase mt-1 animate-pulse">Uploading...</span>
+        </div>
+      `;
+      screenshotsList.appendChild(thumb);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.url) {
+          uploadedScreenshots.push(data.url);
+          
+          thumb.innerHTML = `
+            <img src="/api/image-proxy?url=${encodeURIComponent(data.url)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            <button
+              type="button"
+              data-url="${data.url}"
+              class="remove-screenshot-btn absolute top-1 right-1 bg-black/80 hover:bg-[#ff2a2a] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition duration-150 cursor-pointer"
+            >
+              &times;
+            </button>
+          `;
+
+          const delBtn = thumb.querySelector('.remove-screenshot-btn');
+          delBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const urlToRemove = (e.currentTarget as HTMLButtonElement).getAttribute('data-url');
+            if (urlToRemove) {
+              uploadedScreenshots = uploadedScreenshots.filter(url => url !== urlToRemove);
+              thumb.remove();
+            }
+          });
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (err) {
+        console.error('Screenshot upload failed:', err);
+        thumb.innerHTML = `
+          <div class="absolute inset-0 flex flex-col items-center justify-center p-2 bg-red-950/20 text-center">
+            <span class="text-[9px] font-mono text-red-400 truncate w-full uppercase font-bold">Failed</span>
+            <button type="button" class="mt-1 text-[8px] font-mono underline text-gray-500 hover:text-white" onclick="this.parentElement.parentElement.remove()">Dismiss</button>
+          </div>
+        `;
+      } finally {
+        URL.revokeObjectURL(previewUrl);
+      }
+    });
+  }
 
   // Autocomplete variables
   let searchTimeout: any = null;
@@ -304,7 +481,8 @@ if (!game) {
         body: JSON.stringify({
           title: title,
           status: status,
-          developerId: developerName ? developerId : null
+          developerId: developerName ? developerId : null,
+          screenshots: uploadedScreenshots
         })
       });
 

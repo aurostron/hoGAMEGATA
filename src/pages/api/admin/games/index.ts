@@ -3,6 +3,7 @@ import { getServerUser, isAdminUser } from '../../../../lib/serverAuth';
 import { turso } from '../../../../lib/turso';
 import { games, gamesToDevelopers, developers, gamesToPlatforms, platforms } from '../../../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
+import { syncCatboxAlbum } from '../../../../lib/catbox';
 
 let cfEnv: any = null;
 try {
@@ -48,7 +49,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       scareRating,
       scareProfile,
       developerId,
-      platformIds
+      platformIds,
+      screenshots
     } = body;
 
     if (!title || !title.trim()) {
@@ -106,6 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         releaseDate: parsedReleaseDate,
         coverUrl: coverUrl || null,
         trailerUrl: trailerUrl || null,
+        screenshots: screenshots ? JSON.stringify(screenshots) : null,
         summary: summary || null,
         storyline: storyline || null,
         scareRating: scareRating !== undefined ? parseFloat(scareRating) : null,
@@ -134,6 +137,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             platformId: platId
           });
         }
+      }
+
+      // Sync screenshots to Catbox album
+      const userhash = cfEnv?.CATBOX_USERHASH || 
+        (typeof process !== "undefined" && process?.env ? process.env.CATBOX_USERHASH : undefined) ||
+        "";
+      
+      if (screenshots && screenshots.length > 0) {
+        await syncCatboxAlbum(
+          tx,
+          newId,
+          title.trim(),
+          devNames,
+          screenshots,
+          null,
+          userhash
+        );
       }
     });
 

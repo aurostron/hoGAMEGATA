@@ -3,6 +3,7 @@ import { getServerUser, isAdminUser } from '../../../../lib/serverAuth';
 import { turso } from '../../../../lib/turso';
 import { games, gamesToDevelopers, developers } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { syncCatboxAlbum } from '../../../../lib/catbox';
 
 let cfEnv: any = null;
 try {
@@ -28,7 +29,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       return new Response(JSON.stringify({ error: "Missing game ID" }), { status: 400 });
     }
 
-    const { title, status, developerId } = await request.json();
+    const { title, status, developerId, screenshots } = await request.json();
 
     if (!title || !title.trim()) {
       return new Response(JSON.stringify({ error: "Title is required" }), { status: 400 });
@@ -42,6 +43,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
         .set({
           title: title.trim(),
           status: status || null,
+          screenshots: screenshots ? JSON.stringify(screenshots) : null,
           updatedAt: new Date()
         })
         .where(eq(games.id, id));
@@ -77,6 +79,31 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
             .update(games)
             .set({ developerNames: null })
             .where(eq(games.id, id));
+        }
+      }
+
+      // Sync screenshots to Catbox album
+      if (screenshots !== undefined) {
+        const [dbGame] = await tx
+          .select({ catboxAlbumId: games.catboxAlbumId, developerNames: games.developerNames })
+          .from(games)
+          .where(eq(games.id, id))
+          .limit(1);
+
+        if (dbGame) {
+          const userhash = cfEnv?.CATBOX_USERHASH || 
+            (typeof process !== "undefined" && process?.env ? process.env.CATBOX_USERHASH : undefined) ||
+            "";
+
+          await syncCatboxAlbum(
+            tx,
+            id,
+            title.trim(),
+            dbGame.developerNames,
+            screenshots,
+            dbGame.catboxAlbumId,
+            userhash
+          );
         }
       }
     });

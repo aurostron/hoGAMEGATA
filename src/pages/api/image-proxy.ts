@@ -22,6 +22,7 @@ const ALLOWED_HOSTS = [
   'postimg.cc',
   'i.postimg.cc',
   'postimages.org',
+  'files.catbox.moe',
 ];
 
 export const GET: APIRoute = async ({ request }) => {
