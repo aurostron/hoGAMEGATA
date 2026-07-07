@@ -4,7 +4,7 @@ import { games as gamesTable, developers as developersTable } from '../db/schema
 import { desc } from 'drizzle-orm';
 import { sanityClient } from '../lib/sanity';
 
-export const prerender = false;
+export const prerender = true;
 
 export const GET: APIRoute = async () => {
   try {

@@ -89,7 +89,7 @@ const formatDate = (dateVal: string | Date | null | undefined) => {
 const getDirectLink = (game: GameData) => {
   const itchLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "itch.io" || l.storeName.toLowerCase() === "itch");
   if (itchLink?.url) return itchLink.url;
-  const gogLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "gog");
+  const gogLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase().includes("gog"));
   if (gogLink?.url) return gogLink.url;
   const steamLink = game.purchaseLinks?.find(l => l.storeName.toLowerCase() === "steam");
   if (steamLink?.url) return steamLink.url;
@@ -113,7 +113,7 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
   const [wishAnim, setWishAnim] = useState(false);
   const finalDeal = findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
-  const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
+  const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
 
   const { user } = useAuth();
   const { addToCart, removeFromCart, cartItems } = useCart();
@@ -391,7 +391,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
 
   const finalDeal = resolvedDeal || findCheapestDeal(game);
   const hasItchBadge = game.slug.startsWith("itch-");
-  const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
+  const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
 
   // In list mode, delegate to the GOG-style ListRow
   if (mobileLayout === "list") {

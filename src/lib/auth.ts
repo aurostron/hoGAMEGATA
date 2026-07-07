@@ -118,19 +118,21 @@ function getAuth(): ReturnType<typeof betterAuth> {
                   }
 
                   // Verify with Cloudflare Turnstile API
+                  let outcome: any;
                   try {
                     const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
                       method: "POST",
                       headers: { "Content-Type": "application/x-www-form-urlencoded" },
                       body: `secret=${encodeURIComponent(turnstileSecretKey)}&response=${encodeURIComponent(captchaToken)}`,
                     });
-                    const outcome = (await response.json()) as any;
-                    if (!outcome.success) {
-                      throw new APIError("BAD_REQUEST", { message: "CAPTCHA verification failed. Please try again." });
-                    }
+                    outcome = (await response.json()) as any;
                   } catch (err) {
                     console.error("Cloudflare Turnstile verification failed:", err);
                     throw new APIError("INTERNAL_SERVER_ERROR", { message: "Failed to verify CAPTCHA." });
+                  }
+
+                  if (!outcome || !outcome.success) {
+                    throw new APIError("BAD_REQUEST", { message: "CAPTCHA verification failed. Please try again." });
                   }
                 }
               }

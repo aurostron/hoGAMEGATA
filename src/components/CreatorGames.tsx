@@ -103,23 +103,22 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
 
   if (loading) {
     return (
-      <section className="border-t border-white pt-12 space-y-6">
+      <section className="border-t border-white/5 pt-12 space-y-6">
         <div className="flex items-center gap-2">
-          <Compass className="w-4 h-4 text-white" />
-          <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">Loading...</h3>
+          <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider animate-pulse">Loading...</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="border border-white bg-black rounded-none overflow-hidden flex flex-col h-full animate-pulse">
-              <div className="aspect-[3/4] w-full bg-white/10 border-b border-white shrink-0"></div>
+            <div key={i} className="border border-white/5 bg-[#131316]/50 rounded-2xl overflow-hidden flex flex-col h-full animate-pulse">
+              <div className="aspect-[3/4] w-full bg-white/5 border-b border-white/5 shrink-0"></div>
               <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                 <div>
-                  <div className="h-4 bg-white/10 w-3/4 rounded-none"></div>
-                  <div className="h-3 bg-white/10 w-1/2 rounded-none mt-2"></div>
+                  <div className="h-4 bg-white/5 w-3/4 rounded"></div>
+                  <div className="h-3 bg-white/5 w-1/2 rounded mt-2"></div>
                 </div>
-                <div className="pt-2 border-t border-white/20 flex justify-between items-center">
-                  <div className="h-3 bg-white/10 w-16 rounded-none"></div>
-                  <div className="h-4 bg-white/10 w-12 rounded-none"></div>
+                <div className="pt-2 border-t border-white/5 flex justify-between items-center">
+                  <div className="h-3 bg-white/5 w-16 rounded"></div>
+                  <div className="h-4 bg-white/5 w-12 rounded"></div>
                 </div>
               </div>
             </div>
@@ -134,11 +133,10 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
   }
 
   return (
-    <section className="border-t border-white pt-12 space-y-6">
+    <section className="border-t border-white/5 pt-12 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Compass className="w-4 h-4 text-white" />
-          <h3 className="font-mono text-[10px] text-white uppercase tracking-widest font-black">
+          <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
             More from {creatorsString}
           </h3>
         </div>
@@ -149,9 +147,9 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
           <a
             key={game.slug}
             href={`/game/${game.slug}`}
-            className="border border-white bg-black rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full"
+            className="border border-white/5 bg-[#131316]/50 rounded-2xl overflow-hidden hover:border-white/10 hover:bg-white/5 transition-all duration-300 shadow-xl group flex flex-col h-full"
           >
-            <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white overflow-hidden shrink-0 flex items-center justify-center">
+            <div className="aspect-[3/4] relative w-full bg-neutral-900 border-b border-white/5 overflow-hidden shrink-0 flex items-center justify-center">
               {game.coverUrl ? (
                 <img
                   src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl)) || ""}
@@ -160,29 +158,29 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
                   loading="lazy"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-b from-white/10 to-black flex items-center justify-center">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-white">No Cover</span>
+                <div className="w-full h-full bg-gradient-to-b from-white/5 to-black flex items-center justify-center">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-450">No Cover</span>
                 </div>
               )}
               {/* Category Tag */}
               {getCategoryBadge(game.category, game.title) && (
-                <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10">
+                <span className="absolute top-2 left-2 text-[8px] uppercase tracking-widest bg-[#7f1d1d]/90 text-[#fca5a5] border border-[#fca5a5]/10 font-bold px-1.5 py-0.5 z-10 rounded">
                   {getCategoryBadge(game.category, game.title)}
                 </span>
               )}
               {/* itch.io Badge */}
               {game.slug.startsWith("itch-") && (
-                <span className="absolute top-2 right-2 font-mono text-[8px] uppercase tracking-widest bg-[#fa5c5c] text-black border border-[#fa5c5c] font-black px-1.5 py-0.5 z-10">
+                <span className="absolute top-2 right-2 text-[8px] uppercase tracking-widest bg-[#fa5c5c]/95 text-black font-bold px-1.5 py-0.5 z-10 rounded">
                   itch.io
                 </span>
               )}
               {/* Primary Mood Tag */}
               {game.tags && game.tags.length > 0 ? (
-                <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                <span className="absolute bottom-2 left-2 text-[8px] uppercase tracking-widest bg-zinc-900/90 text-white/80 border border-white/10 font-bold px-1.5 py-0.5 rounded">
                   {game.tags[0].name}
                 </span>
               ) : game.genres && game.genres.length > 0 ? (
-                <span className="absolute bottom-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-white text-black font-black px-1.5 py-0.5">
+                <span className="absolute bottom-2 left-2 text-[8px] uppercase tracking-widest bg-zinc-900/90 text-white/80 border border-white/10 font-bold px-1.5 py-0.5 rounded">
                   {game.genres[0].name}
                 </span>
               ) : null}
@@ -190,17 +188,17 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
 
             <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
               <div>
-                <h4 className="text-white group-hover:text-black text-sm font-bold tracking-wide uppercase line-clamp-1">
+                <h4 className="text-white text-sm font-semibold tracking-wide line-clamp-1 transition-colors">
                   {game.title}
                 </h4>
-                <span className="font-mono text-[9px] text-white group-hover:text-black block font-bold mt-1">
+                <span className="text-[10px] text-neutral-455 block mt-1 font-medium">
                   by {game.developerNames ? game.developerNames.split(", ")[0] : (game.developers?.[0]?.name || "Unknown Dev")}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-white/20 font-mono text-[9px]">
+              <div className="flex items-center justify-between pt-2 border-t border-white/5 font-mono text-[9px]">
                 <PlatformLogos platforms={game.platforms} platformNames={game.platformNames} />
-                <span className="px-1.5 py-0.2 border border-white text-white group-hover:text-black group-hover:border-black font-bold">
+                <span className="px-2 py-0.5 border border-white/10 text-white/70 text-[9px] font-mono font-semibold uppercase tracking-wider rounded">
                   {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
                 </span>
               </div>
@@ -214,9 +212,9 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
           <button
             onClick={loadMoreGames}
             disabled={loadingMore}
-            className="font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-6 py-3 rounded-none font-bold disabled:opacity-50"
+            className="text-xs text-white bg-white/5 hover:bg-white/10 uppercase tracking-wider transition-all duration-200 border border-white/5 px-6 py-3 rounded-xl font-semibold disabled:opacity-50 cursor-pointer"
           >
-            {loadingMore ? "[ Loading... ]" : "[ Load More ]"}
+            {loadingMore ? "Loading..." : "Load More"}
           </button>
         </div>
       )}

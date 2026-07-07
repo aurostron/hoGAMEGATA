@@ -5,7 +5,7 @@ import Layout from '../layouts/Layout.astro';
 import ReturnButton from '../components/ReturnButton';
 import { turso } from '../lib/turso';
 import { games as gamesTable } from '../db/schema';
-import { asc } from 'drizzle-orm';
+import { asc, or, isNull, ne } from 'drizzle-orm';
 
 // Fetch all games ordered alphabetically
 const allGames = await turso
@@ -15,6 +15,7 @@ const allGames = await turso
     developerNames: gamesTable.developerNames,
   })
   .from(gamesTable)
+  .where(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")))
   .orderBy(asc(gamesTable.title));
 
 // Group games into alphabet buckets

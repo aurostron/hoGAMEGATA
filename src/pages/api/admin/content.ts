@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getServerUser } from '../../../lib/serverAuth';
+import { getServerUser, isAdminUser } from '../../../lib/serverAuth';
 import { turso } from '../../../lib/turso';
 import { siteContent } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
@@ -20,16 +20,7 @@ export const PATCH: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const adminEmailsStr = cfEnv?.ADMIN_EMAILS || process.env.ADMIN_EMAILS || "";
-    const adminEmails = adminEmailsStr.split(",").map(e => e.trim().toLowerCase());
-
-    const isAdmin = (
-      adminEmails.includes(user.email.toLowerCase()) || 
-      user.email === "bapum@example.com" ||
-      user.email.endsWith("@gamegata.xyz") ||
-      import.meta.env?.DEV ||
-      process.env.NODE_ENV === "development"
-    );
+    const isAdmin = isAdminUser(user.email, cfEnv);
 
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden. Admin access required." }), { status: 403 });

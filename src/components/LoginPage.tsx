@@ -198,12 +198,12 @@ function LoginForm() {
 
       {errorMsg && (
         <div className="border border-red-500/30 bg-red-950/20 text-red-200 p-3.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
-          [ Error: {errorMsg} ]
+          Error: {errorMsg}
         </div>
       )}
       {successMsg && (
         <div className="border border-emerald-500/30 bg-emerald-950/20 text-emerald-200 p-3.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
-          [ Success: {successMsg} ]
+          Success: {successMsg}
         </div>
       )}
 

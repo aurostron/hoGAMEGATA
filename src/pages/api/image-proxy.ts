@@ -17,6 +17,11 @@ const ALLOWED_HOSTS = [
   'steamstatic.com',
   'steampowered.com',
   'media.steampowered.com',
+  'imgur.com',
+  'i.imgur.com',
+  'postimg.cc',
+  'i.postimg.cc',
+  'postimages.org',
 ];
 
 export const GET: APIRoute = async ({ request }) => {

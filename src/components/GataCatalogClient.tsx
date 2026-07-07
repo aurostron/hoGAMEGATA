@@ -7,6 +7,8 @@ import {
   List, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronsLeft,
+  ChevronsRight,
   SlidersHorizontal, 
   Star, 
   X, 
@@ -255,6 +257,7 @@ function GataCatalogClientInner({
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [priceSlider, setPriceSlider] = useState(60);
+  const [debouncedPriceSlider, setDebouncedPriceSlider] = useState(60);
   
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedSystems, setSelectedSystems] = useState<string[]>([]);
@@ -292,7 +295,17 @@ function GataCatalogClientInner({
       setHideDlcs(params.get("hideDlcs") !== "false");
       setFreeOnly(params.get("freeOnly") === "true");
       setMinPrice(params.get("minPrice") || "");
-      setMaxPrice(params.get("maxPrice") || "");
+      const urlMaxPrice = params.get("maxPrice");
+      if (urlMaxPrice) {
+        setMaxPrice(urlMaxPrice);
+        const parsed = parseInt(urlMaxPrice, 10);
+        if (!isNaN(parsed)) {
+          setPriceSlider(parsed);
+          setDebouncedPriceSlider(parsed);
+        }
+      } else {
+        setMaxPrice("");
+      }
       
       const pageVal = parseInt(params.get("page") || "1", 10);
       setCurrentPage(isNaN(pageVal) ? 1 : pageVal);
@@ -337,6 +350,19 @@ function GataCatalogClientInner({
     setCorrectedQuery(null);
   }, [debouncedSearch]);
 
+  // Debounce price slider input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedPriceSlider(priceSlider);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [priceSlider]);
+
+  // When debounced price slider changes, reset to page 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedPriceSlider]);
+
   // Sync state to URL and Fetch Games
   useEffect(() => {
     const fetchGames = async () => {
@@ -350,7 +376,7 @@ function GataCatalogClientInner({
         if (minPrice) queryParams.set("minPrice", minPrice);
         
         // Use slider price if not explicitly overridden by maxPrice input
-        const finalMaxPrice = maxPrice || (priceSlider < dbMaxPrice ? priceSlider.toString() : "");
+        const finalMaxPrice = maxPrice || (debouncedPriceSlider < dbMaxPrice ? debouncedPriceSlider.toString() : "");
         if (finalMaxPrice) queryParams.set("maxPrice", finalMaxPrice);
 
         if (selectedGenres.length > 0) queryParams.set("genres", selectedGenres.join(","));
@@ -408,7 +434,7 @@ function GataCatalogClientInner({
     freeOnly,
     minPrice,
     maxPrice,
-    priceSlider,
+    debouncedPriceSlider,
     selectedGenres,
     selectedSystems,
     selectedDecades,
@@ -969,17 +995,35 @@ function GataCatalogClientInner({
                 <div className="flex border border-white/10">
                   <button
                     disabled={currentPage === 1 || loading}
+                    onClick={() => changePage(1)}
+                    className="px-2.5 py-1.5 border-r border-white/10 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                    title="First Page"
+                  >
+                    <ChevronsLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    disabled={currentPage === 1 || loading}
                     onClick={() => changePage(Math.max(1, currentPage - 1))}
                     className="px-2.5 py-1.5 border-r border-white/10 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                    title="Previous Page"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
                   <button
                     disabled={currentPage === totalPages || loading}
                     onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
-                    className="px-2.5 py-1.5 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                    className="px-2.5 py-1.5 border-r border-white/10 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                    title="Next Page"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    disabled={currentPage === totalPages || loading}
+                    onClick={() => changePage(totalPages)}
+                    className="px-2.5 py-1.5 text-white hover:bg-neutral-900 disabled:text-white/20 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                    title="Last Page"
+                  >
+                    <ChevronsRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -1366,8 +1410,17 @@ function GataCatalogClientInner({
               <div className="flex items-center gap-2 flex-wrap justify-center">
                 <button
                   disabled={currentPage === 1 || loading}
+                  onClick={() => changePage(1)}
+                  className="w-9 h-9 border border-white/10 text-white flex items-center justify-center hover:bg-neutral-900 hover:border-white disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                  title="First Page"
+                >
+                  <ChevronsLeft className="w-4 h-4" />
+                </button>
+                <button
+                  disabled={currentPage === 1 || loading}
                   onClick={() => changePage(Math.max(1, currentPage - 1))}
                   className="w-9 h-9 border border-white/10 text-white flex items-center justify-center hover:bg-neutral-900 hover:border-white disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                  title="Previous Page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -1378,8 +1431,17 @@ function GataCatalogClientInner({
                   disabled={currentPage === totalPages || loading}
                   onClick={() => changePage(Math.min(totalPages, currentPage + 1))}
                   className="w-9 h-9 border border-white/10 text-white flex items-center justify-center hover:bg-neutral-900 hover:border-white disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                  title="Next Page"
                 >
                   <ChevronRight className="w-4 h-4" />
+                </button>
+                <button
+                  disabled={currentPage === totalPages || loading}
+                  onClick={() => changePage(totalPages)}
+                  className="w-9 h-9 border border-white/10 text-white flex items-center justify-center hover:bg-neutral-900 hover:border-white disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                  title="Last Page"
+                >
+                  <ChevronsRight className="w-4 h-4" />
                 </button>
               </div>
             </div>

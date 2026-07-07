@@ -10,7 +10,9 @@ import {
   gamesToTags,
   genres as genresTable,
   gamesToGenres,
-  priceSnapshots as priceSnapshotsTable
+  priceSnapshots as priceSnapshotsTable,
+  platforms as platformsTable,
+  gamesToPlatforms
 } from '../../../db/schema';
 import { enrichGamesWithRelations } from '../../../lib/gameQueries';
 import { count, isNull, isNotNull, desc, asc, and, or, eq, gt, gte, lt, lte, inArray, like, ne, sql } from 'drizzle-orm';
@@ -176,20 +178,49 @@ export const GET: APIRoute = async ({ request }) => {
       }
     }
 
-    // 4. Resolve Price Range Filter
-    let priceGameIds: string[] | null = null;
-    if (minPriceParam || maxPriceParam) {
-      const minPrice = parseFloat(minPriceParam || "0") || 0;
-      const maxPrice = parseFloat(maxPriceParam || "999999") || 999999;
-      const matchingPriceRows = await turso
-        .select({ gameId: priceSnapshotsTable.gameId })
-        .from(priceSnapshotsTable)
-        .where(and(
-          sql`${priceSnapshotsTable.dealPrice} >= ${minPrice}`,
-          sql`${priceSnapshotsTable.dealPrice} <= ${maxPrice}`
-        ));
-      priceGameIds = matchingPriceRows.map(r => r.gameId);
-      if (priceGameIds.length === 0) {
+    // 3.5. Resolve Platform Filter
+    let platformGameIds: string[] | null = null;
+    if (selectedSystems.length > 0) {
+      const platformConds = [];
+      for (const sys of selectedSystems) {
+        if (sys === "win") {
+          platformConds.push(
+            like(platformsTable.slug, "%win%"),
+            like(platformsTable.slug, "%pc%"),
+            like(platformsTable.slug, "%windows%")
+          );
+        } else if (sys === "mac") {
+          platformConds.push(
+            like(platformsTable.slug, "%mac%"),
+            like(platformsTable.slug, "%os-x%"),
+            like(platformsTable.slug, "%macos%")
+          );
+        } else if (sys === "linux") {
+          platformConds.push(
+            like(platformsTable.slug, "%linux%")
+          );
+        }
+      }
+      const matchedPlatforms = await turso
+        .select({ id: platformsTable.id })
+        .from(platformsTable)
+        .where(or(...platformConds));
+      
+      const platformIds = matchedPlatforms.map(p => p.id);
+      if (platformIds.length > 0) {
+        const platformGames = await turso
+          .select({ gameId: gamesToPlatforms.gameId })
+          .from(gamesToPlatforms)
+          .where(inArray(gamesToPlatforms.platformId, platformIds));
+        
+        platformGameIds = Array.from(new Set(platformGames.map(pg => pg.gameId)));
+        if (platformGameIds.length === 0) {
+          return new Response(
+            JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          );
+        }
+      } else {
         return new Response(
           JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
           { status: 200, headers: { "Content-Type": "application/json" } }
@@ -197,9 +228,9 @@ export const GET: APIRoute = async ({ request }) => {
       }
     }
 
-    // 5. Intersect Filter IDs
+    // 4. Intersect Filter IDs
     let filterGameIds: string[] | null = null;
-    const activeFilters = [creatorGameIds, tagGameIds, genreGameIds, priceGameIds].filter(f => f !== null) as string[][];
+    const activeFilters = [creatorGameIds, tagGameIds, genreGameIds, platformGameIds].filter(f => f !== null) as string[][];
     if (activeFilters.length > 0) {
       // Find intersection of all active filter lists
       filterGameIds = activeFilters.reduce((a, b) => a.filter(id => b.includes(id)));
@@ -268,6 +299,9 @@ export const GET: APIRoute = async ({ request }) => {
       // Filter out corrupt ratings
       conds.push(or(isNull(gamesTable.rating), lte(gamesTable.rating, 100)));
       
+      // Filter out hidden games
+      conds.push(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")));
+      
       const todayDate = new Date();
       if (sort === "upcoming") {
         conds.push(
@@ -290,6 +324,22 @@ export const GET: APIRoute = async ({ request }) => {
       }
       if (activeFilterIds !== null) {
         conds.push(inArray(gamesTable.id, activeFilterIds));
+      }
+      if (minPriceParam || maxPriceParam) {
+        const minPrice = parseFloat(minPriceParam || "0") || 0;
+        const maxPrice = parseFloat(maxPriceParam || "999999") || 999999;
+        conds.push(
+          inArray(
+            gamesTable.id,
+            turso
+              .select({ gameId: priceSnapshotsTable.gameId })
+              .from(priceSnapshotsTable)
+              .where(and(
+                sql`${priceSnapshotsTable.dealPrice} >= ${minPrice}`,
+                sql`${priceSnapshotsTable.dealPrice} <= ${maxPrice}`
+              ))
+          )
+        );
       }
       if (searchTerm) {
         const searchOrConds = [
@@ -316,31 +366,7 @@ export const GET: APIRoute = async ({ request }) => {
           )
         );
       }
-      if (selectedSystems.length > 0) {
-        const sysConds = selectedSystems.map(sys => {
-          if (sys === "win") {
-            return or(
-              like(gamesTable.platformNames, "%win%"),
-              like(gamesTable.platformNames, "%pc%"),
-              like(gamesTable.platformNames, "%windows%")
-            );
-          }
-          if (sys === "mac") {
-            return or(
-              like(gamesTable.platformNames, "%mac%"),
-              like(gamesTable.platformNames, "%os x%"),
-              like(gamesTable.platformNames, "%macos%")
-            );
-          }
-          if (sys === "linux") {
-            return like(gamesTable.platformNames, "%linux%");
-          }
-          return null;
-        }).filter(Boolean);
-        if (sysConds.length > 0) {
-          conds.push(or(...sysConds));
-        }
-      }
+
       if (selectedDecades.length > 0) {
         const decConds = selectedDecades.map(dec => {
           if (dec === "2020s") return and(gte(gamesTable.releaseDate, new Date("2020-01-01")), lt(gamesTable.releaseDate, new Date("2030-01-01")));

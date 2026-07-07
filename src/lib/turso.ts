@@ -6,19 +6,11 @@ import * as schema from "../db/schema";
 // The database is initialized lazily per-request via initTursoForRequest(),
 // which is called by the middleware before any route handler runs.
 
-const clientCache = new Map<string, any>();
-
 export function initTursoForRequest(env: any) {
   const dbUrl = env?.TURSO_DATABASE_URL;
   const dbToken = env?.TURSO_AUTH_TOKEN;
 
   if (!dbUrl) return;
-
-  const cacheKey = `${dbUrl}:${dbToken || ""}`;
-  if (clientCache.has(cacheKey)) {
-    (globalThis as any).tursoInstance = clientCache.get(cacheKey);
-    return;
-  }
 
   const client = createWebClient({
     url: dbUrl,
@@ -26,7 +18,6 @@ export function initTursoForRequest(env: any) {
   });
 
   const db = drizzle(client, { schema });
-  clientCache.set(cacheKey, db);
   (globalThis as any).tursoInstance = db;
 }
 

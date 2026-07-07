@@ -71,6 +71,11 @@ export const games = sqliteTable(
     index("game_popularity_idx").on(table.popularity),
     index("game_proton_tier_idx").on(table.protonDbTier),
     index("game_slug_idx").on(table.slug),
+    index("game_igdb_id_idx").on(table.igdbId),
+    index("game_updated_at_idx").on(table.updatedAt),
+    index("game_trending_popularity_idx").on(table.isTrending, table.popularity, table.id),
+    index("game_trending_rating_idx").on(table.isTrending, table.rating),
+    index("game_title_idx").on(table.title),
   ]
 );
 
@@ -175,12 +180,18 @@ export const gamesToPlatforms = sqliteTable(
 
 // --- Price Snapshot & Links ---
 
-export const purchaseLinks = sqliteTable("PurchaseLink", {
-  id: text("id").primaryKey(),
-  storeName: text("storeName").notNull(),
-  url: text("url").notNull(),
-  gameId: text("gameId").notNull(),
-});
+export const purchaseLinks = sqliteTable(
+  "PurchaseLink",
+  {
+    id: text("id").primaryKey(),
+    storeName: text("storeName").notNull(),
+    url: text("url").notNull(),
+    gameId: text("gameId").notNull(),
+  },
+  (table) => [
+    index("purchase_link_game_id_idx").on(table.gameId),
+  ]
+);
 
 export const priceSnapshots = sqliteTable(
   "PriceSnapshot",

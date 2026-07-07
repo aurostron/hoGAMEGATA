@@ -1,0 +1,593 @@
+After looking at your analytics, I actually think this is **good news**. I don't think Turso is the problem. I think **your queries are**. And the nice part is that this is fixable without changing your whole architecture.
+
+---
+
+# Executive Summary
+
+## Database
+
+* Database size: **~37,600 games**
+* Storage: **79 MB**
+* Reads used: **296M / 500M**
+* Real users: **<70**
+* Pages are statically served
+
+That combination should **never** produce 300M reads.
+
+This means your application is repeatedly asking SQLite to scan the entire Game table.
+
+---
+
+# Problem 1 (Most Critical)
+
+## Full Table Scans
+
+This query
+
+```sql
+select title, slug, developerNames
+from Game
+order by title
+```
+
+Rows Read
+
+```
+37,600
+```
+
+Count
+
+```
+311
+```
+
+Meaning
+
+```
+37,600 × 311
+
+≈ 11.7 million rows read
+```
+
+from this query alone.
+
+---
+
+Another query
+
+```
+Rows Read
+
+37,000
+
+Count
+
+22
+```
+
+That's another
+
+```
+814,000 rows
+```
+
+---
+
+Another
+
+```
+Rows Read
+
+37,000
+
+Count
+
+9
+```
+
+Another
+
+```
+333,000
+```
+
+---
+
+The homepage alone is scanning the ENTIRE GAME TABLE.
+
+That should never happen.
+
+---
+
+# Why?
+
+SQLite can only efficiently sort if there's an index.
+
+If you do
+
+```sql
+ORDER BY title
+```
+
+without an index,
+
+SQLite literally says
+
+> "I'll read every row."
+
+Every.
+
+Single.
+
+Time.
+
+---
+
+# Problem 2
+
+## Huge SELECTs
+
+This query selects nearly everything.
+
+```
+summary
+
+storyline
+
+screenshots
+
+taxonomy
+
+requirements
+
+ratings
+
+reddit
+
+website
+
+rawg
+
+steam
+
+proton
+
+...
+```
+
+Nearly 50 columns.
+
+Homepage cards need maybe
+
+```
+title
+
+slug
+
+cover
+
+rating
+
+releaseDate
+
+genres
+```
+
+That's it.
+
+Everything else is wasting IO and CPU.
+
+A game page can fetch the full object.
+
+Never the homepage.
+
+---
+
+# Problem 3
+
+## Sorting Everything
+
+I see
+
+```
+ORDER BY
+
+rating
+
+updatedAt
+
+title
+
+trending
+```
+
+Sorting is expensive.
+
+Sorting 37,000 games every request is very expensive.
+
+---
+
+Instead
+
+Precompute.
+
+For example
+
+Trending page.
+
+Every hour
+
+```
+SELECT top 100 games
+
+Save them
+```
+
+Homepage simply reads
+
+```
+100 rows
+```
+
+instead of
+
+```
+37,000
+```
+
+---
+
+# Problem 4
+
+## No LIMIT Early
+
+I suspect something like
+
+```ts
+const games = await db.select().from(Game)
+
+games.sort(...)
+games.slice(0,20)
+```
+
+If so...
+
+you're loading
+
+```
+37,000 games
+
+to show 20.
+```
+
+Huge waste.
+
+Instead
+
+```sql
+SELECT ...
+
+ORDER BY rating DESC
+
+LIMIT 20
+```
+
+The limit belongs inside SQL.
+
+---
+
+# Problem 5
+
+## Missing Indexes
+
+This is probably the biggest optimization you can make.
+
+You should index anything you sort or filter on regularly.
+
+For hoGAMEGATA, I'd recommend indexes on:
+
+### Search
+
+```
+title
+slug
+```
+
+---
+
+### Homepage
+
+```
+isTrending
+```
+
+---
+
+### Releases
+
+```
+releaseDate
+```
+
+---
+
+### Ratings
+
+```
+rating
+```
+
+---
+
+### Popular
+
+```
+popularity
+```
+
+---
+
+### Updates
+
+```
+updatedAt
+```
+
+---
+
+### Filters
+
+```
+category
+status
+```
+
+---
+
+### Common combinations
+
+For example:
+
+```
+releaseDate + rating
+```
+
+or
+
+```
+isTrending + rating
+```
+
+Composite indexes can make a dramatic difference if they match your common queries.
+
+---
+
+# What about Search?
+
+This is actually the interesting part.
+
+## Current search
+
+If you're doing
+
+```sql
+WHERE title LIKE "%silent%"
+```
+
+SQLite scans every row.
+
+37,000 reads.
+
+---
+
+If you search
+
+```
+horror
+```
+
+It checks
+
+```
+Game 1
+
+Game 2
+
+Game 3
+
+...
+
+Game 37,600
+```
+
+Every search.
+
+---
+
+## Better options
+
+### Option 1
+
+SQLite FTS5
+
+This is what SQLite was built for.
+
+Searches become
+
+```
+milliseconds
+```
+
+Even
+
+```
+200,000+
+
+games
+```
+
+is fine.
+
+---
+
+### Option 2
+
+Meilisearch
+
+Probably my recommendation later.
+
+Benefits
+
+* typo tolerance
+* instant search
+* fuzzy matching
+* ranking
+* autocomplete
+* filters
+
+It's amazing.
+
+---
+
+### Option 3
+
+Typesense
+
+Similar.
+
+Very fast.
+
+Free self-hosted.
+
+---
+
+For 37k games though...
+
+SQLite FTS5 is honestly enough.
+
+---
+
+# What happens if you add 100,000 games?
+
+Without optimization
+
+Current
+
+```
+37k scan
+```
+
+becomes
+
+```
+100k scan
+```
+
+Almost
+
+3×
+
+the reads.
+
+Your Turso quota will disappear extremely quickly.
+
+---
+
+# Architecture I'd move toward
+
+```
+Cloudflare
+
+↓
+
+Static Astro pages
+
+↓
+
+Cloudflare Worker
+
+↓
+
+D1 (or Turso)
+
+↓
+
+Search index (FTS5)
+
+↓
+
+Game DB
+```
+
+Homepage
+
+↓
+
+Precomputed
+
+Trending
+
+↓
+
+Cached
+
+Recommendations
+
+↓
+
+Cached
+
+Only
+
+Game page
+
+User dashboard
+
+Logs
+
+Search
+
+should touch the database.
+
+---
+
+# My recommendation for hoGAMEGATA v1.0
+
+I would prioritize these tasks in order:
+
+1. **Add proper indexes** on every field used for sorting and filtering.
+2. **Stop selecting every column**—create lightweight queries for lists and cards.
+3. **Audit every query** that reads ~37,000 rows and ensure it uses `LIMIT` and can leverage an index.
+4. **Introduce SQLite FTS5** for title search instead of `LIKE '%term%'`.
+5. **Cache expensive queries** (Trending, New Releases, Highest Rated, For You defaults) in memory or on Cloudflare for several minutes to an hour.
+6. **Run `EXPLAIN QUERY PLAN`** on your slowest queries. This will tell you exactly whether SQLite is using an index or performing a full table scan.
+7. **Consider migrating to Cloudflare D1** after the query optimizations. D1's generous free tier is attractive, but migrating before fixing inefficient queries will only postpone the same problem.
+
+## One thing I want to investigate further
+
+Those **311 executions** of:
+
+```sql
+SELECT title, slug, developerNames
+FROM Game
+ORDER BY title;
+```
+
+look suspicious. With fewer than 70 real users, that query shouldn't be running hundreds of times unless:
+
+* a crawler is repeatedly hitting an endpoint,
+* a React component is refetching unnecessarily,
+* an API route is being called during every page build or hydration,
+* or there's a polling loop.
+
+That query alone may explain a significant chunk of your reads.
+
+If you can share:
+
+* your `Game` table schema,
+* the Drizzle query for the homepage,
+* the search API route,
+* and the "For You" query,
+
+I can probably identify the exact source of the read explosion and suggest concrete code changes.

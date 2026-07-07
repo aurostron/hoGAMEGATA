@@ -1,0 +1,362 @@
+---
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { turso } from '../../../../lib/turso';
+import { games, developers, gamesToDevelopers } from '../../../../db/schema';
+import { eq } from 'drizzle-orm';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+
+let game: any = null;
+let currentDev: any = null;
+
+try {
+  // 1. Fetch game details
+  const [gameResult] = await turso
+    .select()
+    .from(games)
+    .where(eq(games.id, id!))
+    .limit(1);
+  game = gameResult;
+
+  if (game) {
+    // 2. Fetch linked developer
+    const [devResult] = await turso
+      .select({ id: developers.id, name: developers.name })
+      .from(gamesToDevelopers)
+      .innerJoin(developers, eq(gamesToDevelopers.developerId, developers.id))
+      .where(eq(gamesToDevelopers.gameId, id!))
+      .limit(1);
+    currentDev = devResult || null;
+  }
+} catch (err) {
+  console.error("Failed to query edit game page details:", err);
+}
+
+if (!game) {
+  return Astro.redirect('/404');
+}
+---
+
+<AdminLayout title={`Edit "${game.title}"`} activeTab="games">
+  <!-- Heading Section -->
+  <div class="flex items-center justify-between pb-4 border-b border-[#1a1a24]">
+    <div class="flex items-center space-x-4">
+      <a href="/admin/games" class="text-xs font-mono border border-[#1a1a24] hover:border-white px-3 py-1.5 rounded transition duration-200">
+        &larr; Back to Catalog
+      </a>
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-white uppercase font-heading">
+          Edit Game
+        </h1>
+        <p class="text-xs text-gray-500 font-mono mt-0.5">{game.id}</p>
+      </div>
+    </div>
+    
+    <span class={`text-[10px] uppercase font-bold font-mono px-2.5 py-1 rounded border ${
+      game.status === 'released'
+        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+        : game.status === 'upcoming'
+        ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+        : 'bg-red-500/10 text-red-400 border-red-500/20'
+    }`}>
+      {game.status || 'unknown'}
+    </span>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+    <!-- Left Column: Edit Metadata Form -->
+    <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg lg:col-span-2 space-y-6">
+      <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+        <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+        Game Specifications
+      </h2>
+
+      <form id="edit-game-form" class="space-y-4">
+        <!-- Game Title -->
+        <div>
+          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+            Game Title
+          </label>
+          <input
+            type="text"
+            id="game-title"
+            value={game.title}
+            required
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150"
+          />
+        </div>
+
+        <!-- Game Status -->
+        <div>
+          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+            Storefront Status
+          </label>
+          <select
+            id="game-status"
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150 font-mono text-xs uppercase"
+          >
+            <option value="released" selected={game.status === 'released'}>Released</option>
+            <option value="upcoming" selected={game.status === 'upcoming'}>Upcoming</option>
+            <option value="hidden" selected={game.status === 'hidden'}>Hidden / Removed</option>
+          </select>
+        </div>
+
+        <!-- Developer Autocomplete Field -->
+        <div class="relative">
+          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+            Developer / Creator
+          </label>
+          <input
+            type="text"
+            id="dev-search-input"
+            value={currentDev?.name || ''}
+            placeholder="Type developer name to link..."
+            autocomplete="off"
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150"
+          />
+          <input
+            type="hidden"
+            id="developer-id-val"
+            value={currentDev?.id || ''}
+          />
+          
+          <!-- Dropdown suggestions -->
+          <div
+            id="dev-suggestions"
+            class="hidden absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-[#0c0c12] border border-[#1a1a24] rounded-md shadow-lg z-50 divide-y divide-[#1a1a24]"
+          ></div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4 flex items-center justify-between">
+          <span id="form-feedback" class="text-xs font-mono text-gray-500"></span>
+          <button
+            type="submit"
+            class="font-mono text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-[#ff2a2a] hover:text-white border border-white hover:border-[#ff2a2a] px-6 py-2.5 transition duration-150 rounded cursor-pointer"
+          >
+            Save Specifications
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: Developer Global Actions & Stats -->
+    <div class="space-y-6">
+      <!-- Rename Developer Globally Card -->
+      <div id="rename-dev-card" class={`bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4 ${!currentDev ? 'opacity-40 pointer-events-none' : ''}`}>
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-amber-500 inline-block"></span>
+          Global Developer Rename
+        </h2>
+        <p class="text-xs text-gray-500 leading-relaxed font-medium">
+          Renames the linked creator globally. Any changes here will automatically update this developer's name on all associated game pages.
+        </p>
+
+        <div class="space-y-3">
+          <input
+            type="text"
+            id="dev-rename-input"
+            value={currentDev?.name || ''}
+            placeholder="New developer name..."
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded px-3 py-2 text-xs text-white focus:outline-none transition duration-150"
+          />
+          <button
+            id="dev-rename-submit-btn"
+            data-dev-id={currentDev?.id || ''}
+            class="w-full font-mono text-xs font-bold uppercase tracking-wider border border-[#1a1a24] hover:border-amber-500 hover:bg-amber-500/10 py-2 rounded transition duration-200 cursor-pointer text-white/90"
+          >
+            Rename Globally
+          </button>
+          <span id="rename-feedback" class="block text-[10px] font-mono text-center text-gray-500"></span>
+        </div>
+      </div>
+
+      <!-- Quick Tips -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+          Quick Operations Tips
+        </h2>
+        <ul class="text-xs text-gray-400 space-y-2 list-disc pl-4 leading-relaxed font-medium">
+          <li>Type in the developer input box to search. If a developer doesn't exist, hit Tab/Enter to keep your entry, and saving will automatically register them.</li>
+          <li>To hide a game page from the storefront, switch the status dropdown to <strong>Hidden</strong>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  // Elements
+  const editForm = document.getElementById('edit-game-form') as HTMLFormElement;
+  const gameTitleInput = document.getElementById('game-title') as HTMLInputElement;
+  const gameStatusSelect = document.getElementById('game-status') as HTMLSelectElement;
+  const devSearchInput = document.getElementById('dev-search-input') as HTMLInputElement;
+  const devIdHidden = document.getElementById('developer-id-val') as HTMLInputElement;
+  const suggestionsBox = document.getElementById('dev-suggestions') as HTMLDivElement;
+  const formFeedback = document.getElementById('form-feedback') as HTMLSpanElement;
+
+  const renameDevCard = document.getElementById('rename-dev-card') as HTMLDivElement;
+  const devRenameInput = document.getElementById('dev-rename-input') as HTMLInputElement;
+  const devRenameSubmitBtn = document.getElementById('dev-rename-submit-btn') as HTMLButtonElement;
+  const renameFeedback = document.getElementById('rename-feedback') as HTMLSpanElement;
+
+  // Autocomplete variables
+  let searchTimeout: any = null;
+
+  // 1. Developer Autocomplete Handler
+  devSearchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    const query = devSearchInput.value.trim();
+
+    if (!query) {
+      suggestionsBox.innerHTML = '';
+      suggestionsBox.classList.add('hidden');
+      devIdHidden.value = '';
+      return;
+    }
+
+    searchTimeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/admin/developers?search=${encodeURIComponent(query)}`);
+        const data = await response.json();
+
+        if (response.ok && data.developers) {
+          suggestionsBox.innerHTML = '';
+          if (data.developers.length > 0) {
+            suggestionsBox.classList.remove('hidden');
+            data.developers.forEach((dev: any) => {
+              const item = document.createElement('div');
+              item.className = 'px-4 py-2 text-xs text-white hover:bg-[#ff2a2a]/20 cursor-pointer font-sans transition duration-100';
+              item.textContent = dev.name;
+              item.addEventListener('click', () => {
+                devSearchInput.value = dev.name;
+                devIdHidden.value = dev.id;
+                suggestionsBox.classList.add('hidden');
+                
+                // Activate rename card
+                renameDevCard.classList.remove('opacity-40', 'pointer-events-none');
+                devRenameInput.value = dev.name;
+                devRenameSubmitBtn.setAttribute('data-dev-id', dev.id);
+              });
+              suggestionsBox.appendChild(item);
+            });
+          } else {
+            suggestionsBox.classList.add('hidden');
+          }
+        }
+      } catch (err) {
+        console.error('Failed to search developers:', err);
+      }
+    }, 250);
+  });
+
+  // Close suggestions box on click outside
+  document.addEventListener('click', (e) => {
+    if (e.target !== devSearchInput && e.target !== suggestionsBox) {
+      suggestionsBox.classList.add('hidden');
+    }
+  });
+
+  // 2. Edit Game Specifications Handler
+  editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formFeedback.textContent = 'Saving changes...';
+    formFeedback.style.color = '#a3a3a3';
+
+    const title = gameTitleInput.value.trim();
+    const status = gameStatusSelect.value;
+    let developerId = devIdHidden.value;
+    const developerName = devSearchInput.value.trim();
+
+    // If developer name was entered but no ID selected (meaning user entered a new creator)
+    if (developerName && !developerId) {
+      formFeedback.textContent = 'Registering new developer...';
+      try {
+        const response = await fetch('/api/admin/developers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: developerName })
+        });
+        const data = await response.json();
+        if (response.ok && data.developer) {
+          developerId = data.developer.id;
+          devIdHidden.value = developerId;
+        } else {
+          throw new Error('Failed to register developer');
+        }
+      } catch (err) {
+        formFeedback.textContent = 'Failed to register developer.';
+        formFeedback.style.color = '#ef4444';
+        return;
+      }
+    }
+
+    try {
+      const pathname = window.location.pathname;
+      const gameId = pathname.substring(pathname.lastIndexOf('/') + 1);
+
+      const response = await fetch(`/api/admin/games/${gameId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title,
+          status: status,
+          developerId: developerName ? developerId : null
+        })
+      });
+
+      if (response.ok) {
+        formFeedback.textContent = 'Changes saved successfully!';
+        formFeedback.style.color = '#22c55e';
+        setTimeout(() => {
+          formFeedback.textContent = '';
+        }, 3000);
+      } else {
+        throw new Error('Failed to save specifications');
+      }
+    } catch (err) {
+      formFeedback.textContent = 'Failed to save changes.';
+      formFeedback.style.color = '#ef4444';
+    }
+  });
+
+  // 3. Rename Developer Globally Handler
+  devRenameSubmitBtn.addEventListener('click', async () => {
+    const devId = devRenameSubmitBtn.getAttribute('data-dev-id');
+    const newName = devRenameInput.value.trim();
+
+    if (!devId || !newName) return;
+
+    renameFeedback.textContent = 'Renaming globally...';
+    renameFeedback.style.color = '#a3a3a3';
+    devRenameSubmitBtn.disabled = true;
+
+    try {
+      const response = await fetch(`/api/admin/developers/${devId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      });
+
+      if (response.ok) {
+        renameFeedback.textContent = 'Developer renamed globally!';
+        renameFeedback.style.color = '#22c55e';
+        devSearchInput.value = newName; // Update main form field value
+        
+        setTimeout(() => {
+          renameFeedback.textContent = '';
+        }, 3000);
+      } else {
+        throw new Error('Global rename failed');
+      }
+    } catch (err) {
+      renameFeedback.textContent = 'Failed to rename developer.';
+      renameFeedback.style.color = '#ef4444';
+    } finally {
+      devRenameSubmitBtn.disabled = false;
+    }
+  });
+</script>

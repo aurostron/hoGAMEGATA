@@ -1,0 +1,306 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { turso } from '../../lib/turso';
+import { games } from '../../db/schema';
+import { eq, like, and, sql, count } from 'drizzle-orm';
+
+export const prerender = false;
+
+const search = Astro.url.searchParams.get("search") || "";
+const status = Astro.url.searchParams.get("status") || "";
+const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1") || 1);
+const limit = 25;
+const offset = (page - 1) * limit;
+
+let whereConditions: any[] = [];
+if (search.trim()) {
+  whereConditions.push(like(games.title, `%${search.trim()}%`));
+}
+if (status) {
+  whereConditions.push(eq(games.status, status));
+}
+
+const queryCondition = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+
+let totalGames = 0;
+let gameList: any[] = [];
+
+try {
+  // 1. Get total count
+  const [totalCountResult] = await turso
+    .select({ count: count() })
+    .from(games)
+    .where(queryCondition);
+  totalGames = totalCountResult?.count || 0;
+
+  // 2. Fetch paginated list (only selecting columns we need for UI to save DB reads)
+  gameList = await turso
+    .select({
+      id: games.id,
+      title: games.title,
+      slug: games.slug,
+      status: games.status,
+      releaseDate: games.releaseDate,
+      developerNames: games.developerNames
+    })
+    .from(games)
+    .where(queryCondition)
+    .orderBy(games.title)
+    .limit(limit)
+    .offset(offset);
+} catch (err) {
+  console.error("Failed to load admin games directory:", err);
+}
+
+const totalPages = Math.ceil(totalGames / limit);
+
+// Build current query params to preserve filters in pagination
+const buildUrl = (targetPage: number) => {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (status) params.set("status", status);
+  params.set("page", targetPage.toString());
+  return `/admin/games?${params.toString()}`;
+};
+---
+
+<AdminLayout title="Game Catalog" activeTab="games">
+  <!-- Heading Section -->
+  <div class="flex items-center justify-between pb-4 border-b border-[#1a1a24]">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-white uppercase font-heading">
+        Game Catalog
+      </h1>
+      <p class="text-sm text-gray-400 mt-1">Manage the {totalGames.toLocaleString()} horror games currently indexed.</p>
+    </div>
+    <a href="/admin/games/new" class="text-xs font-mono font-bold uppercase tracking-wider border border-[#ff2a2a] text-[#ff2a2a] hover:bg-[#ff2a2a]/10 px-4 py-2 rounded transition duration-200">
+      Add Game
+    </a>
+  </div>
+
+  <!-- Search and Filters Bar -->
+  <form method="GET" action="/admin/games" class="bg-[#07070a] border border-[#1a1a24] p-4 rounded-lg flex flex-col md:flex-row gap-4 items-center justify-between">
+    <div class="w-full md:flex-1 flex flex-col md:flex-row gap-3">
+      <!-- Search Input -->
+      <div class="relative flex-1">
+        <input
+          type="text"
+          name="search"
+          value={search}
+          placeholder="Search games by title..."
+          class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-sm text-white focus:outline-none transition duration-150"
+        />
+      </div>
+
+      <!-- Status Filter -->
+      <div class="w-full md:w-48">
+        <select
+          name="status"
+          class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-sm text-white focus:outline-none transition duration-150 font-mono text-xs uppercase"
+        >
+          <option value="">All Statuses</option>
+          <option value="released" selected={status === 'released'}>Released</option>
+          <option value="upcoming" selected={status === 'upcoming'}>Upcoming</option>
+          <option value="hidden" selected={status === 'hidden'}>Hidden / Removed</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="flex gap-2 w-full md:w-auto">
+      <button
+        type="submit"
+        class="w-full md:w-auto font-mono text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-[#ff2a2a] hover:text-white border border-white hover:border-[#ff2a2a] px-5 py-2 transition duration-150 rounded cursor-pointer"
+      >
+        Filter
+      </button>
+      {(search || status) && (
+        <a
+          href="/admin/games"
+          class="w-full md:w-auto text-center font-mono text-xs font-bold uppercase tracking-wider border border-[#1a1a24] hover:bg-[#121217] px-4 py-2 transition duration-150 rounded"
+        >
+          Reset
+        </a>
+      )}
+    </div>
+  </form>
+
+  <!-- Games Data Table -->
+  <div class="bg-[#07070a] border border-[#1a1a24] rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-[#0c0c12] border-b border-[#1a1a24] font-mono text-[10px] text-gray-500 uppercase tracking-widest font-bold">
+            <th class="py-4 px-6">Game Info</th>
+            <th class="py-4 px-6">Developer</th>
+            <th class="py-4 px-6">Status</th>
+            <th class="py-4 px-6">Release Date</th>
+            <th class="py-4 px-6 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#1a1a24]/50">
+          {gameList.length === 0 ? (
+            <tr>
+              <td colspan="5" class="py-12 px-6 text-center text-sm text-gray-500 font-mono">
+                [ No catalog games found matching the query ]
+              </td>
+            </tr>
+          ) : (
+            gameList.map((game) => (
+              <tr class="hover:bg-[#121217]/30 transition duration-100">
+                <!-- Title & Slug -->
+                <td class="py-4 px-6">
+                  <div class="font-bold text-white text-sm hover:text-[#ff2a2a] transition duration-150">
+                    <a href={`/game/${game.slug}`} target="_blank">{game.title}</a>
+                  </div>
+                  <div class="text-[10px] font-mono text-gray-500 mt-0.5">{game.slug}</div>
+                </td>
+
+                <!-- Developer Cached Column -->
+                <td class="py-4 px-6 text-xs text-gray-300 font-medium">
+                  {game.developerNames || <span class="text-gray-600 italic">None</span>}
+                </td>
+
+                <!-- Status Badge -->
+                <td class="py-4 px-6">
+                  <span
+                    id={`badge-${game.id}`}
+                    class={`text-[10px] uppercase font-bold font-mono px-2.5 py-0.5 rounded border ${
+                      game.status === 'released'
+                        ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                        : game.status === 'upcoming'
+                        ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                        : 'bg-red-500/10 text-red-400 border-red-500/20'
+                    }`}
+                  >
+                    {game.status || 'unknown'}
+                  </span>
+                </td>
+
+                <!-- Release Date -->
+                <td class="py-4 px-6 text-xs text-gray-400 font-mono">
+                  {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'N/A'}
+                </td>
+
+                <!-- Action buttons -->
+                <td class="py-4 px-6 text-right space-x-2 text-xs font-mono">
+                  <a
+                    href={`/admin/games/edit/${game.id}`}
+                    class="border border-[#1a1a24] hover:border-white px-2.5 py-1 rounded transition duration-200"
+                  >
+                    Edit
+                  </a>
+                  <button
+                    data-id={game.id}
+                    data-title={game.title}
+                    data-status={game.status}
+                    class="toggle-visibility-btn border border-[#1a1a24] hover:border-red-500/50 hover:bg-red-500/10 px-2.5 py-1 rounded transition duration-200 cursor-pointer text-gray-400 hover:text-red-400"
+                  >
+                    {game.status === 'hidden' ? 'Restore' : 'Hide'}
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    {totalPages > 1 && (
+      <div class="px-6 py-4 bg-[#0c0c12] border-t border-[#1a1a24] flex items-center justify-between">
+        <span class="text-xs text-gray-500 font-mono">
+          Page {page} of {totalPages} ({totalGames.toLocaleString()} games)
+        </span>
+        <div class="flex space-x-2 text-xs font-mono">
+          {page > 1 ? (
+            <a
+              href={buildUrl(page - 1)}
+              class="border border-[#1a1a24] hover:border-white px-3 py-1.5 rounded transition duration-200"
+            >
+              Prev
+            </a>
+          ) : (
+            <span class="border border-[#1a1a24]/30 text-gray-700 px-3 py-1.5 rounded select-none cursor-not-allowed">
+              Prev
+            </span>
+          )}
+          
+          {page < totalPages ? (
+            <a
+              href={buildUrl(page + 1)}
+              class="border border-[#1a1a24] hover:border-white px-3 py-1.5 rounded transition duration-200"
+            >
+              Next
+            </a>
+          ) : (
+            <span class="border border-[#1a1a24]/30 text-gray-700 px-3 py-1.5 rounded select-none cursor-not-allowed">
+              Next
+            </span>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+</AdminLayout>
+
+<script>
+  const toggleButtons = document.querySelectorAll('.toggle-visibility-btn');
+
+  toggleButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      const gameId = btn.getAttribute('data-id');
+      const title = btn.getAttribute('data-title');
+      const currentStatus = btn.getAttribute('data-status');
+
+      if (!gameId) return;
+
+      const targetStatus = currentStatus === 'hidden' ? 'released' : 'hidden';
+      const actionText = targetStatus === 'hidden' ? 'hide' : 'restore';
+
+      if (!confirm(`Are you sure you want to ${actionText} "${title}"?`)) {
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Updating...';
+
+      try {
+        const response = await fetch(`/api/admin/games/${gameId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title: title,
+            status: targetStatus
+          })
+        });
+
+        if (response.ok) {
+          // 1. Update button dataset and label
+          btn.setAttribute('data-status', targetStatus);
+          btn.textContent = targetStatus === 'hidden' ? 'Restore' : 'Hide';
+          
+          // 2. Update status badge styling and text
+          const badge = document.getElementById(`badge-${gameId}`);
+          if (badge) {
+            badge.textContent = targetStatus;
+            badge.className = targetStatus === 'hidden'
+              ? 'text-[10px] uppercase font-bold font-mono px-2.5 py-0.5 rounded border bg-red-500/10 text-red-400 border-red-500/20'
+              : 'text-[10px] uppercase font-bold font-mono px-2.5 py-0.5 rounded border bg-green-500/10 text-green-400 border-green-500/20';
+          }
+        } else {
+          throw new Error('Update failed');
+        }
+      } catch (err) {
+        console.error('Failed to toggle game status:', err);
+        alert('Failed to update game status.');
+        btn.textContent = currentStatus === 'hidden' ? 'Restore' : 'Hide';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+</script>

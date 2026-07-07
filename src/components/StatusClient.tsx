@@ -187,14 +187,14 @@ export default function StatusClient() {
         <div className="flex justify-end items-center gap-3">
           <a
             href="/"
-            className="flex items-center gap-2 text-xs font-semibold text-white/60 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all duration-150 border border-white/10 px-4 py-2.5 rounded-lg select-none decoration-none"
+            className="group flex items-center gap-2 text-xs font-semibold text-white/60 hover:text-white bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] border border-white/10 hover:border-white/20 px-5 py-2.5 rounded-full select-none decoration-none active:scale-[0.97]"
           >
             ← Return to search
           </a>
           <button
             onClick={() => fetchStatus(true)}
             disabled={scanning || loading}
-            className="flex items-center gap-2 text-xs font-semibold text-white/80 bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all duration-150 border border-white/10 px-4 py-2.5 rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
+            className="flex items-center gap-2 text-xs font-semibold text-white/80 hover:text-white bg-white/5 hover:bg-white/10 active:bg-white/15 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] border border-white/10 hover:border-white/20 px-5 py-2.5 rounded-full cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.97]"
           >
             {scanning ? "Loading..." : "Refresh"}
           </button>

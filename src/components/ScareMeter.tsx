@@ -54,7 +54,7 @@ export default function ScareMeter({ scareRating, scareProfile, reviewCount }: S
             <span className="group relative cursor-help">
               <Info className="w-3 h-3 text-white/40 group-hover:text-white transition-colors" />
               <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max bg-zinc-900 text-white font-mono text-[9px] font-semibold uppercase tracking-wider px-2 py-1 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 rounded border border-white/10">
-                AI analyzed {reviewCount} top Steam Reviews
+                Based on {reviewCount} top Steam Reviews
               </span>
             </span>
           )}

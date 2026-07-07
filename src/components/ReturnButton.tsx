@@ -18,10 +18,10 @@ export default function ReturnButton() {
   return (
     <button
       onClick={handleReturn}
-      className="group flex items-center gap-2 font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-3 py-1.5 rounded-none font-bold cursor-pointer"
+      className="group flex items-center gap-2 font-mono text-xs text-white/80 hover:text-white bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/20 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] px-5 py-2.5 rounded-full font-bold uppercase tracking-wider active:scale-[0.97] cursor-pointer select-none"
     >
-      <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-      <span>[ Return to Search ]</span>
+      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]" />
+      <span>Return to Search</span>
     </button>
   );
 }

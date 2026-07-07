@@ -10,7 +10,7 @@ import {
   genres as genresTable,
   gamesToGenres
 } from '../../db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and, or, isNull, ne } from 'drizzle-orm';
 import { getCloudinaryFetchUrl, getHighResCoverUrl, stripHtml } from '../../lib/utils';
 import PlatformLogos from '../../components/PlatformLogos';
 import { Star, Calendar, Clock, ArrowRight } from "lucide-react";
@@ -60,7 +60,12 @@ if (gameIds.length > 0) {
   const fetchedGames = await turso
     .select()
     .from(gamesTable)
-    .where(inArray(gamesTable.id, gameIds))
+    .where(
+      and(
+        inArray(gamesTable.id, gameIds),
+        or(isNull(gamesTable.status), ne(gamesTable.status, "hidden"))
+      )
+    )
     .orderBy(gamesTable.releaseDate); // Chronological order
 
   // Fetch platforms mapping

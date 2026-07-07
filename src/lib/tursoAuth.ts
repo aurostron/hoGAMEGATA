@@ -6,21 +6,11 @@ import * as authSchema from "../db/auth-schema";
 // The auth database is initialized lazily per-request via initTursoAuthForRequest(),
 // which is called by the middleware before any route handler runs.
 
-const clientCache = new Map<string, any>();
-
 export function initTursoAuthForRequest(env: any) {
   const dbUrl = env?.AUTH_DATABASE_URL;
   const dbToken = env?.AUTH_DATABASE_TOKEN;
 
   if (!dbUrl) return;
-
-  const cacheKey = `${dbUrl}:${dbToken || ""}`;
-  if (clientCache.has(cacheKey)) {
-    (globalThis as any).tursoAuthInstance = clientCache.get(cacheKey);
-    return;
-  }
-
-  console.log(`[initTursoAuthForRequest] Creating new client: URL=${dbUrl}, TOKEN=${dbToken ? "set" : "not set"}`);
 
   const client = createWebClient({
     url: dbUrl,
@@ -28,7 +18,6 @@ export function initTursoAuthForRequest(env: any) {
   });
 
   const db = drizzle(client, { schema: authSchema });
-  clientCache.set(cacheKey, db);
   (globalThis as any).tursoAuthInstance = db;
 }
 

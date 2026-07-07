@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { turso } from '../lib/turso';
 import { games as gamesTable } from '../db/schema';
-import { count } from 'drizzle-orm';
+import { count, or, isNull, ne } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -9,7 +9,8 @@ export const GET: APIRoute = async ({ redirect }) => {
   try {
     const [countRow] = await turso
       .select({ total: count() })
-      .from(gamesTable);
+      .from(gamesTable)
+      .where(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")));
 
     const totalGames = countRow?.total || 0;
     if (totalGames === 0) {
@@ -20,6 +21,7 @@ export const GET: APIRoute = async ({ redirect }) => {
     const [randomGame] = await turso
       .select({ slug: gamesTable.slug })
       .from(gamesTable)
+      .where(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")))
       .limit(1)
       .offset(randomIndex);
 

@@ -1,4 +1,6 @@
 ---
+export const prerender = true;
+
 import Layout from '../layouts/Layout.astro';
 import GameCatalogClient from '../components/GameCatalogClient';
 import { turso } from '../lib/turso';
@@ -11,11 +13,6 @@ import {
 import { count, isNull, isNotNull, desc, and, or, eq, ne, gt, lt, lte, inArray } from 'drizzle-orm';
 import { enrichGamesWithRelations } from '../lib/gameQueries';
 import { getContentMap } from '../lib/siteContent';
-
-Astro.response.headers.set(
-  'Cache-Control',
-  'public, max-age=10, s-maxage=30, stale-while-revalidate=60'
-);
 
 let stats: { games: number; developers: number; tags: number; deals: number } | null = null;
 let heroGames: any[] = [];
@@ -35,7 +32,7 @@ try {
     [{ count: tagsCount }],
     [{ count: dealsCount }],
   ] = await Promise.all([
-    turso.select({ count: count() }).from(games),
+    turso.select({ count: count() }).from(games).where(or(isNull(games.status), ne(games.status, "hidden"))),
     turso.select({ count: count() }).from(developers),
     turso.select({ count: count() }).from(tags),
     turso.select({ count: count() }).from(priceSnapshots),
@@ -48,6 +45,32 @@ try {
     deals: dealsCount,
   };
 
+  const baseSelect = {
+    id: games.id,
+    title: games.title,
+    slug: games.slug,
+    status: games.status,
+    coverUrl: games.coverUrl,
+    isTrending: games.isTrending,
+    rating: games.rating,
+    popularity: games.popularity,
+    category: games.category,
+    releaseDate: games.releaseDate,
+    developerNames: games.developerNames,
+    platformNames: games.platformNames,
+    rawgEnriched: games.rawgEnriched,
+    esrbRating: games.esrbRating,
+    pegiRating: games.pegiRating,
+    trailerUrl: games.trailerUrl,
+    createdAt: games.createdAt,
+    updatedAt: games.updatedAt,
+  };
+
+  const selectWithScreenshots = {
+    ...baseSelect,
+    screenshots: games.screenshots,
+  };
+
   // 2. Fetch raw game lists in parallel from Turso
   const [
     heroRaw,
@@ -57,52 +80,61 @@ try {
     topRatedRaw
   ] = await Promise.all([
     turso
-      .select()
+      .select(selectWithScreenshots)
       .from(games)
       .where(
         and(
           isNotNull(games.screenshots),
           or(isNull(games.status), ne(games.status, "upcoming")),
-          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date())),
+          or(isNull(games.status), ne(games.status, "hidden"))
         )
       )
       .orderBy(desc(games.isTrending), desc(games.rating))
       .limit(15),
     turso
-      .select()
+      .select(selectWithScreenshots)
       .from(games)
       .where(
         and(
           or(isNull(games.status), ne(games.status, "upcoming")),
-          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date())),
+          or(isNull(games.status), ne(games.status, "hidden"))
         )
       )
       .orderBy(desc(games.releaseDate), desc(games.id))
       .limit(30),
     turso
-      .select()
+      .select(selectWithScreenshots)
       .from(games)
       .where(
         and(
           or(isNull(games.status), ne(games.status, "upcoming")),
-          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date())),
+          or(isNull(games.status), ne(games.status, "hidden"))
         )
       )
       .orderBy(desc(games.isTrending), desc(games.popularity), desc(games.id))
       .limit(30),
     turso
-      .select()
+      .select(baseSelect)
       .from(games)
-      .where(or(eq(games.status, "upcoming"), gt(games.releaseDate, new Date())))
+      .where(
+        and(
+          or(eq(games.status, "upcoming"), gt(games.releaseDate, new Date())),
+          or(isNull(games.status), ne(games.status, "hidden"))
+        )
+      )
       .orderBy(games.releaseDate)
       .limit(8),
     turso
-      .select()
+      .select(baseSelect)
       .from(games)
       .where(
         and(
           or(isNull(games.status), ne(games.status, "upcoming")),
-          or(isNull(games.releaseDate), lte(games.releaseDate, new Date()))
+          or(isNull(games.releaseDate), lte(games.releaseDate, new Date())),
+          or(isNull(games.status), ne(games.status, "hidden"))
         )
       )
       .orderBy(desc(games.rating), desc(games.id))
@@ -174,7 +206,7 @@ if (latestGames.length > 0) {
 ---
 
 <Layout
-  title={content.hero_title ? `${content.hero_title} | Horror Game Discovery Database` : "hoGAMEGATA | Horror Game Discovery Database"}
+  title={content.hero_title ? `${content.hero_title} | Horror Games Mega Metadata` : "hoGAMEGATA | Horror Games Mega Metadata"}
   description={content.hero_subtitle}
   withSearch={false}
   statsGames={stats?.games}

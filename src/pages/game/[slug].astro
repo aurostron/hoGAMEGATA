@@ -46,6 +46,15 @@ if (!rawGame) {
   return Astro.redirect('/404');
 }
 
+if (rawGame.status === "hidden") {
+  const { getServerUser, isAdminUser } = await import('../../lib/serverAuth');
+  const user = await getServerUser(Astro.request, Astro.cookies);
+  const isAdmin = user && isAdminUser(user.email);
+  if (!isAdmin) {
+    return Astro.redirect('/404');
+  }
+}
+
 // 2. Fetch game relations from Turso in parallel
 const [
   devsData,
@@ -133,7 +142,7 @@ const steamAppId = steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null;
 
 const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
 const isItchGame = game.slug.startsWith("itch-");
-const hasGogBadge = purchaseLinks?.some((link: any) => link.storeName.toLowerCase() === "gog") || game.slug.startsWith("gog-");
+const hasGogBadge = purchaseLinks?.some((link: any) => link.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
 
 const tags = (game.tags as any[]) || [];
 
