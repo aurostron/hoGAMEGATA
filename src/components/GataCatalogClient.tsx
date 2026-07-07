@@ -155,7 +155,6 @@ const SORT_OPTIONS = [
   { label: "Release Date (Latest)", value: "latest" },
   { label: "Release Date (Upcoming)", value: "upcoming" },
   { label: "Rating (Top Rated)", value: "top-rated" },
-  { label: "Title (A-Z)", value: "title" },
   { label: "Price (Low to High)", value: "price-asc" },
   { label: "Price (High to Low)", value: "price-desc" },
 ];
@@ -256,7 +255,6 @@ function GataCatalogClientInner({
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [priceSlider, setPriceSlider] = useState(60);
-  const [titleLimit, setTitleLimit] = useState(500);
   
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedSystems, setSelectedSystems] = useState<string[]>([]);
@@ -333,17 +331,11 @@ function GataCatalogClientInner({
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // When search changes, reset to page 1 and titleLimit to 500
+  // When search changes, reset to page 1
   useEffect(() => {
     setCurrentPage(1);
     setCorrectedQuery(null);
-    setTitleLimit(500);
   }, [debouncedSearch]);
-
-  // Reset title limit when sorting changes
-  useEffect(() => {
-    setTitleLimit(500);
-  }, [sortBy]);
 
   // Sync state to URL and Fetch Games
   useEffect(() => {
@@ -367,8 +359,8 @@ function GataCatalogClientInner({
         if (selectedFeatures.length > 0) queryParams.set("features", selectedFeatures.join(","));
 
         // Pagination
-        const limitVal = sortBy === "title" ? titleLimit : gamesPerPage;
-        const offset = sortBy === "title" ? 0 : (currentPage - 1) * gamesPerPage;
+        const limitVal = gamesPerPage;
+        const offset = (currentPage - 1) * gamesPerPage;
         queryParams.set("offset", offset.toString());
         queryParams.set("limit", limitVal.toString());
 
@@ -420,8 +412,7 @@ function GataCatalogClientInner({
     selectedGenres,
     selectedSystems,
     selectedDecades,
-    selectedFeatures,
-    titleLimit
+    selectedFeatures
   ]);
 
   // Category cards click handlers
@@ -1059,89 +1050,7 @@ function GataCatalogClientInner({
             </div>
           ) : (
             <div className="relative">
-              {sortBy === "title" ? (
-                /* Simple text list for A-Z catalog sorting (no images) */
-                <div className="max-w-3xl mx-auto flex flex-col gap-1 w-full">
-                  {(() => {
-                    let lastLetter = "";
-                    const sortedGames = [...games].sort((a, b) => {
-                      const titleA = cleanTitle(a.title || "").toLowerCase();
-                      const titleB = cleanTitle(b.title || "").toLowerCase();
-                      return titleA.localeCompare(titleB);
-                    });
-                    
-                    return sortedGames.map((game) => {
-                      const finalDeal = cheapestPriceSnapshot(game);
-                      
-                      // Calculate starting letter
-                      const title = cleanTitle(game.title || "");
-                      let currentLetter = title.trim().charAt(0).toUpperCase();
-                      if (!currentLetter || !/[A-Z]/.test(currentLetter)) {
-                        currentLetter = "#";
-                      }
-
-                      const showHeader = currentLetter !== lastLetter;
-                      if (showHeader) {
-                        lastLetter = currentLetter;
-                      }
-
-                      return (
-                        <React.Fragment key={game.id}>
-                          {showHeader && (
-                            <div className="border-b border-white/20 pb-1.5 mt-8 mb-3 select-none">
-                              <h3 className="font-mono text-lg sm:text-xl font-black text-white tracking-widest uppercase">
-                                [ {currentLetter} ]
-                              </h3>
-                            </div>
-                          )}
-                          <a
-                            href={`/game/${game.slug}`}
-                            className="group flex items-center justify-between py-2 border-b border-white/5 hover:bg-white/5 px-2 transition-all duration-150 cursor-pointer"
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <span className="font-sans text-sm sm:text-base font-bold text-white uppercase group-hover:text-red-500 transition-colors truncate">
-                                {cleanTitle(game.title)}
-                              </span>
-                              {game.developerNames && (
-                                <span className="hidden sm:inline font-mono text-[10px] sm:text-xs text-white/40 truncate">
-                                  ({game.developerNames.split(", ")[0]})
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4 shrink-0 font-mono text-xs sm:text-sm">
-                              {finalDeal && (
-                                <span className="text-white font-bold uppercase tracking-wider">
-                                  {finalDeal.storeName} — {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
-                                </span>
-                              )}
-                            </div>
-                          </a>
-                        </React.Fragment>
-                      );
-                    });
-                  })()}
-
-                  {/* Load more controls for A-Z */}
-                  <div className="mt-12 pt-6 border-t border-white/10 text-center select-none">
-                    {loading ? (
-                      <span className="font-mono text-xs uppercase tracking-widest text-white/40 animate-pulse block">
-                        [ LOADING CATALOGUE INDEX... ]
-                      </span>
-                    ) : games.length < totalCount ? (
-                      <button
-                        onClick={() => setTitleLimit(prev => prev + 500)}
-                        className="px-6 py-2.5 bg-white text-black hover:bg-red-500 hover:text-white border border-white font-mono text-xs font-black uppercase tracking-widest transition-colors cursor-pointer"
-                      >
-                        [ LOAD MORE ]
-                      </button>
-                    ) : (
-                      <span className="font-mono text-xs uppercase tracking-widest text-white/30 font-bold block">
-                        [ END OF CATALOGUE ]
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ) : layoutMode === "grid" ? (
+              {layoutMode === "grid" ? (
                 /* Grid view cards */
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
                   {(() => {
@@ -1445,8 +1354,7 @@ function GataCatalogClientInner({
             </div>
           )}
 
-          {/* ── Bottom Pagination Bar ── */}
-          {totalPages > 1 && !loading && sortBy !== "title" && (
+          {totalPages > 1 && !loading && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/10">
               <span className="font-mono text-xs text-white/50">
                 Showing games <span className="text-white font-bold">{Math.min(totalCount, (currentPage - 1) * gamesPerPage + 1)}</span> to{" "}
