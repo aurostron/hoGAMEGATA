@@ -45,7 +45,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     console.log(`Forwarding file "${file.name}" to Catbox...`);
     const catboxResponse = await fetch("https://catbox.moe/user/api.php", {
       method: "POST",
-      body: catboxForm
+      body: catboxForm,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
     });
 
     if (!catboxResponse.ok) {

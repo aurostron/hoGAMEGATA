@@ -1,7 +1,7 @@
 ---
 import AdminLayout from '../../../../layouts/AdminLayout.astro';
 import { turso } from '../../../../lib/turso';
-import { games, developers, gamesToDevelopers } from '../../../../db/schema';
+import { games, developers, gamesToDevelopers, platforms, gamesToPlatforms } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
 
 export const prerender = false;
@@ -10,6 +10,8 @@ const { id } = Astro.params;
 
 let game: any = null;
 let currentDev: any = null;
+let allPlatforms: any[] = [];
+let currentPlatformIds: string[] = [];
 
 try {
   // 1. Fetch game details
@@ -29,7 +31,20 @@ try {
       .where(eq(gamesToDevelopers.gameId, id!))
       .limit(1);
     currentDev = devResult || null;
+
+    // 3. Fetch linked platforms
+    const currentPlatRelations = await turso
+      .select({ platformId: gamesToPlatforms.platformId })
+      .from(gamesToPlatforms)
+      .where(eq(gamesToPlatforms.gameId, id!));
+    currentPlatformIds = currentPlatRelations.map(r => r.platformId);
   }
+
+  // 4. Fetch all platforms
+  allPlatforms = await turso
+    .select()
+    .from(platforms)
+    .orderBy(platforms.name);
 } catch (err) {
   console.error("Failed to query edit game page details:", err);
 }
@@ -46,6 +61,19 @@ if (game.screenshots) {
     console.error("Failed to parse screenshots JSON:", e);
   }
 }
+
+const formattedReleaseDate = game.releaseDate 
+  ? new Date(game.releaseDate).toISOString().split('T')[0] 
+  : '';
+
+let scareProfile: any = {};
+if (game.scareProfile) {
+  try {
+    scareProfile = JSON.parse(game.scareProfile);
+  } catch (e) {}
+}
+
+const hasScareProfile = game.scareRating !== null;
 ---
 
 <AdminLayout title={`Edit "${game.title}"`} activeTab="games">
@@ -74,15 +102,17 @@ if (game.screenshots) {
     </span>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
+  <form id="edit-game-form" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
     <!-- Left Column: Edit Metadata Form -->
-    <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg lg:col-span-2 space-y-6">
-      <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
-        <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
-        Game Specifications
-      </h2>
+    <div class="lg:col-span-2 space-y-6">
+      
+      <!-- Specifications Card -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+          Game Specifications
+        </h2>
 
-      <form id="edit-game-form" class="space-y-4">
         <!-- Game Title -->
         <div>
           <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
@@ -97,19 +127,34 @@ if (game.screenshots) {
           />
         </div>
 
-        <!-- Game Status -->
-        <div>
-          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
-            Storefront Status
-          </label>
-          <select
-            id="game-status"
-            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150 font-mono text-xs uppercase"
-          >
-            <option value="released" selected={game.status === 'released'}>Released</option>
-            <option value="upcoming" selected={game.status === 'upcoming'}>Upcoming</option>
-            <option value="hidden" selected={game.status === 'hidden'}>Hidden / Removed</option>
-          </select>
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Game Status -->
+          <div>
+            <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+              Storefront Status
+            </label>
+            <select
+              id="game-status"
+              class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150 font-mono text-xs uppercase"
+            >
+              <option value="released" selected={game.status === 'released'}>Released</option>
+              <option value="upcoming" selected={game.status === 'upcoming'}>Upcoming</option>
+              <option value="hidden" selected={game.status === 'hidden'}>Hidden / Removed</option>
+            </select>
+          </div>
+
+          <!-- Release Date -->
+          <div>
+            <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+              Release Date
+            </label>
+            <input
+              type="date"
+              id="game-release-date"
+              value={formattedReleaseDate}
+              class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150 font-mono text-xs"
+            />
+          </div>
         </div>
 
         <!-- Developer Autocomplete Field -->
@@ -138,59 +183,325 @@ if (game.screenshots) {
           ></div>
         </div>
 
-        <!-- Screenshots Card -->
-        <div class="border-t border-[#1a1a24] pt-6 space-y-4">
-          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider">
-            Game Screenshots
-          </label>
-
-          <!-- Drag & Drop Zone -->
-          <div
-            id="screenshot-dropzone"
-            class="border-2 border-dashed border-[#1a1a24] hover:border-[#ff2a2a] p-8 rounded-lg text-center cursor-pointer transition duration-150 flex flex-col items-center justify-center space-y-2 bg-[#050508]"
-          >
-            <svg class="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span class="text-xs text-gray-400 font-medium">Drag & drop screenshots here, or click to browse files</span>
-            <span class="text-[10px] text-gray-600 uppercase font-mono font-bold">[ Batch uploads supported ]</span>
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Youtube Trailer URL -->
+          <div>
+            <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+              YouTube Trailer URL
+            </label>
             <input
-              type="file"
-              id="screenshot-file-input"
-              multiple
-              accept="image/*"
-              class="hidden"
+              type="url"
+              id="game-trailer"
+              value={game.trailerUrl || ''}
+              placeholder="e.g. https://www.youtube.com/watch?v=..."
+              class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
             />
           </div>
 
-          <!-- Thumbnails list -->
-          <div id="screenshots-list" class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-            {existingScreenshots.map((url: string) => (
-              <div class="relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12]">
-                <img src={`/api/image-proxy?url=${encodeURIComponent(url)}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                <button
-                  type="button"
-                  data-url={url}
-                  class="remove-screenshot-btn absolute top-1 right-1 bg-black/80 hover:bg-[#ff2a2a] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition duration-150 cursor-pointer"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
+          <!-- Cover URL -->
+          <div>
+            <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+              Cover Image URL
+            </label>
+            <input
+              type="url"
+              id="game-cover-url"
+              value={game.coverUrl || ''}
+              placeholder="e.g. https://files.catbox.moe/..."
+              class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2.5 text-sm text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
+            />
           </div>
         </div>
+      </div>
 
-        <!-- Submit Button -->
-        <div class="pt-4 flex items-center justify-between">
-          <span id="form-feedback" class="text-xs font-mono text-gray-500"></span>
-          <button
-            type="submit"
-            class="font-mono text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-[#ff2a2a] hover:text-white border border-white hover:border-[#ff2a2a] px-6 py-2.5 transition duration-150 rounded cursor-pointer"
-          >
-            Save Specifications
-          </button>
+      <!-- Descriptions Card -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+          Descriptions & Context
+        </h2>
+
+        <!-- Summary -->
+        <div>
+          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+            Brief Summary
+          </label>
+          <textarea
+            id="game-summary"
+            rows="6"
+            placeholder="A short elevator pitch description of the game..."
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-sm text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
+          >{game.summary || ''}</textarea>
         </div>
-      </form>
+
+        <!-- Storyline -->
+        <div>
+          <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+            Storyline
+          </label>
+          <textarea
+            id="game-storyline"
+            rows="10"
+            placeholder="Detailed narrative description of the game plot..."
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-sm text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
+          >{game.storyline || ''}</textarea>
+        </div>
+      </div>
+
+      <!-- Platforms card -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+          Available Platforms
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          {allPlatforms.map((plat) => (
+            <label class="flex items-center space-x-2.5 text-xs text-gray-300 font-medium select-none cursor-pointer">
+              <input
+                type="checkbox"
+                name="platforms"
+                value={plat.id}
+                checked={currentPlatformIds.includes(plat.id)}
+                class="rounded bg-[#050508] border-[#1a1a24] text-[#ff2a2a] focus:ring-[#ff2a2a] w-4 h-4 cursor-pointer"
+              />
+              <span>{plat.name}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <!-- Screenshots Card -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+          Game Screenshots
+        </h2>
+
+        <!-- Drag & Drop Zone -->
+        <div
+          id="screenshot-dropzone"
+          class="border-2 border-dashed border-[#1a1a24] hover:border-[#ff2a2a] p-8 rounded-lg text-center cursor-pointer transition duration-150 flex flex-col items-center justify-center space-y-2 bg-[#050508]"
+        >
+          <svg class="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span class="text-xs text-gray-400 font-medium">Drag & drop screenshots here, or click to browse files</span>
+          <span class="text-[10px] text-gray-600 uppercase font-mono font-bold">[ Batch uploads supported ]</span>
+          <input
+            type="file"
+            id="screenshot-file-input"
+            multiple
+            accept="image/*"
+            class="hidden"
+          />
+        </div>
+
+        <!-- Thumbnails list -->
+        <div id="screenshots-list" class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+          {existingScreenshots.map((url: string) => (
+            <div class="relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12]">
+              <img src={`/api/image-proxy?url=${encodeURIComponent(url)}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <button
+                type="button"
+                data-url={url}
+                class="remove-screenshot-btn absolute top-1 right-1 bg-black/80 hover:bg-[#ff2a2a] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition duration-150 cursor-pointer"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Scare Profile configuration card -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
+        <div class="flex items-center justify-between border-b border-[#1a1a24] pb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+            <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+            Scare Meter Profile
+          </h2>
+          <label class="flex items-center space-x-2.5 text-xs text-gray-300 font-bold select-none cursor-pointer font-mono">
+            <input
+              type="checkbox"
+              id="enable-scare-profile"
+              checked={hasScareProfile}
+              class="rounded bg-[#050508] border-[#1a1a24] text-[#ff2a2a] focus:ring-[#ff2a2a] w-4 h-4 cursor-pointer"
+            />
+            <span class="uppercase tracking-wider">Enable scare meter</span>
+          </label>
+        </div>
+
+        <div id="scare-sliders-container" class="space-y-4 transition duration-200">
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Scare Rating -->
+            <div class="col-span-2">
+              <label class="flex justify-between items-baseline text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+                <span>Overall Scare Score</span>
+                <span id="scare-val-label" class="text-white">{game.scareRating !== null ? `${game.scareRating}%` : '50%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-rating"
+                min="0"
+                max="100"
+                value={game.scareRating !== null ? game.scareRating : 50}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Dread Slider -->
+            <div>
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Dread / Atmospheric Terror</span>
+                <span id="dread-lbl" class="text-white">{scareProfile.dread !== undefined ? `${scareProfile.dread}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-dread"
+                min="0"
+                max="100"
+                value={scareProfile.dread !== undefined ? scareProfile.dread : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Jumpscare Slider -->
+            <div>
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Jump Scares Intensity</span>
+                <span id="jumpscare-lbl" class="text-white">{scareProfile.jumpscare !== undefined ? `${scareProfile.jumpscare}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-jumpscare"
+                min="0"
+                max="100"
+                value={scareProfile.jumpscare !== undefined ? scareProfile.jumpscare : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Psychological Slider -->
+            <div>
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Psychological Mindgames</span>
+                <span id="psych-lbl" class="text-white">{scareProfile.psychological !== undefined ? `${scareProfile.psychological}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-psych"
+                min="0"
+                max="100"
+                value={scareProfile.psychological !== undefined ? scareProfile.psychological : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Gore Slider -->
+            <div>
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Gore & Violence</span>
+                <span id="gore-lbl" class="text-white">{scareProfile.gore !== undefined ? `${scareProfile.gore}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-gore"
+                min="0"
+                max="100"
+                value={scareProfile.gore !== undefined ? scareProfile.gore : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Tension Slider -->
+            <div>
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Tension / Pacing Stress</span>
+                <span id="tension-lbl" class="text-white">{scareProfile.tension !== undefined ? `${scareProfile.tension}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-tension"
+                min="0"
+                max="100"
+                value={scareProfile.tension !== undefined ? scareProfile.tension : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Disturbing Slider -->
+            <div>
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Disturbing themes</span>
+                <span id="disturbing-lbl" class="text-white">{scareProfile.disturbing !== undefined ? `${scareProfile.disturbing}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-disturbing"
+                min="0"
+                max="100"
+                value={scareProfile.disturbing !== undefined ? scareProfile.disturbing : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <!-- Isolation Slider -->
+            <div class="col-span-2 sm:col-span-1">
+              <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <span>Isolation / helplessness</span>
+                <span id="isolation-lbl" class="text-white">{scareProfile.isolation !== undefined ? `${scareProfile.isolation}%` : '0%'}</span>
+              </label>
+              <input
+                type="range"
+                id="scare-isolation"
+                min="0"
+                max="100"
+                value={scareProfile.isolation !== undefined ? scareProfile.isolation : 0}
+                class="w-full accent-[#ff2a2a] bg-[#1a1a24] h-1 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <!-- Scare Profile Short Summary -->
+          <div>
+            <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+              Scare Summary
+            </label>
+            <textarea
+              id="scare-short-summary"
+              rows="3"
+              placeholder="Summary explaining what makes the game scary..."
+              class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-xs text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
+            >{scareProfile.shortSummary || ''}</textarea>
+          </div>
+
+          <!-- Player Warnings -->
+          <div>
+            <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
+              Player Warning Tags
+            </label>
+            <input
+              type="text"
+              id="scare-player-warnings"
+              value={scareProfile.playerWarnings ? scareProfile.playerWarnings.join(', ') : ''}
+              placeholder="JUMP SCARES, FLASHING LIGHTS, GORE"
+              class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-3 py-2 text-xs text-white focus:outline-none transition duration-150 font-mono"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Panel Card -->
+      <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg flex items-center justify-between">
+        <span id="form-feedback" class="text-xs font-mono text-gray-500"></span>
+        <button
+          type="submit"
+          class="font-mono text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-[#ff2a2a] hover:text-white border border-white hover:border-[#ff2a2a] px-8 py-3 transition duration-150 rounded cursor-pointer"
+        >
+          Save Specifications
+        </button>
+      </div>
+
     </div>
 
     <!-- Right Column: Developer Global Actions & Stats -->
@@ -214,6 +525,7 @@ if (game.screenshots) {
             class="w-full bg-[#050508] border border-[#1a1a24] focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded px-3 py-2 text-xs text-white focus:outline-none transition duration-150"
           />
           <button
+            type="button"
             id="dev-rename-submit-btn"
             data-dev-id={currentDev?.id || ''}
             class="w-full font-mono text-xs font-bold uppercase tracking-wider border border-[#1a1a24] hover:border-amber-500 hover:bg-amber-500/10 py-2 rounded transition duration-200 cursor-pointer text-white/90"
@@ -236,7 +548,7 @@ if (game.screenshots) {
         </ul>
       </div>
     </div>
-  </div>
+  </form>
 </AdminLayout>
 
 <script>
@@ -244,15 +556,63 @@ if (game.screenshots) {
   const editForm = document.getElementById('edit-game-form') as HTMLFormElement;
   const gameTitleInput = document.getElementById('game-title') as HTMLInputElement;
   const gameStatusSelect = document.getElementById('game-status') as HTMLSelectElement;
+  const gameReleaseInput = document.getElementById('game-release-date') as HTMLInputElement;
   const devSearchInput = document.getElementById('dev-search-input') as HTMLInputElement;
   const devIdHidden = document.getElementById('developer-id-val') as HTMLInputElement;
   const suggestionsBox = document.getElementById('dev-suggestions') as HTMLDivElement;
+  const gameTrailerInput = document.getElementById('game-trailer') as HTMLInputElement;
+  const gameCoverInput = document.getElementById('game-cover-url') as HTMLInputElement;
+  const gameSummaryText = document.getElementById('game-summary') as HTMLTextAreaElement;
+  const gameStorylineText = document.getElementById('game-storyline') as HTMLTextAreaElement;
   const formFeedback = document.getElementById('form-feedback') as HTMLSpanElement;
 
   const renameDevCard = document.getElementById('rename-dev-card') as HTMLDivElement;
   const devRenameInput = document.getElementById('dev-rename-input') as HTMLInputElement;
   const devRenameSubmitBtn = document.getElementById('dev-rename-submit-btn') as HTMLButtonElement;
   const renameFeedback = document.getElementById('rename-feedback') as HTMLSpanElement;
+
+  // Scare Meter elements
+  const enableScareProfileCheck = document.getElementById('enable-scare-profile') as HTMLInputElement;
+  const scareSlidersContainer = document.getElementById('scare-sliders-container') as HTMLDivElement;
+  const scareRating = document.getElementById('scare-rating') as HTMLInputElement;
+  const dread = document.getElementById('scare-dread') as HTMLInputElement;
+  const jumpscare = document.getElementById('scare-jumpscare') as HTMLInputElement;
+  const psych = document.getElementById('scare-psych') as HTMLInputElement;
+  const gore = document.getElementById('scare-gore') as HTMLInputElement;
+  const tension = document.getElementById('scare-tension') as HTMLInputElement;
+  const disturbing = document.getElementById('scare-disturbing') as HTMLInputElement;
+  const isolation = document.getElementById('scare-isolation') as HTMLInputElement;
+  const scareSummary = document.getElementById('scare-short-summary') as HTMLTextAreaElement;
+  const playerWarningsInput = document.getElementById('scare-player-warnings') as HTMLInputElement;
+
+  function updateScareProfileUI() {
+    const enabled = enableScareProfileCheck.checked;
+    if (enabled) {
+      scareSlidersContainer.classList.remove('opacity-30', 'pointer-events-none');
+    } else {
+      scareSlidersContainer.classList.add('opacity-30', 'pointer-events-none');
+    }
+  }
+
+  enableScareProfileCheck.addEventListener('change', updateScareProfileUI);
+  updateScareProfileUI(); // initial run
+
+  // Slider Label synchronization helper
+  const syncLabel = (slider: HTMLInputElement, labelId: string) => {
+    slider.addEventListener('input', () => {
+      const lbl = document.getElementById(labelId);
+      if (lbl) lbl.textContent = `${slider.value}%`;
+    });
+  };
+
+  syncLabel(scareRating, 'scare-val-label');
+  syncLabel(dread, 'dread-lbl');
+  syncLabel(jumpscare, 'jumpscare-lbl');
+  syncLabel(psych, 'psych-lbl');
+  syncLabel(gore, 'gore-lbl');
+  syncLabel(tension, 'tension-lbl');
+  syncLabel(disturbing, 'disturbing-lbl');
+  syncLabel(isolation, 'isolation-lbl');
 
   // Screenshots state and drag & drop selectors
   let uploadedScreenshots: string[] = Array.from(document.querySelectorAll('.remove-screenshot-btn'))
@@ -445,6 +805,12 @@ if (game.screenshots) {
 
     const title = gameTitleInput.value.trim();
     const status = gameStatusSelect.value;
+    const releaseDate = gameReleaseInput.value;
+    const coverUrl = gameCoverInput.value.trim();
+    const trailerUrl = gameTrailerInput.value.trim();
+    const summary = gameSummaryText.value.trim();
+    const storyline = gameStorylineText.value.trim();
+
     let developerId = devIdHidden.value;
     const developerName = devSearchInput.value.trim();
 
@@ -471,6 +837,34 @@ if (game.screenshots) {
       }
     }
 
+    // Assemble checked platforms list
+    const checkedPlats = Array.from(document.querySelectorAll('input[name="platforms"]:checked'))
+      .map((checkbox: any) => checkbox.value);
+
+    // Assemble Scare Meter structure
+    let scareRatingVal = null;
+    let scareProfileObj = null;
+
+    if (enableScareProfileCheck.checked) {
+      scareRatingVal = parseFloat(scareRating.value) || 0;
+      const warnings = playerWarningsInput.value
+        .split(',')
+        .map(w => w.trim().toUpperCase())
+        .filter(Boolean);
+
+      scareProfileObj = {
+        dread: parseInt(dread.value) || 0,
+        jumpscare: parseInt(jumpscare.value) || 0,
+        psychological: parseInt(psych.value) || 0,
+        gore: parseInt(gore.value) || 0,
+        tension: parseInt(tension.value) || 0,
+        disturbing: parseInt(disturbing.value) || 0,
+        isolation: parseInt(isolation.value) || 0,
+        shortSummary: scareSummary.value.trim() || undefined,
+        playerWarnings: warnings.length > 0 ? warnings : undefined
+      };
+    }
+
     try {
       const pathname = window.location.pathname;
       const gameId = pathname.substring(pathname.lastIndexOf('/') + 1);
@@ -481,7 +875,15 @@ if (game.screenshots) {
         body: JSON.stringify({
           title: title,
           status: status,
+          releaseDate: releaseDate || null,
+          coverUrl: coverUrl || null,
+          trailerUrl: trailerUrl || null,
+          summary: summary || null,
+          storyline: storyline || null,
+          scareRating: scareRatingVal,
+          scareProfile: scareProfileObj,
           developerId: developerName ? developerId : null,
+          platformIds: checkedPlats,
           screenshots: uploadedScreenshots
         })
       });

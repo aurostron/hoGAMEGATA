@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import { getServerUser, isAdminUser } from '../../../../lib/serverAuth';
 import { turso } from '../../../../lib/turso';
-import { games, gamesToDevelopers, developers } from '../../../../db/schema';
-import { eq } from 'drizzle-orm';
+import { games, gamesToDevelopers, developers, gamesToPlatforms, platforms } from '../../../../db/schema';
+import { eq, inArray } from 'drizzle-orm';
 import { syncCatboxAlbum } from '../../../../lib/catbox';
 
 let cfEnv: any = null;
@@ -29,20 +29,43 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       return new Response(JSON.stringify({ error: "Missing game ID" }), { status: 400 });
     }
 
-    const { title, status, developerId, screenshots } = await request.json();
+    const body = await request.json();
+    const {
+      title,
+      status,
+      releaseDate,
+      coverUrl,
+      trailerUrl,
+      summary,
+      storyline,
+      scareRating,
+      scareProfile,
+      developerId,
+      platformIds,
+      screenshots
+    } = body;
 
     if (!title || !title.trim()) {
       return new Response(JSON.stringify({ error: "Title is required" }), { status: 400 });
     }
 
+    const parsedReleaseDate = releaseDate ? new Date(releaseDate) : null;
+
     // 1. Run database operations in a single atomic transaction
     await turso.transaction(async (tx) => {
-      // Update Game core details
+      // Update Game core metadata details
       await tx
         .update(games)
         .set({
           title: title.trim(),
           status: status || null,
+          releaseDate: parsedReleaseDate,
+          coverUrl: coverUrl || null,
+          trailerUrl: trailerUrl || null,
+          summary: summary || null,
+          storyline: storyline || null,
+          scareRating: scareRating !== undefined && scareRating !== null ? parseFloat(scareRating) : null,
+          scareProfile: scareProfile ? JSON.stringify(scareProfile) : null,
           screenshots: screenshots ? JSON.stringify(screenshots) : null,
           updatedAt: new Date()
         })
@@ -78,6 +101,40 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
           await tx
             .update(games)
             .set({ developerNames: null })
+            .where(eq(games.id, id));
+        }
+      }
+
+      // Handle platform links updating
+      if (platformIds !== undefined) {
+        // Clear existing platform links
+        await tx.delete(gamesToPlatforms).where(eq(gamesToPlatforms.gameId, id));
+
+        if (platformIds && platformIds.length > 0) {
+          // Insert new platform associations
+          for (const platId of platformIds) {
+            await tx.insert(gamesToPlatforms).values({
+              gameId: id,
+              platformId: platId
+            });
+          }
+
+          // Fetch the platform names and update platformNames denormalized cached column
+          const selectedPlats = await tx
+            .select({ name: platforms.name })
+            .from(platforms)
+            .where(inArray(platforms.id, platformIds));
+
+          const platNamesJoined = selectedPlats.map(p => p.name).join(", ");
+          await tx
+            .update(games)
+            .set({ platformNames: platNamesJoined })
+            .where(eq(games.id, id));
+        } else {
+          // Clear cached platform names
+          await tx
+            .update(games)
+            .set({ platformNames: null })
             .where(eq(games.id, id));
         }
       }

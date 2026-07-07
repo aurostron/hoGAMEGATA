@@ -154,7 +154,7 @@ try {
           </label>
           <textarea
             id="game-summary"
-            rows="3"
+            rows="6"
             placeholder="A short elevator pitch description of the game..."
             class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-sm text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
           ></textarea>
@@ -167,6 +167,9 @@ try {
           </label>
           <textarea
             id="game-storyline"
+            rows="10"
+            placeholder="Detailed narrative description of the game plot..."
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded px-4 py-2 text-sm text-white focus:outline-none transition duration-150 font-sans leading-relaxed"
           ></textarea>
         </div>
       </div>
@@ -230,12 +233,24 @@ try {
 
       <!-- Scare Profile configuration card -->
       <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
-          <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
-          Scare Meter Profile
-        </h2>
+        <div class="flex items-center justify-between border-b border-[#1a1a24] pb-3">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+            <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
+            Scare Meter Profile
+          </h2>
+          <label class="flex items-center space-x-2.5 text-xs text-gray-300 font-bold select-none cursor-pointer font-mono">
+            <input
+              type="checkbox"
+              id="enable-scare-profile"
+              checked
+              class="rounded bg-[#050508] border-[#1a1a24] text-[#ff2a2a] focus:ring-[#ff2a2a] w-4 h-4 cursor-pointer"
+            />
+            <span class="uppercase tracking-wider">Enable scare meter</span>
+          </label>
+        </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div id="scare-sliders-container" class="space-y-4 transition duration-200">
+          <div class="grid grid-cols-2 gap-3">
           <!-- Scare Rating -->
           <div class="col-span-2">
             <label class="flex justify-between items-baseline text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
@@ -342,6 +357,7 @@ try {
           />
         </div>
       </div>
+    </div>
 
       <!-- Action Panel Card -->
       <div class="bg-[#07070a] border border-[#1a1a24] p-6 rounded-lg space-y-4">
@@ -484,6 +500,8 @@ try {
   }
 
   // Scare Meter Elements
+  const enableScareProfileCheck = document.getElementById('enable-scare-profile') as HTMLInputElement;
+  const scareSlidersContainer = document.getElementById('scare-sliders-container') as HTMLDivElement;
   const scareRating = document.getElementById('scare-rating') as HTMLInputElement;
   const dread = document.getElementById('scare-dread') as HTMLInputElement;
   const jumpscare = document.getElementById('scare-jumpscare') as HTMLInputElement;
@@ -494,6 +512,18 @@ try {
   const isolation = document.getElementById('scare-isolation') as HTMLInputElement;
   const scareSummary = document.getElementById('scare-short-summary') as HTMLTextAreaElement;
   const playerWarningsInput = document.getElementById('scare-player-warnings') as HTMLInputElement;
+
+  function updateScareProfileUI() {
+    const enabled = enableScareProfileCheck.checked;
+    if (enabled) {
+      scareSlidersContainer.classList.remove('opacity-30', 'pointer-events-none');
+    } else {
+      scareSlidersContainer.classList.add('opacity-30', 'pointer-events-none');
+    }
+  }
+
+  enableScareProfileCheck.addEventListener('change', updateScareProfileUI);
+  updateScareProfileUI(); // initial run
 
   // Slider Label synchronization helper
   const syncLabel = (slider: HTMLInputElement, labelId: string) => {
@@ -609,22 +639,28 @@ try {
       .map((checkbox: any) => checkbox.value);
 
     // 2c. Assemble Scare Meter structure
-    const warnings = playerWarningsInput.value
-      .split(',')
-      .map(w => w.trim().toUpperCase())
-      .filter(Boolean);
+    let scareRatingVal = null;
+    let scareProfileObj = null;
 
-    const scareProfileObj = {
-      dread: parseInt(dread.value) || 0,
-      jumpscare: parseInt(jumpscare.value) || 0,
-      psychological: parseInt(psych.value) || 0,
-      gore: parseInt(gore.value) || 0,
-      tension: parseInt(tension.value) || 0,
-      disturbing: parseInt(disturbing.value) || 0,
-      isolation: parseInt(isolation.value) || 0,
-      shortSummary: scareSummary.value.trim() || undefined,
-      playerWarnings: warnings.length > 0 ? warnings : undefined
-    };
+    if (enableScareProfileCheck.checked) {
+      scareRatingVal = parseFloat(scareRating.value) || 0;
+      const warnings = playerWarningsInput.value
+        .split(',')
+        .map(w => w.trim().toUpperCase())
+        .filter(Boolean);
+
+      scareProfileObj = {
+        dread: parseInt(dread.value) || 0,
+        jumpscare: parseInt(jumpscare.value) || 0,
+        psychological: parseInt(psych.value) || 0,
+        gore: parseInt(gore.value) || 0,
+        tension: parseInt(tension.value) || 0,
+        disturbing: parseInt(disturbing.value) || 0,
+        isolation: parseInt(isolation.value) || 0,
+        shortSummary: scareSummary.value.trim() || undefined,
+        playerWarnings: warnings.length > 0 ? warnings : undefined
+      };
+    }
 
     try {
       const response = await fetch('/api/admin/games', {
@@ -638,7 +674,7 @@ try {
           trailerUrl: trailerUrl || null,
           summary: summary || null,
           storyline: storyline || null,
-          scareRating: scareRating.value,
+          scareRating: scareRatingVal,
           scareProfile: scareProfileObj,
           developerId: developerId || null,
           platformIds: checkedPlats,
