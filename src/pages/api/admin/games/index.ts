@@ -50,7 +50,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       scareProfile,
       developerId,
       platformIds,
-      screenshots
+      screenshots,
+      isTrending
     } = body;
 
     if (!title || !title.trim()) {
@@ -115,7 +116,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         scareProfile: scareProfile ? JSON.stringify(scareProfile) : null,
         developerNames: devNames,
         platformNames: platNamesJoined,
-        isTrending: false,
+        isTrending: isTrending === true,
         rawgEnriched: false,
         createdAt: new Date(),
         updatedAt: new Date()

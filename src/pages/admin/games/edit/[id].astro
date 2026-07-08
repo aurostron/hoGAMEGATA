@@ -127,6 +127,17 @@ const hasScareProfile = game.scareRating !== null;
           />
         </div>
 
+        <!-- Feature on Homepage Hero -->
+        <label class="flex items-center space-x-2.5 text-xs text-gray-300 font-bold select-none cursor-pointer font-mono pb-2 border-b border-[#1a1a24]/30">
+          <input
+            type="checkbox"
+            id="game-is-trending"
+            checked={game.isTrending}
+            class="rounded bg-[#050508] border-[#1a1a24] text-[#ff2a2a] focus:ring-[#ff2a2a] w-4 h-4 cursor-pointer"
+          />
+          <span class="uppercase tracking-wider">Feature on Homepage Hero Slider</span>
+        </label>
+
         <div class="grid grid-cols-2 gap-4">
           <!-- Game Status -->
           <div>
@@ -564,6 +575,7 @@ const hasScareProfile = game.scareRating !== null;
   const gameCoverInput = document.getElementById('game-cover-url') as HTMLInputElement;
   const gameSummaryText = document.getElementById('game-summary') as HTMLTextAreaElement;
   const gameStorylineText = document.getElementById('game-storyline') as HTMLTextAreaElement;
+  const gameIsTrendingInput = document.getElementById('game-is-trending') as HTMLInputElement;
   const formFeedback = document.getElementById('form-feedback') as HTMLSpanElement;
 
   const renameDevCard = document.getElementById('rename-dev-card') as HTMLDivElement;
@@ -884,7 +896,8 @@ const hasScareProfile = game.scareRating !== null;
           scareProfile: scareProfileObj,
           developerId: developerName ? developerId : null,
           platformIds: checkedPlats,
-          screenshots: uploadedScreenshots
+          screenshots: uploadedScreenshots,
+          isTrending: gameIsTrendingInput.checked
         })
       });
 

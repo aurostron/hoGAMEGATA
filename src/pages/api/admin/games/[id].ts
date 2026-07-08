@@ -42,7 +42,8 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       scareProfile,
       developerId,
       platformIds,
-      screenshots
+      screenshots,
+      isTrending
     } = body;
 
     if (!title || !title.trim()) {
@@ -67,6 +68,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
           scareRating: scareRating !== undefined && scareRating !== null ? parseFloat(scareRating) : null,
           scareProfile: scareProfile ? JSON.stringify(scareProfile) : null,
           screenshots: screenshots ? JSON.stringify(screenshots) : null,
+          isTrending: isTrending !== undefined ? isTrending === true : undefined,
           updatedAt: new Date()
         })
         .where(eq(games.id, id));
