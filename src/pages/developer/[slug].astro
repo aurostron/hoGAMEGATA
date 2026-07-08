@@ -219,7 +219,7 @@ const devStyle = curated.style || computedStyle;
     </div>
 
     {/* Timeline Container */}
-    <div class="relative w-full">
+    <div class="relative w-full" id="timeline-container">
       
       {/* Central Line Track */}
       <div class="absolute left-4 md:left-1/2 top-2 bottom-2 w-0.5 bg-white/10 -translate-x-1/2 z-0"></div>
@@ -357,24 +357,33 @@ const devStyle = curated.style || computedStyle;
 
   // Dynamic Scroll Progress Line
   const timelineProgress = document.getElementById('timeline-progress');
-  const mainElement = document.querySelector('main');
+  const timelineContainer = document.getElementById('timeline-container');
   
-  if (timelineProgress && mainElement && items.length > 0) {
+  if (timelineProgress && timelineContainer && items.length > 0) {
     function updateTimelineProgress() {
       const scrollPosition = window.scrollY + (window.innerHeight * 0.7); // offset trigger height
-      const mainRect = mainElement.getBoundingClientRect();
-      const mainTop = mainRect.top + window.scrollY;
-      const mainHeight = mainRect.height;
+      const containerRect = timelineContainer.getBoundingClientRect();
+      const containerTop = containerRect.top + window.scrollY;
       
-      // Calculate how far we've scrolled past the top of the main container
-      const relativeScroll = scrollPosition - mainTop;
-      let percentage = (relativeScroll / mainHeight) * 100;
+      // Get the last item's dot position relative to the container
+      const lastItem = items[items.length - 1];
+      const lastDot = lastItem.querySelector('.timeline-dot');
+      let maxScrollHeight = containerRect.height;
       
-      // Keep inside bounds
-      percentage = Math.max(0, Math.min(100, percentage));
+      if (lastDot) {
+        const lastDotRect = lastDot.getBoundingClientRect();
+        // Calculate dot center Y relative to container top
+        maxScrollHeight = lastDotRect.top - containerRect.top + (lastDotRect.height / 2);
+      }
       
-      // Set line height
-      timelineProgress.style.height = `${percentage}%`;
+      // Calculate how far we've scrolled relative to container top (with 8px top-2 offset)
+      const relativeScroll = scrollPosition - containerTop - 8;
+      
+      // Clamp the height between 0 and (maxScrollHeight - 8)
+      const height = Math.max(0, Math.min(maxScrollHeight - 8, relativeScroll));
+      
+      // Set line height in pixels
+      timelineProgress.style.height = `${height}px`;
     }
 
     // Bind listeners
