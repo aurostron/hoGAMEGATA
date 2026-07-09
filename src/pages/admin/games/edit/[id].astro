@@ -343,9 +343,9 @@ const hasScareProfile = game.scareRating !== null;
         </div>
 
         <div id="scare-sliders-container" class="space-y-4 transition duration-200">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <!-- Scare Rating -->
-            <div class="col-span-2">
+            <div class="col-span-1 sm:col-span-2">
               <label class="flex justify-between items-baseline text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">
                 <span>Overall Scare Score</span>
                 <span id="scare-val-label" class="text-white">{game.scareRating !== null ? `${game.scareRating}%` : '50%'}</span>
@@ -457,7 +457,7 @@ const hasScareProfile = game.scareRating !== null;
             </div>
 
             <!-- Isolation Slider -->
-            <div class="col-span-2 sm:col-span-1">
+            <div class="col-span-1 sm:col-span-2">
               <label class="flex justify-between items-baseline text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
                 <span>Isolation / helplessness</span>
                 <span id="isolation-lbl" class="text-white">{scareProfile.isolation !== undefined ? `${scareProfile.isolation}%` : '0%'}</span>
