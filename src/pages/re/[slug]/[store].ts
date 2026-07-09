@@ -108,14 +108,17 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
       console.error("[Redirect Analytics Error] Failed to log ReferralClick:", dbErr);
     }
 
-    // 3b. Log aggregated analytics event (non-blocking)
+    // 3b. Log aggregated analytics event (non-blocking if waitUntil is available)
     const trackPromise = trackLinkClick(
       game.id,
       cleanLink?.storeName || targetStoreName,
       `${game.slug} on ${cleanLink?.storeName || targetStoreName}`
     );
-    if (locals?.runtime?.ctx?.waitUntil) {
-      locals.runtime.ctx.waitUntil(trackPromise);
+    const cf = locals?.cloudflare || (locals as any)?.runtime;
+    if (cf?.ctx?.waitUntil) {
+      cf.ctx.waitUntil(trackPromise);
+    } else {
+      await trackPromise;
     }
 
     // 4. Temporary Redirect (307) to the affiliate link

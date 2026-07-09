@@ -43,8 +43,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
     
     if (search) {
       const searchPromise = trackSearch(search);
-      if (locals?.runtime?.ctx?.waitUntil) {
-        locals.runtime.ctx.waitUntil(searchPromise);
+      const cf = locals?.cloudflare || (locals as any)?.runtime;
+      if (cf?.ctx?.waitUntil) {
+        cf.ctx.waitUntil(searchPromise);
+      } else {
+        await searchPromise;
       }
     }
     

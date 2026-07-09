@@ -47,10 +47,13 @@ if (!rawGame) {
   return Astro.redirect('/404');
 }
 
-// Track game view (non-blocking)
+// Track game view (non-blocking if waitUntil is available)
 const viewPromise = trackGameView(rawGame.id, rawGame.title);
-if (Astro.locals.runtime?.ctx?.waitUntil) {
-  Astro.locals.runtime.ctx.waitUntil(viewPromise);
+const cf = Astro.locals.cloudflare || (Astro.locals as any).runtime;
+if (cf?.ctx?.waitUntil) {
+  cf.ctx.waitUntil(viewPromise);
+} else {
+  await viewPromise;
 }
 
 if (rawGame.status === "hidden") {
