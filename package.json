@@ -39,6 +39,7 @@
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.21.0",
     "openai": "^6.45.0",
+    "otpauth": "^9.5.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "shadcn": "^4.11.0",

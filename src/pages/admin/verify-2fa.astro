@@ -1,0 +1,224 @@
+---
+import * as OTPAuth from "otpauth";
+import { tursoAuth } from "../../lib/tursoAuth";
+import { systemConfig } from "../../db/auth-schema";
+import { eq } from "drizzle-orm";
+import { getServerUser } from "../../lib/serverAuth";
+
+export const prerender = false;
+
+// 1. Authenticate user session
+const user = await getServerUser(Astro.request, Astro.cookies);
+if (!user) {
+  return Astro.redirect("/login?error=unauthorized");
+}
+
+let setupMode = false;
+let qrCodeUrl = "";
+let base32Secret = "";
+let errorMessage = "";
+
+// 2. Query/Upsert database 2FA configuration secret
+try {
+  const configKey = `admin_2fa_secret:${user.email}`;
+  const [configRow] = await tursoAuth
+    .select()
+    .from(systemConfig)
+    .where(eq(systemConfig.key, configKey))
+    .limit(1);
+
+  if (!configRow) {
+    // Generate a fresh cryptographically secure base32 secret for setup
+    base32Secret = new OTPAuth.Secret({ size: 20 }).base32;
+    
+    await tursoAuth.insert(systemConfig).values({
+      key: configKey,
+      value: base32Secret,
+    });
+
+    setupMode = true;
+  } else {
+    base32Secret = configRow.value;
+  }
+
+  // Generate OTPAuth URI for QR code setup
+  const totp = new OTPAuth.TOTP({
+    issuer: "GameGata Ops",
+    label: user.email,
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+    secret: OTPAuth.Secret.fromBase32(base32Secret),
+  });
+
+  const otpauthUri = totp.toString();
+  qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauthUri)}&color=ffffff&bgcolor=0a0a0f`;
+} catch (err) {
+  console.error("[2FA Setup Error] Failed to access auth database config:", err);
+  errorMessage = "System database query failure. Please contact administrator.";
+}
+
+// 3. Handle Form Submission POST requests
+if (Astro.request.method === "POST") {
+  try {
+    const data = await Astro.request.formData();
+    const code = data.get("code")?.toString().trim() || "";
+
+    if (code.length === 6 && /^\d+$/.test(code)) {
+      const totp = new OTPAuth.TOTP({
+        issuer: "GameGata Ops",
+        label: user.email,
+        algorithm: "SHA1",
+        digits: 6,
+        period: 30,
+        secret: OTPAuth.Secret.fromBase32(base32Secret),
+      });
+
+      // Validate token with a time drift window of +/- 30 seconds
+      const delta = totp.validate({ token: code, window: 1 });
+      
+      if (delta !== null) {
+        // Generate a secure random session token
+        const sessionToken = crypto.randomUUID();
+        const sessionKey = `admin_2fa_session:${user.email}`;
+
+        // Save session token in SystemConfig database
+        await tursoAuth
+          .insert(systemConfig)
+          .values({
+            key: sessionKey,
+            value: sessionToken,
+          })
+          .onConflictDoUpdate({
+            target: [systemConfig.key],
+            set: {
+              value: sessionToken,
+            },
+          });
+
+        // Set secure, HTTP-only cookie valid for 7 days
+        Astro.cookies.set("admin_2fa_session", sessionToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          path: "/",
+          maxAge: 60 * 60 * 24 * 7,
+        });
+
+        return Astro.redirect("/admin");
+      } else {
+        errorMessage = "Invalid authenticator code. Check your device and try again.";
+      }
+    } else {
+      errorMessage = "Please enter a valid 6-digit number.";
+    }
+  } catch (err) {
+    console.error("[2FA Validation Error] Exception occurred:", err);
+    errorMessage = "Internal validation error. Try again.";
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Security Verification | GameGata Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        background-color: #030305;
+        font-family: 'Outfit', sans-serif;
+        background-image: 
+          radial-gradient(circle at 10% 20%, rgba(255, 42, 42, 0.04) 0%, transparent 40%),
+          radial-gradient(circle at 90% 80%, rgba(255, 42, 42, 0.03) 0%, transparent 45%);
+      }
+      .glow-border {
+        box-shadow: 0 0 30px rgba(255, 42, 42, 0.03);
+      }
+      .glow-text {
+        text-shadow: 0 0 15px rgba(255, 42, 42, 0.5);
+      }
+    </style>
+  </head>
+  <body class="text-gray-200 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-[#07070a] border border-[#1a1a24] rounded-2xl p-6 sm:p-8 glow-border space-y-6">
+      
+      <!-- App Brand Logo Header -->
+      <div class="text-center">
+        <span class="text-2xl font-black tracking-tight text-white uppercase font-heading select-none">
+          GAME<span class="text-[#ff2a2a] glow-text">GATA</span>
+        </span>
+        <div class="h-px bg-gradient-to-r from-transparent via-[#ff2a2a]/20 to-transparent my-4"></div>
+        <h2 class="text-lg font-bold text-white uppercase tracking-wider font-mono">Two-Factor Authentication</h2>
+        <p class="text-xs text-gray-500 font-medium mt-1 font-mono">{user.email}</p>
+      </div>
+
+      <!-- Error Message Banner -->
+      {errorMessage && (
+        <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-xs font-mono text-center">
+          {errorMessage}
+        </div>
+      )}
+
+      <!-- Setup Instruction QR Panel -->
+      {setupMode && (
+        <div class="bg-[#0a0a0f] border border-[#1a1a24] rounded-xl p-5 flex flex-col items-center space-y-4">
+          <div class="text-center space-y-1.5">
+            <span class="text-[10px] font-bold font-mono text-[#ff2a2a] uppercase tracking-widest bg-[#ff2a2a]/10 px-2 py-0.5 rounded-full border border-[#ff2a2a]/20">First Time Setup</span>
+            <p class="text-xs text-gray-400 font-medium pt-1">Scan the QR code below using Google Authenticator, Authy, or your password manager to link your admin account.</p>
+          </div>
+          
+          <!-- Dynamic QR image frame -->
+          <div class="p-2.5 bg-white rounded-lg select-none shadow-lg">
+            <img src={qrCodeUrl} alt="Authenticator App QR Code" class="w-48 h-48 block" />
+          </div>
+          
+          <!-- Key string backup fallback -->
+          <div class="w-full text-center space-y-1 pt-1 border-t border-[#1a1a24]/50">
+            <span class="text-[9px] font-mono text-gray-600 uppercase font-bold tracking-widest block">Manual Secret Key</span>
+            <code class="text-[10px] font-mono text-gray-300 bg-black/40 px-2 py-1 rounded block select-all tracking-wider">{base32Secret}</code>
+          </div>
+        </div>
+      )}
+
+      <!-- Security validation entry form -->
+      <form method="POST" class="space-y-4">
+        <div class="space-y-2">
+          <label for="otp-code" class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-widest">
+            {setupMode ? "Verify & Link Code" : "Security Verification Code"}
+          </label>
+          <input
+            type="text"
+            id="otp-code"
+            name="code"
+            required
+            pattern="\d{6}"
+            maxlength="6"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            autofocus
+            placeholder="000000"
+            class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] focus:ring-1 focus:ring-[#ff2a2a] rounded-xl py-3 text-center text-2xl font-bold tracking-[0.6em] text-white focus:outline-none placeholder-gray-800 transition duration-150 font-mono"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full py-3 bg-white hover:bg-[#ff2a2a] text-black hover:text-white rounded-xl font-bold text-xs tracking-widest uppercase font-mono transition duration-200 cursor-pointer shadow-md"
+        >
+          Verify Code
+        </button>
+      </form>
+
+      <!-- Action Footer Links -->
+      <div class="text-center pt-2 border-t border-[#1a1a24]/30">
+        <a href="/api/auth/logout" class="text-[10px] font-bold font-mono text-gray-500 hover:text-white transition duration-150 uppercase tracking-widest">
+          Sign Out of Account
+        </a>
+      </div>
+
+    </div>
+  </body>
+</html>
