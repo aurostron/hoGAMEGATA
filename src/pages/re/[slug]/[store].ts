@@ -5,6 +5,7 @@ import { tursoAuth } from '../../../lib/tursoAuth';
 import { referralClick as referralClickTable } from '../../../db/auth-schema';
 import { games as gamesTable, purchaseLinks as purchaseLinksTable } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { trackLinkClick } from '../../../lib/analytics';
 
 export const prerender = false;
 
@@ -22,7 +23,7 @@ function matchStoreName(slug: string): string {
   return slug;
 }
 
-export const GET: APIRoute = async ({ params, request }) => {
+export const GET: APIRoute = async ({ params, request, locals }) => {
   const { slug = "", store = "" } = params;
   const { searchParams } = new URL(request.url);
   const fallbackUrl = searchParams.get("fallbackUrl") || "";
@@ -105,6 +106,16 @@ export const GET: APIRoute = async ({ params, request }) => {
       });
     } catch (dbErr) {
       console.error("[Redirect Analytics Error] Failed to log ReferralClick:", dbErr);
+    }
+
+    // 3b. Log aggregated analytics event (non-blocking)
+    const trackPromise = trackLinkClick(
+      game.id,
+      cleanLink?.storeName || targetStoreName,
+      `${game.slug} on ${cleanLink?.storeName || targetStoreName}`
+    );
+    if (locals?.runtime?.ctx?.waitUntil) {
+      locals.runtime.ctx.waitUntil(trackPromise);
     }
 
     // 4. Temporary Redirect (307) to the affiliate link

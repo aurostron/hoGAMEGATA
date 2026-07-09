@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real, primaryKey, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, primaryKey, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // --- Game Catalog ---
 export const games = sqliteTable(
@@ -238,3 +238,41 @@ export const siteContent = sqliteTable("SiteContent", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
   updatedBy: text("updatedBy"),
 });
+
+// --- Analytics ---
+
+/**
+ * analyticsEvents: one row per (type, refId, date).
+ * Instead of inserting a row per event, we UPSERT and increment `count`.
+ * This is DB-resource friendly (Turso charges per row-write, not per query).
+ * Rows are pruned after 30 days.
+ */
+export const analyticsEvents = sqliteTable(
+  "AnalyticsEvent",
+  {
+    id: text("id").primaryKey(),
+    type: text("type").notNull(), // 'game_view' | 'link_click' | 'search'
+    refId: text("refId").notNull(), // gameId / store name / search query
+    refTitle: text("refTitle"), // human-readable label (game title, etc.)
+    date: text("date").notNull(), // ISO date string "YYYY-MM-DD"
+    count: integer("count").default(1).notNull(),
+  },
+  (table) => [
+    uniqueIndex("analytics_unique_event_idx").on(table.type, table.refId, table.date),
+    index("analytics_type_refid_date_idx").on(table.type, table.refId, table.date),
+    index("analytics_date_idx").on(table.date),
+    index("analytics_type_date_idx").on(table.type, table.date),
+  ]
+);
+
+/**
+ * analyticsDaily: permanent aggregated daily totals.
+ * One row per day, updated via upsert each time an event fires.
+ */
+export const analyticsDaily = sqliteTable("AnalyticsDaily", {
+  date: text("date").primaryKey(), // "YYYY-MM-DD"
+  totalViews: integer("totalViews").default(0).notNull(),
+  totalClicks: integer("totalClicks").default(0).notNull(),
+  totalSearches: integer("totalSearches").default(0).notNull(),
+});
+

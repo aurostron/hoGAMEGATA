@@ -17,6 +17,7 @@ import {
 import { enrichGamesWithRelations } from '../../../lib/gameQueries';
 import { count, isNull, isNotNull, desc, asc, and, or, eq, gt, gte, lt, lte, inArray, like, ne, sql } from 'drizzle-orm';
 import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngine';
+import { trackSearch } from '../../../lib/analytics';
 
 export const prerender = false;
 
@@ -35,10 +36,17 @@ async function getGameTitles(): Promise<string[]> {
   }
 }
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, locals }) => {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
+    
+    if (search) {
+      const searchPromise = trackSearch(search);
+      if (locals?.runtime?.ctx?.waitUntil) {
+        locals.runtime.ctx.waitUntil(searchPromise);
+      }
+    }
     
     // Advanced Filters
     const genresParam = searchParams.get("genres")?.trim() || "";

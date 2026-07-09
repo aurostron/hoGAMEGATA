@@ -29,6 +29,7 @@ import ScreenshotGallery from '../../components/ScreenshotGallery';
 import CreatorGames from '../../components/CreatorGames';
 import TrackControls from '../../components/TrackControls';
 import VibeTracker from '../../components/VibeTracker';
+import { trackGameView } from '../../lib/analytics';
 
 // SSR: render every game on-demand instead of pre-building a limited static set.
 export const prerender = false;
@@ -44,6 +45,12 @@ const [rawGame] = await turso
 
 if (!rawGame) {
   return Astro.redirect('/404');
+}
+
+// Track game view (non-blocking)
+const viewPromise = trackGameView(rawGame.id, rawGame.title);
+if (Astro.locals.runtime?.ctx?.waitUntil) {
+  Astro.locals.runtime.ctx.waitUntil(viewPromise);
 }
 
 if (rawGame.status === "hidden") {

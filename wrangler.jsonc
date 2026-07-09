@@ -19,6 +19,12 @@
 		"BETTER_AUTH_URL": "https://gamegata.xyz",
 		"CATBOX_USERHASH": ""
 	},
+	"kv_namespaces": [
+		{
+			"binding": "MAINTENANCE",
+			"id": "42729c340d254d219a9c183752811d5e"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
