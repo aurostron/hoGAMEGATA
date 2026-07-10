@@ -19,67 +19,59 @@ let qrCodeUrl = "";
 let base32Secret = "";
 let errorMessage = "";
 
-// 2. Query/Upsert database 2FA configuration secret
+// 2. Query database for existing 2FA secret
+const configKey = `admin_2fa_secret:${user.email}`;
+let existingSecret = "";
+
 try {
-  const configKey = `admin_2fa_secret:${user.email}`;
   const [configRow] = await tursoAuth
     .select()
     .from(systemConfig)
     .where(eq(systemConfig.key, configKey))
     .limit(1);
-
-  if (!configRow) {
-    // Generate a fresh cryptographically secure base32 secret for setup
-    base32Secret = new OTPAuth.Secret({ size: 20 }).base32;
-    
-    await tursoAuth.insert(systemConfig).values({
-      key: configKey,
-      value: base32Secret,
-    });
-
-    setupMode = true;
-  } else {
-    base32Secret = configRow.value;
+  if (configRow) {
+    existingSecret = configRow.value;
   }
-
-  // Generate OTPAuth URI for QR code setup
-  const totp = new OTPAuth.TOTP({
-    issuer: "GameGata Ops",
-    label: user.email,
-    algorithm: "SHA1",
-    digits: 6,
-    period: 30,
-    secret: OTPAuth.Secret.fromBase32(base32Secret),
-  });
-
-  const otpauthUri = totp.toString();
-  qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauthUri)}&color=ffffff&bgcolor=0a0a0f`;
 } catch (err) {
-  console.error("[2FA Setup Error] Failed to access auth database config:", err);
-  errorMessage = "System database query failure. Please contact administrator.";
+  console.error("[2FA Query Error] Failed to query SystemConfig:", err);
 }
 
-// 3. Handle Form Submission POST requests
 if (Astro.request.method === "POST") {
   try {
     const data = await Astro.request.formData();
     const code = data.get("code")?.toString().trim() || "";
+    const setupSecret = data.get("setupSecret")?.toString().trim() || "";
 
-    if (code.length === 6 && /^\d+$/.test(code)) {
+    // Determine secret to use for verification
+    const activeSecret = setupSecret || existingSecret;
+
+    if (activeSecret && code.length === 6 && /^\d+$/.test(code)) {
       const totp = new OTPAuth.TOTP({
         issuer: "GameGata Ops",
         label: user.email,
         algorithm: "SHA1",
         digits: 6,
         period: 30,
-        secret: OTPAuth.Secret.fromBase32(base32Secret),
+        secret: OTPAuth.Secret.fromBase32(activeSecret),
       });
 
-      // Validate token with a time drift window of +/- 30 seconds
       const delta = totp.validate({ token: code, window: 1 });
       
       if (delta !== null) {
-        // Generate a secure random session token
+        // If we are in setup mode, save the secret to the database now
+        if (setupSecret) {
+          await tursoAuth.insert(systemConfig).values({
+            key: configKey,
+            value: setupSecret,
+          }).onConflictDoUpdate({
+            target: [systemConfig.key],
+            set: {
+              value: setupSecret
+            }
+          });
+        }
+
+        // Generate session token
         const sessionToken = crypto.randomUUID();
         const sessionKey = `admin_2fa_session:${user.email}`;
 
@@ -109,14 +101,52 @@ if (Astro.request.method === "POST") {
         return Astro.redirect("/admin");
       } else {
         errorMessage = "Invalid authenticator code. Check your device and try again.";
+        // Retain setup mode state on code validation failure
+        if (setupSecret) {
+          setupMode = true;
+          base32Secret = setupSecret;
+        } else {
+          base32Secret = existingSecret;
+        }
       }
     } else {
       errorMessage = "Please enter a valid 6-digit number.";
+      if (setupSecret) {
+        setupMode = true;
+        base32Secret = setupSecret;
+      } else {
+        base32Secret = existingSecret;
+      }
     }
   } catch (err) {
     console.error("[2FA Validation Error] Exception occurred:", err);
     errorMessage = "Internal validation error. Try again.";
   }
+} else {
+  // GET request handling
+  if (!existingSecret) {
+    // Generate a fresh secret in memory, do NOT write to database yet
+    base32Secret = new OTPAuth.Secret({ size: 20 }).base32;
+    setupMode = true;
+  } else {
+    base32Secret = existingSecret;
+  }
+}
+
+// Prepare OTPAuth URI and QR code URL using standard colors (un-inverted) for easy scanning
+if (base32Secret) {
+  const totp = new OTPAuth.TOTP({
+    issuer: "GameGata Ops",
+    label: user.email,
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+    secret: OTPAuth.Secret.fromBase32(base32Secret),
+  });
+  
+  const otpauthUri = totp.toString();
+  // Standard black-on-white QR code for maximum scanner compatibility (not inverted!)
+  qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauthUri)}`;
 }
 ---
 
@@ -186,6 +216,7 @@ if (Astro.request.method === "POST") {
 
       <!-- Security validation entry form -->
       <form method="POST" class="space-y-4">
+        {setupMode && <input type="hidden" name="setupSecret" value={base32Secret} />}
         <div class="space-y-2">
           <label for="otp-code" class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-widest">
             {setupMode ? "Verify & Link Code" : "Security Verification Code"}

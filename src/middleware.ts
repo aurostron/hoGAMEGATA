@@ -20,6 +20,7 @@ const PUBLIC_PATHS = [
   "/api/waitlist/join",
   "/api/auth/token-login",
   "/api/auth/dev-bypass",
+  "/api/auth/logout",
   "/api/games/summary",
   "/api/stats",
   "/api/track",
