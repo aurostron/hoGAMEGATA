@@ -39,7 +39,7 @@ try {
 if (Astro.request.method === "POST") {
   try {
     const data = await Astro.request.formData();
-    const code = data.get("code")?.toString().trim() || "";
+    const code = data.get("code")?.toString().replace(/\D/g, "").trim() || "";
     const setupSecret = data.get("setupSecret")?.toString().trim() || "";
 
     // Determine secret to use for verification
@@ -226,8 +226,7 @@ if (base32Secret) {
             id="otp-code"
             name="code"
             required
-            pattern="\d{6}"
-            maxlength="6"
+            maxlength="8"
             inputmode="numeric"
             autocomplete="one-time-code"
             autofocus
@@ -252,5 +251,17 @@ if (base32Secret) {
       </div>
 
     </div>
+
+    <script>
+      const input = document.getElementById("otp-code") as HTMLInputElement;
+      if (input) {
+        input.addEventListener("input", (e) => {
+          const target = e.target as HTMLInputElement;
+          // Strip out non-digit characters on the fly (spaces, dashes, etc.)
+          const cleaned = target.value.replace(/\D/g, "");
+          target.value = cleaned.slice(0, 6);
+        });
+      }
+    </script>
   </body>
 </html>
