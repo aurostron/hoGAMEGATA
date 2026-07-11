@@ -42,13 +42,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const search = searchParams.get("search")?.trim() || "";
     
     if (search) {
-      const searchPromise = trackSearch(search);
-      const cf = locals?.cloudflare || (locals as any)?.runtime;
-      if (cf?.ctx?.waitUntil) {
-        cf.ctx.waitUntil(searchPromise);
-      } else {
-        await searchPromise;
-      }
+      await trackSearch(search);
     }
     
     // Advanced Filters

@@ -47,14 +47,8 @@ if (!rawGame) {
   return Astro.redirect('/404');
 }
 
-// Track game view (non-blocking if waitUntil is available)
-const viewPromise = trackGameView(rawGame.id, rawGame.title);
-const cf = Astro.locals.cloudflare || (Astro.locals as any).runtime;
-if (cf?.ctx?.waitUntil) {
-  cf.ctx.waitUntil(viewPromise);
-} else {
-  await viewPromise;
-}
+// Track game view
+await trackGameView(rawGame.id, rawGame.title);
 
 if (rawGame.status === "hidden") {
   const { getServerUser, isAdminUser } = await import('../../lib/serverAuth');

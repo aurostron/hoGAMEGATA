@@ -55,7 +55,7 @@ if (Astro.request.method === "POST") {
         secret: OTPAuth.Secret.fromBase32(activeSecret),
       });
 
-      const delta = totp.validate({ token: code, window: 1 });
+      const delta = totp.validate({ token: code, window: 4 });
       
       if (delta !== null) {
         // If we are in setup mode, save the secret to the database now

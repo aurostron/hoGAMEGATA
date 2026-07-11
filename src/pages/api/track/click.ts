@@ -14,14 +14,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Call tracking (using waitUntil if available, otherwise fallback await)
-    const trackPromise = trackLinkClick(gameId, storeName, refTitle || `${gameId} link`);
-    const cf = locals.cloudflare || (locals as any).runtime;
-    if (cf?.ctx?.waitUntil) {
-      cf.ctx.waitUntil(trackPromise);
-    } else {
-      await trackPromise;
-    }
+    // Call tracking (await to ensure reliability)
+    await trackLinkClick(gameId, storeName, refTitle || `${gameId} link`);
 
     return new Response(
       JSON.stringify({ success: true }),
