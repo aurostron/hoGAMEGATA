@@ -206,6 +206,7 @@ export const priceSnapshots = sqliteTable(
     dealUrl: text("dealUrl").notNull(),
     currency: text("currency").default("USD").notNull(),
     country: text("country").default("US").notNull(),
+    provider: text("provider").default("direct").notNull(),
     updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
   },
   (table) => [

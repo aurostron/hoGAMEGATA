@@ -35,6 +35,11 @@ const REGIONS = [
   { code: "AU", label: "AUD (A$)" }
 ];
 
+const PROVIDERS = [
+  { code: "direct", label: "hGG Price Checker" },
+  { code: "aggregated", label: "CheapShark & ITAD" }
+];
+
 export default function PriceComparison({
   gameId,
   gameSlug,
@@ -47,9 +52,10 @@ export default function PriceComparison({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [region, setRegion] = useState<string>("detect");
+  const [provider, setProvider] = useState<string>("direct");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadPrices = async (targetRegion: string, force = false) => {
+  const loadPrices = async (targetRegion: string, targetProvider = provider, force = false) => {
     if (force) {
       setIsRefreshing(true);
     } else {
@@ -64,7 +70,8 @@ export default function PriceComparison({
           title: gameTitle,
           purchaseLinks: purchaseLinks,
           country: targetRegion,
-          forceRefresh: force
+          forceRefresh: force,
+          provider: targetProvider
         })
       });
 
@@ -101,8 +108,8 @@ export default function PriceComparison({
       targetRegion = "US"; // default fallback for cache check
     }
 
-    // Check if we have matching initialDeals from server cache
-    if (initialDeals && initialDeals.length > 0) {
+    // Check if we have matching initialDeals from server cache (only applicable for direct default provider)
+    if (provider === "direct" && initialDeals && initialDeals.length > 0) {
       const matchingDeals = initialDeals.filter(d => d.country === targetRegion);
       if (matchingDeals.length > 0) {
         // Sort cached deals by price ascending
@@ -121,8 +128,8 @@ export default function PriceComparison({
     }
 
     // Otherwise, fetch dynamically
-    loadPrices(targetRegion, false);
-  }, [gameId, region]);
+    loadPrices(targetRegion, provider, false);
+  }, [gameId, region, provider]);
 
   const handleRegionChange = (newRegion: string) => {
     setRegion(newRegion);
@@ -136,15 +143,26 @@ export default function PriceComparison({
       <div className="pt-6 space-y-4">
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-neutral-450 uppercase tracking-widest font-bold">Cheapest Deals</span>
-          <select 
-            disabled
-            value={region === "detect" ? "US" : region}
-            className="font-sans text-xs border border-white/10 bg-white/5 text-white/40 px-2 py-1 rounded-xl outline-none"
-          >
-            {REGIONS.map(r => (
-              <option key={r.code} value={r.code}>{r.label}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select 
+              disabled
+              value={provider}
+              className="font-sans text-xs border border-white/10 bg-white/5 text-white/40 px-2 py-1 rounded-xl outline-none"
+            >
+              {PROVIDERS.map(p => (
+                <option key={p.code} value={p.code}>{p.label}</option>
+              ))}
+            </select>
+            <select 
+              disabled
+              value={region === "detect" ? "US" : region}
+              className="font-sans text-xs border border-white/10 bg-white/5 text-white/40 px-2 py-1 rounded-xl outline-none"
+            >
+              {REGIONS.map(r => (
+                <option key={r.code} value={r.code}>{r.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="border border-white/5 bg-[#131316]/50 rounded-2xl divide-y divide-white/5 overflow-hidden">
           {[1, 2, 3].map((i) => (
@@ -173,7 +191,7 @@ export default function PriceComparison({
           <span className="text-[10px] text-neutral-450 uppercase tracking-widest font-bold">Cheapest Deals</span>
           {deals.length > 0 && (
             <button
-              onClick={() => loadPrices(region === "detect" ? "US" : region, true)}
+              onClick={() => loadPrices(region === "detect" ? "US" : region, provider, true)}
               disabled={isRefreshing}
               className={`text-[9px] uppercase tracking-wider px-2 py-0.5 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-all flex items-center gap-1 rounded-md ${
                 isRefreshing ? "cursor-not-allowed opacity-50" : "cursor-pointer"
@@ -185,22 +203,33 @@ export default function PriceComparison({
             </button>
           )}
         </div>
-        <select 
-          value={region}
-          onChange={(e) => handleRegionChange(e.target.value)}
-          className="font-sans text-xs border border-white/10 bg-white/5 text-white px-2 py-1 cursor-pointer font-semibold outline-none rounded-xl focus:border-white/30 focus:ring-0"
-        >
-          {REGIONS.map(r => (
-            <option key={r.code} value={r.code} className="bg-zinc-950 text-white">{r.label}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <select 
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+            className="font-sans text-xs border border-white/10 bg-white/5 text-white/70 hover:text-white px-2 py-1 cursor-pointer font-semibold outline-none rounded-xl focus:border-white/30 focus:ring-0"
+          >
+            {PROVIDERS.map(p => (
+              <option key={p.code} value={p.code} className="bg-zinc-950 text-white">{p.label}</option>
+            ))}
+          </select>
+          <select 
+            value={region}
+            onChange={(e) => handleRegionChange(e.target.value)}
+            className="font-sans text-xs border border-white/10 bg-white/5 text-white px-2 py-1 cursor-pointer font-semibold outline-none rounded-xl focus:border-white/30 focus:ring-0"
+          >
+            {REGIONS.map(r => (
+              <option key={r.code} value={r.code} className="bg-zinc-950 text-white">{r.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {error ? (
         <div className="border border-red-500/20 bg-red-950/20 p-4 font-mono text-sm text-red-400 text-center uppercase tracking-wide flex flex-col items-center gap-3 rounded-2xl">
           <span>Failed to fetch current digital storefront deals.</span>
           <button
-            onClick={() => loadPrices(region === "detect" ? "US" : region, true)}
+            onClick={() => loadPrices(region === "detect" ? "US" : region, provider, true)}
             className="font-mono text-[10px] uppercase tracking-wider px-3 py-1 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-black transition-all rounded-md"
           >
             Retry Fetch
@@ -264,7 +293,11 @@ export default function PriceComparison({
                   </div>
                   
                   <a
-                    href={`/re/${gameSlug}/${storeKey}?gameId=${gameId}&fallbackUrl=${encodeURIComponent(deal.dealUrl)}`}
+                    href={
+                      provider === "direct"
+                        ? `/re/${gameSlug}/${storeKey}?gameId=${gameId}&fallbackUrl=${encodeURIComponent(deal.dealUrl)}`
+                        : deal.dealUrl
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`text-xs transition-all duration-150 px-3 py-1.5 font-semibold flex items-center gap-1 border rounded-xl shadow-md ${
@@ -285,7 +318,7 @@ export default function PriceComparison({
         <div className="border border-white/5 bg-[#131316]/50 p-6 font-mono text-xs text-white/50 text-center uppercase tracking-wide flex flex-col items-center justify-center gap-4 rounded-2xl">
           <span>No cached price details found for this region.</span>
           <button
-            onClick={() => loadPrices(region === "detect" ? "US" : region, true)}
+            onClick={() => loadPrices(region === "detect" ? "US" : region, provider, true)}
             disabled={isRefreshing}
             className={`font-mono text-[10px] uppercase tracking-widest px-4 py-2 border border-white/10 text-white hover:bg-white hover:text-black transition-all flex items-center gap-2 font-black rounded-xl ${
               isRefreshing ? "cursor-not-allowed opacity-50" : "cursor-pointer"

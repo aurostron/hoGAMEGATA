@@ -14,7 +14,7 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     const body = await request.json();
-    const { title, purchaseLinks, country, forceRefresh } = body;
+    const { title, purchaseLinks, country, forceRefresh, provider = "direct" } = body;
 
     if (!title || !Array.isArray(purchaseLinks)) {
       return new Response(
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ params, request }) => {
       }
     }
 
-    const deals = await lazyGetPrices(id, title, purchaseLinks, targetCountry, !!forceRefresh);
+    const deals = await lazyGetPrices(id, title, purchaseLinks, targetCountry, !!forceRefresh, provider);
     return new Response(
       JSON.stringify({ deals, country: targetCountry }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }

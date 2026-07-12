@@ -1,11 +1,10 @@
 import type { APIRoute } from 'astro';
-import { generateAffiliateLink } from '../../../lib/affiliate';
-import { turso } from '../../../lib/turso';
-import { tursoAuth } from '../../../lib/tursoAuth';
-import { referralClick as referralClickTable } from '../../../db/auth-schema';
-import { games as gamesTable, purchaseLinks as purchaseLinksTable } from '../../../db/schema';
+import { generateAffiliateLink } from '../../../../lib/affiliate';
+import { turso } from '../../../../lib/turso';
+import { tursoAuth } from '../../../../lib/tursoAuth';
+import { referralClick as referralClickTable } from '../../../../db/auth-schema';
+import { games as gamesTable, purchaseLinks as purchaseLinksTable } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
-import { trackLinkClick } from '../../../lib/analytics';
 
 export const prerender = false;
 
@@ -23,14 +22,39 @@ function matchStoreName(slug: string): string {
   return slug;
 }
 
-export const GET: APIRoute = async ({ params, request, locals }) => {
+export const POST: APIRoute = async ({ params, request }) => {
   const { slug = "", store = "" } = params;
   const { searchParams } = new URL(request.url);
   const fallbackUrl = searchParams.get("fallbackUrl") || "";
   const gameId = searchParams.get("gameId") || "";
 
   try {
-    // 1. Resolve the Game from database (Turso Catalog DB)
+    const { token } = await request.json();
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Missing Turnstile verification token" }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 1. Verify Cloudflare Turnstile Captcha
+    const secretKey = import.meta.env.TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY || "1x0000000000000000000000000000000AA";
+    const cfVerifyResponse = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${secretKey}&response=${token}`
+    });
+
+    const cfVerifyData = await cfVerifyResponse.json() as any;
+    if (!cfVerifyData.success) {
+      console.warn("[Turnstile Validation Fail] Response:", cfVerifyData);
+      return new Response(JSON.stringify({ error: "Verification failed. Please try again." }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // 2. Resolve the Game from database (Turso Catalog DB)
     let game = null;
     if (gameId) {
       const [gameRow] = await turso
@@ -67,14 +91,14 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
     }
 
     if (!game) {
-      console.warn(`[Redirect Warning] Game not found for ID: "${gameId}" / Slug: "${slug}"`);
-      return new Response(null, {
-        status: 307,
-        headers: { Location: fallbackUrl || new URL("/", request.url).toString() }
+      console.warn(`[Redirect Gateway Error] Game not found for ID: "${gameId}" / Slug: "${slug}"`);
+      return new Response(JSON.stringify({ redirectUrl: fallbackUrl || new URL("/", request.url).toString() }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // 2. Resolve store name and find clean purchase link
+    // 3. Resolve store name and find clean purchase link
     const targetStoreName = matchStoreName(store);
     const purchaseLinks = game.purchaseLinks as any[];
     const cleanLink = purchaseLinks?.find(
@@ -85,7 +109,6 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
 
     if (cleanLink && cleanLink.url) {
       let targetUrl = cleanLink.url;
-      // If store is itch.io, append /purchase to open the payment overlay directly
       if (cleanLink.storeName.toLowerCase() === "itch.io" && !targetUrl.endsWith("/purchase")) {
         targetUrl = `${targetUrl.replace(/\/$/, "")}/purchase`;
       }
@@ -96,7 +119,7 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
       finalRedirectionUrl = cleanLink?.url || fallbackUrl || new URL("/", request.url).toString();
     }
 
-    // 3. Log referral click in database (separate Auth/User DB)
+    // 4. Log referral click in database (separate Auth/User DB)
     try {
       await tursoAuth.insert(referralClickTable).values({
         id: crypto.randomUUID(),
@@ -108,23 +131,16 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
       console.error("[Redirect Analytics Error] Failed to log ReferralClick:", dbErr);
     }
 
-    // 3b. Log aggregated analytics event (await to ensure reliability)
-    await trackLinkClick(
-      game.id,
-      cleanLink?.storeName || targetStoreName,
-      `${game.slug} on ${cleanLink?.storeName || targetStoreName}`
-    );
-
-    // 4. Temporary Redirect (307) to the affiliate link
-    return new Response(null, {
-      status: 307,
-      headers: { Location: finalRedirectionUrl }
+    // 5. Return target URL
+    return new Response(JSON.stringify({ redirectUrl: finalRedirectionUrl }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error(`[Redirect Exception] Error redirecting slug "${slug}" to store "${store}":`, error);
-    return new Response(null, {
-      status: 307,
-      headers: { Location: fallbackUrl || new URL("/", request.url).toString() }
+    console.error(`[Redirect Exception] Error verifying slug "${slug}" to store "${store}":`, error);
+    return new Response(JSON.stringify({ redirectUrl: fallbackUrl || new URL("/", request.url).toString() }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 };
