@@ -42,5 +42,8 @@ ingest_cursor.json
 gamegata-sync/
 hogamegata/
 
+# internal planning documents
+planning/
+
 
 

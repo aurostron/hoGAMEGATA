@@ -120,10 +120,10 @@ const game = {
 
 const priceSnapshots = priceSnapshotsData || [];
 
-// Cache this rendered page at the Cloudflare edge for 24 hours.
+// Cache this rendered page at the Cloudflare edge for 30 days, with 1-year background revalidation.
 Astro.response.headers.set(
   'Cache-Control',
-  'public, s-maxage=86400, stale-while-revalidate=604800'
+  'public, s-maxage=2592000, stale-while-revalidate=31536000'
 );
 
 const purchaseLinks = (game.purchaseLinks as any[]) || [];

@@ -1,0 +1,17 @@
+---
+export const prerender = true;
+
+import Layout from '../layouts/Layout.astro';
+import AISearch from '../components/AISearch';
+---
+
+<Layout 
+  title="Search | hoGAMEGATA" 
+  description="Describe the horror game you're looking for in plain English. AI-powered semantic search across themes, mechanics, perspectives, and vibes." 
+  withSearch={false} 
+  withLink={true}
+>
+  <main class="flex-1 w-full">
+    <AISearch client:only="react" />
+  </main>
+</Layout>

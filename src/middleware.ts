@@ -31,6 +31,7 @@ const PUBLIC_PATHS = [
   "/maintenance",
   "/submit-game",
   "/api/maintenance",
+  "/search",
 ];
 
 
@@ -56,6 +57,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|css|js|woff2|woff|ttf|ico)$/i)
   ) {
     return next();
+  }
+
+  // 1.5. Cloudflare Edge Cache MATCH check (0 DB reads for cached pages)
+  const cache = typeof caches !== "undefined" && (caches as any).default;
+  const isCacheableGet = context.request.method === "GET" && (
+    pathname.startsWith("/game/") || 
+    pathname.startsWith("/api/games") || 
+    pathname === "/sitemap.xml" ||
+    pathname === "/api/stats"
+  );
+
+  const cacheKey = isCacheableGet && new Request(context.request.url, context.request);
+  if (cache && isCacheableGet && cacheKey) {
+    try {
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+    } catch (e) {
+      console.error("[Edge Cache Match Error]", e);
+    }
   }
 
   // 2. Maintenance mode check via Cloudflare KV (0 DB reads)
@@ -145,5 +167,25 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return next();
+  const response = await next();
+
+  // Cloudflare Edge Cache PUT check
+  if (cache && isCacheableGet && cacheKey && response.status === 200) {
+    try {
+      const cacheControl = response.headers.get("Cache-Control");
+      if (cacheControl && cacheControl.includes("public")) {
+        const responseToCache = response.clone();
+        const cfCtx = (context.locals as any).runtime?.ctx;
+        if (cfCtx?.waitUntil) {
+          cfCtx.waitUntil(cache.put(cacheKey, responseToCache));
+        } else {
+          await cache.put(cacheKey, responseToCache);
+        }
+      }
+    } catch (e) {
+      console.error("[Edge Cache Put Error]", e);
+    }
+  }
+
+  return response;
 });

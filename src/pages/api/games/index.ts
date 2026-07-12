@@ -27,7 +27,9 @@ async function getGameTitles(): Promise<string[]> {
   try {
     const rows = await turso
       .select({ title: gamesTable.title })
-      .from(gamesTable);
+      .from(gamesTable)
+      .orderBy(desc(gamesTable.popularity))
+      .limit(1000);
     cachedGameTitles = rows.map(r => r.title).filter(Boolean);
     return cachedGameTitles;
   } catch (err) {
@@ -470,21 +472,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
     if (sort === "trending") {
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
-        desc(sourcesCountSql),
-        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(gamesTable.popularity),
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "top-rated") {
       baseQuery = baseQuery.orderBy(
-        desc(bayesianRatingSql),
-        desc(sourcesCountSql),
-        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(gamesTable.rating),
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "upcoming") {
       baseQuery = baseQuery.orderBy(
-        sql`${gamesTable.releaseDate} ASC NULLS LAST`,
-        desc(sourcesCountSql),
+        asc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "title") {
@@ -505,17 +503,14 @@ export const GET: APIRoute = async ({ request, locals }) => {
       ) as any;
     } else if (sort === "latest") {
       baseQuery = baseQuery.orderBy(
-        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
-        desc(sourcesCountSql),
-        desc(bayesianRatingSql),
+        desc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;
     } else {
       // default: trending
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
-        desc(sourcesCountSql),
-        sql`${gamesTable.releaseDate} DESC NULLS LAST`,
+        desc(gamesTable.popularity),
         desc(gamesTable.id)
       ) as any;
     }
