@@ -27,14 +27,14 @@ pnpm-debug.log*
 .DS_Store
 
 # Local Developer tools & database ORM
-/prisma/
-/scripts/
-/src/lib/db.ts
+# /prisma/
+# /scripts/
+# /src/lib/db.ts
 
 # local sqlite databases
-*.db
-*.db-journal
-*.sqlite
+# *.db
+# *.db-journal
+# *.sqlite
 
 # temporary scratch and ingestion files
 /scratch/
