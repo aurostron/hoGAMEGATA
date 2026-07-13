@@ -23,10 +23,6 @@
 		{
 			"binding": "MAINTENANCE",
 			"id": "42729c340d254d219a9c183752811d5e"
-		},
-		{
-			"binding": "AI_SEARCH_CACHE",
-			"id": "placeholder-to-be-replaced-with-real-kv-id"
 		}
 	],
 	"observability": {
