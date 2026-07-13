@@ -125,10 +125,11 @@ async function showMainMenu() {
   console.log("13. Database Duplicate Resolution Control");
   console.log("14. IGDB Data Dumps Explorer (Partner API)");
   console.log("15. Developer Page & Link Management");
-  console.log("16. Exit Portal");
+  console.log("16. Turso Database Environment Control");
+  console.log("17. Exit Portal");
   console.log("==================================================");
 
-  const choice = await askQuestion("Select category [1-16]: ");
+  const choice = await askQuestion("Select category [1-17]: ");
 
   switch (choice) {
     case "1":
@@ -208,6 +209,9 @@ async function showMainMenu() {
       await showDeveloperMenu();
       break;
     case "16":
+      await showDatabaseMenu();
+      break;
+    case "17":
       console.log("👋 Exiting portal.");
       process.exit(0);
     default:
@@ -694,6 +698,373 @@ async function showRetroMenu() {
       console.log("❌ Invalid choice.");
   }
   await showRetroMenu();
+}
+
+interface DbProfile {
+  TURSO_DATABASE_URL: string;
+  TURSO_AUTH_TOKEN: string;
+  AUTH_DATABASE_URL: string;
+  AUTH_DATABASE_TOKEN: string;
+}
+
+interface DbProfilesConfig {
+  activeProfile: string;
+  profiles: {
+    production: DbProfile;
+    development: DbProfile;
+  };
+}
+
+const PROFILES_FILE = path.join(process.cwd(), ".env.db-profiles.json");
+
+function getProfilesConfig(): DbProfilesConfig {
+  if (fs.existsSync(PROFILES_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(PROFILES_FILE, "utf-8"));
+    } catch (e) {
+      console.warn("⚠️ Failed to parse profiles file, resetting config.");
+    }
+  }
+
+  const config: DbProfilesConfig = {
+    activeProfile: "production",
+    profiles: {
+      production: {
+        TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL || "",
+        TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN || "",
+        AUTH_DATABASE_URL: process.env.AUTH_DATABASE_URL || "",
+        AUTH_DATABASE_TOKEN: process.env.AUTH_DATABASE_TOKEN || "",
+      },
+      development: {
+        TURSO_DATABASE_URL: "",
+        TURSO_AUTH_TOKEN: "",
+        AUTH_DATABASE_URL: "",
+        AUTH_DATABASE_TOKEN: "",
+      }
+    }
+  };
+
+  // Add to .gitignore if not already there
+  const gitignorePath = path.join(process.cwd(), ".gitignore");
+  if (fs.existsSync(gitignorePath)) {
+    let content = fs.readFileSync(gitignorePath, "utf-8");
+    if (!content.includes(".env.db-profiles.json")) {
+      content += "\n# Local db profiles\n.env.db-profiles.json\n";
+      fs.writeFileSync(gitignorePath, content, "utf-8");
+    }
+  }
+
+  saveProfilesConfig(config);
+  return config;
+}
+
+function saveProfilesConfig(config: DbProfilesConfig) {
+  fs.writeFileSync(PROFILES_FILE, JSON.stringify(config, null, 2), "utf-8");
+}
+
+function updateEnvFile(filePath: string, updates: Record<string, string>) {
+  if (!fs.existsSync(filePath)) return;
+  let content = fs.readFileSync(filePath, "utf-8");
+  const lines = content.split(/\r?\n/);
+  
+  for (const [key, val] of Object.entries(updates)) {
+    let found = false;
+    for (let i = 0; i < lines.length; i++) {
+      const match = lines[i].match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match && match[1] === key) {
+        const hasSingleQuotes = match[2]?.startsWith("'") && match[2]?.endsWith("'");
+        if (hasSingleQuotes) {
+          lines[i] = `${key}='${val}'`;
+        } else {
+          lines[i] = `${key}="${val}"`;
+        }
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      lines.push(`${key}="${val}"`);
+    }
+  }
+  
+  fs.writeFileSync(filePath, lines.join("\n"), "utf-8");
+}
+
+function switchActiveProfile(profileName: "production" | "development") {
+  const config = getProfilesConfig();
+  if (profileName !== "production" && profileName !== "development") return;
+  
+  config.activeProfile = profileName;
+  saveProfilesConfig(config);
+  
+  const profile = config.profiles[profileName];
+  const envUpdates = {
+    TURSO_DATABASE_URL: profile.TURSO_DATABASE_URL,
+    TURSO_AUTH_TOKEN: profile.TURSO_AUTH_TOKEN,
+    AUTH_DATABASE_URL: profile.AUTH_DATABASE_URL,
+    AUTH_DATABASE_TOKEN: profile.AUTH_DATABASE_TOKEN
+  };
+  
+  const envPath = path.join(process.cwd(), ".env");
+  const devVarsPath = path.join(process.cwd(), ".dev.vars");
+  
+  updateEnvFile(envPath, envUpdates);
+  updateEnvFile(devVarsPath, envUpdates);
+  
+  console.log(`\n🔄 Successfully switched active database to: 🌟 ${profileName.toUpperCase()} 🌟`);
+  console.log(`📍 URL: ${profile.TURSO_DATABASE_URL || "Not Configured"}`);
+}
+
+async function executeCommand(cmd: string, args: string[]): Promise<{ code: number; stdout: string; stderr: string }> {
+  return new Promise((resolve) => {
+    const isWindows = process.platform === "win32";
+    const child = spawn(cmd, args, {
+      shell: isWindows,
+    });
+    
+    let stdout = "";
+    let stderr = "";
+    
+    child.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+    
+    child.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+    
+    child.on("close", (code) => {
+      resolve({ code: code || 0, stdout, stderr });
+    });
+  });
+}
+
+async function replicateDatabaseHelper() {
+  console.log("\n==================================================");
+  console.log("🌀 AUTOMATED TURSO DATABASE REPLICATOR (CROSS-ACCOUNT)");
+  console.log("==================================================");
+  console.log("This script will:");
+  console.log("1. Export your existing database schema and data.");
+  console.log("2. Help you login to your second Turso account.");
+  console.log("3. Create the new database and load the data.");
+  console.log("4. Save credentials to your 'development' profile.");
+  console.log("==================================================\n");
+
+  const config = getProfilesConfig();
+  
+  console.log("👉 STEP 1: EXPORT PRIMARY DATABASE");
+  console.log("Please make sure you are currently logged into your primary Turso account in the CLI.");
+  const oldDbName = await askQuestion("Enter your primary Turso database name (e.g. gamegata-db-aurostron): ");
+  if (!oldDbName) {
+    console.log("❌ Database name cannot be empty.");
+    return;
+  }
+  
+  console.log(`\n⏳ Exporting database '${oldDbName}' to dump.sql...`);
+  const dumpRes = await executeCommand("turso", ["db", "shell", oldDbName, ".dump"]);
+  
+  if (dumpRes.code !== 0 || dumpRes.stderr.includes("Error")) {
+    console.error("❌ Export failed! Please make sure the database name is correct and you are logged into Turso CLI.");
+    console.error(dumpRes.stderr || dumpRes.stdout);
+    return;
+  }
+  
+  fs.writeFileSync(path.join(process.cwd(), "dump.sql"), dumpRes.stdout, "utf-8");
+  console.log("✅ Database exported successfully to dump.sql.");
+  
+  console.log("\n👉 STEP 2: LOGIN TO NEW ACCOUNT");
+  console.log("We will now log out of your primary account and prompt you to log into your secondary Turso account.");
+  const confirmLogin = await askQuestion("Ready to proceed? [Y/n]: ");
+  if (confirmLogin.toLowerCase() === "n") {
+    console.log("❌ Cancelled.");
+    return;
+  }
+  
+  console.log("\n⏳ Logging out of current Turso account...");
+  await executeCommand("turso", ["auth", "logout"]);
+  
+  console.log("🚀 Please log into your new Turso account in the browser...");
+  await new Promise<void>((resolve) => {
+    const child = spawn("turso", ["auth", "login"], {
+      stdio: "inherit",
+      shell: process.platform === "win32"
+    });
+    child.on("close", () => {
+      resolve();
+    });
+  });
+  
+  console.log("\n👉 STEP 3: CREATE NEW DATABASE");
+  const newDbName = await askQuestion("Enter name for your NEW database (e.g. gamegata-db-dev): ");
+  if (!newDbName) {
+    console.log("❌ New database name cannot be empty.");
+    return;
+  }
+  
+  console.log(`\n⏳ Creating database '${newDbName}' from dump.sql... (This may take a minute)`);
+  const createCode = await new Promise<number>((resolve) => {
+    const child = spawn("turso", ["db", "create", newDbName, "--from-dump", "dump.sql"], {
+      stdio: "inherit",
+      shell: process.platform === "win32"
+    });
+    child.on("close", (code) => {
+      resolve(code || 0);
+    });
+  });
+  
+  try {
+    fs.unlinkSync(path.join(process.cwd(), "dump.sql"));
+  } catch (e) {}
+  
+  if (createCode !== 0) {
+    console.error("❌ Failed to create and seed the new database. Please review the error above.");
+    return;
+  }
+  
+  console.log("✅ Database created and seeded successfully!");
+  
+  console.log("\n👉 STEP 4: RETRIEVING CREDENTIALS");
+  
+  console.log("⏳ Fetching database URL...");
+  const showRes = await executeCommand("turso", ["db", "show", newDbName]);
+  const urlMatch = showRes.stdout.match(/URL:\s*(libsql:\/\/[^\s\r\n]+)/i);
+  const newUrl = urlMatch ? urlMatch[1] : "";
+  
+  if (!newUrl) {
+    console.error("❌ Could not parse new database URL from 'turso db show' output:");
+    console.error(showRes.stdout);
+    return;
+  }
+  
+  console.log(`📍 New URL: ${newUrl}`);
+  
+  console.log("⏳ Generating auth token...");
+  const tokenRes = await executeCommand("turso", ["db", "tokens", "create", newDbName]);
+  const newToken = tokenRes.stdout.trim();
+  
+  if (!newToken || tokenRes.code !== 0) {
+    console.error("❌ Failed to generate auth token.");
+    console.error(tokenRes.stderr || tokenRes.stdout);
+    return;
+  }
+  
+  console.log("✅ Auth token generated successfully!");
+  
+  config.profiles.development.TURSO_DATABASE_URL = newUrl;
+  config.profiles.development.TURSO_AUTH_TOKEN = newToken;
+  
+  console.log("\n--------------------------------------------------");
+  const replicateAuth = await askQuestion("Do you also want to replicate your separated Auth database? [y/N]: ");
+  if (replicateAuth.toLowerCase() === "y") {
+    const oldAuthDbName = await askQuestion("Enter your primary Turso Auth database name (e.g. gamegata-auth-aurostron): ");
+    if (oldAuthDbName) {
+      console.log(`\n⏳ Exporting Auth database '${oldAuthDbName}' to auth-dump.sql...`);
+      const authDumpRes = await executeCommand("turso", ["db", "shell", oldAuthDbName, ".dump"]);
+      
+      if (authDumpRes.code === 0 && !authDumpRes.stderr.includes("Error")) {
+        fs.writeFileSync(path.join(process.cwd(), "auth-dump.sql"), authDumpRes.stdout, "utf-8");
+        
+        const newAuthDbName = await askQuestion("Enter name for your NEW Auth database (e.g. gamegata-auth-dev): ");
+        if (newAuthDbName) {
+          console.log(`\n⏳ Creating Auth database '${newAuthDbName}' from auth-dump.sql...`);
+          const authCreateCode = await new Promise<number>((resolve) => {
+            const child = spawn("turso", ["db", "create", newAuthDbName, "--from-dump", "auth-dump.sql"], {
+              stdio: "inherit",
+              shell: process.platform === "win32"
+            });
+            child.on("close", (code) => {
+              resolve(code || 0);
+            });
+          });
+          
+          try {
+            fs.unlinkSync(path.join(process.cwd(), "auth-dump.sql"));
+          } catch (e) {}
+          
+          if (authCreateCode === 0) {
+            console.log("⏳ Fetching new Auth database URL...");
+            const authShowRes = await executeCommand("turso", ["db", "show", newAuthDbName]);
+            const authUrlMatch = authShowRes.stdout.match(/URL:\s*(libsql:\/\/[^\s\r\n]+)/i);
+            const newAuthUrl = authUrlMatch ? authUrlMatch[1] : "";
+            
+            console.log("⏳ Generating new Auth database auth token...");
+            const authTokenRes = await executeCommand("turso", ["db", "tokens", "create", newAuthDbName]);
+            const newAuthToken = authTokenRes.stdout.trim();
+            
+            if (newAuthUrl && newAuthToken && authTokenRes.code === 0) {
+              config.profiles.development.AUTH_DATABASE_URL = newAuthUrl;
+              config.profiles.development.AUTH_DATABASE_TOKEN = newAuthToken;
+              console.log("✅ Auth database replicated successfully!");
+            }
+          }
+        }
+      } else {
+        console.error("❌ Auth export failed.");
+      }
+    }
+  }
+  
+  saveProfilesConfig(config);
+  
+  console.log("\n==================================================");
+  console.log("🎉 REPLICATION COMPLETED!");
+  console.log("The development profile has been updated in .env.db-profiles.json.");
+  console.log("==================================================");
+  
+  const switchNow = await askQuestion("\nWould you like to switch to the new development database right now? [Y/n]: ");
+  if (switchNow.toLowerCase() !== "n") {
+    switchActiveProfile("development");
+  }
+}
+
+async function showDatabaseMenu() {
+  const config = getProfilesConfig();
+  console.log("\n--------------------------------------------------");
+  console.log("🗄️  TURSO DATABASE ENVIRONMENT CONTROL");
+  console.log("--------------------------------------------------");
+  console.log(`🌟 CURRENT ACTIVE PROFILE: ${config.activeProfile.toUpperCase()}`);
+  console.log(`🔗 URL: ${config.profiles[config.activeProfile as 'production' | 'development'].TURSO_DATABASE_URL || "None"}`);
+  console.log("--------------------------------------------------");
+  console.log("1. Switch to PRODUCTION (Main Database)");
+  console.log("2. Switch to DEVELOPMENT (Test Database)");
+  console.log("3. Replicate Database 1:1 to a New Turso Account");
+  console.log("4. View Current Config Profiles Details");
+  console.log("5. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-5]: ");
+  switch (choice) {
+    case "1":
+      switchActiveProfile("production");
+      break;
+    case "2":
+      if (!config.profiles.development.TURSO_DATABASE_URL) {
+        console.log("\n⚠️ Development profile has not been configured yet.");
+        const setup = await askQuestion("Would you like to configure/replicate it now? [Y/n]: ");
+        if (setup.toLowerCase() !== "n") {
+          await replicateDatabaseHelper();
+        }
+      } else {
+        switchActiveProfile("development");
+      }
+      break;
+    case "3":
+      await replicateDatabaseHelper();
+      break;
+    case "4":
+      console.log("\n==================================================");
+      console.log("📜 CURRENT PROFILE DETAILS");
+      console.log("==================================================");
+      console.log(JSON.stringify(config, null, 2));
+      console.log("==================================================");
+      break;
+    case "5":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await askQuestion("\n[Press Enter to return to menu]");
+  await showDatabaseMenu();
 }
 
 async function main() {
