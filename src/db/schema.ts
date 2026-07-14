@@ -277,3 +277,17 @@ export const analyticsDaily = sqliteTable("AnalyticsDaily", {
   totalSearches: integer("totalSearches").default(0).notNull(),
 });
 
+// --- AI Search Cache ---
+export const aiSearchCache = sqliteTable(
+  "AISearchCache",
+  {
+    id: text("id").primaryKey(), // e.g. slugified query like "games-like-visage"
+    query: text("query").notNull().unique(), // Normalized query text (e.g. "games like visage")
+    resultsJson: text("results_json").notNull(), // Serialized JSON payload containing the verified game cards
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  },
+  (table) => [
+    index("ai_search_cache_query_idx").on(table.query),
+  ]
+);
+

@@ -15,7 +15,9 @@
     "dev-gui": "tsx scripts/dev-gui.ts",
     "db:generate": "prisma generate",
     "deploy": "npm run build && wrangler deploy",
-    "count-igdb": "tsx scripts/count-igdb.ts"
+    "count-igdb": "tsx scripts/count-igdb.ts",
+    "search:pregenerate": "tsx scripts/pregenerate-draft.ts",
+    "search:apply": "tsx scripts/apply-search-cache.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.0",

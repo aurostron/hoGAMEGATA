@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { turso } from '../../../lib/turso';
-import { games as gamesTable, gameRecommendations as gameRecommendationsTable } from '../../../db/schema';
+import { games as gamesTable, gameRecommendations as gameRecommendationsTable, aiSearchCache as aiSearchCacheTable } from '../../../db/schema';
 import { or, isNull, ne, eq, like, and, inArray } from 'drizzle-orm';
 import {
   normalizeQueryForCache,
@@ -101,6 +101,30 @@ export const POST: APIRoute = async ({ request }) => {
 
     // --- STAGE 1: Cache Check & Direct Title Match ---
     if (!dsl) {
+      // 0. Check Drizzle database cache first (globally replicated edge cache, $0 cost, 0ms LLM latency)
+      const { cleanedQuery } = preprocessSearchQuery(query);
+      const cleanedLower = cleanedQuery?.toLowerCase().trim();
+      
+      if (cleanedLower) {
+        try {
+          const [dbCached] = await turso
+            .select({ resultsJson: aiSearchCacheTable.resultsJson })
+            .from(aiSearchCacheTable)
+            .where(eq(aiSearchCacheTable.query, cleanedLower))
+            .limit(1);
+
+          if (dbCached && dbCached.resultsJson) {
+            const parsedResults = JSON.parse(dbCached.resultsJson);
+            return new Response(
+              JSON.stringify({ status: "success", results: parsedResults }),
+              { status: 200, headers: { "Content-Type": "application/json" } }
+            );
+          }
+        } catch (dbCacheErr) {
+          console.error("⚠️ DB search cache read failed:", dbCacheErr);
+        }
+      }
+
       if (kv && normalized) {
         try {
           // 1. Check direct matches cache first (saves 100% of direct lookup reads)
@@ -129,7 +153,6 @@ export const POST: APIRoute = async ({ request }) => {
 
       // 3. Fallback: Check for direct title match in DB using cleaned query (saves fetching 18,000+ titles)
       // We clean the query of conversational fillers first to check for game titles like "games like visage" -> "visage"
-      const { cleanedQuery } = preprocessSearchQuery(query);
       let matchedGame: any = null;
 
       if (cleanedQuery && cleanedQuery.length >= 2) {
