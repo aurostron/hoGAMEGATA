@@ -107,8 +107,14 @@ async function toggleMaintenanceMode() {
 }
 
 async function showMainMenu() {
+  const config = getProfilesConfig();
+  const activeProfileName = config.activeProfile.toUpperCase();
+  const dbUrl = config.profiles[config.activeProfile as 'production' | 'development'].TURSO_DATABASE_URL || "None";
+
   console.log("\n==================================================");
   console.log("🖥️  hoGAMEGATA UNIFIED DEVELOPER PORTAL");
+  console.log(`🗄️  ACTIVE DATABASE: ${activeProfileName === 'PRODUCTION' ? '🟢 PRODUCTION (Main)' : '🟡 DEVELOPMENT (Test)'}`);
+  console.log(`🔗 URL: ${dbUrl}`);
   console.log("==================================================");
   console.log("1. IGDB Catalog Ingestion Control");
   console.log("2. RAWG & Steam Metadata Enrichment");
