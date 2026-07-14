@@ -1017,6 +1017,106 @@ async function replicateDatabaseHelper() {
   }
 }
 
+async function importDatabaseFromFileHelper() {
+  console.log("\n==================================================");
+  console.log("📁 CREATE TURSO DATABASE FROM LOCAL SQLITE FILE (.db)");
+  console.log("==================================================");
+  console.log("This script will create a new Turso database on your current account");
+  console.log("using a local SQLite `.db` file (e.g. the one you downloaded).");
+  console.log("==================================================\n");
+
+  const config = getProfilesConfig();
+
+  const filePath = await askQuestion("Enter the path to your local .db file (e.g. C:\\Downloads\\backup.db): ");
+  if (!filePath) {
+    console.log("❌ File path cannot be empty.");
+    return;
+  }
+
+  let cleanPath = filePath.trim();
+  if (cleanPath.startsWith('"') && cleanPath.endsWith('"')) {
+    cleanPath = cleanPath.slice(1, -1);
+  }
+  if (cleanPath.startsWith("'") && cleanPath.endsWith("'")) {
+    cleanPath = cleanPath.slice(1, -1);
+  }
+
+  if (!fs.existsSync(cleanPath)) {
+    console.error(`❌ File not found at path: ${cleanPath}`);
+    return;
+  }
+
+  console.log("\n👉 Please make sure you are logged into the destination Turso account in the CLI.");
+  const confirmLogin = await askQuestion("Ready to proceed? [Y/n]: ");
+  if (confirmLogin.toLowerCase() === "n") {
+    console.log("❌ Cancelled.");
+    return;
+  }
+
+  const newDbName = await askQuestion("Enter name for your NEW Turso database (e.g. gamegata-db-dev): ");
+  if (!newDbName) {
+    console.log("❌ Database name cannot be empty.");
+    return;
+  }
+
+  console.log(`\n⏳ Creating database '${newDbName}' from file '${cleanPath}'... (This may take a minute)`);
+  const createCode = await new Promise<number>((resolve) => {
+    const child = spawn("turso", ["db", "create", newDbName, "--from-file", cleanPath], {
+      stdio: "inherit",
+      shell: process.platform === "win32"
+    });
+    child.on("close", (code) => {
+      resolve(code || 0);
+    });
+  });
+
+  if (createCode !== 0) {
+    console.error("❌ Failed to create database from file. Please check the error above.");
+    return;
+  }
+
+  console.log("✅ Database created successfully!");
+
+  console.log("\n⏳ Fetching database URL...");
+  const showRes = await executeCommand("turso", ["db", "show", newDbName]);
+  const urlMatch = showRes.stdout.match(/URL:\s*(libsql:\/\/[^\s\r\n]+)/i);
+  const newUrl = urlMatch ? urlMatch[1] : "";
+
+  if (!newUrl) {
+    console.error("❌ Could not parse database URL from output:");
+    console.error(showRes.stdout);
+    return;
+  }
+
+  console.log(`📍 URL: ${newUrl}`);
+
+  console.log("⏳ Generating auth token...");
+  const tokenRes = await executeCommand("turso", ["db", "tokens", "create", newDbName]);
+  const newToken = tokenRes.stdout.trim();
+
+  if (!newToken || tokenRes.code !== 0) {
+    console.error("❌ Failed to generate auth token.");
+    return;
+  }
+
+  console.log("✅ Auth token generated successfully!");
+
+  config.profiles.development.TURSO_DATABASE_URL = newUrl;
+  config.profiles.development.TURSO_AUTH_TOKEN = newToken;
+  
+  saveProfilesConfig(config);
+
+  console.log("\n==================================================");
+  console.log("🎉 DATABASE IMPORT COMPLETED!");
+  console.log("Your development profile has been updated in .env.db-profiles.json.");
+  console.log("==================================================");
+
+  const switchNow = await askQuestion("\nWould you like to switch to the new database right now? [Y/n]: ");
+  if (switchNow.toLowerCase() !== "n") {
+    switchActiveProfile("development");
+  }
+}
+
 async function showDatabaseMenu() {
   const config = getProfilesConfig();
   console.log("\n--------------------------------------------------");
@@ -1027,12 +1127,13 @@ async function showDatabaseMenu() {
   console.log("--------------------------------------------------");
   console.log("1. Switch to PRODUCTION (Main Database)");
   console.log("2. Switch to DEVELOPMENT (Test Database)");
-  console.log("3. Replicate Database 1:1 to a New Turso Account");
-  console.log("4. View Current Config Profiles Details");
-  console.log("5. Return to Main Menu");
+  console.log("3. Replicate Database from Production (Dump & Restore)");
+  console.log("4. Create/Import Database from a local .db file");
+  console.log("5. View Current Config Profiles Details");
+  console.log("6. Return to Main Menu");
   console.log("--------------------------------------------------");
 
-  const choice = await askQuestion("Select action [1-5]: ");
+  const choice = await askQuestion("Select action [1-6]: ");
   switch (choice) {
     case "1":
       switchActiveProfile("production");
@@ -1052,13 +1153,16 @@ async function showDatabaseMenu() {
       await replicateDatabaseHelper();
       break;
     case "4":
+      await importDatabaseFromFileHelper();
+      break;
+    case "5":
       console.log("\n==================================================");
       console.log("📜 CURRENT PROFILE DETAILS");
       console.log("==================================================");
       console.log(JSON.stringify(config, null, 2));
       console.log("==================================================");
       break;
-    case "5":
+    case "6":
       return;
     default:
       console.log("❌ Invalid choice.");
