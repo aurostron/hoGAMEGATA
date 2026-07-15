@@ -50,6 +50,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { url, redirect } = context;
   const { pathname } = url;
 
+  // Redirect www to non-www canonical domain (e.g. www.gamegata.xyz -> gamegata.xyz)
+  if (url.hostname.startsWith("www.")) {
+    const canonicalHost = url.hostname.replace(/^www\./, "");
+    return redirect(`https://${canonicalHost}${pathname}${url.search}`, 301);
+  }
+
   // 1. Skip static assets
   if (
     pathname.startsWith("/_astro/") ||

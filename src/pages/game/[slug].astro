@@ -174,9 +174,30 @@ const platforms = (game.platforms as any[]) || [];
 const requirements = { min: game.minRequirements, rec: game.recRequirements };
 
 function cleanRequirementsText(text: string): string {
-  return text
-    .replace(/^(Minimum|Recommended|Minimum Requirements|Recommended Requirements):\s*/i, "")
-    .trim();
+  let cleaned = text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n");
+  
+  cleaned = cleaned.replace(/<[^>]*>/g, "");
+  
+  cleaned = cleaned
+    .replace(/^(Minimum|Recommended|Minimum Requirements|Recommended Requirements):\s*/gi, "")
+    .replace(/\n(Minimum|Recommended|Minimum Requirements|Recommended Requirements):\s*/gi, "\n");
+  
+  cleaned = cleaned
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+  return cleaned
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .join("\n");
 }
 
 // Technical SEO & Structured Data (JSON-LD)
@@ -554,7 +575,7 @@ const schemaJson = JSON.stringify(schema);
           />
 
           <!-- Official/Creator Links -->
-          { (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
+          { (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl) && (
             <div class="pt-6 space-y-4">
               <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Official & Creator Links</h2>
               <div class="flex flex-wrap gap-3">
@@ -591,18 +612,6 @@ const schemaJson = JSON.stringify(schema);
                   >
                     <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Reddit Community</span>
-                  </a>
-                )}
-
-                {game.rawgSlug && (
-                  <a
-                    href={`https://rawg.io/games/${game.rawgSlug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white/80 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
-                  >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/60 group-hover:text-black" />
-                    <span>RAWG Profile</span>
                   </a>
                 )}
               </div>
@@ -708,7 +717,7 @@ const schemaJson = JSON.stringify(schema);
           />
 
           <!-- Official/Creator Links -->
-          { (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl || game.rawgSlug) && (
+          { (purchaseLinks?.length > 0 || game.websiteUrl || game.redditUrl) && (
             <div class="pt-6 space-y-4">
               <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Official & Creator Links</h2>
               <div class="flex flex-wrap gap-3">
@@ -745,18 +754,6 @@ const schemaJson = JSON.stringify(schema);
                   >
                     <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
                     <span>Reddit Community</span>
-                  </a>
-                )}
-
-                {game.rawgSlug && (
-                  <a
-                    href={`https://rawg.io/games/${game.rawgSlug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white/80 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
-                  >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/60 group-hover:text-black" />
-                    <span>RAWG Profile</span>
                   </a>
                 )}
               </div>
