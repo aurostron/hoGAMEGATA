@@ -6,6 +6,7 @@ import type { HeroGameData } from "./HeroCarousel";
 import PlatformLogos from "./PlatformLogos";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { CartProvider, useCart } from "../context/CartContext";
+import { getCloudinaryFetchUrl } from "../lib/utils";
 
 const patrons = [
   { name: "Puppet Combo", initials: "PC", style: "border border-red-950 bg-red-950/20 text-red-500 font-bold" },
@@ -188,7 +189,7 @@ export default function StorefrontLists({
           <div className="relative w-16 h-20 bg-neutral-900 border border-white/10 shrink-0 overflow-hidden">
             {game.coverUrl ? (
               <img
-                src={game.coverUrl}
+                src={getCloudinaryFetchUrl(game.coverUrl) || undefined}
                 alt=""
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"

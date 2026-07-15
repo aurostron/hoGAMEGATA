@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, Loader2, Info, X, Key, ExternalLink, ChevronDown, Cpu } from "lucide-react";
+import { getCloudinaryFetchUrl } from "../lib/utils";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -893,7 +894,7 @@ export default function AISearch() {
                 <div className="aspect-[3/4] w-full bg-[#0d0d0f] relative overflow-hidden">
                   {game.coverUrl ? (
                     <img
-                      src={game.coverUrl.replace("t_thumb", "t_cover_big")}
+                      src={getCloudinaryFetchUrl(game.coverUrl.replace("t_thumb", "t_cover_big")) || undefined}
                       alt={game.title}
                       className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-300"
                       loading="lazy"

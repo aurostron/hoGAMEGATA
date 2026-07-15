@@ -110,7 +110,7 @@ export default function PriceComparison({
 
     // Check if we have matching initialDeals from server cache (only applicable for direct default provider)
     if (provider === "direct" && initialDeals && initialDeals.length > 0) {
-      const matchingDeals = initialDeals.filter(d => d.country === targetRegion);
+      const matchingDeals = initialDeals.filter(d => d.country === targetRegion && (d.provider === "direct" || !d.provider));
       if (matchingDeals.length > 0) {
         // Sort cached deals by price ascending
         const sorted = [...matchingDeals].sort((a, b) => a.dealPrice - b.dealPrice);

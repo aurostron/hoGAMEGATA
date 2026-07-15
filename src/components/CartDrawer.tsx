@@ -7,6 +7,7 @@ import {
   X, Trash2, ExternalLink, Sparkles, Check, 
   HelpCircle, ChevronRight, ShoppingBag, ArrowRight
 } from "lucide-react";
+import { getCloudinaryFetchUrl } from "../lib/utils";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -279,7 +280,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <div className="w-20 h-24 bg-neutral-900 border border-white/15 shrink-0 overflow-hidden relative">
                               {item.coverUrl ? (
                                 <img 
-                                  src={item.coverUrl} 
+                                  src={getCloudinaryFetchUrl(item.coverUrl) || undefined} 
                                   alt={item.gameTitle} 
                                   className="w-full h-full object-cover"
                                 />
