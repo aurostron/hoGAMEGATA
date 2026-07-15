@@ -65,8 +65,13 @@ async function fetchWithBackoff(url: string, init?: RequestInit, retries = 3, de
   const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5 seconds timeout limit
 
   try {
+    const headers = new Headers(init?.headers);
+    if (!headers.has("User-Agent")) {
+      headers.set("User-Agent", "hoGAMEGATA-Price-Engine/1.0 (contact@gamegata.xyz)");
+    }
     const response = await fetch(url, {
       ...init,
+      headers,
       signal: controller.signal
     });
     clearTimeout(timeoutId);
@@ -133,7 +138,7 @@ export async function fetchCheapSharkDeals(steamId: string | null, title: string
     }
 
     if (!cheapSharkGameId) {
-      const response = await fetchWithBackoff(`https://www.cheapshark.com/api/1.0/games?title=${encodeURIComponent(title.trim())}&limit=1`);
+      const response = await fetchWithBackoff(`https://www.cheapshark.com/api/1.0/games?title=${encodeURIComponent(title.trim()).replace(/'/g, "%27")}&limit=1`);
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
