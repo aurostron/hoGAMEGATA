@@ -8,3 +8,4 @@ Disallow: /login
 Disallow: /dashboard
 
 Sitemap: https://gamegata.xyz/sitemap.xml
+Sitemap: https://gamegata.xyz/sitemap-index.xml

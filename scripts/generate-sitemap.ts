@@ -102,8 +102,13 @@ ${blogItems}
 </urlset>`;
 
     const destPath = path.join(process.cwd(), "public", "sitemap.xml");
+    const destPathIndex = path.join(process.cwd(), "public", "sitemap-index.xml");
+    
     console.log(`💾 Writing sitemap to: ${destPath}`);
     fs.writeFileSync(destPath, sitemapXml.trim(), "utf8");
+    
+    console.log(`💾 Writing cache-bypassing copy to: ${destPathIndex}`);
+    fs.writeFileSync(destPathIndex, sitemapXml.trim(), "utf8");
 
     console.log("🎉 Static sitemap.xml generated successfully!");
   } catch (err) {
