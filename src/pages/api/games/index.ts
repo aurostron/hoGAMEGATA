@@ -303,11 +303,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     const buildConditions = (searchTerm: string, activeFilterIds: string[] | null) => {
       const conds = [];
-      // Filter out corrupt ratings
-      conds.push(or(isNull(gamesTable.rating), lte(gamesTable.rating, 100)));
       
       // Filter out hidden games
-      conds.push(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")));
+      conds.push(ne(gamesTable.status, "hidden"));
       
       const todayDate = new Date();
       if (sort === "upcoming") {
@@ -320,8 +318,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
       } else {
         conds.push(
           and(
-            or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
-            or(isNull(gamesTable.releaseDate), lte(gamesTable.releaseDate, todayDate))
+            ne(gamesTable.status, "upcoming"),
+            lte(gamesTable.releaseDate, todayDate)
           )
         );
       }

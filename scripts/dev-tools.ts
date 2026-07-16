@@ -128,7 +128,7 @@ async function showMainMenu() {
   console.log("10. Scare Meter NLP Batch Processing");
   console.log("11. Toggle Website Maintenance Mode");
   console.log("12. View Database Statistics");
-  console.log("13. Database Duplicate Resolution Control");
+  console.log("13. Database Maintenance (Duplicates & PC Specs)");
   console.log("14. IGDB Data Dumps Explorer (Partner API)");
   console.log("15. Developer Page & Link Management");
   console.log("16. Turso Database Environment Control");
@@ -228,14 +228,15 @@ async function showMainMenu() {
 
 async function showDuplicateResolutionMenu() {
   console.log("\n--------------------------------------------------");
-  console.log("🧬 DATABASE DUPLICATE RESOLUTION CONTROL");
+  console.log("🧬 DATABASE MAINTENANCE / DUPLICATES & SPECS");
   console.log("--------------------------------------------------");
   console.log("1. Scan and Auto-Merge GOG Companion Duplicates (Soundtracks, DLCs, Artbooks)");
   console.log("2. Launch standard interactive duplicate resolution engine");
-  console.log("3. Return to Main Menu");
+  console.log("3. Scan & Populate Missing PC System Requirements (Steam & RAWG)");
+  console.log("4. Return to Main Menu");
   console.log("--------------------------------------------------");
 
-  const choice = await askQuestion("Select action [1-3]: ");
+  const choice = await askQuestion("Select action [1-4]: ");
   switch (choice) {
     case "1":
       await runScript("scripts/cleanup-gog-duplicates.ts");
@@ -246,6 +247,10 @@ async function showDuplicateResolutionMenu() {
       await askQuestion("\n[Press Enter to return to main menu]");
       break;
     case "3":
+      await runScript("scripts/fix-requirements.ts");
+      await askQuestion("\n[Press Enter to return to main menu]");
+      break;
+    case "4":
       return;
     default:
       console.log("❌ Invalid choice.");
@@ -399,24 +404,32 @@ async function showEnrichMenu() {
   console.log("--------------------------------------------------");
 
   const choice = await askQuestion("Select action [1-3]: ");
-  switch (choice) {
-    case "1":
-      await runScript("scripts/enrich.ts");
-      break;
-    case "2":
-      const limit = await askQuestion("Enter batch limit (default 100): ");
-      const num = parseInt(limit, 10);
-      if (!isNaN(num)) {
-        await runScript("scripts/enrich.ts", ["--limit", num.toString()]);
-      } else {
-        console.log("❌ Invalid limit.");
-      }
-      break;
-    case "3":
-      return;
-    default:
-      console.log("❌ Invalid choice.");
+  if (choice === "3") return;
+  
+  if (choice !== "1" && choice !== "2") {
+    console.log("❌ Invalid choice.");
+    await showEnrichMenu();
+    return;
   }
+
+  const customKey = await askQuestion("Enter RAWG API key to use (leave blank to use default from .env): ");
+  const baseArgs: string[] = [];
+  if (customKey.trim() !== "") {
+    baseArgs.push("--api-key", customKey.trim());
+  }
+
+  if (choice === "1") {
+    await runScript("scripts/enrich.ts", baseArgs);
+  } else if (choice === "2") {
+    const limit = await askQuestion("Enter batch limit (default 100): ");
+    const num = parseInt(limit, 10);
+    if (!isNaN(num)) {
+      await runScript("scripts/enrich.ts", ["--limit", num.toString(), ...baseArgs]);
+    } else {
+      console.log("❌ Invalid limit.");
+    }
+  }
+  
   await showEnrichMenu();
 }
 

@@ -51,7 +51,7 @@ async function fetchRawgGameDetails(
 ): Promise<RawgDetails | null> {
   const parseRawgData = (data: any): RawgDetails => {
     const pcPlatform = data.platforms?.find((p: any) => p.platform?.slug === "pc");
-    const requirements = pcPlatform?.requirements_en || null;
+    const requirements = pcPlatform?.requirements_en || pcPlatform?.requirements || null;
     const minRequirements = requirements?.minimum || null;
     const recRequirements = requirements?.recommended || null;
 
@@ -104,13 +104,19 @@ async function fetchRawgGameDetails(
 }
 
 async function runEnrichment() {
-  const rawgApiKey = process.env.RAWG_API_KEY;
+  const args = process.argv.slice(2);
+  
+  let rawgApiKey = process.env.RAWG_API_KEY;
+  const keyIndex = args.indexOf("--api-key");
+  if (keyIndex !== -1 && args[keyIndex + 1]) {
+    rawgApiKey = args[keyIndex + 1];
+  }
+
   if (!rawgApiKey) {
-    console.error("❌ Error: RAWG_API_KEY is missing in your .env file.");
+    console.error("❌ Error: RAWG_API_KEY is missing. Please provide it via .env or --api-key argument.");
     process.exit(1);
   }
 
-  const args = process.argv.slice(2);
   let batchLimit = 100;
   const limitIndex = args.indexOf("--limit");
   if (limitIndex !== -1 && args[limitIndex + 1]) {

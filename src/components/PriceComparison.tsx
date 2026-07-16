@@ -140,9 +140,9 @@ export default function PriceComparison({
   // Keep rendering skeleton while loading
   if (loading) {
     return (
-      <div className="pt-6 space-y-4">
+      <div className="pt-10 space-y-8">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-neutral-450 uppercase tracking-widest font-bold">Cheapest Deals</span>
+          <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/30 border border-white/[0.08] text-[11px] uppercase tracking-[0.18em] font-bold text-white/100">Cheapest Deals</span>
           <div className="flex items-center gap-2">
             <select 
               disabled
@@ -188,7 +188,7 @@ export default function PriceComparison({
     <div className="pt-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-[10px] text-neutral-450 uppercase tracking-widest font-bold">Cheapest Deals</span>
+          <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/5 border border-white/[0.08] text-[11px] uppercase tracking-[0.18em] font-bold text-white/40">Cheapest Deals</span>
           {deals.length > 0 && (
             <button
               onClick={() => loadPrices(region === "detect" ? "US" : region, provider, true)}
