@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Allow: /game/
+Disallow: /api/
+Disallow: /search/
+Disallow: /search?*
+Disallow: /login
+Disallow: /dashboard
 
 Sitemap: https://gamegata.xyz/sitemap.xml
