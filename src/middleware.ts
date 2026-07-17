@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   "/api/games",
   "/api/search",
   "/sitemap.xml",
+  "/sitemap-index.xml",
   "/robots.txt",
   "/waitlist",
   "/api/waitlist/join",
@@ -78,6 +79,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname.startsWith("/game/") || 
     pathname.startsWith("/api/games") || 
     pathname === "/sitemap.xml" ||
+    pathname === "/sitemap-index.xml" ||
     pathname === "/api/stats"
   );
 
