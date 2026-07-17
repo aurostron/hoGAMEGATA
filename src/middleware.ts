@@ -78,8 +78,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isCacheableGet = context.request.method === "GET" && (
     pathname.startsWith("/game/") || 
     pathname.startsWith("/api/games") || 
-    pathname === "/sitemap.xml" ||
-    pathname === "/sitemap-index.xml" ||
     pathname === "/api/stats"
   );
 
