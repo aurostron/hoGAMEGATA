@@ -33,8 +33,34 @@ const PUBLIC_PATHS = [
   "/submit-game",
   "/api/maintenance",
   "/search",
+  "/api/edits",
+  "/api/user/reputation",
+  "/api/games/history",
 ];
 
+
+function applySecurityHeaders(res: Response): Response {
+  try {
+    res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    res.headers.set("X-Frame-Options", "DENY");
+    res.headers.set("X-Content-Type-Options", "nosniff");
+    res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    return res;
+  } catch {
+    const newHeaders = new Headers(res.headers);
+    newHeaders.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    newHeaders.set("X-Frame-Options", "DENY");
+    newHeaders.set("X-Content-Type-Options", "nosniff");
+    newHeaders.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    newHeaders.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    return new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: newHeaders,
+    });
+  }
+}
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
@@ -54,7 +80,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // Redirect www to non-www canonical domain (e.g. www.gamegata.xyz -> gamegata.xyz)
   if (url.hostname.startsWith("www.")) {
     const canonicalHost = url.hostname.replace(/^www\./, "");
-    return redirect(`https://${canonicalHost}${pathname}${url.search}`, 301);
+    return applySecurityHeaders(redirect(`https://${canonicalHost}${pathname}${url.search}`, 301));
   }
 
   // 1. Skip static assets
@@ -63,13 +89,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname.startsWith("/favicon.ico") ||
     pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|css|js|woff2|woff|ttf|ico)$/i)
   ) {
-    return next();
+    return applySecurityHeaders(await next());
   }
 
   // 1.2. If not in development mode, block AI search UI and API endpoints in production
   if (!isDev) {
     if (pathname === "/search" || pathname === "/api/search/ai" || pathname === "/api/search/web") {
-      return redirect("/");
+      return applySecurityHeaders(redirect("/"));
     }
   }
 
@@ -86,7 +112,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     try {
       const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
-        return cachedResponse;
+        return applySecurityHeaders(cachedResponse);
       }
     } catch (e) {
       console.error("[Edge Cache Match Error]", e);
@@ -109,7 +135,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           const hasBypass = bypassCookie && secret && bypassCookie === secret;
           if (!hasBypass) {
             // Use absolute URL redirect to avoid any relative-path confusion
-            return redirect("https://gamegata.xyz/maintenance", 307);
+            return applySecurityHeaders(redirect("https://gamegata.xyz/maintenance", 307));
           }
         }
       }
@@ -121,7 +147,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // 4. Allow public paths without authentication
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"))) {
-    return next();
+    return applySecurityHeaders(await next());
   }
 
   // 5. Admin Panel Gating
@@ -134,12 +160,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
         context.cookies.delete("admin_2fa_session", { path: "/" });
       }
       if (pathname.startsWith("/admin/api/") || pathname.startsWith("/api/admin/")) {
-        return new Response(
+        return applySecurityHeaders(new Response(
           JSON.stringify({ error: "Forbidden. Admin access required." }),
           { status: 403, headers: { "Content-Type": "application/json" } }
-        );
+        ));
       }
-      return redirect("/login?error=unauthorized");
+      return applySecurityHeaders(redirect("/login?error=unauthorized"));
     }
 
     // Enforce 2FA verification check for admin pages & APIs
@@ -170,12 +196,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
       if (!isVerified) {
         if (pathname.startsWith("/admin/api/") || pathname.startsWith("/api/admin/")) {
-          return new Response(
+          return applySecurityHeaders(new Response(
             JSON.stringify({ error: "Forbidden. 2FA verification required." }),
             { status: 403, headers: { "Content-Type": "application/json" } }
-          );
+          ));
         }
-        return redirect("/admin/verify-2fa");
+        return applySecurityHeaders(redirect("/admin/verify-2fa"));
       }
     }
   }
@@ -200,5 +226,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return response;
+  return applySecurityHeaders(response);
 });

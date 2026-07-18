@@ -291,3 +291,67 @@ export const aiSearchCache = sqliteTable(
   ]
 );
 
+// --- Community Edits & Governance ---
+export const editSuggestions = sqliteTable(
+  "EditSuggestion",
+  {
+    id: text("id").primaryKey(),
+    trackingId: text("trackingId"), // 6-digit human-friendly code e.g. "#482910"
+    gameId: text("gameId").notNull().references(() => games.id),
+    userId: text("userId"), // Nullable for guest edits
+    userIp: text("userIp"),
+    field: text("field").notNull(), // e.g. "developerNames", "releaseDate", "summary", "trailerUrl"
+    oldValue: text("oldValue"),
+    newValue: text("newValue").notNull(),
+    reason: text("reason"),
+    status: text("status").default("pending").notNull(), // "pending" | "approved" | "rejected" | "auto_approved"
+    aiStatus: text("aiStatus").default("pending"), // "pending" | "passed" | "flagged" | "rejected"
+    aiConfidence: real("aiConfidence"),
+    aiReasoning: text("aiReasoning"),
+    reviewedBy: text("reviewedBy"),
+    reviewedAt: integer("reviewedAt", { mode: "timestamp" }),
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  },
+  (table) => [
+    index("edit_suggestion_game_idx").on(table.gameId),
+    index("edit_suggestion_status_idx").on(table.status),
+    index("edit_suggestion_user_idx").on(table.userId),
+    index("edit_suggestion_tracking_idx").on(table.trackingId),
+  ]
+);
+
+export const gameRevisions = sqliteTable(
+  "GameRevision",
+  {
+    id: text("id").primaryKey(),
+    gameId: text("gameId").notNull().references(() => games.id),
+    suggestionId: text("suggestionId").references(() => editSuggestions.id),
+    editedBy: text("editedBy"),
+    changesJson: text("changesJson").notNull(), // Serialized JSON object { field, oldValue, newValue, reason }
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  },
+  (table) => [
+    index("game_revision_game_idx").on(table.gameId),
+    index("game_revision_created_idx").on(table.createdAt),
+  ]
+);
+
+export const userReputation = sqliteTable(
+  "UserReputation",
+  {
+    userId: text("userId").primaryKey(),
+    totalSubmitted: integer("totalSubmitted").default(0).notNull(),
+    totalApproved: integer("totalApproved").default(0).notNull(),
+    totalRejected: integer("totalRejected").default(0).notNull(),
+    accuracyScore: real("accuracyScore").default(1.0).notNull(),
+    tier: text("tier").default("tier_0_new").notNull(), // "tier_0_new" | "tier_1_trusted" | "tier_2_moderator"
+    badgesJson: text("badgesJson").default("[]").notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  },
+  (table) => [
+    index("user_reputation_tier_idx").on(table.tier),
+  ]
+);
+
+
+

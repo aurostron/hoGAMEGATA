@@ -29,6 +29,8 @@ import ScreenshotGallery from '../../components/ScreenshotGallery';
 import CreatorGames from '../../components/CreatorGames';
 import TrackControls from '../../components/TrackControls';
 import VibeTracker from '../../components/VibeTracker';
+import { EditPencilButton } from '../../components/editing/EditPencilButton';
+import { HistoryButton } from '../../components/editing/HistoryButton';
 import { trackGameView } from '../../lib/analytics';
 
 // SSR: render every game on-demand instead of pre-building a limited static set.
@@ -485,10 +487,13 @@ const schemaJson = JSON.stringify(schema);
             <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
               {cleanTitleName}
             </h1>
-            <ShareButton client:load />
+            <div class="flex items-center gap-2">
+              <HistoryButton client:load gameId={game.id} gameTitle={game.title} />
+              <ShareButton client:load />
+            </div>
           </div>
 
-          <div class="flex flex-wrap gap-2 text-xs font-semibold">
+          <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
             <span class="text-white/60">Developed by</span>
             <span class="text-white font-extrabold">
               {developers.map((d: any, idx: number) => (
@@ -498,6 +503,14 @@ const schemaJson = JSON.stringify(schema);
                 </>
               ))}
             </span>
+            <EditPencilButton
+              client:load
+              gameId={game.id}
+              gameTitle={game.title}
+              field="developerNames"
+              fieldLabel="Developer"
+              currentValue={developers.map((d: any) => d.name).join(", ")}
+            />
             {publishers.length > 0 && (
               <>
                 <span class="text-white/60 ml-2">Published by</span>
@@ -620,7 +633,18 @@ const schemaJson = JSON.stringify(schema);
 
           <!-- Description Section -->
           <div class="pt-6 space-y-4">
-            <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Description & Overview</h2>
+            <div class="flex items-center gap-2">
+              <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Description & Overview</h2>
+              <EditPencilButton
+                client:load
+                gameId={game.id}
+                gameTitle={game.title}
+                field="summary"
+                fieldLabel="Summary"
+                currentValue={game.summary || ''}
+                isMultiline={true}
+              />
+            </div>
             {game.summary ? (
               <div 
                 class="text-sm text-neutral-300 font-medium leading-relaxed prose prose-invert max-w-none"

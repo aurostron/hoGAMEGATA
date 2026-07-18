@@ -45,6 +45,9 @@ hogamegata/
 # internal planning documents
 planning/
 
+# Local IGDB data dumps
+scripts/igdb-dumps/
+
 
 
 

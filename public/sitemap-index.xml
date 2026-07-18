@@ -53,6 +53,12 @@
   </url>
 
   <url>
+    <loc>https://gamegata.xyz/game/lumina-veil</loc>
+    <lastmod>2026-07-23T16:47:21.000Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://gamegata.xyz/game/humans-red-destiny</loc>
     <lastmod>2026-07-19T10:26:38.000Z</lastmod>
     <changefreq>weekly</changefreq>
@@ -62442,12 +62448,6 @@
   </url>
   <url>
     <loc>https://gamegata.xyz/game/exit-slum-11</loc>
-    <lastmod>2026-06-24T22:00:51.000Z</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://gamegata.xyz/game/lumina-veil</loc>
     <lastmod>2026-06-24T22:00:51.000Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -127488,6 +127488,11 @@
   </url>
   <url>
     <loc>https://gamegata.xyz/developer/hammerhead-vr</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://gamegata.xyz/developer/hamster-cafe</loc>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>

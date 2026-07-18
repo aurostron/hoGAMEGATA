@@ -27,6 +27,16 @@ function getAuth(): ReturnType<typeof betterAuth> {
     const googleClientId = getEnvVal("GOOGLE_CLIENT_ID") || "placeholder";
     const googleClientSecret = getEnvVal("GOOGLE_CLIENT_SECRET") || "placeholder";
 
+    const trustedOrigins = Array.from(new Set([
+      "http://localhost:4321",
+      "http://localhost:3000",
+      "http://127.0.0.1:4321",
+      "http://127.0.0.1:3000",
+      "https://gamegata.xyz",
+      "https://www.gamegata.xyz",
+      baseURL,
+    ].filter(Boolean)));
+
     _auth = betterAuth({
       database: drizzleAdapter(tursoAuth, {
         provider: "sqlite",
@@ -34,6 +44,7 @@ function getAuth(): ReturnType<typeof betterAuth> {
       }),
       secret: secret,
       baseURL: baseURL,
+      trustedOrigins: trustedOrigins,
       emailAndPassword: {
         enabled: true,
         requireEmailVerification: true,
