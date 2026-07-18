@@ -36,6 +36,7 @@ const PUBLIC_PATHS = [
   "/api/edits",
   "/api/user/reputation",
   "/api/games/history",
+  "/api/bugs/submit",
 ];
 
 
