@@ -1,28 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ReturnButton from '../components/ReturnButton';
-import { ShieldAlert, BookOpen, Heart, Sparkles, Database, HelpCircle, Layers, Cpu } from "lucide-react";
 
 const faqList = [
   {
-    q: "What is hoGAMEGATA (hGG / gamegata db)?",
-    a: "hoGAMEGATA (often abbreviated as hGG or gamegata database) is an open, minimalist, ad-free mega metadata registry built specifically for survival horror, psychological horror, and indie nightmare games. It aggregates ratings, release history, system specs, deals, and scare profiles for over 18,000 interactive horror titles."
+    q: "What is hoGAMEGATA?",
+    a: "hoGAMEGATA (also known as hGG) is an ad-free database and discovery tool for horror games. It tracks over 18,000 titles, including survival horror, psychological terror, and indie releases."
   },
   {
-    q: "Why is hoGAMEGATA focused exclusively on horror games?",
-    a: "Horror is a distinct genre defined by tension, atmospheric audio, visual terror, and unique psychological mechanics. Generic video game databases treat horror as a simple filter tag, mixing terrifying indie gems with casual games. hoGAMEGATA uses a specialized multi-dimensional taxonomy built strictly for horror enthusiasts."
+    q: "Why focus only on horror games?",
+    a: "Horror is a unique genre that relies heavily on mood, sound design, and tension. General game sites often lump horror games under broad action or indie categories. hoGAMEGATA organizes games specifically around horror sub-genres, platforms, and features."
   },
   {
-    q: "Is hoGAMEGATA free and ad-free?",
-    a: "Yes. hoGAMEGATA is completely non-commercial and ad-free. We never display banner ads, lock features behind paywalls, or sell user telemetry. Core browsing and metadata discovery require no account."
+    q: "Is hoGAMEGATA free to use?",
+    a: "Yes. hoGAMEGATA is completely free and non-commercial. There are no ads, paywalls, or tracking scripts. You can search and explore the entire catalog without creating an account."
   },
   {
-    q: "How does the Bayesian rating and score deflation work?",
-    a: "hoGAMEGATA normalizes review scores across IGDB, Steam, Metacritic, and RAWG. To prevent obscure titles with a single 10/10 review from dominating top-rated charts, we apply Bayesian weighted averaging that factors in review count and deflates single-source ratings towards a baseline prior."
-  },
-  {
-    q: "What data sources does hoGAMEGATA use?",
-    a: "Game catalog metadata is powered by IGDB (Twitch), user review ratings are pulled from Steam, Linux compatibility stats from ProtonDB, and content updates managed via Sanity CMS."
+    q: "How are ratings calculated?",
+    a: "Ratings combine review scores from IGDB, Steam, Metacritic, and RAWG. We use a weighted average so that niche games with a single positive review don't skew the top-rated lists."
   }
 ];
 
@@ -41,192 +36,113 @@ const faqJsonLd = {
 ---
 
 <Layout 
-  title="About us | hoGAMEGATA (hGG) - Open Horror Game Database" 
-  description="Learn more about hoGAMEGATA (hGG / gamegata db), an open, minimalist, ad-free horror game database preserving survival horror, psychological terror, and indie nightmare metadata." 
+  title="About | hoGAMEGATA" 
+  description="Learn about hoGAMEGATA (hGG), an ad-free, minimalist horror game database and discovery catalog." 
   withSearch={false} 
   withLink={true}
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(faqJsonLd)} />
 
-  <main class="flex-1 max-w-6xl w-full mx-auto px-6 my-12 pb-32 flex flex-col gap-16 font-sans">
+  <main class="flex-1 max-w-4xl w-full mx-auto px-6 py-12 pb-24 flex flex-col gap-12 font-sans text-neutral-300">
     
-    <!-- Top Bar Navigation -->
+    <!-- Top Bar -->
     <div class="flex justify-between items-center border-b border-white/10 pb-6">
-      <div class="flex flex-col gap-1">
-        <div class="inline-flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-[#ff2a2a] animate-pulse"></span>
-          <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ff2a2a] font-black">
-            hGG ARCHIVE DOCUMENTATION
-          </span>
-        </div>
-        <span class="font-mono text-[10px] text-white/40 uppercase tracking-widest">
-          EST. 2026 • OPEN HORROR GAMES MEGA METADATA REGISTRY
-        </span>
+      <div class="flex flex-col">
+        <span class="font-mono text-xs uppercase tracking-widest text-white/50">by aurostron</span>
+        <span class="font-mono text-[9px] text-white/30 uppercase tracking-widest">on 21st June, 2026</span>
       </div>
       <ReturnButton client:only="react" />
     </div>
 
-    <!-- Hero Title & Mission Statement (Double-Bezel Architecture) -->
-    <section class="space-y-6">
-      <div class="inline-block px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono uppercase tracking-[0.2em] text-white/70">
-        PRESERVING INTERACTIVE NIGHTMARES
-      </div>
-      
-      <h1 class="font-sans font-black text-5xl sm:text-7xl md:text-8xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
-        ABOUT <span class="text-[#ff2a2a]">hoGAMEGATA</span>
+    <!-- Page Header -->
+    <div class="space-y-4">
+      <h1 class="font-sans font-black text-4xl sm:text-6xl uppercase tracking-tight text-white">
+        About hoGAMEGATA
       </h1>
-      
-      <p class="font-sans font-light text-xl sm:text-2xl text-white/90 leading-relaxed max-w-4xl border-l-4 border-[#ff2a2a] pl-6 py-1 italic">
-        <strong>hoGAMEGATA</strong> (known as <strong>hGG</strong> or <strong>gamegata db</strong>) is a minimalist, super-fast horror game database catalog preserving over 18,000 interactive horror titles, developer histories, scare profiles, and pricing metadata.
+      <p class="text-base sm:text-lg text-neutral-300 leading-relaxed font-normal">
+        hoGAMEGATA (also known as hGG) is a minimalist, fast database built specifically for horror games. It catalogs over 18,000 titles with detailed metadata, release dates, and store pricing.
       </p>
-    </section>
+    </div>
 
-    <!-- Content Sections (Doppelrand / Double-Bezel Cards) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">
       
-      <!-- Card 1: Philosophy & Taxonomy -->
-      <div class="p-1.5 rounded-[1.75rem] bg-white/[0.02] border border-white/10">
-        <div class="h-full p-6 sm:p-8 rounded-[calc(1.75rem-0.375rem)] bg-[#0c0c0f] flex flex-col justify-between gap-6">
-          <div class="space-y-4">
-            <div class="flex items-center gap-3 border-b border-white/10 pb-3">
-              <Layers className="w-5 h-5 text-[#ff2a2a]" />
-              <h2 class="text-white font-sans font-black text-lg uppercase tracking-tight">
-                Dedicated Horror Taxonomy
-              </h2>
-            </div>
-            
-            <p class="text-sm text-gray-300 leading-relaxed">
-              Horror is not just a genre tag—it is an aesthetic realm driven by atmosphere, psychological tension, environmental sound design, and dread. 
-            </p>
-            
-            <p class="text-sm text-gray-300 leading-relaxed">
-              While general gaming sites lump survival horror gems together with casual non-scare games, <strong>hoGAMEGATA</strong> indexes titles through a specialized taxonomy engine. We classify gameplay mechanics, scare intensity, platform compatibility, and developer roots to help you discover hidden horrors effortlessly.
-            </p>
-          </div>
-
-          <div class="pt-4 border-t border-white/5 font-mono text-[10px] text-white/40 uppercase tracking-widest">
-            TAXONOMY ENGINE • SCARE PROFILES • METADATA
-          </div>
-        </div>
+      <!-- Philosophy -->
+      <div class="border border-white/10 bg-[#0a0a0c] p-6 space-y-4">
+        <h2 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
+          The Philosophy
+        </h2>
+        <p>
+          Horror is a genre built around tension, atmosphere, and sound design. Standard game databases treat horror as just another filter tag, mixing terrifying games with casual titles.
+        </p>
+        <p>
+          hoGAMEGATA focuses entirely on horror. Our catalog organizes games by sub-genres, platforms, scare factors, and developer histories to make finding your next game straightforward.
+        </p>
       </div>
 
-      <!-- Card 2: Non-Commercial & Open Ethos -->
-      <div class="p-1.5 rounded-[1.75rem] bg-white/[0.02] border border-white/10">
-        <div class="h-full p-6 sm:p-8 rounded-[calc(1.75rem-0.375rem)] bg-[#0c0c0f] flex flex-col justify-between gap-6">
-          <div class="space-y-4">
-            <div class="flex items-center gap-3 border-b border-white/10 pb-3">
-              <ShieldAlert className="w-5 h-5 text-[#ff2a2a]" />
-              <h2 class="text-white font-sans font-black text-lg uppercase tracking-tight">
-                Open & Non-Commercial Ethos
-              </h2>
-            </div>
-            
-            <p class="text-sm text-gray-300 leading-relaxed">
-              <strong>hoGAMEGATA</strong> operates strictly as a non-commercial archival platform. We show zero banner advertisements, enforce no paywalls, and sell no personal data.
-            </p>
-            
-            <p class="text-sm text-gray-300 leading-relaxed">
-              From forgotten MS-DOS terror experiments and PS1 survival classics to modern AAA releases, our registry preserves horror gaming history cleanly, instantly, and freely for all players.
-            </p>
-          </div>
-
-          <div class="pt-4 border-t border-white/5 font-mono text-[10px] text-white/40 uppercase tracking-widest">
-            100% AD-FREE • NO TRACKING • ZERO PAYWALLS
-          </div>
-        </div>
+      <!-- Preservation -->
+      <div class="border border-white/10 bg-[#0a0a0c] p-6 space-y-4">
+        <h2 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
+          Preservation & Privacy
+        </h2>
+        <p>
+          hoGAMEGATA is completely non-commercial. We don't display ads, sell user data, or hide features behind subscriptions.
+        </p>
+        <p>
+          We preserve horror gaming history—from classic DOS titles and PlayStation games to modern indie releases and upcoming AAA titles. No account is required to browse or search.
+        </p>
       </div>
 
     </div>
 
-    <!-- Detailed Brand Information Block -->
-    <section class="p-1.5 rounded-[2rem] bg-white/[0.03] border border-white/10">
-      <div class="p-8 sm:p-12 rounded-[calc(2rem-0.375rem)] bg-[#0c0c0f] space-y-8">
-        
-        <div class="flex flex-col gap-2">
-          <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ff2a2a] font-bold">
-            DEFINITIVE ENTITY METADATA
-          </span>
-          <h2 class="font-sans font-black text-2xl sm:text-4xl uppercase tracking-tight text-white">
-            What is hoGAMEGATA (hGG / gamegata database)?
-          </h2>
-        </div>
+    <!-- Rating System Section -->
+    <div class="border border-white/10 bg-[#0a0a0c] p-6 sm:p-8 space-y-4 text-sm leading-relaxed">
+      <h2 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
+        Rating System
+      </h2>
+      <p>
+        We combine ratings from multiple platforms (IGDB, Steam, Metacritic, and RAWG) into a single score. To keep smaller, less popular games with a single high review from dominating the top lists, we use a weighted Bayesian rating model that accounts for the total number of reviews.
+      </p>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm text-gray-300 leading-relaxed font-sans">
-          <div class="space-y-2">
-            <h3 class="text-white font-bold text-base uppercase font-mono text-[#ff2a2a]">[ 01. THE REGISTRY ]</h3>
-            <p>
-              <strong>hoGAMEGATA</strong> (also indexed as <strong>hGG</strong> or <strong>gamegata db</strong>) serves as an open horror game mega metadata catalog. We index over 18,000 horror titles spanning survival horror, psychological thrillers, analog horror, retro pixel terror, and VR nightmares.
+    <!-- FAQ Section -->
+    <div class="space-y-6">
+      <h2 class="text-white font-bold text-xl uppercase tracking-tight border-b border-white/10 pb-3">
+        Frequently Asked Questions
+      </h2>
+
+      <div class="space-y-4">
+        {faqList.map((item) => (
+          <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-2 text-sm">
+            <h3 class="text-white font-bold">
+              {item.q}
+            </h3>
+            <p class="text-neutral-300 leading-relaxed">
+              {item.a}
             </p>
-          </div>
-
-          <div class="space-y-2">
-            <h3 class="text-white font-bold text-base uppercase font-mono text-[#ff2a2a]">[ 02. RATING INTEGRITY ]</h3>
-            <p>
-              We calculate a unified Bayesian Average rating combining IGDB, Steam, Metacritic, and RAWG scores. Single-source games are automatically deflated toward a baseline prior to eliminate artificial 10/10 rating anomalies.
-            </p>
-          </div>
-
-          <div class="space-y-2">
-            <h3 class="text-white font-bold text-base uppercase font-mono text-[#ff2a2a]">[ 03. EDGE SPEED ]</h3>
-            <p>
-              Powered by Astro static pre-rendering and Cloudflare Edge caching, <strong>hoGAMEGATA</strong> delivers instant page loads with minimal database hits, allowing horror enthusiasts to query titles in milliseconds.
-            </p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- Frequently Asked Questions (FAQ Section) -->
-    <section class="space-y-8">
-      <div class="flex items-center gap-3 border-b border-white/10 pb-4">
-        <HelpCircle className="w-6 h-6 text-[#ff2a2a]" />
-        <h2 class="font-sans font-black text-2xl sm:text-3xl uppercase tracking-tight text-white">
-          Frequently Asked Questions (FAQ)
-        </h2>
-      </div>
-
-      <div class="grid grid-cols-1 gap-4">
-        {faqList.map((item, idx) => (
-          <div class="p-1 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition-colors">
-            <div class="p-6 rounded-[calc(1rem-0.25rem)] bg-[#0c0c0f] space-y-3">
-              <h3 class="font-sans font-bold text-base sm:text-lg text-white flex items-start gap-3">
-                <span class="font-mono text-xs text-[#ff2a2a] font-black shrink-0 mt-1">Q0{idx + 1}.</span>
-                <span>{item.q}</span>
-              </h3>
-              <p class="text-sm text-gray-300 leading-relaxed pl-8">
-                {item.a}
-              </p>
-            </div>
           </div>
         ))}
       </div>
-    </section>
+    </div>
 
-    <!-- Data Provider & Third-Party Credits -->
-    <section class="p-8 rounded-2xl bg-[#0a0a0c] border border-white/10 font-sans text-sm text-gray-400 space-y-4">
-      <h3 class="font-mono text-xs uppercase tracking-widest text-white font-bold">
-        DATA SOURCES & ACKNOWLEDGEMENTS
-      </h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-        <div>
-          <strong class="text-white block font-mono">IGDB / Twitch</strong>
-          <span>Core game taxonomy & metadata</span>
-        </div>
-        <div>
-          <strong class="text-white block font-mono">Steam Store API</strong>
-          <span>User review ratios & pricing stats</span>
-        </div>
-        <div>
-          <strong class="text-white block font-mono">ProtonDB</strong>
-          <span>Linux & Steam Deck compatibility</span>
-        </div>
-        <div>
-          <strong class="text-white block font-mono">Astro & Turso</strong>
-          <span>Edge framework & sqlite engine</span>
-        </div>
+    <!-- Data Provider & Third-Party Credits (Exact Original) -->
+    <div class="space-y-6 font-sans text-sm text-gray-300 leading-relaxed">
+      <div class="border-b border-white/10 pb-3">
+        <h2 class="font-sans font-black text-xl uppercase tracking-tight text-white">Data Sources & Attribution</h2>
       </div>
-    </section>
+      <p>
+        Data provided by  <a href="https://www.igdb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">IGDB</a>.
+      </p>
+      <p>
+        Reviews taken from <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Steam</a>. 
+       </p>
+      <p>
+         Linux compatibility data by <a href="https://www.protondb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">ProtonDB</a>.
+      </p>
+      <p>
+        This platform is built using <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold font-bold">Astro</a>, <a href="https://react.dev" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold font-bold">React</a>, and <a href="https://orm.drizzle.team" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold font-bold">Drizzle ORM</a>.
+      </p>
+    </div>
 
   </main>
 </Layout>

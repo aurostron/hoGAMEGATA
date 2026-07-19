@@ -142,7 +142,6 @@ function TrackControlsInner({
         priceSnapshots: initialPriceSnapshots,
       };
       await addToCart(gameMock);
-      window.dispatchEvent(new Event("gamegata_open_cart"));
     }
   };
 
@@ -267,36 +266,84 @@ function TrackControlsInner({
     { label: "Owned", value: "OWNED" },
   ];
 
+  const cheapestDeal = initialPriceSnapshots && initialPriceSnapshots.length > 0
+    ? [...initialPriceSnapshots].sort((a, b) => a.dealPrice - b.dealPrice)[0]
+    : null;
+
+  const storeKey = cheapestDeal ? cheapestDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+  const buyNowUrl = cheapestDeal
+    ? `/re/${gameSlug}/${storeKey}?gameId=${gameId}&fallbackUrl=${encodeURIComponent(cheapestDeal.dealUrl)}`
+    : null;
+
   if (compactOnly) {
     return (
-      <div className="space-y-3">
-        {/* Cart action */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={handleCartToggle}
-            disabled={loading}
-            className={`flex items-center justify-center gap-2 px-4 py-2.5 border text-xs font-bold transition-all duration-150 cursor-pointer h-[40px] select-none rounded-xl ${
-              isInCart
-                ? "bg-emerald-500 text-black border-emerald-400 font-extrabold shadow-lg scale-[1.02]"
-                : "bg-white/5 text-white border-white/15 hover:bg-white/10 hover:border-white/30"
-            }`}
+      <div className="flex flex-wrap items-center gap-2.5 select-none">
+        {/* Buy Now Button */}
+        {buyNowUrl ? (
+          <a
+            href={buyNowUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-white/90 font-sans text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:scale-[0.98] border border-white"
           >
-            {isInCart ? (
-              <>
-                <Check className="w-4 h-4 text-black stroke-[3]" />
-                <span>In Cart</span>
-              </>
-            ) : (
-              <>
-                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2}>
-                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
-                <span>Add to Cart</span>
-              </>
+            <span>Buy Now</span>
+            {cheapestDeal && (
+              <span className="text-[11px] font-semibold text-black/70">
+                ({cheapestDeal.currency === "EUR" ? "€" : cheapestDeal.currency === "GBP" ? "£" : "$"}{cheapestDeal.dealPrice})
+              </span>
             )}
-          </button>
-        </div>
+          </a>
+        ) : (
+          <a
+            href={`/re/${gameSlug}/steam`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-white/90 font-sans text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:scale-[0.98] border border-white"
+          >
+            <span>Buy Now</span>
+          </a>
+        )}
+
+        {/* Add to Cart Button */}
+        <button
+          onClick={handleCartToggle}
+          disabled={loading}
+          className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold font-sans transition-all duration-300 cursor-pointer rounded-xl border active:scale-95 ${
+            isInCart
+              ? "bg-purple-600 text-white border-purple-500 shadow-md animate-in fade-in zoom-in-95 duration-200"
+              : "bg-white/5 text-white/90 border-white/15 hover:bg-white/15 hover:border-white/30"
+          }`}
+        >
+          {isInCart ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+              <span>In Cart</span>
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              <span>Add to Cart</span>
+            </>
+          )}
+        </button>
+
+        {/* Add to Favorite Button */}
+        <button
+          onClick={toggleWishlist}
+          disabled={loading}
+          className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold font-sans transition-all duration-300 cursor-pointer rounded-xl border active:scale-95 ${
+            wishlisted
+              ? "bg-red-950/80 text-red-400 border-red-500/40 shadow-md animate-in fade-in zoom-in-95 duration-200"
+              : "bg-white/5 text-white/90 border-white/15 hover:bg-white/15 hover:border-white/30"
+          }`}
+          title={wishlisted ? "Remove from Favorites" : "Add to Favorites"}
+        >
+          <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-current text-red-400 scale-110" : "text-white/70"}`} />
+          <span>{wishlisted ? "Favorited" : "Favorite"}</span>
+        </button>
       </div>
     );
   }

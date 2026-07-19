@@ -14,13 +14,15 @@ export default function ReadMoreScrollButton() {
   };
 
   return (
-    <button
-      onClick={scrollToDetails}
-      className="w-full text-white/50 hover:text-white transition-all duration-200 font-light font-sans"
-      title="Scroll to game overview & media"
-    >
-      <span className="tracking-widest uppercase text-[22px]">Read more...</span>
-      <ChevronDown className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform duration-200 opacity-80 group-hover:opacity-100" />
-    </button>
+    <div className="pt-3">
+      <button
+        onClick={scrollToDetails}
+        className="group inline-flex items-center gap-1.5 text-white/40 hover:text-white font-mono text-sm tracking-wider transition-colors duration-200 cursor-pointer select-none bg-transparent border-none p-0 outline-none"
+        title="Scroll to game overview & media"
+      >
+        <span>Read more...</span>
+        <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white group-hover:translate-y-0.5 transition-all duration-200" />
+      </button>
+    </div>
   );
 }
