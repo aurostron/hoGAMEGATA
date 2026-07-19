@@ -16,8 +16,12 @@
     "db:generate": "prisma generate",
     "deploy": "npm run build && wrangler deploy",
     "count-igdb": "tsx scripts/count-igdb.ts",
+    "credits": "tsx scripts/fetch-game-credits.ts",
     "search:pregenerate": "tsx scripts/pregenerate-draft.ts",
-    "search:apply": "tsx scripts/apply-search-cache.ts"
+    "search:apply": "tsx scripts/apply-search-cache.ts",
+    "search:deepseek": "tsx scripts/deepseek-cache.ts",
+    "search:deepseek:random": "tsx scripts/deepseek-cache.ts --random=10",
+    "search:deepseek:manual": "tsx scripts/deepseek-cache.ts --manual"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.0",
@@ -40,6 +44,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.21.0",
+    "motion": "^12.42.2",
     "openai": "^6.45.0",
     "otpauth": "^9.5.1",
     "react": "^19.2.7",

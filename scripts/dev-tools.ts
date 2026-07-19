@@ -132,10 +132,11 @@ async function showMainMenu() {
   console.log("14. IGDB Data Dumps Explorer (Partner API)");
   console.log("15. Developer Page & Link Management");
   console.log("16. Turso Database Environment Control");
-  console.log("17. Exit Portal");
+  console.log("17. DeepSeek AI Search Caching & Batch Engine");
+  console.log("18. Exit Portal");
   console.log("==================================================");
 
-  const choice = await askQuestion("Select category [1-17]: ");
+  const choice = await askQuestion("Select category [1-18]: ");
 
   switch (choice) {
     case "1":
@@ -218,12 +219,59 @@ async function showMainMenu() {
       await showDatabaseMenu();
       break;
     case "17":
+      await showAiSearchMenu();
+      break;
+    case "18":
       console.log("👋 Exiting portal.");
       process.exit(0);
     default:
       console.log("❌ Invalid choice.");
       await sleep(1000);
   }
+}
+
+async function showAiSearchMenu() {
+  console.log("\n--------------------------------------------------");
+  console.log("🤖 DEEPSEEK AI SEARCH CACHING & BATCH ENGINE");
+  console.log("--------------------------------------------------");
+  console.log("1. Interactive DeepSeek AI Search (Manual Game Title)");
+  console.log("2. Batch Pregenerate Cache for 10 Random Uncached Games");
+  console.log("3. Batch Pregenerate Cache for Custom Count of Games");
+  console.log("4. Apply Pending Search Cache File to Turso Database");
+  console.log("5. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-5]: ");
+  switch (choice) {
+    case "1": {
+      const gameTitle = await askQuestion("🎮 Enter game title to cache (e.g. Visage): ");
+      if (gameTitle) {
+        await runScript("scripts/deepseek-cache.ts", [`--game=${gameTitle}`, "--same-chat"]);
+      }
+      break;
+    }
+    case "2":
+      await runScript("scripts/deepseek-cache.ts", ["--random=10", "--same-chat"]);
+      break;
+    case "3": {
+      const customCount = await askQuestion("Enter number of games to pregenerate: ");
+      const num = parseInt(customCount, 10);
+      if (!isNaN(num) && num > 0) {
+        await runScript("scripts/deepseek-cache.ts", ["--random=" + num.toString(), "--same-chat"]);
+      } else {
+        console.log("❌ Invalid count.");
+      }
+      break;
+    }
+    case "4":
+      await runScript("scripts/apply-search-cache.ts");
+      break;
+    case "5":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await askQuestion("\n[Press Enter to return to main menu]");
 }
 
 async function showDuplicateResolutionMenu() {
@@ -400,12 +448,20 @@ async function showEnrichMenu() {
   console.log("--------------------------------------------------");
   console.log("1. Run batch enrichment (stale / unenriched games)");
   console.log("2. Custom batch limit (set number of games)");
-  console.log("3. Return to Main Menu");
+  console.log("3. Fetch Game Credits & Development Team Roster");
+  console.log("4. Return to Main Menu");
   console.log("--------------------------------------------------");
 
-  const choice = await askQuestion("Select action [1-3]: ");
-  if (choice === "3") return;
+  const choice = await askQuestion("Select action [1-4]: ");
+  if (choice === "4") return;
   
+  if (choice === "3") {
+    await runScript("scripts/fetch-game-credits.ts");
+    await askQuestion("\n[Press Enter to return to menu]");
+    await showEnrichMenu();
+    return;
+  }
+
   if (choice !== "1" && choice !== "2") {
     console.log("❌ Invalid choice.");
     await showEnrichMenu();

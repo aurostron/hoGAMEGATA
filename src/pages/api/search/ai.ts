@@ -14,22 +14,9 @@ export const prerender = false;
 
 const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
 
-// Dynamic Node imports to avoid Cloudflare bundle errors at runtime
+import * as nodeFs from "node:fs";
+import * as nodePath from "node:path";
 let cfEnv: any = null;
-let nodeFs: any = null;
-let nodePath: any = null;
-
-try {
-  if (isDev) {
-    nodeFs = await import("node:fs");
-    nodePath = await import("node:path");
-  } else {
-    const { env } = await import("cloudflare:workers");
-    cfEnv = env;
-  }
-} catch (e) {
-  // Ignored in local dev or non-worker environments
-}
 
 // Local file cache helpers for development mode
 const getLocalCachePath = () => {
@@ -102,27 +89,40 @@ export const POST: APIRoute = async ({ request }) => {
     // --- STAGE 1: Cache Check & Direct Title Match ---
     if (!dsl) {
       // 0. Check Drizzle database cache first (globally replicated edge cache, $0 cost, 0ms LLM latency)
+      const rawLower = query.toLowerCase().trim();
       const { cleanedQuery } = preprocessSearchQuery(query);
       const cleanedLower = cleanedQuery?.toLowerCase().trim();
       
-      if (cleanedLower) {
-        try {
-          const [dbCached] = await turso
-            .select({ resultsJson: aiSearchCacheTable.resultsJson })
-            .from(aiSearchCacheTable)
-            .where(eq(aiSearchCacheTable.query, cleanedLower))
-            .limit(1);
+      const candidateQueries = Array.from(new Set([
+        rawLower,
+        cleanedLower,
+        `games like ${cleanedLower}`,
+        `games like ${rawLower}`
+      ].filter(Boolean)));
 
-          if (dbCached && dbCached.resultsJson) {
-            const parsedResults = JSON.parse(dbCached.resultsJson);
-            return new Response(
-              JSON.stringify({ status: "success", results: parsedResults }),
-              { status: 200, headers: { "Content-Type": "application/json" } }
-            );
-          }
-        } catch (dbCacheErr) {
-          console.error("⚠️ DB search cache read failed:", dbCacheErr);
+      const candidateIds = candidateQueries.map(q => 
+        q.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+      );
+
+      try {
+        const [dbCached] = await turso
+          .select({ resultsJson: aiSearchCacheTable.resultsJson })
+          .from(aiSearchCacheTable)
+          .where(or(
+            inArray(aiSearchCacheTable.query, candidateQueries),
+            inArray(aiSearchCacheTable.id, candidateIds)
+          ))
+          .limit(1);
+
+        if (dbCached && dbCached.resultsJson) {
+          const parsedResults = JSON.parse(dbCached.resultsJson);
+          return new Response(
+            JSON.stringify({ status: "success", results: parsedResults }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          );
         }
+      } catch (dbCacheErr) {
+        console.error("⚠️ DB search cache read failed:", dbCacheErr);
       }
 
       if (kv && normalized) {

@@ -22,10 +22,11 @@ export const HistoryButton: React.FC<HistoryButtonProps> = ({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-zinc-400 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 transition-all ${className}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-neutral-300 hover:text-white text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95 ${className}`}
+        title="View Edit History"
       >
-        <History className="w-3.5 h-3.5 text-zinc-400" />
-        <span>View History</span>
+        <History className="w-3.5 h-3.5 text-neutral-400" />
+        <span>History</span>
       </button>
 
       <RevisionHistoryModal

@@ -264,6 +264,17 @@ function GataCatalogClientInner({
   const [selectedDecades, setSelectedDecades] = useState<string[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
+  // Mobile Filter Drawer Toggle
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const activeFilterCount = 
+    selectedFeatures.length + 
+    selectedSystems.length + 
+    selectedDecades.length + 
+    (hideDlcs ? 0 : 1) + 
+    (freeOnly ? 1 : 0) + 
+    (minPrice || maxPrice ? 1 : 0);
+
   // Correction Suggestion
   const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
   const [originalSearch, setOriginalSearch] = useState<string>("");
@@ -667,14 +678,14 @@ function GataCatalogClientInner({
   return (
     <div className="space-y-8 select-none">
       {/* ── Top Category Cards ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="flex lg:grid lg:grid-cols-5 gap-3 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 snap-x scrollbar-none select-none">
         {CATEGORIES.map((cat, i) => {
           const active = isCategoryActive(cat);
           return (
             <button
               key={i}
               onClick={() => handleCategoryClick(cat)}
-              className={`border p-4.5 text-left flex flex-col justify-between transition-all duration-300 relative group min-h-[110px] cursor-pointer bg-gradient-to-br ${cat.gradient} overflow-hidden
+              className={`flex-shrink-0 w-36 sm:w-44 lg:w-auto snap-start border p-3 sm:p-4 text-left flex flex-col justify-between transition-all duration-300 relative group min-h-[95px] sm:min-h-[110px] cursor-pointer bg-gradient-to-br ${cat.gradient} overflow-hidden
                 ${active 
                   ? "shadow-[0_0_20px_rgba(255,255,255,0.08)] scale-102 border-white! text-white" 
                   : "text-white/70 hover:text-white"
@@ -699,7 +710,7 @@ function GataCatalogClientInner({
                 )}
               </div>
               <div className="mt-3 relative z-10">
-                <h4 className="font-sans font-black uppercase text-base tracking-wider leading-none text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)]">
+                <h4 className="font-sans font-black uppercase text-sm sm:text-base tracking-wider leading-none text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)]">
                   {cat.name}
                 </h4>
               </div>
@@ -708,11 +719,30 @@ function GataCatalogClientInner({
         })}
       </div>
 
+      {/* Mobile Filter Toggle Button */}
+      <div className="lg:hidden w-full">
+        <button
+          onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+          className="w-full flex items-center justify-between bg-[#131316] border border-[#222227] px-4 py-3 font-mono text-xs text-white uppercase font-bold tracking-wider hover:bg-[#1a1a20] transition-colors cursor-pointer"
+        >
+          <span className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-white/80" />
+            <span>Filters & Refinements</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-red-600 text-white text-[9.5px] px-2 py-0.5 rounded-full font-bold">
+                {activeFilterCount} Active
+              </span>
+            )}
+          </span>
+          <span className="text-white/60 font-bold">{isMobileFilterOpen ? "[ Hide Filters ]" : "[ Show Filters ]"}</span>
+        </button>
+      </div>
+
       {/* ── Main Catalog Frame ── */}
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         
-        {/* ── Left Sidebar Filters ── */}
-        <aside className="w-full lg:w-64 shrink-0 space-y-6 bg-[#131316] border border-[#222227] p-5 rounded-none">
+        {/* ── Left Sidebar Filters (Collapsed by default on mobile) ── */}
+        <aside className={`${isMobileFilterOpen ? "block" : "hidden"} lg:block w-full lg:w-64 shrink-0 space-y-6 bg-[#131316] border border-[#222227] p-5 rounded-none`}>
           <div className="flex justify-between items-center pb-3 border-b border-white/15">
             <span className="font-mono text-xs text-white uppercase font-black tracking-widest flex items-center gap-1.5">
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -1096,7 +1126,7 @@ function GataCatalogClientInner({
             <div className="relative">
               {layoutMode === "grid" ? (
                 /* Grid view cards */
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 items-stretch">
                   {(() => {
                     let lastLetter = "";
                     return games.map((game, idx) => {
@@ -1156,7 +1186,7 @@ function GataCatalogClientInner({
                             </div>
 
                             {/* Text and Pricing */}
-                            <div className="p-4 flex-grow flex flex-col justify-between gap-3 bg-[#18181c]">
+                            <div className="p-3 sm:p-4 flex-grow flex flex-col justify-between gap-2.5 bg-[#18181c]">
                               <div className="space-y-1">
                                 <h4 className="text-white font-bold uppercase text-xs tracking-wider line-clamp-1 group-hover:underline">
                                   {cleanTitle(game.title)}

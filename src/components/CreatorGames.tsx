@@ -107,7 +107,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider animate-pulse">Loading...</h3>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="border border-white/5 bg-[#131316]/50 rounded-2xl overflow-hidden flex flex-col h-full animate-pulse">
               <div className="aspect-[3/4] w-full bg-white/5 border-b border-white/5 shrink-0"></div>
@@ -142,7 +142,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
         </div>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {games.map((game) => (
           <a
             key={game.slug}

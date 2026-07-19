@@ -85,12 +85,28 @@ export function getCloudinaryFetchUrl(originalUrl: string | null, isTrending?: b
 }
 
 export function cleanTitle(title: string): string {
-  if (!title) return "";
-  // Strip bracketed text like [FREE] [VISUAL NOVEL] or parenthesized text like (demo)
   return title
-    .replace(/\s*[\[\(][^\]\)]*[\]\)]\s*/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/\s*\(visual novel\)/gi, '')
+    .replace(/\s*\[visual novel\]/gi, '')
+    .replace(/\s*\(vn\)/gi, '')
+    .replace(/\s*\[vn\]/gi, '')
     .trim();
+}
+
+export function formatPrice(amount: number, currencyCode = "USD"): string {
+  if (typeof amount !== "number" || isNaN(amount)) return "";
+  try {
+    const code = (currencyCode || "USD").toUpperCase();
+    const locale = code === "INR" ? "en-IN" : code === "EUR" ? "de-DE" : code === "GBP" ? "en-GB" : "en-US";
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch (e) {
+    return `$${amount.toFixed(2)}`;
+  }
 }
 
 export function stripHtml(html: string | null): string {

@@ -18,7 +18,7 @@ import {
 } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { Calendar, Star, Monitor, Clock, Shield, Flame, Tag, ExternalLink } from "lucide-react";
-import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle } from '../../lib/utils';
+import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle, formatPrice } from '../../lib/utils';
 
 // Import React components
 import PlatformLogos from '../../components/PlatformLogos';
@@ -29,8 +29,15 @@ import ScreenshotGallery from '../../components/ScreenshotGallery';
 import CreatorGames from '../../components/CreatorGames';
 import TrackControls from '../../components/TrackControls';
 import VibeTracker from '../../components/VibeTracker';
+import RatingDistributionBar from '../../components/RatingDistributionBar';
+import ReadMoreScrollButton from '../../components/ReadMoreScrollButton';
+import CinematicCreditsRoll from '../../components/CinematicCreditsRoll';
 import { EditPencilButton } from '../../components/editing/EditPencilButton';
+import { EditPageButton } from '../../components/editing/EditPageButton';
 import { HistoryButton } from '../../components/editing/HistoryButton';
+import { HelpMenuDropdown } from '../../components/editing/HelpMenuDropdown';
+import { BugReportTrigger } from '../../components/bugs/BugReportTrigger';
+import CoverFavoriteButton from '../../components/CoverFavoriteButton';
 import { trackGameView } from '../../lib/analytics';
 
 // SSR: render every game on-demand instead of pre-building a limited static set.
@@ -288,11 +295,15 @@ const schemaJson = JSON.stringify(schema);
     }
   </style>
  
-  <main class="game-page-override max-w-6xl mx-auto px-6 mt-12 space-y-16 select-none">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-      <!-- Left Column: Cover Art and Quick Specs -->
-      <div class="md:col-span-1 space-y-6">
-        <div class={`border border-white/5 bg-[#131316]/50 rounded-2xl overflow-hidden shrink-0 relative w-full ${
+  <main class="game-page-override max-w-6xl mx-auto px-4 sm:px-6 mt-6 sm:mt-12 space-y-8 sm:space-y-16 select-none">
+    <!-- Top Section: RAWG.io-Inspired Minimalist 2-Column Hero Grid (Swapped: Cover Left, Details Right) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 lg:gap-10 items-start">
+      
+      <!-- Left Media Column (5 cols): High-Res Uncropped Cover Poster ONLY -->
+      <div class="md:col-span-5 flex flex-col justify-start max-w-md md:max-w-none mx-auto w-full">
+        
+        <!-- High-Res Uncropped Cover Poster Card (Full Original Aspect Ratio 3:4 / 5:4) -->
+        <div class={`border border-white/10 bg-[#131316]/60 rounded-2xl overflow-hidden shrink-0 relative w-full shadow-2xl ${
           isItchGame ? "aspect-[5/4]" : "aspect-[3/4]"
         }`}>
           {game.coverUrl ? (
@@ -308,153 +319,51 @@ const schemaJson = JSON.stringify(schema);
               <span class="text-xs tracking-wider text-neutral-400">No Cover Art</span>
             </div>
           )}
-          {(() => {
-            const badge = getCategoryBadge(game.category, game.title);
-            if (!badge || badge === "Visual Novel") return null;
-            return (
-              <span class="absolute top-3 left-3 text-[9px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 z-10 bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] rounded">
-                {badge}
-              </span>
-            );
-          })()}
+          {/* Heart Favorite overlay — top-right of cover */}
+          <CoverFavoriteButton
+            client:load
+            gameId={game.id}
+            gameSlug={game.slug}
+            gameTitle={game.title}
+          />
         </div>
 
-        <!-- Quick Specs overhauled card styling -->
-        <div class="border border-white/5 bg-[#131316]/50 backdrop-blur-md p-6 space-y-4 rounded-2xl shadow-2xl">
-           <div class="flex justify-between items-center border-b border-white/5 pb-2">
-            <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Calendar class="w-3.5 h-3.5 text-neutral-400" /> Release Date</span>
-            <span class="font-mono text-xs text-white font-medium">
-              {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString("en-US", { year: "numeric", month: "short" }) : "N/A"}
-            </span>
-          </div>
-
-          <div class="flex justify-between items-center border-b border-white/5 pb-2">
-            <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Star class="w-3.5 h-3.5 text-neutral-400" /> Average Rating</span>
-            <span class="font-mono text-xs text-white font-medium">{ratingDisplay}</span>
-          </div>
-
-          {game.steamRating !== null && (
-            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Star class="w-3.5 h-3.5 text-neutral-400" /> Steam Rating</span>
-              <span class="font-mono text-xs text-white font-medium text-right">
-                {game.steamRating.toFixed(1)}/10 <span class="text-white/40 text-[10px]">({game.steamRatingDesc})</span>
-              </span>
-            </div>
-          )}
-
-          {game.scareRating !== null && (
-            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Flame class="w-3.5 h-3.5 text-neutral-400" /> Scare Score</span>
-              <span class="font-mono text-xs text-white font-medium text-right">
-                {game.scareRating} / 100
-              </span>
-            </div>
-          )}
-
-          <div class="flex justify-between items-center gap-4 border-b border-white/5 pb-2">
-            <span class="text-neutral-400 font-medium flex items-center gap-1.5 shrink-0"><Monitor class="w-3.5 h-3.5 text-neutral-400" /> Platforms</span>
-            <PlatformLogos platforms={platforms} class="flex flex-wrap justify-end gap-2" solid={true} />
-          </div>
-
-          {steamAppId && (
-            <div class="flex justify-between items-baseline gap-2 border-b border-white/5 pb-2">
-              <span class="text-neutral-400 font-medium flex items-center gap-1.5 shrink-0">
-                <Monitor class="w-3.5 h-3.5 text-neutral-400" /> Linux Compatibility
-              </span>
-              <div class="text-right">
-                {game.protonDbTier ? (
-                  <a
-                    href={`https://www.protondb.com/app/${steamAppId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="group flex flex-col items-end gap-1"
-                    title={
-                      game.protonDbConfidence && game.protonDbTotalReports
-                        ? `${game.protonDbConfidence} confidence rating based on ${game.protonDbTotalReports} report(s)`
-                        : "View detailed Linux compatibility reports on ProtonDB"
-                    }
-                  >
-                    <span class={`text-[9px] uppercase tracking-wider px-2 py-0.5 rounded font-bold ${
-                      game.protonDbTier === "native" || game.protonDbTier === "platinum"
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : game.protonDbTier === "gold"
-                        ? "bg-white/10 text-white border border-white/20"
-                        : game.protonDbTier === "silver"
-                        ? "border border-white/20 text-white/60"
-                        : game.protonDbTier === "bronze" || game.protonDbTier === "borked"
-                        ? "border border-red-500/30 text-red-500/60 line-through"
-                        : "border border-white/10 text-white/30"
-                    }`}>
-                      {game.protonDbTier}
-                    </span>
-                    {game.protonDbTotalReports !== null && game.protonDbTotalReports > 0 && (
-                      <span class="font-mono text-[9px] text-white/50 tracking-tight lowercase">
-                        ({game.protonDbTotalReports} reports)
-                      </span>
-                    )}
-                  </a>
-                ) : (
-                  <span class="text-white/35 font-medium italic">Syncing...</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {game.playtime !== null && game.playtime > 0 && (
-            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Clock class="w-3.5 h-3.5 text-neutral-400" /> Average Playtime</span>
-              <span class="font-mono text-xs text-white font-medium">{game.playtime} hrs</span>
-            </div>
-          )}
-
-          {game.esrbRating && (
-            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Shield class="w-3.5 h-3.5 text-neutral-400" /> ESRB Rating</span>
-              <span class="font-mono text-xs text-white font-medium">{game.esrbRating}</span>
-            </div>
-          )}
-
-          {game.metacritic !== null && (
-            <div class="flex justify-between items-center">
-              <span class="text-neutral-400 font-medium flex items-center gap-1.5"><Star class="w-3.5 h-3.5 text-neutral-400" /> Metacritic</span>
-              {game.metacriticUrl ? (
-                <a 
-                  href={game.metacriticUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="font-mono text-xs text-white hover:underline font-medium flex items-center gap-1 group/meta"
-                >
-                  <span>{game.metacritic} / 100</span>
-                  <ExternalLink class="w-2.5 h-2.5 opacity-65 group-hover/meta:opacity-100" />
-                </a>
-              ) : (
-                <span class="font-mono text-xs text-white font-medium">{game.metacritic} / 100</span>
-              )}
-            </div>
-          )}
-
-          {game.igdbId && (
-            <div class="border-t border-white/5 pt-3 mt-1">
+        {(() => {
+          const itchLink = purchaseLinks?.find((link: any) => link.storeName.toLowerCase() === "itch.io");
+          if (itchLink && itchLink.url) {
+            const directPurchaseUrl = itchLink.url.endsWith("/purchase")
+              ? itchLink.url
+              : `${itchLink.url.replace(/\/$/, "")}/purchase`;
+            return (
               <a
-                href={`https://www.igdb.com/games/${game.slug.replace(/^(steam|itch|gog)-/, "")}`}
+                href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(directPurchaseUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="flex items-center justify-between w-full px-3 py-2.5 bg-white/5 border border-white/10 hover:bg-white hover:text-black transition-all text-xs font-semibold rounded-xl"
+                class="flex items-center justify-center gap-2 px-4 py-3 mt-4 bg-[#fa5c5c] text-black text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-xl border border-[#fa5c5c] shadow-lg"
               >
-                <span>View on IGDB</span>
-                <ExternalLink class="w-3.5 h-3.5" />
+                <ExternalLink class="w-3.5 h-3.5 text-black" />
+                <span>Buy / Download on itch.io</span>
               </a>
-            </div>
-          )}
-        </div>
+            );
+          }
+          return null;
+        })()}
+
       </div>
 
-      <!-- Right Column: Game Header details, controls, description -->
-      <div class="md:col-span-2 flex flex-col justify-between md:h-full">
-        <div class="space-y-4 mb-6">
-          <div class="flex flex-wrap items-center gap-2">
+      <!-- Right Main Column (7 cols): Hero Title, Badges, RAWG Deck, Metric Pills, Quick Specs & Available On... Stores -->
+      <div class="md:col-span-7 space-y-3.5">
+        
+        <!-- 1. Metadata Sub-Header: Release Date, Platforms, Status Badges + Action Tools -->
+        <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="font-mono text-neutral-400 uppercase tracking-widest text-[11px] font-bold">
+              {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "RELEASE DATE TBD"}
+            </span>
+            <PlatformLogos platforms={platforms} class="flex items-center gap-1.5 opacity-80" solid={true} />
+            
             {game.status && game.status.trim() !== "" && (
-              <span class="text-[9px] text-black uppercase tracking-wider font-extrabold bg-white border border-white px-2 py-0.5 rounded">
+              <span class="text-[9px] text-black uppercase tracking-wider font-extrabold bg-white border border-white px-2 py-0.5 rounded shadow">
                 {game.status}
               </span>
             )}
@@ -465,85 +374,127 @@ const schemaJson = JSON.stringify(schema);
               const borderClass = isVN ? "border-[#581c87]" : "border-[#7f1d1d]";
               const bgClass = isVN ? "bg-[#581c87] text-[#f5d0fe]" : "bg-[#7f1d1d] text-[#fca5a5]";
               return (
-                <span class={`text-[9px] uppercase tracking-wider border px-2 py-0.5 font-extrabold rounded ${borderClass} ${bgClass}`}>
+                <span class={`text-[9px] uppercase tracking-wider border px-2 py-0.5 font-extrabold rounded shadow ${borderClass} ${bgClass}`}>
                   {badge}
                 </span>
               );
             })()}
             {game.slug.startsWith("itch-") && (
-              <span class="text-[9px] text-black uppercase tracking-wider border border-[#fa5c5c] px-2 py-0.5 font-extrabold bg-[#fa5c5c] rounded">
+              <span class="text-[9px] text-black uppercase tracking-wider border border-[#fa5c5c] px-2 py-0.5 font-extrabold bg-[#fa5c5c] rounded shadow">
                 itch.io
               </span>
             )}
             {hasGogBadge && (
-              <span class="text-[9px] text-white uppercase tracking-wider border border-[#7b3fc4] px-2 py-0.5 font-extrabold bg-[#7b3fc4] rounded">
+              <span class="text-[9px] text-white uppercase tracking-wider border border-[#7b3fc4] px-2 py-0.5 font-extrabold bg-[#7b3fc4] rounded shadow">
                 DRM-Free
               </span>
             )}
           </div>
-          
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <!-- Decently sized, elegant standard casing title -->
-            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              {cleanTitleName}
-            </h1>
-            <div class="flex items-center gap-2">
-              <HistoryButton client:load gameId={game.id} gameTitle={game.title} />
-              <ShareButton client:load />
-            </div>
-          </div>
 
-          <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
-            <span class="text-white/60">Developed by</span>
-            <span class="text-white font-extrabold">
-              {developers.map((d: any, idx: number) => (
-                <>
-                  {idx > 0 && ", "}
-                  <a href={`/developer/${d.slug}`} class="hover:text-red-400 underline transition-colors">{d.name}</a>
-                </>
-              ))}
-            </span>
-            <EditPencilButton
-              client:load
+          <!-- Tools: Share + IGDB + Help Menu -->
+          <div class="flex items-center gap-2">
+            {game.igdbId && (
+              <a
+                href={`https://www.igdb.com/games/${game.slug.replace(/^(steam|itch|gog)-/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-white transition-colors font-semibold border border-white/10 hover:border-white/30 px-2.5 py-1.5 rounded-lg"
+              >
+                <span>IGDB</span>
+                <ExternalLink class="w-2.5 h-2.5 opacity-60" />
+              </a>
+            )}
+            <ShareButton client:only="react" />
+            <HelpMenuDropdown
+              client:only="react"
               gameId={game.id}
               gameTitle={game.title}
-              field="developerNames"
-              fieldLabel="Developer"
-              currentValue={developers.map((d: any) => d.name).join(", ")}
+              gameData={{
+                developerNames: developers.map((d: any) => d.name).join(", "),
+                summary: game.summary,
+                storyline: game.storyline,
+                trailerUrl: game.trailerUrl,
+                websiteUrl: game.websiteUrl,
+                redditUrl: game.redditUrl,
+                esrbRating: game.esrbRating,
+              }}
             />
-            {publishers.length > 0 && (
-              <>
-                <span class="text-white/60 ml-2">Published by</span>
-                <span class="text-white font-extrabold">{publishers.map((p: any) => p.name).join(", ")}</span>
-              </>
-            )}
           </div>
         </div>
 
-        <div class="flex-grow flex flex-col justify-end gap-4">
-          {(() => {
-            const itchLink = purchaseLinks?.find((link: any) => link.storeName.toLowerCase() === "itch.io");
-            if (itchLink && itchLink.url) {
-              const directPurchaseUrl = itchLink.url.endsWith("/purchase")
-                ? itchLink.url
-                : `${itchLink.url.replace(/\/$/, "")}/purchase`;
-              return (
-                <a
-                  href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(directPurchaseUrl)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex items-center justify-center gap-2 px-4 py-3 bg-[#fa5c5c] text-black text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-xl border border-[#fa5c5c]"
-                >
-                  <ExternalLink class="w-3.5 h-3.5 text-black" />
-                  <span>Buy / Download on itch.io</span>
+        <!-- 2. Massive Display Title -->
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-display font-black text-white tracking-tighter leading-tight py-0.5">
+          {cleanTitleName}
+        </h1>
+
+        <!-- 3. Developer Credits Subheader -->
+        <div class="flex flex-wrap items-center gap-2 font-light group pb-0.5">
+          <span class="text-white/50">by</span>
+          <span class="text-white/90 font-medium">
+            {developers.map((d: any, idx: number) => (
+              <>
+                {idx > 0 && ", "}
+                <a href={`/developer/${d.slug}`} class="hover:text-white transition-colors">{d.name}</a>
+              </>
+            ))}
+          </span>
+          <EditPencilButton
+            client:only="react"
+            gameId={game.id}
+            gameTitle={game.title}
+            field="developerNames"
+            fieldLabel="Developer"
+            currentValue={developers.map((d: any) => d.name).join(", ")}
+          />
+          <CinematicCreditsRoll
+            client:only="react"
+            title={game.title}
+            rawgSlug={game.rawgSlug}
+            developerName={developers.map((d: any) => d.name).join(", ")}
+            releaseYear={game.releaseDate ? new Date(game.releaseDate).getFullYear() : null}
+          />
+        </div>
+
+        <!-- 3b. Editorial Rating Numbers -->
+        <div class="grid grid-cols-2 gap-4 sm:flex sm:items-end sm:gap-8 pb-1">
+          <div class="flex flex-col">
+            <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">avg. rating</span>
+            <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{ratingDisplay}</span>
+          </div>
+          {game.steamRating !== null && (
+            <div class="flex flex-col">
+              <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">steam</span>
+              <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.steamRating.toFixed(1)}<span class="text-neutral-500 text-lg">/10</span></span>
+            </div>
+          )}
+          {game.scareRating !== null && (
+            <div class="flex flex-col">
+              <span class="text-[10px] uppercase tracking-widest text-red-500/70 font-bold mb-0.5">scare score</span>
+              <span class="text-3xl font-light font-mono text-red-500 leading-none tabular-nums">{game.scareRating}<span class="text-red-400/50 text-lg">/100</span></span>
+            </div>
+          )}
+          {game.metacritic !== null && (
+            <div class="flex flex-col">
+              {game.metacriticUrl ? (
+                <a href={game.metacriticUrl} target="_blank" rel="noopener noreferrer" class="group flex flex-col hover:opacity-80 transition-opacity">
+                  <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5 flex items-center gap-1">metacritic <ExternalLink class="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity" /></span>
+                  <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.metacritic}<span class="text-neutral-500 text-lg">/100</span></span>
                 </a>
-              );
-            }
-            return null;
-          })()}
-          
+              ) : (
+                <>
+                  <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">metacritic</span>
+                  <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.metacritic}<span class="text-neutral-500 text-lg">/100</span></span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <!-- 4. RAWG-Style Tracking Pill Deck -->
+        <div class="py-0.5">
           <TrackControls
             client:load
+            compactOnly={true}
             gameId={game.id}
             gameSlug={game.slug}
             gameTitle={game.title}
@@ -554,11 +505,72 @@ const schemaJson = JSON.stringify(schema);
             initialPriceSnapshots={priceSnapshots}
           />
         </div>
+
+        <!-- 5. Quick Specs — editorial columns matching ratings row -->
+        <div class="pt-1">
+          {(steamAppId || (game.playtime !== null && game.playtime > 0)) && (
+            <div class="flex items-end gap-8">
+              {steamAppId && (
+                <div class="flex flex-col">
+                  <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">linux?</span>
+                  {game.protonDbTier ? (
+                    <a
+                      href={`https://www.protondb.com/app/${steamAppId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="group hover:opacity-75 transition-opacity"
+                      title={game.protonDbConfidence && game.protonDbTotalReports ? `${game.protonDbConfidence} confidence · ${game.protonDbTotalReports} reports` : "ProtonDB"}
+                    >
+                      <span class={`text-2xl font-black font-mono leading-none capitalize tabular-nums ${
+                        game.protonDbTier === "native" || game.protonDbTier === "platinum"
+                          ? "text-emerald-400"
+                          : game.protonDbTier === "gold"
+                          ? "text-white"
+                          : game.protonDbTier === "silver"
+                          ? "text-white/50"
+                          : "text-red-400/60 line-through"
+                      }`}>
+                        {game.protonDbTier}
+                      </span>
+                      {game.protonDbTotalReports !== null && game.protonDbTotalReports > 0 && (
+                        <span class="text-neutral-600 text-sm font-mono"> · {game.protonDbTotalReports}</span>
+                      )}
+                    </a>
+                  ) : (
+                    <span class="text-2xl font-black font-mono text-white/25 leading-none">—</span>
+                  )}
+                </div>
+              )}
+
+              {game.playtime !== null && game.playtime > 0 && (
+                <div class="flex flex-col">
+                  <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">avg. playtime</span>
+                  <span class="text-2xl font-light font-mono text-white leading-none tabular-nums">
+                    {game.playtime}<span class="text-neutral-500 text-base"> hrs</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <!-- Community Rating Bar (below Quick Specs) -->
+        <RatingDistributionBar
+          client:load
+          gameId={game.id}
+          gameTitle={game.title}
+          baseRating={game.rating ? Math.round((game.rating / 10) * 10) : 80}
+        />
+
+        <!-- 8. Read More Scroll Button -->
+        <ReadMoreScrollButton client:load />
+
       </div>
+
     </div>
 
     <!-- Details Section -->
-    <div class="space-y-12 mt-12">
+    <div id="details-overview-section" class="space-y-12 mt-12 scroll-mt-20">
       {isItchGame ? (
         <>
           <!-- Mood Section -->
@@ -633,7 +645,7 @@ const schemaJson = JSON.stringify(schema);
 
           <!-- Description Section -->
           <div class="pt-6 space-y-4">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 group">
               <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Description & Overview</h2>
               <EditPencilButton
                 client:load

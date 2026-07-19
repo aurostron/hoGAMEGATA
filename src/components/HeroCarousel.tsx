@@ -255,7 +255,7 @@ export default function HeroCarousel({ games, activeRegion }: HeroCarouselProps)
             </div>
 
             {/* Game Title */}
-            <h2 className="text-white text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-wide leading-tight line-clamp-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            <h2 className="text-white text-2xl sm:text-4xl md:text-5xl font-display font-black tracking-tight leading-tight line-clamp-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
               {cleanTitle(activeGame.title)}
             </h2>
 

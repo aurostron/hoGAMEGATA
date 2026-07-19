@@ -53,3 +53,4 @@ scripts/igdb-dumps/
 
 # Local db profiles
 .env.db-profiles.json
+pending-search-cache.json

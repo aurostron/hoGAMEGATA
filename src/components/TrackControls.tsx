@@ -16,6 +16,7 @@ interface TrackControlsProps {
   initialCollectionStatus?: string | null;
   coverUrl?: string | null;
   initialPriceSnapshots?: any[];
+  compactOnly?: boolean;
 }
 
 interface JournalItem {
@@ -37,85 +38,42 @@ function TrackControlsInner({
   initialCollectionStatus = null,
   coverUrl = null,
   initialPriceSnapshots = [],
+  compactOnly = false,
 }: TrackControlsProps) {
   const { user } = useAuth();
   const { cartItems, addToCart, removeFromCart } = useCart();
   const isInCart = cartItems.some(item => item.gameId === gameId);
 
-  const handleCartToggle = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isInCart) {
-      await removeFromCart(gameId);
-    } else {
-      const gameMock = {
-        id: gameId,
-        title: gameTitle,
-        slug: gameSlug,
-        coverUrl,
-        priceSnapshots: initialPriceSnapshots,
-      };
-      await addToCart(gameMock);
-      window.dispatchEvent(new Event("gamegata_open_cart"));
-    }
-  };
-
-  const [wishlisted, setWishlisted] = useState(initialWishlisted);
+  const [wishlisted, setWishlisted] = useState<boolean>(initialWishlisted);
   const [collectionStatus, setCollectionStatus] = useState<string | null>(initialCollectionStatus);
-  const [loading, setLoading] = useState(false);
-
-  // Client-side states
-  const [mounted, setMounted] = useState(false);
   const [rating, setRating] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   const [history, setHistory] = useState<JournalItem[]>([]);
-  const [similarStats, setSimilarStats] = useState<{
-    count: number;
-    avgRating: number | null;
-  } | null>(null);
+  const [similarStats, setSimilarStats] = useState<{ count: number; avgRating: number | null }>({ count: 0, avgRating: null });
+  const [journalExpanded, setJournalExpanded] = useState<boolean>(false);
 
-  // Sync with DB on mount / user change
+  // Sync initial props
   useEffect(() => {
-    if (!user) {
-      setWishlisted(false);
-      setCollectionStatus(null);
-      return;
-    }
+    setWishlisted(initialWishlisted);
+  }, [initialWishlisted]);
 
+  useEffect(() => {
+    setCollectionStatus(initialCollectionStatus);
+  }, [initialCollectionStatus]);
+
+  // Fetch real status from Turso DB on mount if user is logged in
+  useEffect(() => {
     async function fetchStatus() {
+      if (!user) return;
       try {
-        const response = await fetch(`/api/user/game-status?gameId=${gameId}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.loggedIn) {
-            setWishlisted(data.wishlisted);
-            setCollectionStatus(data.collectionStatus);
-
-            // Sync to local storage library map
-            const libRaw = localStorage.getItem("gamegata_library");
-            const library = libRaw ? JSON.parse(libRaw) : {};
-            const existing = library[gameId] || {
-              gameId,
-              gameTitle,
-              gameSlug,
-              genres,
-              wishlisted: data.wishlisted,
-              status: data.collectionStatus,
-              rating: null,
-              updatedAt: Date.now()
-            };
-            let changed = false;
-            if (existing.wishlisted !== data.wishlisted) {
-              existing.wishlisted = data.wishlisted;
-              changed = true;
-            }
-            if (existing.status !== data.collectionStatus) {
-              existing.status = data.collectionStatus;
-              changed = true;
-            }
-            if (changed) {
-              library[gameId] = existing;
-              localStorage.setItem("gamegata_library", JSON.stringify(library));
-            }
+        const res = await fetch(`/api/user/status?gameId=${gameId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status) {
+            setWishlisted(!!data.status.wishlisted);
+            setCollectionStatus(data.status.status || null);
+            setRating(data.status.rating || null);
           }
         }
       } catch (err) {
@@ -170,6 +128,24 @@ function TrackControlsInner({
     window.location.assign(`/login?redirect=${encodeURIComponent(`/game/${gameSlug}`)}`);
   };
 
+  const handleCartToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isInCart) {
+      await removeFromCart(gameId);
+    } else {
+      const gameMock = {
+        id: gameId,
+        title: gameTitle,
+        slug: gameSlug,
+        coverUrl,
+        priceSnapshots: initialPriceSnapshots,
+      };
+      await addToCart(gameMock);
+      window.dispatchEvent(new Event("gamegata_open_cart"));
+    }
+  };
+
   const toggleWishlist = async () => {
     if (!user) {
       handleAuthRedirect();
@@ -188,7 +164,6 @@ function TrackControlsInner({
         const nextWishlisted = !wishlisted;
         setWishlisted(nextWishlisted);
 
-        // Update local library
         const libRaw = localStorage.getItem("gamegata_library");
         const library = libRaw ? JSON.parse(libRaw) : {};
         const existing = library[gameId] || {
@@ -206,7 +181,6 @@ function TrackControlsInner({
         library[gameId] = existing;
         localStorage.setItem("gamegata_library", JSON.stringify(library));
 
-        // Add log entry
         const journalRaw = localStorage.getItem("gamegata_journal");
         const journal = journalRaw ? JSON.parse(journalRaw) : [];
         const entry: JournalItem = {
@@ -218,36 +192,34 @@ function TrackControlsInner({
         };
         journal.unshift(entry);
         localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
-
-        window.location.reload();
+        setHistory(journal.filter((item: JournalItem) => item.gameId === gameId));
       }
     } catch (err) {
-      console.error("Failed to update wishlist:", err);
+      console.error("Failed to toggle wishlist:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusClick = async (status: string) => {
+  const handleStatusClick = async (newStatus: string) => {
     if (!user) {
       handleAuthRedirect();
       return;
     }
 
     setLoading(true);
-    const isCurrent = collectionStatus === status;
-    const method = isCurrent ? "DELETE" : "POST";
+    const nextStatus = collectionStatus === newStatus ? null : newStatus;
+
     try {
-      const res = await fetch("/api/user/collection", {
-        method,
+      const res = await fetch("/api/user/status", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameId, status }),
+        body: JSON.stringify({ gameId, status: nextStatus }),
       });
+
       if (res.ok) {
-        const nextStatus = isCurrent ? null : status;
         setCollectionStatus(nextStatus);
 
-        // Update local library
         const libRaw = localStorage.getItem("gamegata_library");
         const library = libRaw ? JSON.parse(libRaw) : {};
         const existing = library[gameId] || {
@@ -265,68 +237,27 @@ function TrackControlsInner({
         library[gameId] = existing;
         localStorage.setItem("gamegata_library", JSON.stringify(library));
 
-        // Add log entry
         const journalRaw = localStorage.getItem("gamegata_journal");
         const journal = journalRaw ? JSON.parse(journalRaw) : [];
-        const statusLabel = statuses.find(s => s.value === status)?.label || status;
+        const statusObj = statuses.find(s => s.value === nextStatus);
+        const actionVal = nextStatus && statusObj ? `Marked as ${statusObj.label}` : "Cleared status";
+
         const entry: JournalItem = {
           gameId,
           gameTitle,
           action: "status",
-          value: isCurrent ? "Cleared Play Status" : `Set Status to ${statusLabel}`,
+          value: actionVal,
           timestamp: Date.now()
         };
         journal.unshift(entry);
         localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
-
-        window.location.reload();
+        setHistory(journal.filter((item: JournalItem) => item.gameId === gameId));
       }
     } catch (err) {
-      console.error("Failed to update collection:", err);
+      console.error("Failed to set status:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleRatingChange = (newRatingVal: number | null) => {
-    setRating(newRatingVal);
-
-    // Save to library
-    const libRaw = localStorage.getItem("gamegata_library");
-    const library = libRaw ? JSON.parse(libRaw) : {};
-
-    const existing = library[gameId] || {
-      gameId,
-      gameTitle,
-      gameSlug,
-      genres,
-      wishlisted,
-      status: collectionStatus,
-      rating: null,
-      updatedAt: Date.now()
-    };
-    existing.rating = newRatingVal;
-    existing.updatedAt = Date.now();
-    library[gameId] = existing;
-    localStorage.setItem("gamegata_library", JSON.stringify(library));
-
-    // Add log entry
-    const journalRaw = localStorage.getItem("gamegata_journal");
-    const journal = journalRaw ? JSON.parse(journalRaw) : [];
-    const actionVal = newRatingVal ? `Rated game ${newRatingVal}/10` : "Removed rating";
-
-    const entry: JournalItem = {
-      gameId,
-      gameTitle,
-      action: "rating",
-      value: actionVal,
-      timestamp: Date.now()
-    };
-    journal.unshift(entry);
-    localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
-
-    // Update history view
-    setHistory(journal.filter((item: JournalItem) => item.gameId === gameId));
   };
 
   const statuses = [
@@ -336,9 +267,42 @@ function TrackControlsInner({
     { label: "Owned", value: "OWNED" },
   ];
 
+  if (compactOnly) {
+    return (
+      <div className="space-y-3">
+        {/* Cart action */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={handleCartToggle}
+            disabled={loading}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 border text-xs font-bold transition-all duration-150 cursor-pointer h-[40px] select-none rounded-xl ${
+              isInCart
+                ? "bg-emerald-500 text-black border-emerald-400 font-extrabold shadow-lg scale-[1.02]"
+                : "bg-white/5 text-white border-white/15 hover:bg-white/10 hover:border-white/30"
+            }`}
+          >
+            {isInCart ? (
+              <>
+                <Check className="w-4 h-4 text-black stroke-[3]" />
+                <span>In Cart</span>
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2}>
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span>Add to Cart</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative border border-white/5 p-5 bg-[#131316]/50 text-xs flex flex-col justify-between h-full gap-5 min-h-[380px] md:min-h-[420px] flex-1 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-      {/* Background Graphic */}
+    <div className="relative border border-white/5 p-5 bg-[#131316]/50 text-xs flex flex-col justify-between gap-4 flex-1 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center pointer-events-none opacity-20 filter blur-[2px] transition-all duration-500 hover:scale-105"
         style={{ backgroundImage: "url('/graphic1.jpg')" }}
@@ -346,20 +310,15 @@ function TrackControlsInner({
       <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none" />
 
       <div className="relative z-10 flex flex-col justify-between h-full gap-5 flex-1">
-        {/* 1. Main Header */}
         <div>
           <span className="text-[12px] text-neutral-450 uppercase tracking-widest block border-b border-white/5 pb-2 font-bold">
             My Tracking Journal
           </span>
         </div>
 
-        {/* 2. Controls Grid */}
         <div className="space-y-4">
-          {/* Favorite & Cart Row */}
           <div className="grid grid-cols-2 gap-2">
-            {/* Favorites */}
             <div className="flex flex-col gap-1.5">
-              
               <button
                 onClick={toggleWishlist}
                 disabled={loading}
@@ -374,9 +333,7 @@ function TrackControlsInner({
               </button>
             </div>
 
-            {/* Shopping Cart */}
             <div className="flex flex-col gap-1.5">
-            
               <button
                 onClick={handleCartToggle}
                 disabled={loading}
@@ -404,7 +361,6 @@ function TrackControlsInner({
             </div>
           </div>
 
-          {/* Play Status */}
           <div className="flex flex-col gap-1.5">
             <span className="text-[9px] text-neutral-450 font-semibold uppercase tracking-wider">
               My Progress
@@ -430,93 +386,103 @@ function TrackControlsInner({
             </div>
           </div>
 
-          {/* Personal Rating */}
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[9px] text-neutral-450 font-semibold uppercase tracking-wider">
-              My Rating
-            </span>
-            <select
-              value={rating || ""}
-              onChange={(e) => {
-                const val = e.target.value;
-                handleRatingChange(val ? parseInt(val) : null);
-              }}
-              className="bg-white/5 text-white border border-white/10 p-2 text-xs font-medium w-full rounded-xl focus:outline-none cursor-pointer h-[38px] focus:border-white/30"
-            >
-              <option value="" className="bg-zinc-950">Select Rating</option>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                <option key={num} value={num} className="bg-zinc-950">
-                  {num} / 10
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* 3. Comparison Stats */}
-        <div className="border-t border-white/5 pt-4 flex flex-col gap-1">
-          <span className="text-[10px] text-neutral-455 font-bold uppercase tracking-widest mb-1">
-            Comparison to Similar Games
-          </span>
-          {mounted && similarStats ? (
-            <div className="space-y-1.5 text-neutral-350 font-mono text-[10px] uppercase">
-              <div>
-                • Similar Genres: <span className="text-white font-medium">{genres.slice(0, 2).join(", ") || "None"}</span>
-              </div>
-              <div>
-                • Games Played/Rated: <span className="text-white font-medium">{similarStats.count}</span>
-              </div>
-              {similarStats.avgRating !== null ? (
-                <div>
-                  • Your Average: <span className="text-white font-medium">{similarStats.avgRating.toFixed(1)}/10</span>
-                  {rating !== null && (
-                    <span className="text-white/40 ml-1.5">
-                      ({rating > similarStats.avgRating ? "+" : ""}{(rating - similarStats.avgRating).toFixed(1)} vs avg)
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  • Your Average: <span className="text-white/30 italic">N/A</span>
-                </div>
-              )}
-              {siteRating !== null && (
-                <div>
-                  • Site Average: <span className="text-white font-medium">{siteRating.toFixed(1)}/10</span>
-                </div>
-              )}
+          {journalExpanded && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[9px] text-neutral-450 font-semibold uppercase tracking-wider">
+                My Rating
+              </span>
+              <select
+                value={rating || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleRatingChange(val ? parseInt(val) : null);
+                }}
+                className="bg-white/5 text-white border border-white/10 p-2 text-xs font-medium w-full rounded-xl focus:outline-none cursor-pointer h-[38px] focus:border-white/30"
+              >
+                <option value="" className="bg-zinc-950">Select Rating</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                  <option key={num} value={num} className="bg-zinc-950">
+                    {num} / 10
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : (
-            <span className="text-white/30 italic text-[10px] uppercase font-mono">[ Loading Stats... ]</span>
           )}
         </div>
 
-        {/* 4. Play History Log */}
-        <div className="border-t border-white/5 pt-4 flex-1 flex flex-col gap-1">
-          <span className="text-[10px] text-neutral-450 font-bold uppercase tracking-widest mb-1">
-            Activity Log
-          </span>
-          <div className="space-y-2 overflow-y-auto max-h-[85px] pr-1 scrollbar-thin">
-            {mounted ? (
-              history.length > 0 ? (
-                history.slice(0, 3).map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-baseline text-[9px] font-mono text-neutral-350 uppercase">
-                    <span className="truncate max-w-[170px]">{item.value}</span>
-                    <span className="text-white/30 shrink-0 text-[8px] ml-1">
-                      {new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </span>
+        <button
+          type="button"
+          onClick={() => setJournalExpanded((prev) => !prev)}
+          className="flex items-center justify-center gap-1.5 w-full py-1.5 text-[10px] font-mono text-neutral-500 hover:text-neutral-300 transition-colors border-t border-white/5 pt-3"
+        >
+          <span>{journalExpanded ? 'Hide details ↑' : 'Open full journal ↓'}</span>
+        </button>
+
+        {journalExpanded && (
+          <div className="border-t border-white/5 pt-4 flex flex-col gap-1">
+            <span className="text-[10px] text-neutral-455 font-bold uppercase tracking-widest mb-1">
+              Comparison to Similar Games
+            </span>
+            {mounted && similarStats ? (
+              <div className="space-y-1.5 text-neutral-350 font-mono text-[10px] uppercase">
+                <div>
+                  • Similar Genres: <span className="text-white font-medium">{genres.slice(0, 2).join(", ") || "None"}</span>
+                </div>
+                <div>
+                  • Games Played/Rated: <span className="text-white font-medium">{similarStats.count}</span>
+                </div>
+                {similarStats.avgRating !== null ? (
+                  <div>
+                    • Your Average: <span className="text-white font-medium">{similarStats.avgRating.toFixed(1)}/10</span>
+                    {rating !== null && (
+                      <span className="text-white/40 ml-1.5">
+                        ({rating > similarStats.avgRating ? "+" : ""}{(rating - similarStats.avgRating).toFixed(1)} vs avg)
+                      </span>
+                    )}
                   </div>
-                ))
-              ) : (
-                <span className="text-white/35 italic text-[9px] uppercase font-mono block">No activity logged yet.</span>
-              )
+                ) : (
+                  <div>
+                    • Your Average: <span className="text-white/30 italic">N/A</span>
+                  </div>
+                )}
+                {siteRating !== null && (
+                  <div>
+                    • Site Average: <span className="text-white font-medium">{siteRating.toFixed(1)}/10</span>
+                  </div>
+                )}
+              </div>
             ) : (
-              <span className="text-white/35 italic text-[9px] uppercase font-mono block">[ Loading Log... ]</span>
+              <span className="text-white/30 italic text-[10px] uppercase font-mono">[ Loading Stats... ]</span>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Footer Info */}
+        {journalExpanded && (
+          <div className="border-t border-white/5 pt-4 flex-1 flex flex-col gap-1">
+            <span className="text-[10px] text-neutral-450 font-bold uppercase tracking-widest mb-1">
+              Activity Log
+            </span>
+            <div className="space-y-2 overflow-y-auto max-h-[85px] pr-1 scrollbar-thin">
+              {mounted ? (
+                history.length > 0 ? (
+                  history.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex justify-between items-baseline text-[9px] font-mono text-neutral-350 uppercase">
+                      <span className="truncate max-w-[170px]">{item.value}</span>
+                      <span className="text-white/30 shrink-0 text-[8px] ml-1">
+                        {new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-white/35 italic text-[9px] uppercase font-mono block">No activity logged yet.</span>
+                )
+              ) : (
+                <span className="text-white/35 italic text-[9px] uppercase font-mono block">[ Loading Log... ]</span>
+              )}
+            </div>
+          </div>
+        )}
+
         {!user && (
           <span className="text-[12px] text-white/55 block border-t border-white/5 pt-2 leading-snug">
             * Sign in to sync your status to the server database.

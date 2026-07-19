@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MoreVertical, BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { MoreVertical, BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon, Download } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -18,6 +18,8 @@ function SettingsButtonInner() {
   const { openModal } = usePreferences();
   const [pathname, setPathname] = useState("");
   const [layout, setLayout] = useState<"grid" | "list">("grid");
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   // Sync pathname and layout from localStorage on mount and listen to changes
   useEffect(() => {
@@ -35,8 +37,22 @@ function SettingsButtonInner() {
       }
     };
 
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    if (window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone) {
+      setIsStandalone(true);
+    }
+
     window.addEventListener("gata-mobile-layout-changed", handleLayoutChange);
-    return () => window.removeEventListener("gata-mobile-layout-changed", handleLayoutChange);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("gata-mobile-layout-changed", handleLayoutChange);
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
   }, []);
 
   const toggleLayout = (newLayout: "grid" | "list") => {
@@ -45,10 +61,28 @@ function SettingsButtonInner() {
     window.dispatchEvent(new Event("gata-mobile-layout-changed"));
   };
 
+  const handleInstallPWA = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        setIsStandalone(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      if (isIOS) {
+        alert("To install hoGAMEGATA on iOS:\n1. Tap the Share button in Safari.\n2. Scroll down and tap 'Add to Home Screen'.");
+      } else {
+        alert("To install hoGAMEGATA on your device:\n1. Open browser options (⋮ or ⋯ menu).\n2. Tap 'Install app' or 'Add to Home screen'.");
+      }
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={
-        <button data-tour="options-button" className="flex items-center justify-center font-mono text-xs text-white hover:bg-white hover:text-black transition-all duration-150 border border-transparent hover:border-white w-11 h-11 sm:w-12 sm:h-12 rounded-none font-bold cursor-pointer bg-black" title="More Options">
+        <button data-tour="options-button" className="flex items-center justify-center font-mono text-xs text-white hover:bg-white/10 transition-all duration-150 w-full h-full rounded-xl font-bold cursor-pointer bg-transparent" title="More Options">
           {user?.avatarUrl ? (
             <img src={user.avatarUrl} alt="User Profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/20" referrerpolicy="no-referrer" />
           ) : (
@@ -76,11 +110,20 @@ function SettingsButtonInner() {
 
         <DropdownMenuSeparator />
 
-        {/* Preferences */}
+        {/* Preferences & App Install */}
         <DropdownMenuLabel>Personalize</DropdownMenuLabel>
         <DropdownMenuItem onClick={openModal} className="flex items-center gap-1.5 cursor-pointer">
           <Sliders className="w-3.5 h-3.5" /> Preferences
         </DropdownMenuItem>
+
+        {!isStandalone && (
+          <DropdownMenuItem onClick={handleInstallPWA} className="flex items-center justify-between cursor-pointer text-emerald-400 font-bold">
+            <span className="flex items-center gap-1.5">
+              <Download className="w-3.5 h-3.5" /> Install App
+            </span>
+            <span className="font-mono text-[9px] uppercase border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 rounded">PWA</span>
+          </DropdownMenuItem>
+        )}
 
         <DropdownMenuSeparator />
 

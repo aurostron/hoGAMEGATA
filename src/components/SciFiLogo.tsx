@@ -5,7 +5,7 @@ interface SciFiLogoProps {
 export default function SciFiLogo({ withLink = true }: SciFiLogoProps) {
   const headerContent = (
     <h1
-      className="text-2xl md:text-3xl font-extrabold text-white tracking-[0.05em] cursor-pointer select-none inline-block uppercase"
+      className="text-[17px] sm:text-2xl md:text-3xl font-extrabold text-white tracking-[0.03em] cursor-pointer select-none inline-block uppercase"
       style={{ fontFamily: "'Outfit', sans-serif" }}
     >
       <span className="italic font-normal lowercase">ho</span>GAMEGATA

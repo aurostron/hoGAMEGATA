@@ -9,7 +9,7 @@ import { useAuth, AuthProvider } from "@/context/AuthContext";
 function OnboardingModalInner() {
   const [pathname, setPathname] = useState("");
   const { user, loading: authLoading } = useAuth();
-  const { hasOnboarded, isLoaded, isModalOpen, vibes: existingVibes, completeOnboarding } = usePreferences();
+  const { hasOnboarded, isLoaded, isModalOpen, vibes: existingVibes, completeOnboarding, closeModal } = usePreferences();
 
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
   const [step, setStep] = useState(0);
@@ -22,6 +22,17 @@ function OnboardingModalInner() {
   useEffect(() => {
     setPathname(window.location.pathname);
   }, []);
+
+  // Listen for Escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isModalOpen) {
+        closeModal();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen, closeModal]);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -67,7 +78,7 @@ function OnboardingModalInner() {
   };
 
   const handleSkip = () => {
-    completeOnboarding(selectedVibes);
+    closeModal();
   };
 
   const getCategoryForVibe = (slug: string) => {
@@ -93,14 +104,24 @@ function OnboardingModalInner() {
 
   return (
     // Ethereal Glass / Dark Tech Layout (Visible semi-transparent bg, no blur)
-    <div className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-between overflow-y-auto select-none font-sans antialiased">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) closeModal();
+      }}
+      className="fixed inset-0 z-50 bg-black/65 flex flex-col justify-between overflow-y-auto select-none font-sans antialiased"
+    >
       
       {/* Background glow orbs */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[500px] h-[350px] sm:h-[500px] rounded-full bg-white/4 blur-[100px] sm:blur-[130px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] sm:w-[600px] h-[450px] sm:h-[600px] rounded-full bg-blue-500/5 blur-[120px] sm:blur-[150px] pointer-events-none" />
 
       {/* Main card body */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-16">
+      <main 
+        onClick={(e) => {
+          if (e.target === e.currentTarget) closeModal();
+        }}
+        className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-16"
+      >
         <div
           className={cn(
             "w-full max-w-2xl transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
@@ -111,20 +132,12 @@ function OnboardingModalInner() {
           {/* Double-Bezel Card Container */}
           <div className="relative rounded-[2rem] p-1.5 bg-white/5 border border-white/10 shadow-2xl">
             
-            {/* Close / Skip Action (brought near/onto the modal card) */}
+            {/* Close Action */}
             <button
               onClick={handleSkip}
               className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20 font-mono text-[9.5px] sm:text-[10px] font-bold tracking-[0.25em] uppercase text-white/40 hover:text-white transition-colors duration-250 cursor-pointer flex items-center gap-1.5 py-1 px-2.5 rounded-md hover:bg-white/5 active:scale-95"
             >
-              {hasOnboarded ? (
-                <>
-                  Close <span className="text-white/60">✕</span>
-                </>
-              ) : (
-                <>
-                  Skip <span className="text-white/60">↗</span>
-                </>
-              )}
+              Close <span className="text-white/60">✕</span>
             </button>
 
             <div className="rounded-[calc(2rem-0.375rem)] pt-12 pb-6 px-6 sm:pt-14 sm:pb-10 sm:px-10 bg-black/80 border border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] flex flex-col gap-8">

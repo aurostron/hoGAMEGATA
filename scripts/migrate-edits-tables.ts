@@ -81,7 +81,37 @@ async function migrate() {
     CREATE INDEX IF NOT EXISTS user_reputation_tier_idx ON UserReputation(tier);
   `);
 
-  console.log("✅ Edit tables successfully migrated and ready!");
+  console.log("Creating BugReport table if not exists...");
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS BugReport (
+      id TEXT PRIMARY KEY,
+      ticketId TEXT NOT NULL UNIQUE,
+      category TEXT NOT NULL DEFAULT 'bug',
+      severity TEXT NOT NULL DEFAULT 'medium',
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      pageUrl TEXT NOT NULL,
+      userAgent TEXT,
+      contactEmail TEXT,
+      userId TEXT,
+      status TEXT NOT NULL DEFAULT 'new',
+      adminNotes TEXT,
+      createdAt INTEGER NOT NULL DEFAULT (unixepoch()),
+      updatedAt INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS bug_report_status_idx ON BugReport(status);
+  `);
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS bug_report_category_idx ON BugReport(category);
+  `);
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS bug_report_ticket_idx ON BugReport(ticketId);
+  `);
+
+  console.log("✅ Edit and BugReport tables successfully migrated and ready!");
 }
 
 migrate().catch((err) => {

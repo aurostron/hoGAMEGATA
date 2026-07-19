@@ -45,11 +45,12 @@ async function main() {
     const domain = "https://gamegata.xyz";
     const staticPages = [
       { loc: `${domain}/`, changefreq: "daily", priority: "1.0" },
+      { loc: `${domain}/directory`, changefreq: "daily", priority: "0.9" },
       { loc: `${domain}/games`, changefreq: "daily", priority: "0.9" },
       { loc: `${domain}/upcoming`, changefreq: "daily", priority: "0.8" },
       { loc: `${domain}/blog`, changefreq: "daily", priority: "0.8" },
+      { loc: `${domain}/about`, changefreq: "weekly", priority: "0.8" },
       { loc: `${domain}/support`, changefreq: "weekly", priority: "0.7" },
-      { loc: `${domain}/about`, changefreq: "monthly", priority: "0.5" },
       { loc: `${domain}/contact`, changefreq: "monthly", priority: "0.5" },
       { loc: `${domain}/legal`, changefreq: "monthly", priority: "0.3" },
       { loc: `${domain}/privacy`, changefreq: "monthly", priority: "0.3" },
@@ -62,24 +63,6 @@ async function main() {
     <loc>${page.loc}</loc>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
-  </url>`).join('');
-
-    const gameItems = games.map(game => {
-      const dateStr = game.updatedAt ? new Date(game.updatedAt).toISOString() : new Date().toISOString();
-      return `
-  <url>
-    <loc>${domain}/game/${game.slug}</loc>
-    <lastmod>${dateStr}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`;
-    }).join('');
-
-    const devItems = devs.map(dev => `
-  <url>
-    <loc>${domain}/developer/${dev.slug}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
   </url>`).join('');
 
     const blogItems = blogPosts.map(post => {
@@ -96,8 +79,6 @@ async function main() {
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${xmlItems}
-${gameItems}
-${devItems}
 ${blogItems}
 </urlset>`;
 

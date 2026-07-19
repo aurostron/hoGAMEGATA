@@ -30,7 +30,7 @@ export const EditPencilButton: React.FC<EditPencilButtonProps> = ({
         onClick={() => setIsOpen(true)}
         title={`Suggest edit for ${fieldLabel}`}
         aria-label={`Suggest edit for ${fieldLabel}`}
-        className={`inline-flex items-center justify-center p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer ${className}`}
+        className={`inline-flex items-center justify-center p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 border border-transparent hover:border-zinc-700 opacity-0 group-hover:opacity-100 transition-all cursor-pointer ${className}`}
       >
         <Pencil className="w-3.5 h-3.5" />
       </button>

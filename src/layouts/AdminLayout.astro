@@ -120,6 +120,18 @@ const userEmail = "bapum@example.com";
           </a>
 
           <div class="pt-6">
+            <p class="text-[10px] uppercase font-mono tracking-widest text-gray-500 px-3 mb-2 font-bold">Community & Support</p>
+            <a href="/admin/edits" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'edits' ? 'active' : ''}`}>
+              <span class="text-sm">✏️</span>
+              <span>Edit Suggestions</span>
+            </a>
+            <a href="/admin/bugs" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'bugs' ? 'active' : ''}`}>
+              <span class="text-sm">🐛</span>
+              <span>Bug Reports</span>
+            </a>
+          </div>
+
+          <div class="pt-6">
             <p class="text-[10px] uppercase font-mono tracking-widest text-gray-500 px-3 mb-2 font-bold">System</p>
             <a href="/admin/health" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'health' ? 'active' : ''}`}>
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

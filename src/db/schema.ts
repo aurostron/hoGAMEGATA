@@ -353,5 +353,31 @@ export const userReputation = sqliteTable(
   ]
 );
 
+export const bugReports = sqliteTable(
+  "BugReport",
+  {
+    id: text("id").primaryKey(),
+    ticketId: text("ticketId").notNull().unique(),
+    category: text("category").default("bug").notNull(), // "bug" | "broken_link" | "incorrect_metadata" | "feature_request"
+    severity: text("severity").default("medium").notNull(), // "low" | "medium" | "high"
+    title: text("title").notNull(),
+    description: text("description").notNull(),
+    pageUrl: text("pageUrl").notNull(),
+    userAgent: text("userAgent"),
+    contactEmail: text("contactEmail"),
+    userId: text("userId"),
+    status: text("status").default("new").notNull(), // "new" | "in_progress" | "resolved" | "dismissed"
+    adminNotes: text("adminNotes"),
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  },
+  (table) => [
+    index("bug_report_status_idx").on(table.status),
+    index("bug_report_category_idx").on(table.category),
+    index("bug_report_ticket_idx").on(table.ticketId),
+    index("bug_report_created_idx").on(table.createdAt),
+  ]
+);
+
 
 

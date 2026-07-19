@@ -90,20 +90,20 @@ export default function HeaderSearch() {
             setIsExpanded(true);
             setTimeout(() => inputRef.current?.focus(), 50);
           }}
-          className="flex items-center justify-center text-white hover:bg-white/5 w-12 sm:w-14 h-full transition-colors duration-150 cursor-pointer"
+          className="flex items-center justify-center text-white hover:bg-white/5 w-11 sm:w-12 h-full transition-colors duration-150 cursor-pointer rounded-xl"
           title="Search"
         >
           <Search className="w-5 h-5" />
         </button>
       ) : (
-        /* Expanded Search Input Bar */
-        <div className="relative w-44 sm:w-64 px-3 flex items-center h-full">
+        /* Expanded Search Input Bar (Mobile Full-Width Overlay vs Desktop Inline Input) */
+        <div className="fixed inset-x-0 top-0 h-14 bg-[#0d0d0f] z-50 px-3 flex items-center shadow-xl border-b border-white/10 sm:relative sm:inset-auto sm:top-auto sm:h-auto sm:bg-transparent sm:z-auto sm:px-0 sm:shadow-none sm:border-none sm:w-64">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               {loading ? (
-                <Loader2 className="h-4.5 w-4.5 text-white/70 animate-spin" />
+                <Loader2 className="h-4 w-4 text-white/70 animate-spin" />
               ) : (
-                <Search className="h-4.5 w-4.5 text-white/70" />
+                <Search className="h-4 w-4 text-white/70" />
               )}
             </div>
             <input
@@ -112,8 +112,8 @@ export default function HeaderSearch() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => query.trim() && setIsOpen(true)}
-              placeholder="Search games..."
-              className="block w-full h-9 pl-9 pr-8 bg-[#0f0f12] border border-white/15 focus:border-white/35 text-xs text-white placeholder-white/40 focus:outline-none rounded-none transition-all duration-150 font-sans tracking-wide"
+              placeholder="Search horror games..."
+              className="block w-full h-9 pl-9 pr-9 bg-[#141418] border border-white/20 focus:border-white/50 text-xs text-white placeholder-white/40 focus:outline-none rounded-xl transition-all duration-150 font-sans tracking-wide"
             />
             <button
               onClick={() => {
@@ -124,7 +124,7 @@ export default function HeaderSearch() {
               }}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/40 hover:text-white transition-colors duration-150 cursor-pointer"
             >
-              <span className="text-[10px] font-bold">[✕]</span>
+              <span className="text-xs font-mono font-bold">✕</span>
             </button>
           </div>
         </div>
@@ -132,13 +132,13 @@ export default function HeaderSearch() {
 
       {/* Autocomplete Dropdown list */}
       {isOpen && isExpanded && (
-        <div className="absolute right-0 top-full mt-1.5 w-64 sm:w-80 bg-black border-2 border-white z-50 divide-y divide-white/20 max-h-64 overflow-y-auto shadow-[4px_4px_0px_0px_#ffffff] flex flex-col">
+        <div className="fixed top-14 left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 mt-1.5 sm:w-80 bg-black/95 backdrop-blur-md border border-white/20 rounded-xl z-50 divide-y divide-white/10 max-h-72 overflow-y-auto shadow-2xl flex flex-col">
           {results.length > 0 ? (
             results.map((game) => (
               <button
                 key={game.id}
                 onClick={() => handleSelectGame(game.slug)}
-                className="w-full text-left px-4 py-2.5 hover:bg-white hover:text-black transition-colors duration-150 cursor-pointer flex flex-col gap-0.5 select-none rounded-none outline-none border-none bg-transparent group"
+                className="w-full text-left px-4 py-3 hover:bg-white hover:text-black transition-colors duration-150 cursor-pointer flex flex-col gap-0.5 select-none outline-none border-none bg-transparent group"
               >
                 <span className="font-sans text-xs font-bold tracking-tight block">
                   {game.title}
@@ -151,7 +151,7 @@ export default function HeaderSearch() {
               </button>
             ))
           ) : (
-            <div className="px-4 py-3 text-[10px] text-white/40 uppercase tracking-widest text-center select-none">
+            <div className="px-4 py-4 text-[10px] font-mono text-white/40 uppercase tracking-widest text-center select-none">
               [ No games found ]
             </div>
           )}
@@ -159,7 +159,7 @@ export default function HeaderSearch() {
           {import.meta.env.DEV && (
             <a
               href="/search"
-              className="w-full text-center block px-4 py-2 bg-[#0c0c0f] hover:bg-white hover:text-black font-mono text-[9px] uppercase tracking-wider text-red-400 font-bold border-t border-white/20 transition-colors"
+              className="w-full text-center block px-4 py-2 bg-[#0c0c0f] hover:bg-white hover:text-black font-mono text-[9px] uppercase tracking-wider text-red-400 font-bold border-t border-white/10 transition-colors"
             >
               [ Try Project Oracle AI Search → ]
             </a>

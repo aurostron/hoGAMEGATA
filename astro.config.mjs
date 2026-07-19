@@ -24,10 +24,10 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     resolve: {
-      dedupe: ['react', 'react-dom']
+      dedupe: ['react', 'react-dom', 'lucide-react']
     },
     ssr: {
-      noExternal: ['lucide-react']
+      noExternal: ['lucide-react', 'react', 'react-dom']
     },
     optimizeDeps: {
       include: [
@@ -37,6 +37,14 @@ export default defineConfig({
         'react-dom/client',
         'react/jsx-runtime',
         'react/jsx-dev-runtime',
+        'lucide-react',
+        '@sanity/client',
+        'drizzle-orm',
+        'drizzle-orm/libsql',
+        'drizzle-orm/sqlite-core',
+        '@libsql/client/web',
+        'better-auth',
+        'better-auth/adapters/drizzle',
       ]
     }
   },

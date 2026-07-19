@@ -2,6 +2,7 @@
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import OnboardingModal from '../components/OnboardingModal';
+import BottomNav from '../components/BottomNav';
 import '../styles/global.css';
 import { count } from 'drizzle-orm';
 import { turso } from '../lib/turso';
@@ -80,6 +81,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     <!-- SEO Meta Tags -->
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="keywords" content="hoGAMEGATA, hGG, hgg, hgg db, gamegata db, gamegata database, horror games database, open horror games mega metadata, hogamegata, game gata, survival horror database, horror game discovery, indie horror registry" />
     <meta name="msvalidate.01" content="5F938F573CF16B17C56424DDB4413438" />
 
     <!-- Open Graph / Facebook -->
@@ -87,6 +89,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     <meta property="og:url" content={ogUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="hoGAMEGATA" />
     {ogImage && <meta property="og:image" content={ogImage} />}
 
     <!-- Twitter -->
@@ -94,20 +97,92 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     <meta property="twitter:url" content={ogUrl} />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
+    <meta name="twitter:site" content="@hoGAMEGATA" />
     {ogImage && <meta property="twitter:image" content={ogImage} />}
     
+    <!-- JSON-LD Brand Entity & WebSite Schema -->
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://gamegata.xyz/#website",
+      "name": "hoGAMEGATA",
+      "alternateName": [
+        "hGG",
+        "hgg",
+        "hgg db",
+        "gamegata db",
+        "gamegata database",
+        "gamegata",
+        "hogamegata",
+        "open horror games mega metadata"
+      ],
+      "url": "https://gamegata.xyz",
+      "description": "An open, minimalist, ad-free horror game metadata database and discovery engine.",
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://gamegata.xyz/#organization",
+        "name": "hoGAMEGATA",
+        "alternateName": ["hGG", "gamegata db", "hogamegata"],
+        "url": "https://gamegata.xyz",
+        "logo": "https://gamegata.xyz/icons/icon-512x512.png"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://gamegata.xyz/games?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    })} />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://gamegata.xyz/#organization",
+      "name": "hoGAMEGATA",
+      "alternateName": ["hGG", "hgg", "hgg db", "gamegata db", "gamegata database", "hogamegata"],
+      "url": "https://gamegata.xyz",
+      "logo": "https://gamegata.xyz/icons/icon-512x512.png",
+      "description": "The open horror game discovery database preserving metadata for survival horror, psychological terror, and indie nightmare games."
+    })} />
     
-    <!-- Google Fonts: Geist Sans, Geist Mono, & Outfit -->
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0d0d0f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="hoGAMEGATA" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png" />
+
+    <!-- Google Fonts: Geist Sans, Geist Mono, Hanken Grotesk, & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&family=Hanken+Grotesk:ital,wght@0,400;0,700;0,800;1,900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 	</head>
-	<body class="min-h-full flex flex-col bg-background text-foreground selection:bg-white selection:text-black">
+	<body class="min-h-full w-full overflow-x-hidden flex flex-col bg-background text-foreground selection:bg-white selection:text-black">
     <Header withSearch={withSearch} withLink={withLink} statsGames={sGames} statsDevelopers={sDevs} statsDeals={sDeals} statsTags={sTags} />
-    <div class="flex-1 flex flex-col w-full">
+    <div class="flex-1 flex flex-col w-full min-w-0 overflow-x-hidden pb-20 md:pb-0">
       <slot />
     </div>
     <Footer />
+    <BottomNav client:only="react" />
     <OnboardingModal client:only="react" />
+
+    <!-- Register PWA Service Worker -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.error('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
 	</body>
 </html>

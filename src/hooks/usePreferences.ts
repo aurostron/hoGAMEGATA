@@ -28,7 +28,6 @@ export function usePreferences() {
       setHasOnboardedState(true);
     } else {
       setHasOnboardedState(false);
-      setIsModalOpen(true); // Open modal for first-time visitors
     }
     setIsLoaded(true);
 
@@ -72,10 +71,8 @@ export function usePreferences() {
   }, []);
 
   const closeModal = useCallback(() => {
-    if (hasOnboarded) {
-      window.dispatchEvent(new Event(CLOSE_MODAL_EVENT));
-    }
-  }, [hasOnboarded]);
+    window.dispatchEvent(new Event(CLOSE_MODAL_EVENT));
+  }, []);
 
   return { 
     vibes, 

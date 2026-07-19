@@ -432,7 +432,7 @@ export default function TabCatalog({
           )}
 
           {/* Right Grid of 6 smaller compact cards */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {gridGames.length > 0 ? (
               gridGames.map((game, idx) => {
                 const deal = getFeaturedDeal(game);

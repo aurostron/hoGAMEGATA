@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCart, type CartItem } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { 
@@ -20,6 +21,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [activeCopilot, setActiveCopilot] = useState<boolean>(false);
   const [copilotSteps, setCopilotSteps] = useState<CartItem[]>([]);
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Reset checkout copilot when drawer closes or cart changes
   useEffect(() => {
@@ -28,7 +34,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   // Format currency helpers
   const formatPrice = (amount: number, currencyCode = "USD") => {
@@ -139,8 +145,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden font-mono select-none">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-hidden font-mono select-none">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/75 backdrop-blur-sm transition-opacity" 
@@ -198,33 +204,34 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <div className="flex items-center gap-3.5 min-w-0">
                           <button
                             onClick={() => markAsPurchased(item)}
-                            className={`w-8 h-8 flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
+                            className={`w-6 h-6 border flex items-center justify-center transition-all cursor-pointer shrink-0 ${
                               isDone 
-                                ? "border-emerald-500 bg-emerald-500 text-black" 
-                                : "border-white/40 hover:border-white text-transparent"
+                                ? "bg-emerald-500 border-emerald-500 text-black" 
+                                : "border-white/30 hover:border-white text-transparent"
                             }`}
                           >
-                            <Check className="w-5 h-5 stroke-[3.5]" />
+                            <Check className="w-4 h-4 stroke-[3]" />
                           </button>
-                          <div className="min-w-0">
-                            <span className={`text-sm sm:text-base font-black uppercase truncate block ${isDone ? "line-through text-white/30" : "text-white"}`}>
+                          
+                          <div className="min-w-0 flex-1">
+                            <span className={`text-sm font-bold block truncate ${isDone ? "line-through text-white/50" : "text-white"}`}>
                               {item.gameTitle}
                             </span>
-                            <span className="text-xs sm:text-sm text-white/60 uppercase block font-mono mt-1">
-                              {item.storeName} — {formatPrice(item.dealPrice, item.currency)}
+                            <span className="text-xs text-white/50 block font-mono">
+                              {item.storeName} — <strong className="text-emerald-400 font-bold">{formatPrice(item.dealPrice, item.currency)}</strong>
                             </span>
                           </div>
                         </div>
 
-                        {!isDone && item.dealUrl && (
+                        {item.dealUrl && (
                           <a
                             href={item.dealUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-3.5 py-2.5 bg-white text-black hover:bg-red-500 hover:text-white hover:border-red-500 border border-white font-mono text-xs font-black uppercase tracking-wider shrink-0 transition-colors duration-150 leading-none cursor-pointer"
-                            title={`Open ${item.storeName} deal`}
+                            className="p-2 border border-white/20 hover:border-white hover:bg-white hover:text-black transition-all text-white/70 hover:text-black shrink-0"
+                            title="Open Store Checkout"
                           >
-                            [ OPEN {item.storeName.toUpperCase()} ]
+                            <ExternalLink className="w-4 h-4" />
                           </a>
                         )}
                       </div>
@@ -234,156 +241,147 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                 <button
                   onClick={() => setActiveCopilot(false)}
-                  className="w-full py-3 border border-white/40 hover:border-white text-white/60 hover:text-white transition-all text-xs sm:text-sm font-black uppercase cursor-pointer text-center font-mono tracking-wider"
+                  className="w-full py-3 border border-white/20 text-white/70 hover:text-white hover:border-white transition-all text-xs font-mono uppercase tracking-widest"
                 >
-                  Back to Cart
+                  ← Back to Cart Overview
                 </button>
               </div>
-            ) : cartItems.length === 0 ? (
-              /* Empty Cart State */
-              <div className="h-full flex flex-col items-center justify-center text-center py-20 space-y-4">
-                <div className="w-14 h-14 border border-white/20 flex items-center justify-center rounded-none text-white/30 bg-zinc-900/30">
-                  <ShoppingBag className="w-6 h-6" />
-                </div>
-                <div className="space-y-1.5">
-                  <span className="text-sm sm:text-base uppercase font-black text-white block font-mono">
-                    Your cart is empty
-                  </span>
-                  <span className="text-xs sm:text-sm text-white/80 font-sans leading-normal block max-w-xs">
-                    It's feels empty in here, why don't you add some games, huh?
-                  </span>
-                </div>
-              </div>
             ) : (
-              /* Grouped items list */
-              <div className="space-y-6">
-                {stores.map((store) => {
-                  const items = groupedItems[store];
-                  const storeSubtotal = items.reduce((sum, item) => sum + item.dealPrice, 0);
-                  return (
-                    <div key={store} className="border border-white/10 bg-zinc-950/20 p-4 space-y-4">
-                      {/* Store group header */}
-                      <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                        <span className="text-sm sm:text-base font-black uppercase text-white tracking-widest font-mono">
-                          {store} DEALS
-                        </span>
-                        <span className="text-xs sm:text-sm font-bold text-white/70 font-mono">
-                          {items.length} {items.length === 1 ? "item" : "items"} · {formatPrice(storeSubtotal, items[0].currency)}
-                        </span>
-                      </div>
+              /* Standard Cart View */
+              <>
+                {cartItems.length === 0 ? (
+                  <div className="h-64 flex flex-col items-center justify-center text-center space-y-3">
+                    <ShoppingBag className="w-12 h-12 text-white/20" />
+                    <p className="text-sm text-white/60 font-sans">Your shopping cart is currently empty.</p>
+                    <p className="text-xs text-white/30 max-w-xs font-sans">Browse horror deals across Steam, GOG, and Epic to build your nightmare collection.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {stores.map((storeName) => {
+                      const storeItems = groupedItems[storeName];
+                      const storeSubtotal = storeItems.reduce((acc, i) => acc + i.dealPrice, 0);
 
-                      {/* Items */}
-                      <div className="space-y-5">
-                        {items.map((item) => (
-                          <div key={item.gameId} className="flex gap-4 relative group">
-                            {/* Cover */}
-                            <div className="w-20 h-24 bg-neutral-900 border border-white/15 shrink-0 overflow-hidden relative">
-                              {item.coverUrl ? (
-                                <img 
-                                  src={getCloudinaryFetchUrl(item.coverUrl) || undefined} 
-                                  alt={item.gameTitle} 
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[9px] text-white/30 uppercase font-mono">
-                                  No Cover
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Details */}
-                            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                              <div>
-                                <h4 className="text-sm sm:text-base font-extrabold uppercase tracking-wide truncate text-white leading-tight">
-                                  {item.gameTitle}
-                                </h4>
-                                
-                                {/* Store Selector Dropdown */}
-                                {item.allDeals && item.allDeals.length > 1 ? (
-                                  <select
-                                    value={item.storeName}
-                                    onChange={(e) => handleStoreChange(item, e.target.value)}
-                                    className="mt-2 font-mono text-xs sm:text-sm uppercase border border-white/40 bg-black text-white px-2.5 py-1.5 outline-none cursor-pointer hover:border-white focus:border-white block w-full max-w-[220px]"
-                                  >
-                                    {item.allDeals.map((d: any) => (
-                                      <option key={d.storeName} value={d.storeName}>
-                                        {d.storeName} — {formatPrice(d.dealPrice, d.currency)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                ) : (
-                                  <span className="text-xs sm:text-sm text-white/50 block mt-1.5 uppercase font-mono">
-                                    {item.storeName} deal
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Price Row */}
-                              <div className="flex items-center gap-2.5 font-mono mt-2">
-                                {item.discountPercent > 0 && (
-                                  <span className="text-xs bg-red-950 text-red-500 border border-red-500 px-1.5 py-0.5 font-black">
-                                    -{item.discountPercent}%
-                                  </span>
-                                )}
-                                <span className="text-sm sm:text-base font-black text-emerald-400">
-                                  {formatPrice(item.dealPrice, item.currency)}
-                                </span>
-                                {item.discountPercent > 0 && (
-                                  <span className="text-xs text-white/50 line-through">
-                                    {formatPrice(item.retailPrice, item.currency)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Remove button */}
-                            <button
-                              onClick={() => removeFromCart(item.gameId)}
-                              className="text-white/30 hover:text-red-400 border border-transparent hover:border-red-500/20 p-1.5 transition-all cursor-pointer self-start"
-                              title="Remove item"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                      return (
+                        <div key={storeName} className="border border-white/10 bg-zinc-950/40 p-4 space-y-3">
+                          {/* Store Group Header */}
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <span className="text-xs font-black uppercase tracking-widest text-[#7b3fc4]">
+                              {storeName}
+                            </span>
+                            <span className="text-xs text-white/60 font-bold font-mono">
+                              Subtotal: {formatPrice(storeSubtotal, storeItems[0]?.currency)}
+                            </span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+
+                          {/* Items List */}
+                          <div className="space-y-3">
+                            {storeItems.map((item) => (
+                              <div key={item.gameId} className="flex gap-3 items-center group/item">
+                                {/* Cover Thumb */}
+                                {item.coverUrl ? (
+                                  <img 
+                                    src={getCloudinaryFetchUrl(item.coverUrl, false)} 
+                                    alt={item.gameTitle}
+                                    className="w-12 h-16 object-cover border border-white/10 shrink-0" 
+                                  />
+                                ) : (
+                                  <div className="w-12 h-16 bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                    <ShoppingBag className="w-4 h-4 text-white/20" />
+                                  </div>
+                                )}
+
+                                {/* Game details */}
+                                <div className="flex-1 min-w-0">
+                                  <a 
+                                    href={`/game/${item.gameSlug}`}
+                                    className="text-xs font-bold text-white hover:text-red-400 truncate block font-sans transition-colors"
+                                  >
+                                    {item.gameTitle}
+                                  </a>
+
+                                  {/* Storefront Picker dropdown */}
+                                  {item.allDeals && item.allDeals.length > 1 ? (
+                                    <select
+                                      value={item.storeName}
+                                      onChange={(e) => handleStoreChange(item, e.target.value)}
+                                      className="mt-1 bg-black border border-white/20 text-[10px] text-white/80 px-1.5 py-0.5 font-mono focus:outline-none focus:border-white cursor-pointer"
+                                    >
+                                      {item.allDeals.map((d: any) => (
+                                        <option key={d.storeName} value={d.storeName}>
+                                          {d.storeName} - {formatPrice(d.dealPrice, d.currency)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <span className="text-[10px] text-white/40 block font-mono mt-0.5">
+                                      {item.storeName}
+                                    </span>
+                                  )}
+
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs font-black text-emerald-400 font-mono">
+                                      {formatPrice(item.dealPrice, item.currency)}
+                                    </span>
+                                    {item.discountPercent > 0 && (
+                                      <span className="text-[9px] bg-[#7b3fc4] text-white font-bold px-1 py-0.2">
+                                        -{item.discountPercent}%
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Remove Button */}
+                                <button
+                                  onClick={() => removeFromCart(item.gameId)}
+                                  className="p-1.5 text-white/40 hover:text-red-400 transition-colors cursor-pointer"
+                                  title="Remove from cart"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
+
           </div>
 
-          {/* Footer summary */}
-          {cartItems.length > 0 && !activeCopilot && (
-            <div className="border-t border-white/20 p-5 bg-zinc-950/90 space-y-4">
-              <div className="flex items-center justify-between font-mono text-sm sm:text-base">
-                <span className="text-white/50 uppercase">Subtotal</span>
-                <span className="text-2xl sm:text-3xl font-black text-white font-mono">
-                  {formatPrice(totalValue, cartItems[0]?.currency)}
+          {/* Footer Actions */}
+          {cartItems.length > 0 && (
+            <div className="border-t border-white/20 p-5 bg-zinc-950/80 backdrop-blur space-y-3">
+              <div className="flex items-center justify-between text-sm font-black uppercase tracking-wider text-white">
+                <span>Total Multi-Store Value</span>
+                <span className="text-emerald-400 font-mono text-base">
+                  {formatPrice(totalValue)}
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 gap-2 pt-1">
                 <button
                   onClick={startUnifiedCheckout}
-                  className="w-full py-4 bg-white hover:bg-red-500 text-black hover:text-white border border-white hover:border-red-500 text-sm sm:text-base font-black uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer transition-all duration-150 rounded-none font-mono shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+                  className="w-full py-3.5 bg-emerald-500 text-black font-black uppercase tracking-widest text-xs hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
                 >
-                  <span>Begin Checkout</span>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Start Unified Checkout</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <button
                   onClick={clearCart}
-                  className="w-full py-2.5 border border-white/20 hover:border-white text-white/50 hover:text-white text-xs sm:text-sm uppercase tracking-wider cursor-pointer transition-all duration-150 rounded-none font-mono"
+                  className="w-full py-2 bg-transparent text-white/40 hover:text-red-400 transition-colors text-[10px] uppercase tracking-widest font-mono cursor-pointer"
                 >
                   Clear Cart
                 </button>
               </div>
 
               {!user && (
-                <span className="text-[10px] sm:text-xs text-white/30 font-sans text-center block leading-normal pt-1.5">
-                  * Optional: Sign in/register to automatically sync your cart to the cloud.
+                <span className="text-[10px] text-white/30 font-sans text-center block pt-2 italic">
+                  * Sign in to sync your cart across devices.
                 </span>
               )}
             </div>
@@ -391,6 +389,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -22,7 +22,7 @@ function CartButtonInner() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center justify-center font-mono text-xs text-white hover:bg-white hover:text-black transition-all duration-150 border border-transparent hover:border-white w-11 h-11 sm:w-12 sm:h-12 rounded-none font-bold cursor-pointer bg-black select-none relative shrink-0"
+        className="flex items-center justify-center font-mono text-xs text-white hover:bg-white/10 transition-all duration-150 w-full h-full rounded-xl font-bold cursor-pointer bg-transparent select-none relative shrink-0"
         title="Open Shopping Cart"
       >
         <ShoppingBag className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
