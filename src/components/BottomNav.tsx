@@ -134,13 +134,44 @@ export default function BottomNav() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
 
-  // Listen for Astro page navigations (if View Transitions are enabled)
+  const [hiddenByFooter, setHiddenByFooter] = useState(false);
+
+  // Smoothly fade out bottom nav when reaching footer
   useEffect(() => {
+    let observer: IntersectionObserver | null = null;
+
+    const setupObserver = () => {
+      const footer = document.querySelector("footer");
+      if (!footer) return;
+
+      if (observer) observer.disconnect();
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setHiddenByFooter(entry.isIntersecting);
+        },
+        {
+          root: null,
+          threshold: 0.05,
+        }
+      );
+
+      observer.observe(footer);
+    };
+
+    setupObserver();
+
+    // Re-bind on Astro View Transitions & page loads
     const onPageLoad = () => {
       setActiveId(getActiveId(window.location.pathname));
+      setupObserver();
     };
+
     document.addEventListener("astro:page-load", onPageLoad);
-    return () => document.removeEventListener("astro:page-load", onPageLoad);
+    return () => {
+      if (observer) observer.disconnect();
+      document.removeEventListener("astro:page-load", onPageLoad);
+    };
   }, []);
 
   // Close More drawer on outside click
@@ -224,7 +255,9 @@ export default function BottomNav() {
     <>
       {/* ── Floating Bottom Bar (Mobile Only: md:hidden) ── */}
       <nav
-        className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] select-none w-auto max-w-[calc(100vw-2rem)]"
+        className={`md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] select-none w-auto max-w-[calc(100vw-2rem)] transition-all duration-300 ${
+          hiddenByFooter ? "opacity-0 pointer-events-none translate-y-6" : "opacity-100 pointer-events-auto translate-y-0"
+        }`}
         style={{ WebkitTapHighlightColor: "transparent" }}
       >
         <motion.div
