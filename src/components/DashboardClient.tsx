@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import DashboardTabs from "./DashboardTabs";
 import DashboardStats from "./DashboardStats";
 import NyanLoader from "./NyanLoader";
