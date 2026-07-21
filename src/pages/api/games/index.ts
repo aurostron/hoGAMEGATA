@@ -466,8 +466,24 @@ export const GET: APIRoute = async ({ request, locals }) => {
       )
     `;
 
-    // Apply Sorting
-    if (sort === "trending") {
+    // Apply Sorting (If searching without explicit sort parameter, prioritize title relevance ranking)
+    if (search.trim() && !searchParams.has("sort")) {
+      const cleanSearch = search.trim().toLowerCase();
+      const prefixSearch = `${cleanSearch}%`;
+      const substringSearch = `%${cleanSearch}%`;
+
+      baseQuery = baseQuery.orderBy(
+        sql`CASE 
+          WHEN LOWER(${gamesTable.title}) = ${cleanSearch} THEN 0
+          WHEN LOWER(${gamesTable.title}) LIKE ${prefixSearch} THEN 1
+          WHEN LOWER(${gamesTable.title}) LIKE ${substringSearch} THEN 2
+          ELSE 3
+        END ASC`,
+        desc(gamesTable.isTrending),
+        desc(gamesTable.popularity),
+        desc(gamesTable.id)
+      ) as any;
+    } else if (sort === "trending") {
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
         desc(gamesTable.popularity),

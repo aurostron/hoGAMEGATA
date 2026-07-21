@@ -17,31 +17,51 @@ export default function HeaderSearch() {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debounced search logic
+  const activeQueryRef = useRef(query);
+  activeQueryRef.current = query;
+
+  // Debounced search logic with AbortController & stale-query protection
   useEffect(() => {
-    if (!query.trim()) {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
       setResults([]);
       setIsOpen(false);
+      setLoading(false);
       return;
     }
+
+    const controller = new AbortController();
 
     const delayDebounce = setTimeout(async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/games?search=${encodeURIComponent(query)}&limit=6`);
+        const response = await fetch(
+          `/api/games?search=${encodeURIComponent(trimmedQuery)}&limit=6`,
+          { signal: controller.signal }
+        );
         if (response.ok) {
           const data = await response.json();
-          setResults(data.games || []);
-          setIsOpen(true);
+          // Only update state if this is still the active search query
+          if (activeQueryRef.current.trim() === trimmedQuery) {
+            setResults(data.games || []);
+            setIsOpen(true);
+          }
         }
-      } catch (err) {
-        console.error("Header search error:", err);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("Header search error:", err);
+        }
       } finally {
-        setLoading(false);
+        if (activeQueryRef.current.trim() === trimmedQuery) {
+          setLoading(false);
+        }
       }
-    }, 200);
+    }, 150);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      controller.abort();
+      clearTimeout(delayDebounce);
+    };
   }, [query]);
 
   // Click outside to close dropdown and collapse search if empty
