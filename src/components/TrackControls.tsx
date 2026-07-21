@@ -16,6 +16,7 @@ interface TrackControlsProps {
   initialCollectionStatus?: string | null;
   coverUrl?: string | null;
   initialPriceSnapshots?: any[];
+  initialLikesCount?: number;
   compactOnly?: boolean;
 }
 
@@ -38,6 +39,7 @@ function TrackControlsInner({
   initialCollectionStatus = null,
   coverUrl = null,
   initialPriceSnapshots = [],
+  initialLikesCount = 0,
   compactOnly = false,
 }: TrackControlsProps) {
   const { user } = useAuth();
@@ -45,6 +47,7 @@ function TrackControlsInner({
   const isInCart = cartItems.some(item => item.gameId === gameId);
 
   const [wishlisted, setWishlisted] = useState<boolean>(initialWishlisted);
+  const [likesCount, setLikesCount] = useState<number>(initialLikesCount);
   const [collectionStatus, setCollectionStatus] = useState<string | null>(initialCollectionStatus);
   const [rating, setRating] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -146,8 +149,24 @@ function TrackControlsInner({
   };
 
   const toggleWishlist = async () => {
+    const nextWishlisted = !wishlisted;
+    const delta = nextWishlisted ? 1 : -1;
+
+    // Optimistic UI update for immediate response
+    setWishlisted(nextWishlisted);
+    setLikesCount(prev => Math.max(0, prev + delta));
+
     if (!user) {
-      handleAuthRedirect();
+      // Guest favorite toggle: sync with public likes API
+      try {
+        await fetch("/api/game/likes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gameId, action: nextWishlisted ? "increment" : "decrement" }),
+        });
+      } catch (err) {
+        console.warn("Guest likes update failed:", err);
+      }
       return;
     }
 
@@ -160,9 +179,6 @@ function TrackControlsInner({
         body: JSON.stringify({ gameId }),
       });
       if (res.ok) {
-        const nextWishlisted = !wishlisted;
-        setWishlisted(nextWishlisted);
-
         const libRaw = localStorage.getItem("gamegata_library");
         const library = libRaw ? JSON.parse(libRaw) : {};
         const existing = library[gameId] || {
@@ -192,9 +208,15 @@ function TrackControlsInner({
         journal.unshift(entry);
         localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
         setHistory(journal.filter((item: JournalItem) => item.gameId === gameId));
+      } else {
+        // Revert on server error
+        setWishlisted(wishlisted);
+        setLikesCount(prev => Math.max(0, prev - delta));
       }
     } catch (err) {
       console.error("Failed to toggle wishlist:", err);
+      setWishlisted(wishlisted);
+      setLikesCount(prev => Math.max(0, prev - delta));
     } finally {
       setLoading(false);
     }
@@ -330,7 +352,7 @@ function TrackControlsInner({
           )}
         </button>
 
-        {/* Add to Favorite Button */}
+        {/* Add to Favorite Button with Live Likes Counter */}
         <button
           onClick={toggleWishlist}
           disabled={loading}
@@ -343,6 +365,9 @@ function TrackControlsInner({
         >
           <Heart className={`w-3.5 h-3.5 ${wishlisted ? "fill-current text-red-400 scale-110" : "text-white/70"}`} />
           <span>{wishlisted ? "Favorited" : "Favorite"}</span>
+          <span className={`font-mono text-[11px] font-semibold border-l pl-2 ml-0.5 ${wishlisted ? "border-red-500/30 text-red-300" : "border-white/20 text-white/60"}`}>
+            {likesCount.toLocaleString()}
+          </span>
         </button>
       </div>
     );

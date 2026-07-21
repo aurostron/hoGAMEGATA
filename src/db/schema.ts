@@ -17,6 +17,7 @@ export const games = sqliteTable(
     trailerUrl: text("trailerUrl"),
     screenshots: text("screenshots"), // JSON array of string URLs
     catboxAlbumId: text("catboxAlbumId"),
+    likesCount: integer("likesCount").default(0).notNull(),
     isTrending: integer("isTrending", { mode: "boolean" }).default(false).notNull(),
     createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
     updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
@@ -70,6 +71,7 @@ export const games = sqliteTable(
     index("game_rating_idx").on(table.rating),
     index("game_status_idx").on(table.status),
     index("game_popularity_idx").on(table.popularity),
+    index("game_likes_count_idx").on(table.likesCount),
     index("game_proton_tier_idx").on(table.protonDbTier),
     index("game_slug_idx").on(table.slug),
     index("game_igdb_id_idx").on(table.igdbId),

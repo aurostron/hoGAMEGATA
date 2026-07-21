@@ -20,6 +20,11 @@ interface Props {
   statsDevelopers?: number;
   statsDeals?: number;
   statsTags?: number;
+  editGameData?: {
+    gameId: string;
+    gameTitle: string;
+    gameData: any;
+  };
 }
 
 const canonicalUrl = new URL(Astro.url.pathname, 'https://gamegata.xyz').href;
@@ -36,6 +41,7 @@ const {
   statsDevelopers,
   statsDeals,
   statsTags,
+  editGameData,
 } = Astro.props;
 
 const isHomepage = Astro.url.pathname === "/";
@@ -166,7 +172,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 	</head>
 	<body class="min-h-full w-full overflow-x-hidden flex flex-col bg-background text-foreground selection:bg-white selection:text-black">
-    <Header withSearch={withSearch} withLink={withLink} statsGames={sGames} statsDevelopers={sDevs} statsDeals={sDeals} statsTags={sTags} />
+    <Header withSearch={withSearch} withLink={withLink} statsGames={sGames} statsDevelopers={sDevs} statsDeals={sDeals} statsTags={sTags} editGameData={editGameData} />
     <div class="flex-1 flex flex-col w-full min-w-0 overflow-x-hidden pb-20 md:pb-0">
       <slot />
     </div>

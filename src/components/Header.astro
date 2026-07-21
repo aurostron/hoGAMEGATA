@@ -3,6 +3,8 @@ import SciFiLogo from './SciFiLogo';
 import SettingsButton from './SettingsButton';
 import HeaderSearch from './HeaderSearch';
 import CartButton from './CartButton';
+import { EditPageButton } from './editing/EditPageButton';
+import { BugReportTrigger } from './bugs/BugReportTrigger';
 
 interface Props {
   withSearch?: boolean;
@@ -11,22 +13,39 @@ interface Props {
   statsDevelopers?: number;
   statsDeals?: number;
   statsTags?: number;
+  editGameData?: {
+    gameId: string;
+    gameTitle: string;
+    gameData: any;
+  };
 }
 
-const { withSearch = false, withLink = true, statsGames, statsDevelopers, statsDeals, statsTags } = Astro.props;
+const { withSearch = false, withLink = true, statsGames, statsDevelopers, statsDeals, statsTags, editGameData } = Astro.props;
 
 const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
 ---
 <header class="border-b border-white/10 bg-[#0d0d0f]/80 backdrop-blur-md sticky top-0 z-50 w-full h-14 sm:h-16 select-none transition-all duration-300">
   <div class="w-full h-full flex items-center justify-between max-w-[1440px] mx-auto">
-    <!-- Left Section: Logo & Badge -->
-    <div class="flex items-center h-full gap-4 sm:gap-6 pl-4 sm:pl-6">
-      <div class="flex items-center gap-3">
+    <!-- Left Section: Logo & Badge & Edit Page Button -->
+    <div class="flex items-center h-full gap-3 sm:gap-4 pl-4 sm:pl-6">
+      <div class="flex items-center gap-3 shrink-0">
         <SciFiLogo client:only="react" withLink={withLink} />
         <span class="border border-white/20 text-white px-2 py-0.5 font-mono text-[8.5px] uppercase tracking-widest bg-white/10 select-none shrink-0 rounded-full font-bold">
           Beta
         </span>
       </div>
+
+      {editGameData && (
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <EditPageButton
+            client:load
+            gameId={editGameData.gameId}
+            gameTitle={editGameData.gameTitle}
+            gameData={editGameData.gameData}
+          />
+          <BugReportTrigger client:load />
+        </div>
+      )}
     </div>
 
     <!-- Middle Section: Telemetry Stats (hidden on mobile) -->
@@ -55,10 +74,11 @@ const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
     )}
 
     <!-- Right Section: Actions -->
-    <div class="flex items-center h-full gap-1 pr-2 sm:pr-4">
+    <div class="flex items-center h-full gap-1.5 sm:gap-2 pr-2 sm:pr-4">
       <div class="h-full flex items-center justify-center transition-all duration-300">
         <HeaderSearch client:only="react" />
       </div>
+
       <div class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11">
         <CartButton client:only="react" />
       </div>

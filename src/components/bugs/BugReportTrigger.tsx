@@ -14,11 +14,12 @@ export const BugReportTrigger: React.FC<BugReportTriggerProps> = ({ className = 
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 text-white/70 hover:text-white font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer select-none active:scale-95 ${className}`}
+        className={`inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/30 text-white/90 hover:text-white font-sans text-xs tracking-tight font-semibold transition-all cursor-pointer select-none active:scale-95 shrink-0 shadow-sm ${className}`}
         title="Report a bug or issue"
+        aria-label="Report Bug"
       >
-        <Bug className="w-3 h-3 text-red-400" />
-        <span>Report Bug</span>
+        <Bug className="w-3.5 h-3.5 text-red-400 shrink-0" />
+        <span className="hidden sm:inline">Report Bug</span>
       </button>
 
       <BugReportModal isOpen={isOpen} onClose={() => setIsOpen(false)} />

@@ -249,9 +249,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // Pre-fetch game IDs matching developers or publishers by name
+    // Pre-fetch game IDs matching developers or publishers by name (only on catalog searches or 3+ char terms)
     let searchGameIds: string[] = [];
-    if (search.trim()) {
+    if (search.trim() && (limit > 10 || search.trim().length >= 3)) {
       const searchTerm = search.trim();
       try {
         // 1. Search Developers

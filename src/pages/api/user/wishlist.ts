@@ -93,6 +93,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       })
       .onConflictDoNothing();
 
+    // Increment likesCount on games table in main DB
+    try {
+      const { turso } = await import('../../../lib/turso');
+      const { games } = await import('../../../db/schema');
+      const { sql } = await import('drizzle-orm');
+      await turso
+        .update(games)
+        .set({ likesCount: sql`MAX(0, COALESCE(${games.likesCount}, 0) + 1)` })
+        .where(eq(games.id, gameId));
+    } catch (e) {
+      console.warn("Failed to increment likesCount:", e);
+    }
+
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("❌ Wishlist add failed:", error instanceof Error ? error.message : "Unknown error");
@@ -121,6 +134,19 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
           eq(wishlistTable.gameId, gameId)
         )
       );
+
+    // Decrement likesCount on games table in main DB
+    try {
+      const { turso } = await import('../../../lib/turso');
+      const { games } = await import('../../../db/schema');
+      const { sql } = await import('drizzle-orm');
+      await turso
+        .update(games)
+        .set({ likesCount: sql`MAX(0, COALESCE(${games.likesCount}, 0) - 1)` })
+        .where(eq(games.id, gameId));
+    } catch (e) {
+      console.warn("Failed to decrement likesCount:", e);
+    }
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
