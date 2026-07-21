@@ -1,21 +1,12 @@
 ---
+import Layout from '../layouts/Layout.astro';
 import DashboardClient from '../components/DashboardClient';
-import '../styles/global.css';
 ---
 
-<!doctype html>
-<html lang="en" class="h-full antialiased font-sans">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" href="/favicon.ico" />
-    <title>My Dashboard | hoGAMEGATA</title>
-    <meta name="description" content="Manage your horror games wishlist and game tracking lists on hoGAMEGATA." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
-	</head>
-	<body class="min-h-full flex flex-col bg-black text-white">
-    <DashboardClient client:only="react" />
-	</body>
-</html>
+<Layout 
+  title="My Dashboard | hoGAMEGATA" 
+  description="Manage your horror games wishlist and game tracking lists on hoGAMEGATA."
+  withSearch={true}
+>
+  <DashboardClient client:only="react" />
+</Layout>
