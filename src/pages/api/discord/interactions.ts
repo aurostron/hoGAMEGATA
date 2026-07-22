@@ -2,43 +2,7 @@ import type { APIRoute } from 'astro';
 
 export const prerender = false;
 
-// Pure Web Crypto / Ed25519 signature verification compatible with Cloudflare Workers & Node.js
-async function verifyDiscordSignature(
-  rawBody: string,
-  signature: string | null,
-  timestamp: string | null,
-  publicKeyHex: string
-): Promise<boolean> {
-  if (!signature || !timestamp || !publicKeyHex) return false;
-
-  try {
-    const hexToUint8 = (hex: string) =>
-      new Uint8Array(hex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
-
-    const pubKeyBytes = hexToUint8(publicKeyHex);
-    const sigBytes = hexToUint8(signature);
-    const encoder = new TextEncoder();
-    const dataBytes = encoder.encode(timestamp + rawBody);
-
-    const key = await crypto.subtle.importKey(
-      "raw",
-      pubKeyBytes,
-      { name: "Ed25519" },
-      false,
-      ["verify"]
-    );
-
-    return await crypto.subtle.verify(
-      "Ed25519",
-      key,
-      sigBytes,
-      dataBytes
-    );
-  } catch (err) {
-    console.error("Discord signature verification error:", err);
-    return false;
-  }
-}
+import { verifyKey } from 'discord-interactions';
 
 export const GET: APIRoute = async () => {
   return new Response('hoGAMEGATA Discord Interactions Endpoint Ready', {
@@ -58,7 +22,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Verify signature if DISCORD_PUBLIC_KEY is configured
     if (publicKey) {
-      const isValid = await verifyDiscordSignature(rawBody, signature, timestamp, publicKey);
+      if (!signature || !timestamp) {
+        return new Response('Missing Discord signature headers', { status: 401 });
+      }
+      const isValid = verifyKey(rawBody, signature, timestamp, publicKey);
       if (!isValid) {
         return new Response('Invalid request signature', { status: 401 });
       }
