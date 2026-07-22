@@ -26,7 +26,7 @@ const sectionKeys = Array.from(sectionsMap.keys());
       </h1>
       <p class="text-sm text-gray-400 mt-1">Manage global copy, headlines, and descriptions across the storefront.</p>
     </div>
-    <span class="text-xs font-mono border border-red-500/30 text-red-400 bg-red-500/10 px-3 py-1 rounded-md">
+    <span class="text-xs font-sans border border-red-500/30 text-red-400 bg-red-500/10 px-3 py-1 rounded-md">
       Live Updates Enabled
     </span>
   </div>
@@ -36,11 +36,11 @@ const sectionKeys = Array.from(sectionsMap.keys());
       <div class="bg-[#07070a] border border-[#1a1a24] rounded-lg overflow-hidden">
         <!-- Section Header -->
         <div class="px-6 py-4 bg-[#0c0c12] border-b border-[#1a1a24] flex items-center justify-between">
-          <h2 class="text-sm font-bold uppercase tracking-wider text-white font-mono flex items-center gap-2">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-white font-sans flex items-center gap-2">
             <span class="w-1.5 h-4 bg-[#ff2a2a] inline-block"></span>
             {sectionName} copy
           </h2>
-          <span class="text-[10px] font-mono text-gray-500 uppercase">
+          <span class="text-[10px] font-sans text-gray-500 uppercase">
             {sectionsMap.get(sectionName)!.length} fields
           </span>
         </div>
@@ -51,10 +51,10 @@ const sectionKeys = Array.from(sectionsMap.keys());
             <div class={`flex flex-col md:flex-row md:items-start gap-4 ${idx > 0 ? 'pt-6' : ''}`}>
               <!-- Label Column -->
               <div class="md:w-1/4">
-                <label class="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-1">
+                <label class="block text-xs font-bold font-sans text-gray-400 uppercase tracking-wider mb-1">
                   {field.label}
                 </label>
-                <code class="text-[10px] font-mono text-gray-500 bg-black/40 px-1.5 py-0.5 rounded">
+                <code class="text-[10px] font-sans text-gray-500 bg-black/40 px-1.5 py-0.5 rounded">
                   {field.key}
                 </code>
               </div>
@@ -79,7 +79,7 @@ const sectionKeys = Array.from(sectionsMap.keys());
                 
                 <div class="flex items-center justify-between">
                   <!-- Last Saved Info -->
-                  <div class="text-[10px] font-mono text-gray-500 flex items-center space-x-1.5">
+                  <div class="text-[10px] font-sans text-gray-500 flex items-center space-x-1.5">
                     {field.updatedAt && (
                       <span>Last updated: {new Date(field.updatedAt).toLocaleString()}</span>
                     )}
@@ -91,7 +91,7 @@ const sectionKeys = Array.from(sectionsMap.keys());
                   <!-- Save Button -->
                   <button
                     data-key={field.key}
-                    class="save-btn font-mono text-xs font-bold uppercase tracking-wider border border-[#1a1a24] hover:border-[#ff2a2a] hover:bg-[#ff2a2a]/10 px-4 py-1.5 rounded transition duration-200 cursor-pointer text-white/90 hover:text-white"
+                    class="save-btn font-sans text-xs font-bold uppercase tracking-wider border border-[#1a1a24] hover:border-[#ff2a2a] hover:bg-[#ff2a2a]/10 px-4 py-1.5 rounded transition duration-200 cursor-pointer text-white/90 hover:text-white"
                   >
                     Save Changes
                   </button>

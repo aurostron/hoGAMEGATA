@@ -50,13 +50,13 @@ const userEmail = "bapum@example.com";
         </button>
         <span class="text-xl sm:text-2xl font-black tracking-tight text-white uppercase font-heading flex items-center">
           GAME<span class="text-[#ff2a2a] glow-text">GATA</span>
-          <span class="hidden sm:inline-block text-[9px] font-mono font-normal tracking-normal lowercase border border-[#ff2a2a] px-2 py-0.5 ml-2 text-[#ff2a2a] bg-[#ff2a2a]/10 rounded-full">admin ops</span>
+          <span class="hidden sm:inline-block text-[9px] font-sans font-medium tracking-normal lowercase border border-[#ff2a2a] px-2 py-0.5 ml-2 text-[#ff2a2a] bg-[#ff2a2a]/10 rounded-full">admin ops</span>
         </span>
       </div>
       
       <div class="flex items-center space-x-3 sm:space-x-4">
         <div class="text-right hidden sm:block">
-          <p class="text-xs text-gray-400 font-mono">Logged in as</p>
+          <p class="text-xs text-gray-400 font-sans">Logged in as</p>
           <p class="text-sm font-semibold text-white">{userEmail}</p>
         </div>
         <div class="h-8 w-8 rounded-full bg-[#ff2a2a]/20 border border-[#ff2a2a]/40 flex items-center justify-center font-bold text-sm text-[#ff2a2a] uppercase select-none">
@@ -75,7 +75,7 @@ const userEmail = "bapum@example.com";
       <!-- Sidebar Nav -->
       <aside id="admin-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 border-r border-[#1a1a24] bg-[#07070a] flex flex-col shrink-0 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:bg-[#07070a]/50">
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          <p class="text-[10px] uppercase font-mono tracking-widest text-gray-500 px-3 mb-2 font-bold">Management</p>
+          <p class="text-[10px] uppercase font-sans tracking-wider text-gray-500 px-3 mb-2 font-bold">Management</p>
           
           <a href="/admin" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'dashboard' ? 'active' : ''}`}>
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -105,6 +105,13 @@ const userEmail = "bapum@example.com";
             <span>Game Catalog</span>
           </a>
 
+          <a href="/admin/images" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'images' ? 'active' : ''}`}>
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Image Library</span>
+          </a>
+
           <a href="/admin/ai" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'ai' ? 'active' : ''}`}>
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -120,7 +127,7 @@ const userEmail = "bapum@example.com";
           </a>
 
           <div class="pt-6">
-            <p class="text-[10px] uppercase font-mono tracking-widest text-gray-500 px-3 mb-2 font-bold">Community & Support</p>
+            <p class="text-[10px] uppercase font-sans tracking-wider text-gray-500 px-3 mb-2 font-bold">Community & Support</p>
             <a href="/admin/edits" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'edits' ? 'active' : ''}`}>
               <span class="text-sm">✏️</span>
               <span>Edit Suggestions</span>
@@ -132,7 +139,7 @@ const userEmail = "bapum@example.com";
           </div>
 
           <div class="pt-6">
-            <p class="text-[10px] uppercase font-mono tracking-widest text-gray-500 px-3 mb-2 font-bold">System</p>
+            <p class="text-[10px] uppercase font-sans tracking-wider text-gray-500 px-3 mb-2 font-bold">System</p>
             <a href="/admin/health" class={`nav-link flex items-center space-x-3 px-3 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:text-white hover:bg-[#121217] transition duration-150 ${activeTab === 'health' ? 'active' : ''}`}>
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -143,7 +150,7 @@ const userEmail = "bapum@example.com";
         </nav>
         
         <div class="p-4 border-t border-[#1a1a24] bg-[#07070a]/80 text-center shrink-0">
-          <p class="text-[10px] text-gray-500 font-mono">GameGata v1.0.0 (Turso Hybrid)</p>
+          <p class="text-[10px] text-gray-500 font-sans">GameGata v1.0.0 (Turso Hybrid)</p>
         </div>
       </aside>
 

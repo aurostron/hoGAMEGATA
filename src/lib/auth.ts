@@ -20,8 +20,13 @@ function getAuth(): ReturnType<typeof betterAuth> {
       return (currentEnv && currentEnv[key]) || (typeof process !== "undefined" && process.env ? process.env[key] : undefined);
     };
 
+    const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
+
     const secret = getEnvVal("BETTER_AUTH_SECRET") || "";
-    const baseURL = getEnvVal("BETTER_AUTH_URL") || "http://localhost:4321";
+    const envBaseURL = getEnvVal("BETTER_AUTH_URL");
+    const defaultBaseURL = isDev ? "http://localhost:4321" : "https://gamegata.xyz";
+    const baseURL = (isDev && envBaseURL && envBaseURL.includes("gamegata.xyz")) ? "http://localhost:4321" : (envBaseURL || defaultBaseURL);
+
     const resendApiKey = getEnvVal("RESEND_API_KEY");
     const turnstileSecretKey = getEnvVal("TURNSTILE_SECRET_KEY") || "1x0000000000000000000000000000000UNTRUSTED";
     const googleClientId = getEnvVal("GOOGLE_CLIENT_ID") || "placeholder";
@@ -29,11 +34,14 @@ function getAuth(): ReturnType<typeof betterAuth> {
 
     const trustedOrigins = Array.from(new Set([
       "http://localhost:4321",
+      "http://localhost:4322",
       "http://localhost:3000",
       "http://127.0.0.1:4321",
+      "http://127.0.0.1:4322",
       "http://127.0.0.1:3000",
       "https://gamegata.xyz",
       "https://www.gamegata.xyz",
+      envBaseURL,
       baseURL,
     ].filter(Boolean)));
 

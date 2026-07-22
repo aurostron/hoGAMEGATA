@@ -26,6 +26,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.0",
     "@astrojs/react": "^6.0.0",
+    "@aws-sdk/client-s3": "^3.1106.0",
     "@base-ui/react": "^1.6.0",
     "@google/genai": "^2.10.0",
     "@libsql/client": "^0.17.4",

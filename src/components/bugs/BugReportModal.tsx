@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Send, Copy, Check, ShieldAlert, CheckCircle2, Loader2, Link2, Bug, FileText, Lightbulb } from 'lucide-react';
 
 interface BugReportModalProps {
@@ -7,6 +8,7 @@ interface BugReportModalProps {
 }
 
 export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose }) => {
+  const [mounted, setMounted] = useState(false);
   const [category, setCategory] = useState<'bug' | 'broken_link' | 'incorrect_metadata' | 'feature_request'>('bug');
   const [severity, setSeverity] = useState<'low' | 'medium' | 'high'>('medium');
   const [title, setTitle] = useState('');
@@ -20,12 +22,26 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       setPageUrl(window.location.href);
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,9 +87,15 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-2xl bg-[#0e0e11] border border-white/10 p-6 shadow-2xl space-y-5 text-white">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="relative w-full max-w-lg rounded-2xl bg-[#0e0e11] border border-white/10 p-6 shadow-2xl space-y-5 text-white my-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-start justify-between border-b border-white/10 pb-4">
           <div>
@@ -267,6 +289,8 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
+
