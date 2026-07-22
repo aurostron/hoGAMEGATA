@@ -40,6 +40,13 @@ async function verifyDiscordSignature(
   }
 }
 
+export const GET: APIRoute = async () => {
+  return new Response('hoGAMEGATA Discord Interactions Endpoint Ready', {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain' },
+  });
+};
+
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const signature = request.headers.get('x-signature-ed25519');
@@ -47,7 +54,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const rawBody = await request.text();
 
     const env = (locals as any)?.runtime?.env || (typeof process !== 'undefined' ? process.env : {});
-    const publicKey = env.DISCORD_PUBLIC_KEY || process.env.DISCORD_PUBLIC_KEY;
+    const publicKey = env.DISCORD_PUBLIC_KEY || (typeof process !== 'undefined' ? process.env?.DISCORD_PUBLIC_KEY : undefined);
 
     // Verify signature if DISCORD_PUBLIC_KEY is configured
     if (publicKey) {
@@ -55,6 +62,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (!isValid) {
         return new Response('Invalid request signature', { status: 401 });
       }
+    } else {
+      console.warn("⚠️ DISCORD_PUBLIC_KEY is not set in environment variables. Signature verification skipped.");
     }
 
     let payload: any = {};
