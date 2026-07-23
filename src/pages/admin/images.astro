@@ -1,0 +1,717 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { turso } from '../../lib/turso';
+import { games } from '../../db/schema';
+import { isNotNull, or, desc } from 'drizzle-orm';
+
+export const prerender = false;
+
+interface GameCollection {
+  id: string;
+  title: string;
+  slug: string;
+  coverUrl: string | null;
+  screenshots: string[];
+  totalAssets: number;
+  catboxCount: number;
+  hasCover: boolean;
+  hosts: string[];
+}
+
+let gameCollections: GameCollection[] = [];
+let totalGamesWithMedia = 0;
+let totalMediaAssets = 0;
+let totalCatboxAssets = 0;
+
+try {
+  const dbGames = await turso
+    .select({
+      id: games.id,
+      title: games.title,
+      slug: games.slug,
+      coverUrl: games.coverUrl,
+      screenshots: games.screenshots,
+    })
+    .from(games)
+    .where(or(isNotNull(games.coverUrl), isNotNull(games.screenshots)))
+    .orderBy(desc(games.id))
+    .limit(300);
+
+  for (const g of dbGames) {
+    const title = g.title || "Untitled Game";
+    const slug = g.slug || "";
+    let screenshots: string[] = [];
+    let catboxCount = 0;
+    const hostsSet = new Set<string>();
+
+    if (g.coverUrl) {
+      if (g.coverUrl.includes("catbox.moe")) catboxCount++;
+      try {
+        hostsSet.add(new URL(g.coverUrl).hostname.replace("www.", ""));
+      } catch (e) {}
+    }
+
+    if (g.screenshots) {
+      try {
+        const parsed = JSON.parse(g.screenshots);
+        if (Array.isArray(parsed)) {
+          screenshots = parsed.filter((u): u is string => typeof u === "string" && u.trim().length > 0);
+          screenshots.forEach((u) => {
+            if (u.includes("catbox.moe")) catboxCount++;
+            try {
+              hostsSet.add(new URL(u).hostname.replace("www.", ""));
+            } catch (e) {}
+          });
+        }
+      } catch (e) {}
+    }
+
+    const totalAssets = (g.coverUrl ? 1 : 0) + screenshots.length;
+
+    if (totalAssets > 0) {
+      totalGamesWithMedia++;
+      totalMediaAssets += totalAssets;
+      totalCatboxAssets += catboxCount;
+
+      gameCollections.push({
+        id: g.id,
+        title,
+        slug,
+        coverUrl: g.coverUrl,
+        screenshots,
+        totalAssets,
+        catboxCount,
+        hasCover: !!g.coverUrl,
+        hosts: Array.from(hostsSet),
+      });
+    }
+  }
+} catch (err) {
+  console.error("Failed to query game media collections for admin:", err);
+}
+---
+
+<AdminLayout title="Image Library & Media Hub" activeTab="images">
+  <div class="space-y-6 font-sans pb-16">
+    <!-- Header Title -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1a1a24] pb-5">
+      <div>
+        <h1 class="text-2xl font-black text-white uppercase tracking-wider font-sans flex items-center gap-3">
+          <span>🖼️ Game Media Collections</span>
+        </h1>
+        <p class="text-xs font-sans text-gray-400 mt-1">
+          Organized by game. Click any game card to view, replace, delete, or add images in WebP format with 1-Year CDN caching.
+        </p>
+      </div>
+
+      <a
+        href="/admin/games/new"
+        class="inline-flex items-center gap-2 bg-[#ff2a2a] hover:bg-[#ff4444] text-white px-4 py-2 rounded-md font-sans text-xs font-bold uppercase tracking-wider transition duration-150 shrink-0"
+      >
+        <span>+ Add New Game</span>
+      </a>
+    </div>
+
+    <!-- Overview Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[#07070a] border border-[#1a1a24] p-4 rounded-lg">
+        <span class="text-[10px] font-sans text-gray-400 uppercase tracking-widest block font-bold">Games with Media</span>
+        <span class="text-2xl font-black text-white font-sans mt-1 block">{totalGamesWithMedia}</span>
+        <span class="text-[10px] font-sans text-gray-500 mt-1 block">Grouped collection cards</span>
+      </div>
+
+      <div class="bg-[#07070a] border border-[#1a1a24] p-4 rounded-lg">
+        <span class="text-[10px] font-sans text-emerald-400 uppercase tracking-widest block font-bold">Catbox WebP Assets</span>
+        <span class="text-2xl font-black text-emerald-400 font-sans mt-1 block">{totalCatboxAssets}</span>
+        <span class="text-[10px] font-sans text-gray-500 mt-1 block">Ultra-lightweight WebP</span>
+      </div>
+
+      <div class="bg-[#07070a] border border-[#1a1a24] p-4 rounded-lg">
+        <span class="text-[10px] font-sans text-blue-400 uppercase tracking-widest block font-bold">Total Media Assets</span>
+        <span class="text-2xl font-black text-blue-400 font-sans mt-1 block">{totalMediaAssets}</span>
+        <span class="text-[10px] font-sans text-gray-500 mt-1 block">Covers &amp; Screenshots combined</span>
+      </div>
+
+      <div class="bg-[#07070a] border border-[#1a1a24] p-4 rounded-lg">
+        <span class="text-[10px] font-sans text-purple-400 uppercase tracking-widest block font-bold">CDN Caching</span>
+        <span class="text-2xl font-black text-purple-400 font-sans mt-1 block">1 Year</span>
+        <span class="text-[10px] font-sans text-gray-500 mt-1 block">Max-age: 31,536,000s</span>
+      </div>
+    </div>
+
+    <!-- Filters & Search Toolbar -->
+    <div class="bg-[#07070a] border border-[#1a1a24] p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <button type="button" data-filter="all" class="filter-btn active text-xs font-sans px-3 py-1.5 rounded border border-[#ff2a2a] bg-[#ff2a2a]/10 text-white font-bold uppercase transition">
+          All Games ({gameCollections.length})
+        </button>
+        <button type="button" data-filter="catbox" class="filter-btn text-xs font-sans px-3 py-1.5 rounded border border-[#1a1a24] hover:border-emerald-500/50 bg-[#050508] text-gray-400 hover:text-white uppercase transition">
+          Has Catbox WebP
+        </button>
+        <button type="button" data-filter="has-cover" class="filter-btn text-xs font-sans px-3 py-1.5 rounded border border-[#1a1a24] hover:border-blue-500/50 bg-[#050508] text-gray-400 hover:text-white uppercase transition">
+          Has Cover
+        </button>
+        <button type="button" data-filter="has-screenshots" class="filter-btn text-xs font-sans px-3 py-1.5 rounded border border-[#1a1a24] hover:border-purple-500/50 bg-[#050508] text-gray-400 hover:text-white uppercase transition">
+          Has Screenshots
+        </button>
+      </div>
+
+      <div class="w-full sm:w-80">
+        <input
+          type="text"
+          id="collection-search"
+          placeholder="Search game by title or domain..."
+          class="w-full bg-[#050508] border border-[#1a1a24] focus:border-[#ff2a2a] rounded px-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none font-sans"
+        />
+      </div>
+    </div>
+
+    <!-- Game Collections Grid -->
+    <div id="collections-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {gameCollections.map((col) => {
+        const previewImage = col.coverUrl || (col.screenshots.length > 0 ? col.screenshots[0] : null);
+        return (
+          <div
+            class="collection-card group bg-[#07070a] border border-[#1a1a24] hover:border-[#ff2a2a]/60 rounded-xl overflow-hidden flex flex-col justify-between transition duration-200 shadow-lg cursor-pointer"
+            data-game-id={col.id}
+            data-game-title={col.title}
+            data-game-slug={col.slug}
+            data-game-data={JSON.stringify(col)}
+          >
+            <!-- Thumbnail Stack Preview -->
+            <div class="relative aspect-video bg-[#050508] overflow-hidden flex items-center justify-center border-b border-[#1a1a24]">
+              {previewImage ? (
+                <img
+                  src={`/api/image-proxy?url=${encodeURIComponent(previewImage)}`}
+                  alt={col.title}
+                  loading="lazy"
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                />
+              ) : (
+                <div class="text-xs font-sans text-gray-600 uppercase">No Media Image</div>
+              )}
+
+              <!-- Badges -->
+              <div class="absolute top-2.5 left-2.5 flex flex-wrap items-center gap-1.5">
+                <span class="text-[10px] font-sans font-bold uppercase px-2 py-0.5 rounded bg-black/80 text-white border border-white/10 shadow backdrop-blur-sm">
+                  {col.totalAssets} Asset{col.totalAssets === 1 ? '' : 's'}
+                </span>
+                {col.catboxCount > 0 && (
+                  <span class="text-[10px] font-sans font-bold uppercase px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
+                    {col.catboxCount} WebP
+                  </span>
+                )}
+              </div>
+
+              <!-- Quick Action Overlay -->
+              <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 p-4">
+                <button
+                  type="button"
+                  class="open-modal-btn px-4 py-2 bg-[#ff2a2a] hover:bg-[#ff4444] text-white font-sans text-xs font-bold uppercase rounded shadow-lg transition"
+                >
+                  Manage All Images
+                </button>
+              </div>
+            </div>
+
+            <!-- Card Info Footer -->
+            <div class="p-4 space-y-3 bg-[#07070a] flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-sm font-bold text-white group-hover:text-[#ff2a2a] transition truncate font-sans">
+                    {col.title}
+                  </h3>
+                  <a
+                    href={`/admin/games/edit/${col.id}`}
+                    class="text-[10px] font-sans uppercase text-gray-400 hover:text-white transition shrink-0 border border-[#1a1a24] px-1.5 py-0.5 rounded"
+                    title="Edit Game"
+                    onclick="event.stopPropagation();"
+                  >
+                    Edit ↗
+                  </a>
+                </div>
+
+                <div class="flex items-center gap-2 mt-2 font-sans text-[10px] text-gray-500">
+                  <span class={col.hasCover ? "text-blue-400 font-semibold" : "text-gray-600"}>
+                    {col.hasCover ? "✓ Cover" : "No Cover"}
+                  </span>
+                  <span>•</span>
+                  <span class={col.screenshots.length > 0 ? "text-purple-400 font-semibold" : "text-gray-600"}>
+                    {col.screenshots.length} Screenshot{col.screenshots.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Micro Host Badges & Action bar -->
+              <div class="pt-3 border-t border-[#121217] flex items-center justify-between">
+                <div class="flex items-center gap-1 overflow-hidden">
+                  {col.hosts.map((h) => (
+                    <span class="text-[9px] font-sans px-1.5 py-0.5 rounded bg-[#121217] text-gray-400 border border-[#1a1a24] truncate max-w-[80px]">
+                      {h}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  class="open-modal-btn text-[10px] font-sans font-bold uppercase text-[#ff2a2a] hover:underline"
+                >
+                  Manage ({col.totalAssets}) &rarr;
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  <!-- Interactive Game Media Management Modal -->
+  <div id="media-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#09090d] border border-[#1a1a24] w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-[#1a1a24] bg-[#07070a] flex items-center justify-between shrink-0">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-5 bg-[#ff2a2a] inline-block"></span>
+            <h2 id="modal-game-title" class="text-lg font-black text-white font-sans uppercase tracking-wider">
+              Game Media Collection
+            </h2>
+          </div>
+          <p id="modal-game-meta" class="text-xs font-sans text-gray-400 mt-0.5">
+            Game ID: <span id="modal-game-id" class="text-gray-300"></span>
+          </p>
+        </div>
+
+        <button
+          type="button"
+          id="close-modal-btn"
+          class="text-gray-400 hover:text-white p-2 rounded-lg bg-[#121217] border border-[#1a1a24] hover:bg-[#ff2a2a] transition font-sans text-xs"
+        >
+          ✕ Close
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-8 flex-1">
+        
+        <!-- Cover Section -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-[#1a1a24] pb-2">
+            <h3 class="text-xs font-sans font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+              <span>🖼️ Cover Image</span>
+            </h3>
+            <span id="cover-status" class="text-[10px] font-sans text-gray-500"></span>
+          </div>
+
+          <div id="cover-container" class="bg-[#050508] border border-[#1a1a24] p-4 rounded-xl flex flex-col sm:flex-row items-center gap-6">
+            <!-- Cover image placeholder -->
+          </div>
+        </div>
+
+        <!-- Screenshots Section -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b border-[#1a1a24] pb-2">
+            <h3 class="text-xs font-sans font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+              <span>📸 Game Screenshots (<span id="screenshots-count">0</span>)</span>
+            </h3>
+            <span class="text-[10px] font-sans text-gray-500">Individual Replace &amp; Delete actions</span>
+          </div>
+
+          <div id="screenshots-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Screenshots tiles -->
+          </div>
+        </div>
+
+        <!-- Add New Images Uploader -->
+        <div class="bg-[#050508] border-2 border-dashed border-[#1a1a24] hover:border-[#ff2a2a] p-6 rounded-xl space-y-3 text-center transition">
+          <div class="flex flex-col items-center space-y-1">
+            <svg class="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <h4 class="text-xs font-sans font-bold text-white uppercase">
+              + Add New Images for this Game
+            </h4>
+            <p class="text-[10px] font-sans text-gray-400">
+              Upload PNG or JPEG files. Client converts to compressed WebP &amp; saves directly to Catbox + Turso DB.
+            </p>
+          </div>
+
+          <div class="flex items-center justify-center gap-3 pt-2">
+            <label class="cursor-pointer bg-[#ff2a2a] hover:bg-[#ff4444] text-white font-sans text-xs font-bold uppercase px-4 py-2 rounded-md transition shadow">
+              <span>Select Files</span>
+              <input type="file" id="modal-add-files-input" multiple accept="image/*" class="hidden" />
+            </label>
+          </div>
+
+          <div id="modal-upload-status" class="text-xs font-sans text-emerald-400 hidden pt-2"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Replace File Input -->
+  <input type="file" id="hidden-replace-input" accept="image/*" class="hidden" />
+</AdminLayout>
+
+<script>
+  let currentModalGame: any = null;
+  let activeReplaceTarget: { type: 'cover' | 'screenshot'; index?: number } | null = null;
+
+  // DOM Elements
+  const modal = document.getElementById('media-modal') as HTMLDivElement;
+  const closeModalBtn = document.getElementById('close-modal-btn') as HTMLButtonElement;
+  const modalGameTitle = document.getElementById('modal-game-title') as HTMLHeadingElement;
+  const modalGameId = document.getElementById('modal-game-id') as HTMLSpanElement;
+  const coverContainer = document.getElementById('cover-container') as HTMLDivElement;
+  const coverStatus = document.getElementById('cover-status') as HTMLSpanElement;
+  const screenshotsGrid = document.getElementById('screenshots-grid') as HTMLDivElement;
+  const screenshotsCount = document.getElementById('screenshots-count') as HTMLSpanElement;
+  const modalAddFilesInput = document.getElementById('modal-add-files-input') as HTMLInputElement;
+  const hiddenReplaceInput = document.getElementById('hidden-replace-input') as HTMLInputElement;
+  const modalUploadStatus = document.getElementById('modal-upload-status') as HTMLDivElement;
+  const searchInput = document.getElementById('collection-search') as HTMLInputElement;
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const collectionCards = document.querySelectorAll('.collection-card');
+
+  // Open Modal logic
+  document.querySelectorAll('.open-modal-btn, .collection-card').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const card = (el.closest('.collection-card') as HTMLElement);
+      if (!card) return;
+      const rawData = card.dataset.gameData;
+      if (rawData) {
+        currentModalGame = JSON.parse(rawData);
+        renderModalContent();
+        modal.classList.remove('hidden');
+      }
+    });
+  });
+
+  closeModalBtn?.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    currentModalGame = null;
+  });
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      currentModalGame = null;
+    }
+  });
+
+  // Client-Side Canvas WebP Compression
+  async function compressToWebP(file: File): Promise<File> {
+    if (file.type === 'image/svg+xml' || file.type === 'image/webp') return file;
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(file); return; }
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          const newName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+          resolve(new File([blob], newName, { type: 'image/webp' }));
+        }, 'image/webp', 0.85);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+
+  // Upload to Catbox proxy
+  async function uploadFileToCatbox(file: File): Promise<string> {
+    const webpFile = await compressToWebP(file);
+    const formData = new FormData();
+    formData.append('file', webpFile);
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok && data.url) {
+      return data.url;
+    }
+    throw new Error(data.error || 'Upload failed');
+  }
+
+  // Mutate database media
+  async function mutateMedia(payload: any) {
+    const res = await fetch('/api/admin/games/media', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Operation failed');
+      throw new Error(data.error);
+    }
+    return data;
+  }
+
+  // Render Modal Content
+  function renderModalContent() {
+    if (!currentModalGame) return;
+
+    modalGameTitle.textContent = currentModalGame.title;
+    modalGameId.textContent = currentModalGame.id;
+
+    // 1. Render Cover
+    if (currentModalGame.coverUrl) {
+      coverStatus.textContent = 'Cover present';
+      coverContainer.innerHTML = `
+        <div class="relative w-32 h-44 shrink-0 bg-[#0c0c12] rounded-lg overflow-hidden border border-[#1a1a24]">
+          <img src="/api/image-proxy?url=${encodeURIComponent(currentModalGame.coverUrl)}" class="w-full h-full object-cover" />
+          <span class="absolute top-1 left-1 bg-blue-600 text-white text-[9px] font-sans font-bold px-1.5 py-0.5 rounded uppercase">Cover</span>
+        </div>
+        <div class="space-y-3 flex-1">
+          <p class="text-xs font-sans text-gray-300 break-all bg-[#09090d] p-2 rounded border border-[#1a1a24]">
+            ${currentModalGame.coverUrl}
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="btn-replace-cover bg-[#121217] hover:bg-white hover:text-black border border-[#1a1a24] text-xs font-sans font-bold px-3 py-1.5 rounded transition uppercase">
+              🔄 Replace Cover
+            </button>
+            <button type="button" class="btn-delete-cover bg-red-950/60 hover:bg-red-600 text-red-300 hover:text-white border border-red-800/50 text-xs font-sans font-bold px-3 py-1.5 rounded transition uppercase">
+              🗑️ Delete Cover
+            </button>
+            <button type="button" data-url="${currentModalGame.coverUrl}" class="btn-copy-link bg-[#121217] hover:bg-gray-700 text-gray-300 text-xs font-sans px-3 py-1.5 rounded border border-[#1a1a24] uppercase">
+              Copy Link
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      coverStatus.textContent = 'No cover set';
+      coverContainer.innerHTML = `
+        <div class="w-32 h-44 shrink-0 bg-[#0c0c12] rounded-lg border border-dashed border-[#1a1a24] flex items-center justify-center text-xs font-sans text-gray-600 uppercase">
+          No Cover
+        </div>
+        <div class="space-y-2 flex-1">
+          <p class="text-xs font-sans text-gray-500">No cover poster has been assigned to this game yet.</p>
+          <button type="button" class="btn-replace-cover bg-[#ff2a2a] hover:bg-[#ff4444] text-white text-xs font-sans font-bold px-4 py-2 rounded transition uppercase">
+            + Upload Cover Image
+          </button>
+        </div>
+      `;
+    }
+
+    // 2. Render Screenshots
+    const screenshots: string[] = currentModalGame.screenshots || [];
+    screenshotsCount.textContent = screenshots.length.toString();
+
+    if (screenshots.length === 0) {
+      screenshotsGrid.innerHTML = `
+        <div class="col-span-full py-8 text-center bg-[#050508] border border-[#1a1a24] rounded-xl text-xs font-sans text-gray-500">
+          No screenshots uploaded yet. Use the uploader below to add screenshots.
+        </div>
+      `;
+    } else {
+      screenshotsGrid.innerHTML = screenshots.map((url, idx) => `
+        <div class="bg-[#07070a] border border-[#1a1a24] rounded-lg overflow-hidden flex flex-col justify-between space-y-2 p-2">
+          <div class="relative aspect-video bg-[#0c0c12] rounded overflow-hidden">
+            <img src="/api/image-proxy?url=${encodeURIComponent(url)}" class="w-full h-full object-cover" />
+            <span class="absolute top-1 left-1 bg-purple-600 text-white text-[9px] font-sans font-bold px-1.5 py-0.5 rounded">
+              #${idx + 1}
+            </span>
+          </div>
+          <span class="text-[10px] font-sans text-gray-500 truncate block px-1" title="${url}">${url}</span>
+          <div class="flex items-center justify-between gap-1 pt-1 border-t border-[#121217]">
+            <button type="button" data-idx="${idx}" class="btn-replace-screenshot text-[10px] font-sans font-bold uppercase px-2 py-1 bg-[#121217] hover:bg-white hover:text-black border border-[#1a1a24] text-gray-300 rounded transition">
+              Replace
+            </button>
+            <button type="button" data-idx="${idx}" class="btn-delete-screenshot text-[10px] font-sans font-bold uppercase px-2 py-1 bg-red-950/60 hover:bg-red-600 text-red-300 hover:text-white border border-red-800/50 rounded transition">
+              Delete
+            </button>
+            <button type="button" data-url="${url}" class="btn-copy-link text-[10px] font-sans uppercase px-2 py-1 bg-[#121217] text-gray-400 hover:text-white border border-[#1a1a24] rounded">
+              Copy
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    bindModalEvents();
+  }
+
+  function bindModalEvents() {
+    // Replace Cover
+    document.querySelectorAll('.btn-replace-cover').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeReplaceTarget = { type: 'cover' };
+        hiddenReplaceInput.click();
+      });
+    });
+
+    // Delete Cover
+    document.querySelectorAll('.btn-delete-cover').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to remove the cover for this game?')) return;
+        try {
+          await mutateMedia({ action: 'delete-cover', gameId: currentModalGame.id });
+          currentModalGame.coverUrl = null;
+          renderModalContent();
+        } catch (e) {}
+      });
+    });
+
+    // Replace Screenshot
+    document.querySelectorAll('.btn-replace-screenshot').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt((btn as HTMLElement).dataset.idx || '0', 10);
+        activeReplaceTarget = { type: 'screenshot', index: idx };
+        hiddenReplaceInput.click();
+      });
+    });
+
+    // Delete Screenshot
+    document.querySelectorAll('.btn-delete-screenshot').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const idx = parseInt((btn as HTMLElement).dataset.idx || '0', 10);
+        if (!confirm(`Delete screenshot #${idx + 1}?`)) return;
+        try {
+          const data = await mutateMedia({ action: 'delete-screenshot', gameId: currentModalGame.id, index: idx });
+          currentModalGame.screenshots = data.screenshots;
+          renderModalContent();
+        } catch (e) {}
+      });
+    });
+
+    // Copy Link
+    document.querySelectorAll('.btn-copy-link').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const url = (btn as HTMLElement).dataset.url;
+        if (url) {
+          navigator.clipboard.writeText(url);
+          const orig = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = orig; }, 1500);
+        }
+      });
+    });
+  }
+
+  // Handle Replace File Upload
+  hiddenReplaceInput?.addEventListener('change', async () => {
+    const file = hiddenReplaceInput.files?.[0];
+    if (!file || !activeReplaceTarget || !currentModalGame) return;
+
+    try {
+      modalUploadStatus.classList.remove('hidden');
+      modalUploadStatus.textContent = 'Compressing WebP & uploading to Catbox...';
+
+      const newUrl = await uploadFileToCatbox(file);
+
+      if (activeReplaceTarget.type === 'cover') {
+        await mutateMedia({ action: 'update-cover', gameId: currentModalGame.id, coverUrl: newUrl });
+        currentModalGame.coverUrl = newUrl;
+      } else if (activeReplaceTarget.type === 'screenshot' && typeof activeReplaceTarget.index === 'number') {
+        const data = await mutateMedia({
+          action: 'replace-screenshot',
+          gameId: currentModalGame.id,
+          index: activeReplaceTarget.index,
+          newUrl,
+        });
+        currentModalGame.screenshots = data.screenshots;
+      }
+
+      modalUploadStatus.textContent = 'Image updated successfully!';
+      setTimeout(() => modalUploadStatus.classList.add('hidden'), 2500);
+      renderModalContent();
+    } catch (err: any) {
+      alert(`Replacement failed: ${err.message}`);
+      modalUploadStatus.classList.add('hidden');
+    } finally {
+      hiddenReplaceInput.value = '';
+      activeReplaceTarget = null;
+    }
+  });
+
+  // Handle Add New Screenshots inside Modal
+  modalAddFilesInput?.addEventListener('change', async () => {
+    const files = modalAddFilesInput.files;
+    if (!files || files.length === 0 || !currentModalGame) return;
+
+    try {
+      modalUploadStatus.classList.remove('hidden');
+      modalUploadStatus.textContent = `Uploading ${files.length} WebP images to Catbox...`;
+
+      const uploadedUrls: string[] = [];
+      for (const file of Array.from(files)) {
+        const url = await uploadFileToCatbox(file);
+        uploadedUrls.push(url);
+      }
+
+      const data = await mutateMedia({
+        action: 'add-screenshots',
+        gameId: currentModalGame.id,
+        urls: uploadedUrls,
+      });
+
+      currentModalGame.screenshots = data.screenshots;
+      modalUploadStatus.textContent = `Successfully added ${uploadedUrls.length} screenshot(s)!`;
+      setTimeout(() => modalUploadStatus.classList.add('hidden'), 2500);
+      renderModalContent();
+    } catch (err: any) {
+      alert(`Failed to add images: ${err.message}`);
+      modalUploadStatus.classList.add('hidden');
+    } finally {
+      modalAddFilesInput.value = '';
+    }
+  });
+
+  // Filter & Search Logic for Collection Cards
+  let activeFilter = 'all';
+
+  function applyFilters() {
+    const query = searchInput?.value?.toLowerCase().trim() || '';
+
+    collectionCards.forEach((card) => {
+      const el = card as HTMLElement;
+      const title = (el.dataset.gameTitle || '').toLowerCase();
+      const rawData = el.dataset.gameData;
+      if (!rawData) return;
+      const data = JSON.parse(rawData);
+
+      let matchesFilter = true;
+      if (activeFilter === 'catbox') matchesFilter = data.catboxCount > 0;
+      else if (activeFilter === 'has-cover') matchesFilter = data.hasCover;
+      else if (activeFilter === 'has-screenshots') matchesFilter = data.screenshots.length > 0;
+
+      let matchesSearch = true;
+      if (query) {
+        const hostsStr = (data.hosts || []).join(' ').toLowerCase();
+        matchesSearch = title.includes(query) || hostsStr.includes(query);
+      }
+
+      if (matchesFilter && matchesSearch) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    });
+  }
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach((b) => {
+        b.classList.remove('active', 'border-[#ff2a2a]', 'bg-[#ff2a2a]/10', 'text-white');
+        b.classList.add('border-[#1a1a24]', 'bg-[#050508]', 'text-gray-400');
+      });
+      btn.classList.add('active', 'border-[#ff2a2a]', 'bg-[#ff2a2a]/10', 'text-white');
+      btn.classList.remove('border-[#1a1a24]', 'bg-[#050508]', 'text-gray-400');
+
+      activeFilter = (btn as HTMLElement).dataset.filter || 'all';
+      applyFilters();
+    });
+  });
+
+  searchInput?.addEventListener('input', applyFilters);
+</script>
