@@ -29,10 +29,22 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const getInitialCart = (): CartItem[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem("gamegata_cart");
+    if (!raw || raw === "undefined" || raw === "null") return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cartItems, setCartItems] = useState<CartItem[]>(getInitialCart);
+  const [loading, setLoading] = useState(false);
 
   // Helper: Find the cheapest deal for a game in a specific region
   const getCheapestDeal = (game: any, region = "US") => {
@@ -80,7 +92,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (typeof window === "undefined") return [];
     try {
       const raw = localStorage.getItem("gamegata_cart");
-      return raw ? JSON.parse(raw) : [];
+      if (!raw || raw === "undefined" || raw === "null") return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
       console.error("Failed to load local cart:", e);
       return [];
@@ -91,7 +105,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const saveLocalCart = (items: CartItem[]) => {
     if (typeof window === "undefined") return;
     try {
-      localStorage.setItem("gamegata_cart", JSON.stringify(items));
+      const validItems = Array.isArray(items) ? items : [];
+      localStorage.setItem("gamegata_cart", JSON.stringify(validItems));
       window.dispatchEvent(new Event("gamegata_cart_updated"));
     } catch (e) {
       console.error("Failed to save local cart:", e);
@@ -169,6 +184,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           });
 
           setCartItems(items);
+          saveLocalCart(items);
         }
       } else {
         // Guest: Load local storage and resolve metadata dynamically from database

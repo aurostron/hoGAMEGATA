@@ -22,9 +22,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getInitialUser = (): User | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("gamegata_user_cache");
+    if (!raw || raw === "undefined" || raw === "null") return null;
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === "object" && typeof parsed.email === "string") ? parsed : null;
+  } catch (e) {
+    return null;
+  }
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(getInitialUser);
+  const [loading, setLoading] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   // Helper to read cookie
@@ -42,11 +54,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // 1. Check for active session using Better Auth client
         const { data: session } = await authClient.getSession();
         if (session?.user) {
-          setUser({
+          const u = {
             id: session.user.id,
             email: session.user.email,
             avatarUrl: session.user.image || undefined,
-          });
+          };
+          setUser(u);
+          try {
+            localStorage.setItem("gamegata_user_cache", JSON.stringify(u));
+          } catch (e) {}
           setLoading(false);
           return;
         }
@@ -61,11 +77,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const decoded = decodeURIComponent(sessionVal);
           const [id, email] = decoded.split(":");
           if (id && email) {
-            setUser({ id, email });
+            const u = { id, email };
+            setUser(u);
+            try {
+              localStorage.setItem("gamegata_user_cache", JSON.stringify(u));
+            } catch (e) {}
           }
         } catch (e) {
           console.error("Error parsing mock session cookie:", e);
         }
+      } else {
+        setUser(null);
+        try {
+          localStorage.removeItem("gamegata_user_cache");
+        } catch (e) {}
       }
       setLoading(false);
     }
@@ -214,7 +239,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     // Always clear local fallback mock cookies & local wishlist cache
     document.cookie = "gamegata-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    localStorage.removeItem("gamegata_wishlist");
+    try {
+      localStorage.removeItem("gamegata_user_cache");
+      localStorage.removeItem("gamegata_wishlist");
+      localStorage.removeItem("gamegata_cart");
+    } catch (e) {}
     setUser(null);
     setLoggingOut(false);
     window.location.assign("/");

@@ -8,6 +8,8 @@ const getBaseURL = () => {
   return import.meta.env.PUBLIC_SITE_URL || import.meta.env.NEXT_PUBLIC_SITE_URL || "";
 };
 
-export const authClient = createAuthClient({
-  baseURL: getBaseURL(),
-});
+export const authClient = typeof window !== "undefined" 
+  ? createAuthClient({
+      baseURL: getBaseURL(),
+    })
+  : ({} as any);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MoreVertical, BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon, Download } from "lucide-react";
+import { BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon, Download } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -82,11 +82,11 @@ function SettingsButtonInner() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={
-        <button data-tour="options-button" className="flex items-center justify-center font-mono text-xs text-white hover:bg-white/10 transition-all duration-150 w-full h-full rounded-xl font-bold cursor-pointer bg-transparent" title="More Options">
+        <button data-tour="options-button" className="flex items-center justify-center font-mono text-xs text-white hover:bg-white/10 transition-all duration-150 w-full h-full rounded-xl font-bold cursor-pointer bg-transparent" title="Account & Settings">
           {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="User Profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/20" referrerpolicy="no-referrer" />
+            <img src={user.avatarUrl} alt="User Profile" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/20" referrerPolicy="no-referrer" />
           ) : (
-            <MoreVertical className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+            <UserIcon className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white/90" />
           )}
         </button>
       } />
@@ -98,14 +98,14 @@ function SettingsButtonInner() {
           <span className="flex items-center gap-1.5">
             <Layout className="w-3.5 h-3.5" /> Grid View
           </span>
-          <span className="font-bold">{layout === "grid" ? "[X]" : "[ ]"}</span>
+          {layout === "grid" && <span className="font-bold text-emerald-400">✓</span>}
         </DropdownMenuItem>
         
         <DropdownMenuItem onClick={() => toggleLayout("list")} className="flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <Layout className="w-3.5 h-3.5" /> List View
           </span>
-          <span className="font-bold">{layout === "list" ? "[X]" : "[ ]"}</span>
+          {layout === "list" && <span className="font-bold text-emerald-400">✓</span>}
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
