@@ -53,7 +53,7 @@ try {
 
     if (g.screenshots) {
       try {
-        const parsed = JSON.parse(g.screenshots);
+        const parsed = typeof g.screenshots === "string" ? JSON.parse(g.screenshots) : g.screenshots;
         if (Array.isArray(parsed)) {
           screenshots = parsed.filter((u): u is string => typeof u === "string" && u.trim().length > 0);
           screenshots.forEach((u) => {
