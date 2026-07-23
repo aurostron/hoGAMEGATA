@@ -30,8 +30,8 @@ interface Props {
 const canonicalUrl = new URL(Astro.url.pathname, 'https://gamegata.xyz').href;
 
 const { 
-  title = "hoGAMEGATA | Horror Games Mega Metadata", 
-  description = "A fast, minimal, and premium metadata registry for survival horror, psychological horror, and indie nightmare games.",
+  title = "hoGAMEGATA | The Horror Game Database", 
+  description = "A fast, minimal, and comprehensive database for survival horror, psychological horror, and indie nightmare games.",
   withSearch = false,
   withLink = true,
   ogImage,
@@ -98,12 +98,11 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     <meta property="og:site_name" content="hoGAMEGATA" />
     {ogImage && <meta property="og:image" content={ogImage} />}
 
-    <!-- Twitter -->
+    <!-- Twitter / Social Previews -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={ogUrl} />
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
-    <meta name="twitter:site" content="@hoGAMEGATA" />
     {ogImage && <meta property="twitter:image" content={ogImage} />}
     
     <!-- JSON-LD Brand Entity & WebSite Schema -->

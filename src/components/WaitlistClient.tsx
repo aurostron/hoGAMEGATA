@@ -120,9 +120,9 @@ export default function WaitlistClient() {
         <div className="flex flex-col items-center gap-1.5 border-b border-white/15 pb-6">
           <SciFiLogo withLink={false} />
           <div className="flex items-center gap-2 font-mono text-[9px] tracking-widest text-white/50 uppercase font-extrabold mt-1">
-            <span>Terminal Registry</span>
+            <span>Early Access</span>
             <span className="text-white/40 font-black">•</span>
-            <span>Early Console</span>
+            <span>Horror Catalog</span>
           </div>
         </div>
 
@@ -132,7 +132,7 @@ export default function WaitlistClient() {
             Early Access Only
           </h2>
           <p className="text-xs text-white/60 leading-relaxed font-sans font-medium">
-            hoGAMEGATA is currently restricted to registered users only. Ingesting fresh titles and scaling indexing servers. Please log in or join the queue to secure entry.
+            hoGAMEGATA early access is currently open. Sign in or join the waitlist to save games, track discounts, and organize your horror collection.
           </p>
         </div>
 

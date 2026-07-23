@@ -48,11 +48,11 @@ function DashboardClientInner() {
   }, [user, loading]);
 
   if (loading || (!user && !loading)) {
-    return <NyanLoader message="CONNECTING TO USER TERMINAL..." fullScreen={true} />;
+    return <NyanLoader message="LOADING DASHBOARD..." fullScreen={true} />;
   }
 
   if (fetchingData) {
-    return <NyanLoader message="DECRYPTING USER STORAGE DATA..." fullScreen={true} />;
+    return <NyanLoader message="RETRIEVING SAVED DATA..." fullScreen={true} />;
   }
 
   return (

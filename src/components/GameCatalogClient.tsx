@@ -481,7 +481,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
             className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 z-30 cursor-pointer select-none"
           >
             <span className="font-mono text-[10px] sm:text-[11px] text-emerald-400 font-extrabold uppercase px-2 py-1.5 border border-emerald-400 bg-black tracking-wide hover:bg-white hover:text-black transition-colors duration-150">
-              [ GET CHEAPEST PRICE? ]
+              Find Lowest Price
             </span>
           </span>
         )}
@@ -489,7 +489,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
         {/* Loading Spinner / Fetch state */}
         {loading && (
           <span className="absolute inset-0 bg-black/85 flex flex-col items-center justify-center p-3 z-30 select-none">
-            <span className="font-mono text-[9px] sm:text-[10px] text-white/50 animate-pulse">[ FETCHING... ]</span>
+            <span className="font-mono text-[9px] sm:text-[10px] text-white/50 animate-pulse">Checking prices...</span>
           </span>
         )}
       </div>
@@ -681,7 +681,7 @@ function GameCatalogClientInner({
           }
         }
       }
-      alert(`[ ERROR: LUCK OUT OF BOUNDS ]\nNo close match found for "${searchQuery}".`);
+      alert(`No close match found for "${searchQuery}".`);
     } catch (e) {
       console.error("I'm feeling lucky search failed", e);
     } finally {
@@ -858,13 +858,13 @@ function GameCatalogClientInner({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isSemantic ? "Describe vibes, concepts, settings... (e.g. 'alien isolation but co-op')" : "Search by title, developer, genre, tag..."}
+                placeholder={isSemantic ? "Describe horror themes, concepts, settings... (e.g. 'alien isolation but co-op')" : "Search by title, developer, genre, tag..."}
                 className="block w-full pl-10 pr-36 py-3.5 bg-black border border-white/30 focus:border-white rounded-none focus:outline-none text-sm text-white placeholder-white/45 transition-all duration-200 font-medium tracking-wide"
               />
-              {/* Vibe toggle — right side of the input */}
+              {/* AI Concept Search toggle — right side of the input */}
               <button
                 onClick={() => setIsSemantic(prev => !prev)}
-                title={isSemantic ? "Switch to exact search" : "Switch to vibe / AI search"}
+                title={isSemantic ? "Switch to exact search" : "Switch to AI concept search"}
                 className={`absolute inset-y-0 right-0 flex items-center gap-1.5 px-3 border-l font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 cursor-pointer select-none ${
                   isSemantic
                     ? "bg-white text-black border-white"
@@ -872,14 +872,14 @@ function GameCatalogClientInner({
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline">{isSemantic ? "VIBE ON" : "VIBE"}</span>
+                <span className="hidden sm:inline">{isSemantic ? "AI SEARCH" : "AI SEARCH"}</span>
               </button>
               {debouncedSearch && (
                 <button
                   onClick={() => setSearchQuery("")}
                   className="absolute inset-y-0 right-20 pr-3.5 flex items-center text-white/40 hover:text-white transition-colors duration-150"
                 >
-                  <span className="font-mono text-[10px] font-bold">[✕]</span>
+                  <span className="font-mono text-[10px] font-bold">✕</span>
                 </button>
               )}
             </div>
@@ -892,7 +892,7 @@ function GameCatalogClientInner({
               className="shrink-0 px-4 py-3.5 bg-black border border-white/30 text-white hover:border-white hover:bg-white hover:text-black transition-all duration-150 rounded-none cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[50px]"
             >
               {luckyLoading ? (
-                <span className="animate-pulse">[ ... ]</span>
+                <span className="animate-pulse">Searching...</span>
               ) : (
                 <>
                   <span className="text-base leading-none" aria-hidden="true">🎲</span>
@@ -903,10 +903,10 @@ function GameCatalogClientInner({
             </button>
           </div>
 
-          {/* Vibe mode description — only visible when vibe is on */}
+          {/* AI Concept mode description — only visible when AI search is on */}
           {isSemantic && (
             <p className="font-mono text-[10px] text-white/40 tracking-wide">
-              Vibe Search is ON — describe any mood, setting, or concept and we'll find matching games.
+              AI Concept Search is ON — describe any mood, setting, or concept and we'll find matching games.
             </p>
           )}
         </section>
@@ -935,9 +935,9 @@ function GameCatalogClientInner({
           <div className="flex justify-start mb-6">
             <button
               onClick={() => setIsBrowseAll(false)}
-              className="flex items-center gap-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-all duration-150 px-3 py-2 cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider animate-pulse"
+              className="flex items-center gap-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-all duration-150 px-3 py-2 cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider"
             >
-              [ BACK TO STOREFRONT ]
+              ← Back to Storefront
             </button>
           </div>
         )}
@@ -968,7 +968,7 @@ function GameCatalogClientInner({
                               sortBy === "latest" ? "bg-white/10 text-white" : "text-white"
                             }`}
                           >
-                            [ LATEST ]
+                            Latest
                           </button>
                           <button
                             onClick={() => {
@@ -979,7 +979,7 @@ function GameCatalogClientInner({
                               sortBy === "trending" ? "bg-white/10 text-white" : "text-white"
                             }`}
                           >
-                            [ TRENDING ]
+                            Trending
                           </button>
                           <button
                             onClick={() => {
@@ -990,7 +990,7 @@ function GameCatalogClientInner({
                               sortBy === "top-rated" ? "bg-white/10 text-white" : "text-white"
                             }`}
                           >
-                            [ TOP RATED ]
+                            Top Rated
                           </button>
                         </div>
                       </>
@@ -998,7 +998,7 @@ function GameCatalogClientInner({
                   </div>
                 ) : (
                   <div className="text-white/70 font-bold py-1.5 font-mono">
-                    [ FOUND {games.length} GAME{games.length !== 1 ? "S" : ""} ]
+                    Found {games.length} Game{games.length !== 1 ? "s" : ""}
                   </div>
                 )}
               </div>
@@ -1009,7 +1009,7 @@ function GameCatalogClientInner({
                     onClick={() => setIsBrowseAll(false)}
                     className="flex items-center gap-1 border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-all duration-150 px-2.5 py-1.5 cursor-pointer"
                   >
-                    [ STOREFRONT ]
+                    Storefront
                   </button>
                 )}
                 <a
@@ -1051,10 +1051,10 @@ function GameCatalogClientInner({
             />
           </>
         ) : loading ? (
-          <NyanLoader message="INGESTING CATALOG CONTENT..." />
+          <NyanLoader message="Loading catalog games..." />
         ) : games.length === 0 ? (
           <div className="text-center py-16 border border-white font-mono text-xs text-white uppercase tracking-widest font-bold w-full">
-            [ No horror titles match your current criteria ]
+            No horror games match your search criteria.
           </div>
         ) : (
           <div className="space-y-8">
@@ -1079,7 +1079,7 @@ function GameCatalogClientInner({
                   disabled={loadingMore}
                   className="font-mono text-xs text-white hover:bg-white hover:text-black uppercase tracking-wider transition-all duration-150 border border-white px-6 py-3 rounded-none font-bold disabled:opacity-50"
                 >
-                  {loadingMore ? "[ Hang On... ]" : "[ Load More ]"}
+                  {loadingMore ? "Loading..." : "Load More Games"}
                 </button>
               </div>
             )}

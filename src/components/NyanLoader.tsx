@@ -7,7 +7,7 @@ interface NyanLoaderProps {
 }
 
 export default function NyanLoader({ 
-  message = "SCANNING VIBE MATRIX...", 
+  message = "LOADING GAMES...", 
   fullScreen = false,
   className = ""
 }: NyanLoaderProps) {
