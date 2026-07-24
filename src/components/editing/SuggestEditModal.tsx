@@ -71,7 +71,14 @@ export const SuggestEditModal: React.FC<SuggestEditModalProps> = ({
         }),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get('content-type') || '';
+      let data: any = {};
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        throw new Error(`Server returned non-JSON response (${res.status})`);
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Failed to submit edit suggestion');
       }

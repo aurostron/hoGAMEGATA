@@ -107,13 +107,13 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
     setError(null);
 
     try {
-      const response = await fetch('/api/suggest-edit', {
+      const response = await fetch('/api/edits/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gameId,
           gameTitle,
-          fieldKey: selectedField,
+          field: selectedField,
           fieldLabel: currentConfig.label,
           oldValue: currentConfig.value,
           newValue,
@@ -121,7 +121,14 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
         }),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      let data: any = {};
+      if (contentType.includes('application/json')) {
+        data = await response.json().catch(() => ({}));
+      } else {
+        const text = await response.text();
+        throw new Error(`Server returned non-JSON response (${response.status})`);
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to submit edit proposal');
