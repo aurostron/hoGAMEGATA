@@ -3,6 +3,7 @@ import SciFiLogo from './SciFiLogo';
 import SettingsButton from './SettingsButton';
 import HeaderSearch from './HeaderSearch';
 import CartButton from './CartButton';
+import { NotificationBell } from './notifications/NotificationBell';
 import { EditPageButton } from './editing/EditPageButton';
 import { BugReportTrigger } from './bugs/BugReportTrigger';
 
@@ -77,6 +78,10 @@ const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
     <div class="flex items-center h-full gap-1.5 sm:gap-2 pr-2 sm:pr-4">
       <div class="h-full flex items-center justify-center transition-all duration-300">
         <HeaderSearch client:only="react" />
+      </div>
+
+      <div class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11">
+        <NotificationBell client:only="react" />
       </div>
 
       <div class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11">

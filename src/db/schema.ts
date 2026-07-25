@@ -381,5 +381,27 @@ export const bugReports = sqliteTable(
   ]
 );
 
+export const announcements = sqliteTable(
+  "Announcement",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    summary: text("summary").notNull(),
+    version: text("version"), // e.g. "v0.9.5"
+    category: text("category").default("changelog").notNull(), // "changelog" | "announcement" | "feature" | "maintenance"
+    date: integer("date", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+    linkUrl: text("linkUrl"),
+    isPublished: integer("isPublished", { mode: "boolean" }).default(true).notNull(),
+    createdAt: integer("createdAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+    updatedAt: integer("updatedAt", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  },
+  (table) => [
+    index("announcement_date_idx").on(table.date),
+    index("announcement_category_idx").on(table.category),
+    index("announcement_published_idx").on(table.isPublished),
+  ]
+);
+
+
 
 

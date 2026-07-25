@@ -1,0 +1,54 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { AnnouncementManager } from '../../components/admin/AnnouncementManager';
+
+export const prerender = false;
+---
+
+<Layout title="Announcements & Changelogs - hoGAMEGATA Admin">
+  <main class="min-h-screen bg-black text-zinc-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto space-y-8">
+      {/* Header */}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+        <div>
+          <div class="flex items-center gap-3">
+            <span class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-sans font-bold uppercase tracking-wider">
+              Admin Console
+            </span>
+            <span class="text-xs text-zinc-500 font-sans">/admin/announcements</span>
+          </div>
+          <h1 class="text-3xl font-extrabold text-white tracking-tight mt-2">
+            Announcements & Version Updates
+          </h1>
+          <p class="text-sm text-zinc-400 mt-1">
+            Publish engine changelogs, feature releases, and announcements for the user notification bell.
+          </p>
+        </div>
+
+        {/* Console Navigation Links */}
+        <div class="flex items-center gap-2 flex-wrap">
+          <a
+            href="/admin"
+            class="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:border-zinc-700 text-xs font-semibold transition-colors"
+          >
+            ← Dashboard
+          </a>
+          <a
+            href="/admin/edits"
+            class="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:border-zinc-700 text-xs font-semibold transition-colors"
+          >
+            ✏️ Edit Queue
+          </a>
+          <a
+            href="/admin/bugs"
+            class="px-3.5 py-2 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-white hover:border-zinc-700 text-xs font-semibold transition-colors"
+          >
+            🐛 Bug Tickets
+          </a>
+        </div>
+      </div>
+
+      <AnnouncementManager client:load />
+    </div>
+  </main>
+</Layout>
