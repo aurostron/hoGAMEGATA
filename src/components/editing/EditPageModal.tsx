@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Pencil, CheckCircle2, AlertCircle, X, Loader2, Copy, Check, Link2, FileText, Building2 } from 'lucide-react';
+import { Pencil, CheckCircle2, AlertCircle, X, Loader2, Copy, Check, Link2, FileText, Building2, Star, Gamepad2, Terminal, RefreshCw } from 'lucide-react';
 
 interface EditPageModalProps {
   isOpen: boolean;
@@ -15,10 +15,53 @@ interface EditPageModalProps {
     websiteUrl?: string;
     redditUrl?: string;
     esrbRating?: string;
-    pressQuotes?: string;
+    pegiRating?: string;
+    rating?: number | null;
+    metacritic?: number | null;
+    playtime?: number | null;
+    platformNames?: string;
+    protonDbTier?: string;
+    steamAppId?: string | number | null;
   };
   initialFieldKey?: string;
 }
+
+const AVAILABLE_PLATFORMS = [
+  "PC (Microsoft Windows)",
+  "Linux",
+  "Mac",
+  "PlayStation 5",
+  "PlayStation 4",
+  "Xbox Series X/S",
+  "Xbox One",
+  "Nintendo Switch",
+];
+
+const ESRB_OPTIONS = [
+  "Everyone",
+  "Everyone 10+",
+  "Teen",
+  "Mature 17+",
+  "Adults Only 18+",
+  "Rating Pending",
+];
+
+const PEGI_OPTIONS = [
+  "PEGI 3",
+  "PEGI 7",
+  "PEGI 12",
+  "PEGI 16",
+  "PEGI 18",
+];
+
+const PROTON_TIERS = [
+  "native",
+  "platinum",
+  "gold",
+  "silver",
+  "bronze",
+  "borka",
+];
 
 export const EditPageModal: React.FC<EditPageModalProps> = ({
   isOpen,
@@ -29,13 +72,19 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
   initialFieldKey = 'summary',
 }) => {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'links' | 'developers'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'ratings' | 'platforms' | 'linux' | 'links' | 'developers'>('general');
   const [selectedField, setSelectedField] = useState<string>(initialFieldKey);
 
-  const fieldsConfig: Record<string, { label: string; tab: 'general' | 'links' | 'developers'; isMultiline?: boolean; value: string }> = {
+  const fieldsConfig: Record<string, { label: string; tab: 'general' | 'ratings' | 'platforms' | 'linux' | 'links' | 'developers'; isMultiline?: boolean; value: string }> = {
     summary: { label: 'Summary', tab: 'general', isMultiline: true, value: gameData.summary || '' },
     storyline: { label: 'Storyline', tab: 'general', isMultiline: true, value: gameData.storyline || '' },
-    esrbRating: { label: 'ESRB Rating', tab: 'general', isMultiline: false, value: gameData.esrbRating || '' },
+    metacritic: { label: 'Metacritic Score', tab: 'ratings', isMultiline: false, value: gameData.metacritic !== null && gameData.metacritic !== undefined ? String(gameData.metacritic) : '' },
+    rating: { label: 'Overall Rating (0-100)', tab: 'ratings', isMultiline: false, value: gameData.rating !== null && gameData.rating !== undefined ? String(gameData.rating) : '' },
+    playtime: { label: 'Avg Playtime (Hours)', tab: 'ratings', isMultiline: false, value: gameData.playtime !== null && gameData.playtime !== undefined ? String(gameData.playtime) : '' },
+    esrbRating: { label: 'ESRB Rating', tab: 'ratings', isMultiline: false, value: gameData.esrbRating || '' },
+    pegiRating: { label: 'PEGI Rating', tab: 'ratings', isMultiline: false, value: gameData.pegiRating || '' },
+    platformNames: { label: 'Supported Platforms', tab: 'platforms', isMultiline: false, value: gameData.platformNames || '' },
+    protonDbTier: { label: 'Linux / ProtonDB Tier', tab: 'linux', isMultiline: false, value: gameData.protonDbTier || '' },
     websiteUrl: { label: 'Official Website URL', tab: 'links', isMultiline: false, value: gameData.websiteUrl || '' },
     redditUrl: { label: 'Reddit URL / Subreddit', tab: 'links', isMultiline: false, value: gameData.redditUrl || '' },
     trailerUrl: { label: 'Trailer Video URL', tab: 'links', isMultiline: false, value: gameData.trailerUrl || '' },
@@ -48,6 +97,11 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [submittedTrackingId, setSubmittedTrackingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // ProtonDB Auto-Fetch State
+  const [steamInput, setSteamInput] = useState(() => String(gameData.steamAppId || ''));
+  const [protonFetching, setProtonFetching] = useState(false);
+  const [protonFetchNotice, setProtonFetchNotice] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
 
@@ -63,6 +117,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
       setActiveTab(fieldsConfig[field]?.tab || 'general');
       setNewValue(fieldsConfig[field]?.value || '');
       setError(null);
+      setProtonFetchNotice(null);
     }
   }, [isOpen, initialFieldKey]);
 
@@ -92,13 +147,59 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
     setSelectedField(fieldKey);
     setNewValue(fieldsConfig[fieldKey]?.value || '');
     setError(null);
+    setProtonFetchNotice(null);
   };
 
   const handleResetAndClose = () => {
     setError(null);
     setSubmittedTrackingId(null);
     setCopied(false);
+    setProtonFetchNotice(null);
     onClose();
+  };
+
+  // Platform Checkbox Helpers
+  const currentSelectedPlatforms = newValue
+    ? newValue.split(',').map((p) => p.trim()).filter(Boolean)
+    : [];
+
+  const togglePlatform = (platform: string) => {
+    let updated: string[];
+    if (currentSelectedPlatforms.includes(platform)) {
+      updated = currentSelectedPlatforms.filter((p) => p !== platform);
+    } else {
+      updated = [...currentSelectedPlatforms, platform];
+    }
+    setNewValue(updated.join(', '));
+  };
+
+  // Auto Fetch ProtonDB Rating Helper
+  const handleAutoFetchProtonDb = async () => {
+    if (!steamInput.trim()) {
+      setError('Please provide a Steam App ID or ProtonDB URL to auto-fetch.');
+      return;
+    }
+
+    setProtonFetching(true);
+    setError(null);
+    setProtonFetchNotice(null);
+
+    try {
+      const res = await fetch(`/api/protondb/fetch?appId=${encodeURIComponent(steamInput.trim())}`);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'ProtonDB report not found for this App ID.');
+      }
+
+      if (data.tier) {
+        setNewValue(data.tier.toLowerCase());
+        setProtonFetchNotice(`Auto-fetched from ProtonDB: Tier "${data.tier.toUpperCase()}" (${data.confidence || 'good'} confidence · ${data.totalReports || 0} reports)`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to auto-fetch ProtonDB data');
+    } finally {
+      setProtonFetching(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,7 +227,6 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
       if (contentType.includes('application/json')) {
         data = await response.json().catch(() => ({}));
       } else {
-        const text = await response.text();
         throw new Error(`Server returned non-JSON response (${response.status})`);
       }
 
@@ -151,85 +251,88 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-xl bg-[#121215] border border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-3xl sm:max-w-4xl bg-[#0e0e11] border border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-white/10 border border-white/20 text-white">
               <Pencil className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white tracking-tight">Suggest Edit: {gameTitle}</h3>
-              <p className="text-[11px] font-mono text-neutral-400">Submit metadata improvements or fixes</p>
+              <h3 className="text-base font-bold text-white tracking-tight">Suggest Edit: {gameTitle}</h3>
+              <p className="text-xs font-mono text-neutral-400">Submit metadata improvements or fixes</p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleResetAndClose}
-            className="p-1.5 rounded-xl hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-xl hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1">
+        <div className="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1">
           {submittedTrackingId ? (
-            <div className="py-6 text-center space-y-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-6 h-6" />
+            <div className="py-8 text-center space-y-5">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-7 h-7" />
               </div>
               <div>
-                <h4 className="text-lg font-bold text-white">Edit Proposal Submitted!</h4>
-                <p className="text-xs text-neutral-400 mt-1">
+                <h4 className="text-xl font-bold text-white">Edit Proposal Submitted!</h4>
+                <p className="text-sm text-neutral-400 mt-1">
                   Your edit for <span className="text-white font-semibold">{currentConfig.label}</span> has been queued for moderation.
                 </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-3">
+              <div className="max-w-md mx-auto p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-3">
                 <div className="text-left">
                   <span className="block text-[10px] font-mono uppercase font-bold text-neutral-400">Support Tracking Code</span>
-                  <span className="text-lg font-mono font-extrabold text-white">#{submittedTrackingId}</span>
+                  <span className="text-xl font-mono font-extrabold text-white">#{submittedTrackingId}</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyId}
-                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-4 h-4 text-emerald-400" />
                       <span className="text-emerald-400">Copied!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-4 h-4" />
                       <span>Copy ID</span>
                     </>
                   )}
                 </button>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-3 max-w-md mx-auto">
                 <button
                   type="button"
                   onClick={handleResetAndClose}
-                  className="w-full py-2.5 rounded-xl bg-white text-black hover:bg-neutral-200 font-bold text-xs transition-colors cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-white text-black hover:bg-neutral-200 font-bold text-xs transition-colors cursor-pointer"
                 >
                   Done
                 </button>
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Category Tabs */}
               <div className="flex items-center gap-2 border-b border-white/10 pb-3 overflow-x-auto">
                 {[
                   { id: 'general', label: 'General & Text', icon: FileText },
+                  { id: 'ratings', label: 'Ratings & Specs', icon: Star },
+                  { id: 'platforms', label: 'Platforms', icon: Gamepad2 },
+                  { id: 'linux', label: 'Linux / ProtonDB', icon: Terminal },
                   { id: 'links', label: 'Links & Media', icon: Link2 },
                   { id: 'developers', label: 'Developers', icon: Building2 },
                 ].map((tab) => {
@@ -244,13 +347,13 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
                         const firstField = Object.keys(fieldsConfig).find(k => fieldsConfig[k].tab === tab.id);
                         if (firstField) handleFieldChange(firstField);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
                         isSelected
-                          ? 'bg-amber-400 text-black font-bold shadow-md'
+                          ? 'bg-white text-black font-bold shadow-lg'
                           : 'text-neutral-400 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-4 h-4" />
                       <span>{tab.label}</span>
                     </button>
                   );
@@ -258,7 +361,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
               </div>
 
               {/* Field Pills inside active tab */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {Object.keys(fieldsConfig)
                   .filter((key) => fieldsConfig[key].tab === activeTab)
                   .map((key) => (
@@ -266,9 +369,9 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
                       key={key}
                       type="button"
                       onClick={() => handleFieldChange(key)}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border cursor-pointer ${
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-all border cursor-pointer ${
                         selectedField === key
-                          ? 'bg-amber-400/20 border-amber-400/80 text-amber-300 font-bold'
+                          ? 'bg-white/15 border-white text-white font-bold'
                           : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:border-white/20'
                       }`}
                     >
@@ -277,84 +380,223 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
                   ))}
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+              <form onSubmit={handleSubmit} className="space-y-5 pt-1">
                 {error && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex items-center gap-2">
+                  <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
 
-                {/* Current Value */}
+                {protonFetchNotice && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{protonFetchNotice}</span>
+                  </div>
+                )}
+
+                {/* Current Value Display */}
                 <div>
-                  <label className="block text-xs font-mono font-bold text-neutral-400 mb-1 uppercase tracking-wider">
+                  <label className="block text-xs font-mono font-bold text-neutral-400 mb-1.5 uppercase tracking-wider">
                     Current {currentConfig.label}
                   </label>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-neutral-300 italic break-words max-h-24 overflow-y-auto">
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono text-neutral-300 italic break-words max-h-28 overflow-y-auto">
                     {currentConfig.value || <span className="not-italic text-neutral-500">(Empty / Unset)</span>}
                   </div>
                 </div>
 
-                {/* Suggested Value */}
-                <div>
-                  <label className="block text-xs font-bold text-white mb-1">
-                    Suggested New {currentConfig.label}
-                  </label>
-                  {currentConfig.isMultiline ? (
-                    <textarea
-                      ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                      rows={5}
-                      value={newValue}
-                      onChange={(e) => setNewValue(e.target.value)}
-                      placeholder={`Enter correct ${currentConfig.label.toLowerCase()}...`}
-                      style={{ caretColor: '#f59e0b', userSelect: 'text' }}
-                      className="w-full rounded-xl bg-[#09090b] border border-amber-400/40 focus:border-amber-400 p-3 text-xs font-mono text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-400/30 transition-all resize-none block select-text cursor-text"
-                      required
-                    />
-                  ) : (
-                    <input
-                      ref={inputRef as React.RefObject<HTMLInputElement>}
-                      type="text"
-                      value={newValue}
-                      onChange={(e) => setNewValue(e.target.value)}
-                      placeholder={`Enter correct ${currentConfig.label.toLowerCase()}...`}
-                      style={{ caretColor: '#f59e0b', userSelect: 'text' }}
-                      className="w-full rounded-xl bg-[#09090b] border border-amber-400/40 focus:border-amber-400 p-3 text-xs font-mono text-white placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-400/30 transition-all block select-text cursor-text"
-                      required
-                    />
-                  )}
-                </div>
+                {/* Custom Interactive Controls depending on selectedField */}
+                {selectedField === 'platformNames' ? (
+                  /* Interactive Platform Checkboxes */
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-white">
+                      Select Available Supported Platforms
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-4 rounded-2xl bg-[#09090c] border border-white/15">
+                      {AVAILABLE_PLATFORMS.map((platform) => {
+                        const isChecked = currentSelectedPlatforms.includes(platform);
+                        return (
+                          <button
+                            key={platform}
+                            type="button"
+                            onClick={() => togglePlatform(platform)}
+                            className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-mono font-medium transition-all text-left border cursor-pointer ${
+                              isChecked
+                                ? 'bg-white/15 border-white text-white font-bold'
+                                : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold border ${isChecked ? 'bg-white border-white text-black' : 'border-neutral-600'}`}>
+                              {isChecked ? '✓' : ''}
+                            </span>
+                            <span className="truncate">{platform}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs font-mono text-neutral-400">
+                      Formatted Platform String: <span className="text-white font-bold">{newValue || '(None selected)'}</span>
+                    </p>
+                  </div>
+                ) : selectedField === 'protonDbTier' ? (
+                  /* ProtonDB Auto-Fetch & Tier Selection */
+                  <div className="space-y-4">
+                    <label className="block text-xs font-bold text-white">
+                      Linux / ProtonDB Compatibility Tier
+                    </label>
+                    
+                    {/* Auto-Fetch Bar */}
+                    <div className="p-4 rounded-2xl bg-[#09090c] border border-white/15 space-y-3">
+                      <span className="block text-xs font-mono font-bold text-white uppercase tracking-wider">
+                        ⚡ Automated ProtonDB Rating Fetch
+                      </span>
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="text"
+                          value={steamInput}
+                          onChange={(e) => setSteamInput(e.target.value)}
+                          placeholder="Enter Steam App ID or ProtonDB URL..."
+                          className="flex-1 rounded-xl bg-white/5 border border-white/10 p-3 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAutoFetchProtonDb}
+                          disabled={protonFetching}
+                          className="px-4 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+                        >
+                          {protonFetching ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                          <span>Auto Fetch</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Tier Pills */}
+                    <div>
+                      <span className="block text-xs font-mono text-neutral-400 mb-2">Select Proton Tier manually:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {PROTON_TIERS.map((tier) => (
+                          <button
+                            key={tier}
+                            type="button"
+                            onClick={() => setNewValue(tier)}
+                            className={`px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase transition-all border cursor-pointer ${
+                              newValue.toLowerCase() === tier
+                                ? 'bg-white text-black border-white'
+                                : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                            }`}
+                          >
+                            {tier}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : selectedField === 'esrbRating' ? (
+                  /* ESRB Rating Pills */
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-white">
+                      ESRB Age Rating
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {ESRB_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setNewValue(opt)}
+                          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all border cursor-pointer ${
+                            newValue === opt
+                              ? 'bg-white text-black border-white'
+                              : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : selectedField === 'pegiRating' ? (
+                  /* PEGI Rating Pills */
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-white">
+                      PEGI Rating
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {PEGI_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setNewValue(opt)}
+                          className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all border cursor-pointer ${
+                            newValue === opt
+                              ? 'bg-white text-black border-white'
+                              : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  /* Default Input / Textarea */
+                  <div>
+                    <label className="block text-xs font-bold text-white mb-1.5">
+                      Suggested New {currentConfig.label}
+                    </label>
+                    {currentConfig.isMultiline ? (
+                      <textarea
+                        ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                        rows={5}
+                        value={newValue}
+                        onChange={(e) => setNewValue(e.target.value)}
+                        placeholder={`Enter correct ${currentConfig.label.toLowerCase()}...`}
+                        className="w-full rounded-2xl bg-[#09090c] border border-white/20 focus:border-white p-3.5 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all resize-none block select-text cursor-text"
+                        required
+                      />
+                    ) : (
+                      <input
+                        ref={inputRef as React.RefObject<HTMLInputElement>}
+                        type={['metacritic', 'rating', 'playtime'].includes(selectedField) ? 'number' : 'text'}
+                        value={newValue}
+                        onChange={(e) => setNewValue(e.target.value)}
+                        placeholder={`Enter correct ${currentConfig.label.toLowerCase()}...`}
+                        className="w-full rounded-2xl bg-[#09090c] border border-white/20 focus:border-white p-3.5 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:ring-1 focus:ring-white/30 transition-all block select-text cursor-text"
+                        required
+                      />
+                    )}
+                  </div>
+                )}
 
                 {/* Reason */}
                 <div>
-                  <label className="block text-xs font-bold text-neutral-300 mb-1">
+                  <label className="block text-xs font-bold text-neutral-300 mb-1.5">
                     Reason for Change <span className="text-neutral-500 font-normal font-mono text-[11px]">(Optional)</span>
                   </label>
                   <input
                     type="text"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="e.g. Official company rename, verified link..."
-                    className="w-full rounded-xl bg-white/5 border border-white/10 p-3 text-xs font-mono text-white placeholder:text-neutral-500 focus:outline-none focus:border-white/30 transition-all"
+                    placeholder="e.g. Official update, verified source link..."
+                    className="w-full rounded-2xl bg-white/5 border border-white/10 p-3.5 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-all"
                   />
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
                   <button
                     type="button"
                     onClick={handleResetAndClose}
                     disabled={loading}
-                    className="px-4 py-2 rounded-xl text-xs font-mono text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl text-xs font-mono text-neutral-400 hover:text-white transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg cursor-pointer"
+                    className="px-6 py-3 rounded-xl bg-white hover:bg-neutral-200 text-black font-extrabold text-xs transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg cursor-pointer"
                   >
-                    {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-black" />}
+                    {loading && <Loader2 className="w-4 h-4 animate-spin text-black" />}
                     Submit Suggestion
                   </button>
                 </div>

@@ -15,6 +15,11 @@ const ALLOWED_GAME_FIELDS: Record<string, string> = {
   genreNames: "genreNames",
   platformNames: "platformNames",
   esrbRating: "esrbRating",
+  pegiRating: "pegiRating",
+  rating: "rating",
+  metacritic: "metacritic",
+  playtime: "playtime",
+  protonDbTier: "protonDbTier",
   websiteUrl: "websiteUrl",
   redditUrl: "redditUrl",
 };

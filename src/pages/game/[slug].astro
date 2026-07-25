@@ -287,6 +287,13 @@ const editGameData = {
     websiteUrl: game.websiteUrl || "",
     redditUrl: game.redditUrl || "",
     esrbRating: game.esrbRating || "",
+    pegiRating: game.pegiRating || "",
+    rating: game.rating,
+    metacritic: game.metacritic,
+    playtime: game.playtime,
+    platformNames: platforms.map((p: any) => p.name).join(", "),
+    protonDbTier: game.protonDbTier || "",
+    steamAppId: steamAppId || null,
   }
 };
 ---

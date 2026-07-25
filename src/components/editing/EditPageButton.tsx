@@ -13,6 +13,13 @@ interface EditPageButtonProps {
     websiteUrl?: string;
     redditUrl?: string;
     esrbRating?: string;
+    pegiRating?: string;
+    rating?: number | null;
+    metacritic?: number | null;
+    playtime?: number | null;
+    platformNames?: string;
+    protonDbTier?: string;
+    steamAppId?: string | number | null;
   };
   className?: string;
 }
