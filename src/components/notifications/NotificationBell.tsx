@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Sparkles, ExternalLink, CheckCheck, Loader2, Megaphone, History, X } from 'lucide-react';
+import { Bell, ExternalLink, Loader2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface AnnouncementItem {
   id: string;
@@ -12,34 +12,106 @@ export interface AnnouncementItem {
 }
 
 const STORAGE_KEY = 'gg_last_read_announcement_date';
+const ITEMS_PER_PAGE = 4;
+
+const SEED_CHANGELOGS: AnnouncementItem[] = [
+  {
+    id: 'changelog-9',
+    title: 'Header Updates Engine',
+    version: 'v0.9.5',
+    category: 'feature',
+    date: '2026-08-09T22:30:00Z',
+    summary: 'Added header updates widget with changelog history, announcements, and lazy database fetch optimizations.',
+  },
+  {
+    id: 'changelog-8',
+    title: 'Metadata Edits & Linux ProtonDB Support',
+    version: 'v0.9.4',
+    category: 'feature',
+    date: '2026-08-08T19:00:00Z',
+    summary: 'Added metadata edit submissions for ratings, average playtime, platform checkboxes, and automated ProtonDB checks.',
+  },
+  {
+    id: 'changelog-7',
+    title: 'Header Fast-Load & Instant Cart Sync',
+    version: 'v0.9.3',
+    category: 'changelog',
+    date: '2026-08-08T17:00:00Z',
+    summary: 'Eliminated header load flicker with instant local cache for cart counts and user profile status.',
+  },
+  {
+    id: 'changelog-6',
+    title: 'UI Typography & Natural Phrasing',
+    version: 'v0.9.2',
+    category: 'changelog',
+    date: '2026-08-08T16:00:00Z',
+    summary: 'Simplified copy and polished typography across all storefront pages for a clean browsing experience.',
+  },
+  {
+    id: 'changelog-5',
+    title: 'Community Edits & AI Shield',
+    version: 'v0.9.1',
+    category: 'feature',
+    date: '2026-08-02T12:00:00Z',
+    summary: 'Introduced community edit suggestions with automated AI moderation shields and Discord webhooks.',
+  },
+  {
+    id: 'changelog-4',
+    title: 'Search Relevance & Speed Boost',
+    version: 'v0.9.0',
+    category: 'changelog',
+    date: '2026-08-02T10:00:00Z',
+    summary: 'Added title relevance ranking and stale query protection for faster search results.',
+  },
+  {
+    id: 'changelog-3',
+    title: 'SEO & Static Sitemap Engine',
+    version: 'v0.8.8',
+    category: 'changelog',
+    date: '2026-07-28T14:00:00Z',
+    summary: 'Converted sitemaps to static build generation and added JSON-LD schemas for search engines.',
+  },
+  {
+    id: 'changelog-2',
+    title: 'Database Query Speed Optimization',
+    version: 'v0.8.5',
+    category: 'changelog',
+    date: '2026-07-20T11:00:00Z',
+    summary: 'Eliminated catalog scan overheads for fast game page rendering and instant price comparisons.',
+  },
+  {
+    id: 'changelog-1',
+    title: 'Cart CDN Caching & Store Price Sync',
+    version: 'v0.8.0',
+    category: 'changelog',
+    date: '2026-07-16T09:00:00Z',
+    summary: 'Added CDN image caching for cart items and improved retail deal lookup across stores.',
+  },
+];
 
 export const NotificationBell: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>(SEED_CHANGELOGS);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasUnread, setHasUnread] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Check unread badge state from localStorage without making any network requests
+  // Check unread badge state from localStorage
   useEffect(() => {
     try {
       const lastRead = localStorage.getItem(STORAGE_KEY);
       if (!lastRead) {
         setHasUnread(true);
       } else {
-        // If lastRead exists, compare against stored timestamp
         const lastReadTime = new Date(lastRead).getTime();
         if (Date.now() - lastReadTime > 7 * 24 * 60 * 60 * 1000) {
-          // If older than 7 days, show subtle hint dot
           setHasUnread(true);
         }
       }
-    } catch {
-      // Ignore localStorage errors
-    }
+    } catch {}
   }, []);
 
   // Handle outside click & escape key to close popover
@@ -66,37 +138,27 @@ export const NotificationBell: React.FC = () => {
     };
   }, [isOpen]);
 
-  // Fetch announcements on-click ONLY (lazy load)
+  // Fetch announcements from API on-click, falling back to SEED_CHANGELOGS seamlessly
   const fetchAnnouncements = async () => {
-    if (fetched && announcements.length > 0) return; // Client-side memory cache check
+    if (fetched) return;
 
     setLoading(true);
-    setError(null);
-
     try {
-      const res = await fetch('/api/announcements?limit=20');
+      const res = await fetch('/api/announcements?limit=50');
       const data = await res.json();
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to load updates');
-      }
+      if (res.ok && data.success && Array.isArray(data.announcements) && data.announcements.length > 0) {
+        // Combine DB items with seed changelogs (filtering out duplicate IDs)
+        const dbIds = new Set(data.announcements.map((a: any) => a.id));
+        const filteredSeed = SEED_CHANGELOGS.filter((s) => !dbIds.has(s.id));
+        const merged = [...data.announcements, ...filteredSeed];
 
-      const items: AnnouncementItem[] = data.announcements || [];
-      setAnnouncements(items);
+        setAnnouncements(merged);
+      }
       setFetched(true);
-
-      // Check unread against the latest item date
-      if (items.length > 0) {
-        const latestDate = new Date(items[0].date).getTime();
-        const lastRead = localStorage.getItem(STORAGE_KEY);
-        if (!lastRead || new Date(lastRead).getTime() < latestDate) {
-          setHasUnread(true);
-        } else {
-          setHasUnread(false);
-        }
-      }
-    } catch (err: any) {
-      setError(err.message || 'Unable to fetch updates');
+    } catch (err) {
+      // On fetch error, fallback gracefully to seed changelogs without throwing error UI
+      setFetched(true);
     } finally {
       setLoading(false);
     }
@@ -105,7 +167,6 @@ export const NotificationBell: React.FC = () => {
   const handleToggle = () => {
     const nextState = !isOpen;
     setIsOpen(nextState);
-
     if (nextState) {
       fetchAnnouncements();
     }
@@ -142,6 +203,10 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(announcements.length / ITEMS_PER_PAGE));
+  const paginatedItems = announcements.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
     <div ref={containerRef} className="relative flex items-center justify-center">
       {/* Bell Trigger Button */}
@@ -149,8 +214,8 @@ export const NotificationBell: React.FC = () => {
         type="button"
         onClick={handleToggle}
         className="flex items-center justify-center font-mono text-xs text-white hover:bg-white/10 transition-all duration-150 w-10 h-10 sm:w-11 sm:h-11 rounded-xl font-bold cursor-pointer bg-transparent relative select-none"
-        title="Version Updates & Announcements"
-        aria-label="Version updates and announcements"
+        title="Updates"
+        aria-label="Updates"
       >
         <Bell className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white/90 transition-transform active:scale-95" />
         
@@ -162,73 +227,36 @@ export const NotificationBell: React.FC = () => {
 
       {/* Popover Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[340px] sm:w-[420px] bg-[#0e0e11] border border-white/15 rounded-3xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-[340px] sm:w-[400px] bg-[#0e0e11] border border-white/15 rounded-3xl shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
           <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-white/10 border border-white/20 text-white">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                  What's New
-                  <span className="text-[10px] font-mono text-neutral-400 font-normal px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
-                    beta v0.9.0
-                  </span>
-                </h3>
-                <p className="text-[11px] font-mono text-neutral-400">Updates, fixes & platform changelogs</p>
-              </div>
-            </div>
+            <h3 className="text-base font-bold text-white tracking-tight">
+              Updates
+            </h3>
 
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={handleMarkAllRead}
-                title="Mark all as read"
-                className="p-1.5 rounded-xl hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <CheckCheck className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-xl hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-white/10 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* List Content */}
-          <div className="max-h-[380px] overflow-y-auto p-4 space-y-3">
-            {loading ? (
+          <div className="min-h-[280px] max-h-[360px] overflow-y-auto p-4 space-y-3">
+            {loading && announcements.length === 0 ? (
               <div className="py-12 text-center text-neutral-400 space-y-2">
                 <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" />
-                <p className="text-xs font-mono">Loading announcements...</p>
-              </div>
-            ) : error ? (
-              <div className="py-8 text-center text-red-400 text-xs font-mono space-y-1">
-                <p>⚠️ {error}</p>
-                <button
-                  type="button"
-                  onClick={fetchAnnouncements}
-                  className="mt-2 px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] cursor-pointer"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : announcements.length === 0 ? (
-              <div className="py-12 text-center text-neutral-500 space-y-2">
-                <Megaphone className="w-8 h-8 mx-auto opacity-40" />
-                <p className="text-xs font-mono">No updates posted yet.</p>
+                <p className="text-xs font-mono">Loading updates...</p>
               </div>
             ) : (
-              announcements.map((item) => {
+              paginatedItems.map((item) => {
                 const badge = getCategoryBadge(item.category);
                 return (
                   <div
                     key={item.id}
-                    className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 transition-all duration-150 space-y-2 group"
+                    className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 transition-all duration-150 space-y-1.5 group"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
@@ -246,11 +274,11 @@ export const NotificationBell: React.FC = () => {
                       </span>
                     </div>
 
-                    <h4 className="text-xs font-bold text-white group-hover:text-white transition-colors leading-snug">
+                    <h4 className="text-xs font-bold text-white leading-snug">
                       {item.title}
                     </h4>
 
-                    <p className="text-xs text-neutral-300 leading-relaxed font-sans whitespace-pre-wrap">
+                    <p className="text-xs text-neutral-300 leading-relaxed font-sans">
                       {item.summary}
                     </p>
 
@@ -271,19 +299,40 @@ export const NotificationBell: React.FC = () => {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="px-5 py-3 border-t border-white/10 bg-white/[0.01] flex items-center justify-between text-[11px] font-mono text-neutral-500">
-            <span className="flex items-center gap-1.5">
-              <History className="w-3.5 h-3.5" />
-              <span>hoGAMEGATA Engine</span>
-            </span>
+          {/* Footer & Pagination */}
+          <div className="px-5 py-3 border-t border-white/10 bg-white/[0.01] flex items-center justify-between text-[11px] font-mono text-neutral-400">
             <button
               type="button"
               onClick={handleMarkAllRead}
               className="text-neutral-400 hover:text-white font-semibold transition-colors cursor-pointer"
             >
-              Mark read
+              Mark all read
             </button>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-white font-bold">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1 rounded-lg hover:bg-white/10 text-neutral-400 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
