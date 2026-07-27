@@ -54,6 +54,54 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
+export const PUT: APIRoute = async ({ request }) => {
+  try {
+    const user = await getServerUser(request);
+    if (!user || !isAdminUser(user)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const body = await request.json().catch(() => null);
+    if (!body || !body.id || !body.title || !body.summary) {
+      return new Response(
+        JSON.stringify({ error: "ID, Title, and Summary are required fields." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const { id, title, summary, version, category, date, linkUrl, isPublished } = body;
+    const parsedDate = date ? new Date(date) : new Date();
+
+    await turso
+      .update(announcements)
+      .set({
+        title: title.trim(),
+        summary: summary.trim(),
+        version: version ? version.trim() : null,
+        category: category ? category.trim() : 'changelog',
+        date: parsedDate,
+        linkUrl: linkUrl ? linkUrl.trim() : null,
+        isPublished: isPublished !== false,
+        updatedAt: new Date(),
+      })
+      .where(eq(announcements.id, id));
+
+    return new Response(
+      JSON.stringify({ success: true, message: "Announcement updated successfully!" }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error updating announcement:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to update announcement" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+};
+
 export const DELETE: APIRoute = async ({ request, url }) => {
   try {
     const user = await getServerUser(request);

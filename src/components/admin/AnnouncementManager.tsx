@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Plus, Trash2, Loader2, Calendar, Tag, Link as LinkIcon, AlertCircle, CheckCircle2, Megaphone } from 'lucide-react';
+import { Sparkles, Plus, Trash2, Loader2, Pencil, X, AlertCircle, CheckCircle2, Megaphone } from 'lucide-react';
 
 export interface Announcement {
   id: string;
@@ -17,6 +17,7 @@ export const AnnouncementManager: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editingItem, setEditingItem] = useState<Announcement | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -50,7 +51,33 @@ export const AnnouncementManager: React.FC = () => {
     fetchAnnouncements();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleEditClick = (item: Announcement) => {
+    setEditingItem(item);
+    setTitle(item.title);
+    setSummary(item.summary);
+    setVersion(item.version || '');
+    setCategory(item.category || 'changelog');
+    setLinkUrl(item.linkUrl || '');
+    try {
+      setDate(new Date(item.date).toISOString().slice(0, 16));
+    } catch {
+      setDate(new Date().toISOString().slice(0, 16));
+    }
+    setError(null);
+    setSuccessMsg(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItem(null);
+    setTitle('');
+    setSummary('');
+    setVersion('v0.9.5');
+    setCategory('changelog');
+    setLinkUrl('');
+    setDate(new Date().toISOString().slice(0, 16));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !summary.trim()) {
       setError('Title and Summary are required.');
@@ -61,33 +88,40 @@ export const AnnouncementManager: React.FC = () => {
     setError(null);
     setSuccessMsg(null);
 
+    const isEdit = !!editingItem;
+    const url = '/api/admin/announcements';
+    const method = isEdit ? 'PUT' : 'POST';
+    const bodyPayload: any = {
+      title: title.trim(),
+      summary: summary.trim(),
+      version: version.trim() || null,
+      category,
+      date: date ? new Date(date).toISOString() : new Date().toISOString(),
+      linkUrl: linkUrl.trim() || null,
+      isPublished: true,
+    };
+
+    if (isEdit) {
+      bodyPayload.id = editingItem.id;
+    }
+
     try {
-      const res = await fetch('/api/admin/announcements', {
-        method: 'POST',
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title.trim(),
-          summary: summary.trim(),
-          version: version.trim() || null,
-          category,
-          date: date ? new Date(date).toISOString() : new Date().toISOString(),
-          linkUrl: linkUrl.trim() || null,
-          isPublished: true,
-        }),
+        body: JSON.stringify(bodyPayload),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to publish announcement');
+        throw new Error(data.error || 'Failed to save announcement');
       }
 
-      setSuccessMsg(`✅ ${data.message || 'Announcement published!'}`);
-      setTitle('');
-      setSummary('');
-      setLinkUrl('');
+      setSuccessMsg(`✅ ${data.message || (isEdit ? 'Announcement updated!' : 'Announcement published!')}`);
+      handleCancelEdit();
       fetchAnnouncements();
     } catch (err: any) {
-      setError(err.message || 'An error occurred while publishing.');
+      setError(err.message || 'An error occurred while saving.');
     } finally {
       setSubmitting(false);
     }
@@ -120,16 +154,31 @@ export const AnnouncementManager: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Create Announcement Card */}
+      {/* Create / Edit Announcement Form */}
       <div className="p-6 sm:p-8 rounded-3xl bg-[#0e0e11] border border-white/15 shadow-2xl space-y-6">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <div className="p-2.5 rounded-2xl bg-white/10 border border-white/20 text-white">
-            <Sparkles className="w-5 h-5" />
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-white/10 border border-white/20 text-white">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-tight">
+                {editingItem ? `Edit Announcement (${editingItem.id})` : 'Publish New Update / Announcement'}
+              </h2>
+              <p className="text-xs font-mono text-neutral-400">Post or update changelogs, feature releases, and news</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Publish New Update / Announcement</h2>
-            <p className="text-xs font-mono text-neutral-400">Post changelogs, feature releases, or system news for end-users</p>
-          </div>
+
+          {editingItem && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="px-3 py-1.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 text-xs font-mono text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Cancel Editing</span>
+            </button>
+          )}
         </div>
 
         {error && (
@@ -146,7 +195,7 @@ export const AnnouncementManager: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleCreate} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Title */}
             <div className="md:col-span-2 space-y-1.5">
@@ -157,7 +206,7 @@ export const AnnouncementManager: React.FC = () => {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Engine Update 0.9.5 — Improved Search & Dark Mode"
+                placeholder="e.g. Header Fast-Load & Instant Cart Sync"
                 className="w-full rounded-2xl bg-black border border-white/20 focus:border-white p-3.5 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none"
                 required
               />
@@ -220,27 +269,37 @@ export const AnnouncementManager: React.FC = () => {
           {/* Summary */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-white">
-              Summary / Changelog Body <span className="text-red-400">*</span>
+              Summary / Short Description <span className="text-red-400">*</span>
             </label>
             <textarea
               rows={4}
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Describe what changed, new features added, or key bug fixes..."
+              placeholder="Describe what changed in short, simple phrasing..."
               className="w-full rounded-2xl bg-black border border-white/20 focus:border-white p-3.5 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none resize-none"
               required
             />
           </div>
 
-          {/* Submit */}
-          <div className="flex justify-end pt-2">
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3 pt-2">
+            {editingItem && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                disabled={submitting}
+                className="px-5 py-3 rounded-2xl border border-white/20 text-neutral-400 hover:text-white text-xs font-mono transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            )}
             <button
               type="submit"
               disabled={submitting}
               className="px-6 py-3 rounded-2xl bg-white hover:bg-neutral-200 text-black font-extrabold text-xs transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg cursor-pointer"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              <span>Publish Update</span>
+              <span>{editingItem ? 'Save Changes' : 'Publish Update'}</span>
             </button>
           </div>
         </form>
@@ -254,8 +313,8 @@ export const AnnouncementManager: React.FC = () => {
               <Megaphone className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Published Announcements ({announcements.length})</h3>
-              <p className="text-xs font-mono text-neutral-400">Manage active platform changelogs</p>
+              <h3 className="text-base font-bold text-white">Published Updates in DB ({announcements.length})</h3>
+              <p className="text-xs font-mono text-neutral-400">Click edit to update any item's title, summary, date, or category</p>
             </div>
           </div>
         </div>
@@ -295,15 +354,26 @@ export const AnnouncementManager: React.FC = () => {
                   <p className="text-xs text-neutral-300 font-sans line-clamp-2">{item.summary}</p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDelete(item.id)}
-                  disabled={deletingId === item.id}
-                  className="px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 self-start sm:self-center"
-                >
-                  {deletingId === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                  <span>Delete</span>
-                </button>
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                  <button
+                    type="button"
+                    onClick={() => handleEditClick(item)}
+                    className="px-3 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(item.id)}
+                    disabled={deletingId === item.id}
+                    className="px-3 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {deletingId === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
