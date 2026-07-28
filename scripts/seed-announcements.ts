@@ -30,23 +30,23 @@ async function seed() {
     CREATE INDEX IF NOT EXISTS "announcement_published_idx" ON "Announcement" ("isPublished")
   `);
 
-  console.log("🌱 Seeding changelogs and announcements into Turso DB...");
+  console.log("🌱 Seeding complete version history from project inception to today into Turso DB...");
 
   const items = [
     {
-      id: 'changelog-9',
-      title: 'Header Updates Engine',
+      id: 'ver-12',
+      title: 'Updates Engine & Admin Console',
       version: 'v0.9.5',
       category: 'feature',
       date: new Date('2026-08-09T22:30:00Z'),
-      summary: 'Added header updates widget with changelog history, announcements, and lazy database fetch optimizations.',
+      summary: 'Added header updates widget with changelog history, announcements, and admin management controls.',
       isPublished: true,
       createdAt: new Date('2026-08-09T22:30:00Z'),
       updatedAt: new Date('2026-08-09T22:30:00Z'),
     },
     {
-      id: 'changelog-8',
-      title: 'Metadata Edits & Linux ProtonDB Support',
+      id: 'ver-11',
+      title: 'Metadata Edits & Linux Compatibility',
       version: 'v0.9.4',
       category: 'feature',
       date: new Date('2026-08-08T19:00:00Z'),
@@ -56,7 +56,7 @@ async function seed() {
       updatedAt: new Date('2026-08-08T19:00:00Z'),
     },
     {
-      id: 'changelog-7',
+      id: 'ver-10',
       title: 'Header Fast-Load & Instant Cart Sync',
       version: 'v0.9.3',
       category: 'changelog',
@@ -67,8 +67,8 @@ async function seed() {
       updatedAt: new Date('2026-08-08T17:00:00Z'),
     },
     {
-      id: 'changelog-6',
-      title: 'UI Typography & Natural Phrasing',
+      id: 'ver-9',
+      title: 'UI Refinement & Clean Typography',
       version: 'v0.9.2',
       category: 'changelog',
       date: new Date('2026-08-08T16:00:00Z'),
@@ -78,8 +78,8 @@ async function seed() {
       updatedAt: new Date('2026-08-08T16:00:00Z'),
     },
     {
-      id: 'changelog-5',
-      title: 'Community Edits & AI Shield',
+      id: 'ver-8',
+      title: 'Community Edit Engine & AI Shield',
       version: 'v0.9.1',
       category: 'feature',
       date: new Date('2026-08-02T12:00:00Z'),
@@ -89,18 +89,18 @@ async function seed() {
       updatedAt: new Date('2026-08-02T12:00:00Z'),
     },
     {
-      id: 'changelog-4',
-      title: 'Search Relevance & Speed Boost',
+      id: 'ver-7',
+      title: 'Public Beta Launch (v0.9.0-beta.1)',
       version: 'v0.9.0',
-      category: 'changelog',
-      date: new Date('2026-08-02T10:00:00Z'),
-      summary: 'Added title relevance ranking and stale query protection for faster search results.',
+      category: 'announcement',
+      date: new Date('2026-07-08T10:00:00Z'),
+      summary: 'Official Public Beta release featuring catalog directory, Bayesian scoring, and Cloudflare Workers deployment.',
       isPublished: true,
-      createdAt: new Date('2026-08-02T10:00:00Z'),
-      updatedAt: new Date('2026-08-02T10:00:00Z'),
+      createdAt: new Date('2026-07-08T10:00:00Z'),
+      updatedAt: new Date('2026-07-08T10:00:00Z'),
     },
     {
-      id: 'changelog-3',
+      id: 'ver-6',
       title: 'SEO & Static Sitemap Engine',
       version: 'v0.8.8',
       category: 'changelog',
@@ -111,7 +111,7 @@ async function seed() {
       updatedAt: new Date('2026-07-28T14:00:00Z'),
     },
     {
-      id: 'changelog-2',
+      id: 'ver-5',
       title: 'Database Query Speed Optimization',
       version: 'v0.8.5',
       category: 'changelog',
@@ -122,8 +122,8 @@ async function seed() {
       updatedAt: new Date('2026-07-20T11:00:00Z'),
     },
     {
-      id: 'changelog-1',
-      title: 'Cart CDN Caching & Store Price Sync',
+      id: 'ver-4',
+      title: 'Cart CDN Caching & Price Sync',
       version: 'v0.8.0',
       category: 'changelog',
       date: new Date('2026-07-16T09:00:00Z'),
@@ -131,6 +131,39 @@ async function seed() {
       isPublished: true,
       createdAt: new Date('2026-07-16T09:00:00Z'),
       updatedAt: new Date('2026-07-16T09:00:00Z'),
+    },
+    {
+      id: 'ver-3',
+      title: 'Admin Operations & 2FA Auth',
+      version: 'v0.7.0',
+      category: 'feature',
+      date: new Date('2026-07-12T15:00:00Z'),
+      summary: 'Added TOTP 2FA admin authentication, mobile analytics dashboard, and image gallery manager.',
+      isPublished: true,
+      createdAt: new Date('2026-07-12T15:00:00Z'),
+      updatedAt: new Date('2026-07-12T15:00:00Z'),
+    },
+    {
+      id: 'ver-2',
+      title: 'Initial Public Site Indexing',
+      version: 'v0.5.0',
+      category: 'announcement',
+      date: new Date('2026-06-25T12:00:00Z'),
+      summary: 'Opened storefront catalog for public search engine indexing with Open Graph & video game metadata.',
+      isPublished: true,
+      createdAt: new Date('2026-06-25T12:00:00Z'),
+      updatedAt: new Date('2026-06-25T12:00:00Z'),
+    },
+    {
+      id: 'ver-1',
+      title: 'Project Inception & Core Storefront',
+      version: 'v0.1.0',
+      category: 'announcement',
+      date: new Date('2026-06-15T09:00:00Z'),
+      summary: 'Initial codebase creation, Turso database schema initialization, and Astro core architecture.',
+      isPublished: true,
+      createdAt: new Date('2026-06-15T09:00:00Z'),
+      updatedAt: new Date('2026-06-15T09:00:00Z'),
     },
   ];
 
@@ -151,7 +184,7 @@ async function seed() {
       });
   }
 
-  console.log(`✅ Successfully created table and seeded ${items.length} announcements into Turso DB!`);
+  console.log(`✅ Successfully seeded ${items.length} complete version items into Turso DB!`);
 }
 
 seed().catch((err) => {

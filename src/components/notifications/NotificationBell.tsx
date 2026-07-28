@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, ExternalLink, Loader2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bell, ExternalLink, Loader2, X, ChevronLeft, ChevronRight, Megaphone } from 'lucide-react';
 
 export interface AnnouncementItem {
   id: string;
@@ -14,84 +14,9 @@ export interface AnnouncementItem {
 const STORAGE_KEY = 'gg_last_read_announcement_date';
 const ITEMS_PER_PAGE = 4;
 
-const SEED_CHANGELOGS: AnnouncementItem[] = [
-  {
-    id: 'changelog-9',
-    title: 'Header Updates Engine',
-    version: 'v0.9.5',
-    category: 'feature',
-    date: '2026-08-09T22:30:00Z',
-    summary: 'Added header updates widget with changelog history, announcements, and lazy database fetch optimizations.',
-  },
-  {
-    id: 'changelog-8',
-    title: 'Metadata Edits & Linux ProtonDB Support',
-    version: 'v0.9.4',
-    category: 'feature',
-    date: '2026-08-08T19:00:00Z',
-    summary: 'Added metadata edit submissions for ratings, average playtime, platform checkboxes, and automated ProtonDB checks.',
-  },
-  {
-    id: 'changelog-7',
-    title: 'Header Fast-Load & Instant Cart Sync',
-    version: 'v0.9.3',
-    category: 'changelog',
-    date: '2026-08-08T17:00:00Z',
-    summary: 'Eliminated header load flicker with instant local cache for cart counts and user profile status.',
-  },
-  {
-    id: 'changelog-6',
-    title: 'UI Typography & Natural Phrasing',
-    version: 'v0.9.2',
-    category: 'changelog',
-    date: '2026-08-08T16:00:00Z',
-    summary: 'Simplified copy and polished typography across all storefront pages for a clean browsing experience.',
-  },
-  {
-    id: 'changelog-5',
-    title: 'Community Edits & AI Shield',
-    version: 'v0.9.1',
-    category: 'feature',
-    date: '2026-08-02T12:00:00Z',
-    summary: 'Introduced community edit suggestions with automated AI moderation shields and Discord webhooks.',
-  },
-  {
-    id: 'changelog-4',
-    title: 'Search Relevance & Speed Boost',
-    version: 'v0.9.0',
-    category: 'changelog',
-    date: '2026-08-02T10:00:00Z',
-    summary: 'Added title relevance ranking and stale query protection for faster search results.',
-  },
-  {
-    id: 'changelog-3',
-    title: 'SEO & Static Sitemap Engine',
-    version: 'v0.8.8',
-    category: 'changelog',
-    date: '2026-07-28T14:00:00Z',
-    summary: 'Converted sitemaps to static build generation and added JSON-LD schemas for search engines.',
-  },
-  {
-    id: 'changelog-2',
-    title: 'Database Query Speed Optimization',
-    version: 'v0.8.5',
-    category: 'changelog',
-    date: '2026-07-20T11:00:00Z',
-    summary: 'Eliminated catalog scan overheads for fast game page rendering and instant price comparisons.',
-  },
-  {
-    id: 'changelog-1',
-    title: 'Cart CDN Caching & Store Price Sync',
-    version: 'v0.8.0',
-    category: 'changelog',
-    date: '2026-07-16T09:00:00Z',
-    summary: 'Added CDN image caching for cart items and improved retail deal lookup across stores.',
-  },
-];
-
 export const NotificationBell: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>(SEED_CHANGELOGS);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetched, setFetched] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
@@ -138,27 +63,21 @@ export const NotificationBell: React.FC = () => {
     };
   }, [isOpen]);
 
-  // Fetch announcements from API on-click, falling back to SEED_CHANGELOGS seamlessly
+  // Fetch announcements dynamically from Turso DB on-click
   const fetchAnnouncements = async () => {
-    if (fetched) return;
+    if (fetched && announcements.length > 0) return;
 
     setLoading(true);
     try {
       const res = await fetch('/api/announcements?limit=50');
       const data = await res.json();
 
-      if (res.ok && data.success && Array.isArray(data.announcements) && data.announcements.length > 0) {
-        // Combine DB items with seed changelogs (filtering out duplicate IDs)
-        const dbIds = new Set(data.announcements.map((a: any) => a.id));
-        const filteredSeed = SEED_CHANGELOGS.filter((s) => !dbIds.has(s.id));
-        const merged = [...data.announcements, ...filteredSeed];
-
-        setAnnouncements(merged);
+      if (res.ok && data.success && Array.isArray(data.announcements)) {
+        setAnnouncements(data.announcements);
+        setFetched(true);
       }
-      setFetched(true);
     } catch (err) {
-      // On fetch error, fallback gracefully to seed changelogs without throwing error UI
-      setFetched(true);
+      console.error('Failed to fetch announcements from database:', err);
     } finally {
       setLoading(false);
     }
@@ -246,9 +165,14 @@ export const NotificationBell: React.FC = () => {
           {/* List Content */}
           <div className="min-h-[280px] max-h-[360px] overflow-y-auto p-4 space-y-3">
             {loading && announcements.length === 0 ? (
-              <div className="py-12 text-center text-neutral-400 space-y-2">
+              <div className="py-16 text-center text-neutral-400 space-y-2">
                 <Loader2 className="w-6 h-6 animate-spin mx-auto text-white" />
-                <p className="text-xs font-mono">Loading updates...</p>
+                <p className="text-xs font-mono">Loading updates from DB...</p>
+              </div>
+            ) : announcements.length === 0 ? (
+              <div className="py-16 text-center text-neutral-500 space-y-2">
+                <Megaphone className="w-8 h-8 mx-auto opacity-30" />
+                <p className="text-xs font-mono">No updates posted yet.</p>
               </div>
             ) : (
               paginatedItems.map((item) => {
