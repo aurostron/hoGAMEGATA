@@ -6,12 +6,19 @@ import { getServerUser, isAdminUser } from '../../../lib/serverAuth';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+async function checkAdminAuth(request: Request, cookies: any) {
+  const user = await getServerUser(request, cookies);
+  if (!user) return { authorized: false, status: 401, error: "Not logged in" };
+  if (!isAdminUser(user.email)) return { authorized: false, status: 403, error: "Forbidden: Admin access required" };
+  return { authorized: true, user };
+}
+
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
-    const user = await getServerUser(request);
-    if (!user || !isAdminUser(user)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    const authResult = await checkAdminAuth(request, cookies);
+    if (!authResult.authorized) {
+      return new Response(JSON.stringify({ error: authResult.error }), {
+        status: authResult.status,
         headers: { "Content-Type": "application/json" }
       });
     }
@@ -54,12 +61,12 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const PUT: APIRoute = async ({ request }) => {
+export const PUT: APIRoute = async ({ request, cookies }) => {
   try {
-    const user = await getServerUser(request);
-    if (!user || !isAdminUser(user)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    const authResult = await checkAdminAuth(request, cookies);
+    if (!authResult.authorized) {
+      return new Response(JSON.stringify({ error: authResult.error }), {
+        status: authResult.status,
         headers: { "Content-Type": "application/json" }
       });
     }
@@ -102,17 +109,24 @@ export const PUT: APIRoute = async ({ request }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ request, url }) => {
+export const DELETE: APIRoute = async ({ request, cookies, url }) => {
   try {
-    const user = await getServerUser(request);
-    if (!user || !isAdminUser(user)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+    const authResult = await checkAdminAuth(request, cookies);
+    if (!authResult.authorized) {
+      return new Response(JSON.stringify({ error: authResult.error }), {
+        status: authResult.status,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    const id = url.searchParams.get("id");
+    let id = url?.searchParams?.get("id") || new URL(request.url).searchParams.get("id");
+    if (!id) {
+      const body = await request.json().catch(() => null);
+      if (body && body.id) {
+        id = body.id;
+      }
+    }
+
     if (!id) {
       return new Response(
         JSON.stringify({ error: "Missing announcement ID parameter" }),
@@ -123,7 +137,7 @@ export const DELETE: APIRoute = async ({ request, url }) => {
     await turso.delete(announcements).where(eq(announcements.id, id));
 
     return new Response(
-      JSON.stringify({ success: true, message: "Announcement deleted successfully!" }),
+      JSON.stringify({ success: true, id, message: "Announcement deleted successfully!" }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {

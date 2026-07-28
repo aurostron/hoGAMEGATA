@@ -19,7 +19,7 @@ export async function getServerUser(request: Request, cookies: any) {
   }
 
   // 2. Mock session fallback (development fallback — when Better Auth is bypassed or cookies are set manually)
-  const mockSession = cookies.get("gamegata-session");
+  const mockSession = cookies?.get ? cookies.get("gamegata-session") : null;
   if (mockSession?.value) {
     try {
       const decoded = decodeURIComponent(mockSession.value);
