@@ -2,44 +2,28 @@ import { createClient as createWebClient } from "@libsql/client/web";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "../db/schema";
 
-// No top-level process.env reads or top-level await.
-// The database is initialized lazily per-request via initTursoForRequest(),
-// which is called by the middleware before any route handler runs.
-
-let cachedClient: any = null;
-let cachedDb: any = null;
-let cachedUrl: string | null = null;
-let cachedToken: string | null = null;
+// Database client is initialized per-request via initTursoForRequest().
+// We pass `fetch: (...args) => fetch(...args)` so every libSQL HTTP fetch call
+// is executed in the context of the active request, avoiding Cloudflare Worker
+// cross-request promise leakage / hung worker errors.
 
 export function initTursoForRequest(env: any) {
-  const dbUrl = env?.TURSO_DATABASE_URL;
-  const dbToken = env?.TURSO_AUTH_TOKEN;
+  const dbUrl = env?.TURSO_DATABASE_URL || (typeof process !== "undefined" ? process.env?.TURSO_DATABASE_URL : null) || (import.meta as any).env?.TURSO_DATABASE_URL;
+  const dbToken = env?.TURSO_AUTH_TOKEN || (typeof process !== "undefined" ? process.env?.TURSO_AUTH_TOKEN : null) || (import.meta as any).env?.TURSO_AUTH_TOKEN;
 
   if (!dbUrl) return;
-
-  // Reuse existing warm instance if credentials match
-  if (cachedDb && cachedUrl === dbUrl && cachedToken === dbToken) {
-    (globalThis as any).tursoInstance = cachedDb;
-    return;
-  }
 
   const client = createWebClient({
     url: dbUrl,
     authToken: dbToken,
+    fetch: (...args: [any, any?]) => fetch(...args),
   });
 
   const db = drizzle(client, { schema });
-  cachedClient = client;
-  cachedDb = db;
-  cachedUrl = dbUrl;
-  cachedToken = dbToken;
-
   (globalThis as any).tursoInstance = db;
 }
 
 // Proxy that forwards all calls to the active request-scoped instance.
-// If no instance has been set (middleware hasn't run), DB calls will throw
-// a clear error message instead of silently returning undefined.
 export const turso = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
   get(target, prop, receiver) {
     const activeInstance = (globalThis as any).tursoInstance;

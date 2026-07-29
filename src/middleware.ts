@@ -65,15 +65,13 @@ function applySecurityHeaders(res: Response): Response {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
-  const env = isDev
+  const runtimeEnv = (context.locals as any)?.runtime?.env || (isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
-    : cfEnv;
+    : cfEnv) || (typeof process !== "undefined" ? process.env : {});
 
-  if (env) {
-    initTursoForRequest(env);
-    initTursoAuthForRequest(env);
-    initBetterAuth(env);
-  }
+  initTursoForRequest(runtimeEnv);
+  initTursoAuthForRequest(runtimeEnv);
+  initBetterAuth(runtimeEnv);
 
   const { url, redirect } = context;
   const { pathname } = url;
