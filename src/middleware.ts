@@ -115,7 +115,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname === "/api/stats"
   );
 
-  const cacheKey = isCacheableGet && new Request(context.request.url, context.request);
+  const cleanUrl = new URL(context.request.url);
+  const cacheKeyUrl = `${cleanUrl.origin}${cleanUrl.pathname}`;
+  const cacheKey = isCacheableGet ? new Request(cacheKeyUrl, { method: "GET" }) : null;
+
   if (cache && isCacheableGet && cacheKey) {
     try {
       const cachedResponse = await cache.match(cacheKey);

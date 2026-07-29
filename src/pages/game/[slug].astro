@@ -58,8 +58,13 @@ if (!rawGame) {
   return Astro.redirect('/404');
 }
 
-// Track game view
-await trackGameView(rawGame.id, rawGame.title);
+// Track game view in background without blocking SSR page rendering
+const cfCtx = (Astro.locals as any).runtime?.ctx;
+if (cfCtx?.waitUntil) {
+  cfCtx.waitUntil(trackGameView(rawGame.id, rawGame.title));
+} else {
+  trackGameView(rawGame.id, rawGame.title).catch(() => {});
+}
 
 if (rawGame.status === "hidden") {
   const { getServerUser, isAdminUser } = await import('../../lib/serverAuth');
