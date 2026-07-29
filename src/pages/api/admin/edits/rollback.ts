@@ -87,10 +87,23 @@ export const POST: APIRoute = async ({ request }) => {
       }),
     });
 
+    // Trigger Cloudflare Cache Purge for rolled back game
+    try {
+      const { purgeGameCache } = await import('../../../../lib/cloudflareCache');
+      let cfEnv: any = null;
+      try {
+        const { env } = await import("cloudflare:workers");
+        cfEnv = env;
+      } catch (e) {}
+      await purgeGameCache(game.slug, cfEnv);
+    } catch (purgeErr) {
+      console.warn('⚠️ Cache purge error:', purgeErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Successfully rolled back ${targetField} on ${game.slug}.`,
+        message: `Successfully rolled back ${targetField} on ${game.slug} and purged cache.`,
         rollbackRevId,
         purgeCacheTag: `game-${game.slug}`,
       }),

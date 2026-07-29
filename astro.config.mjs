@@ -27,7 +27,7 @@ export default defineConfig({
       dedupe: ['react', 'react-dom', 'lucide-react']
     },
     ssr: {
-      noExternal: ['lucide-react', 'react', 'react-dom']
+      noExternal: ['lucide-react', 'react', 'react-dom', 'clsx', 'tailwind-merge']
     },
     optimizeDeps: {
       include: [
@@ -38,6 +38,8 @@ export default defineConfig({
         'react/jsx-runtime',
         'react/jsx-dev-runtime',
         'lucide-react',
+        'clsx',
+        'tailwind-merge',
         '@sanity/client',
         'drizzle-orm',
         'drizzle-orm/libsql',

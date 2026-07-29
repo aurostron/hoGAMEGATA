@@ -48,10 +48,15 @@ export async function syncCatboxAlbum(
       formData.append("short", existingAlbumId);
       formData.append("files", filenames.join(","));
 
+      const controller1 = new AbortController();
+      const timeout1 = setTimeout(() => controller1.abort(), 4000);
+
       const response = await fetch("https://catbox.moe/user/api.php", {
         method: "POST",
-        body: formData
+        body: formData,
+        signal: controller1.signal
       });
+      clearTimeout(timeout1);
 
       if (!response.ok) {
         throw new Error(`Catbox editalbum failed with status ${response.status}`);
@@ -67,10 +72,15 @@ export async function syncCatboxAlbum(
       formData.append("desc", albumDesc);
       formData.append("files", filenames.join(","));
 
+      const controller2 = new AbortController();
+      const timeout2 = setTimeout(() => controller2.abort(), 4000);
+
       const response = await fetch("https://catbox.moe/user/api.php", {
         method: "POST",
-        body: formData
+        body: formData,
+        signal: controller2.signal
       });
+      clearTimeout(timeout2);
 
       if (!response.ok) {
         throw new Error(`Catbox createalbum failed with status ${response.status}`);

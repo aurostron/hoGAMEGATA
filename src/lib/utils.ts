@@ -127,3 +127,15 @@ export function getYoutubeId(url: string | null | undefined): string | null {
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
 }
+
+export function formatEmbedVideoUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const ytId = getYoutubeId(url);
+  if (ytId) {
+    return `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1`;
+  }
+  if (url.includes('/embed/') || url.includes('player.vimeo.com')) {
+    return url;
+  }
+  return url;
+}

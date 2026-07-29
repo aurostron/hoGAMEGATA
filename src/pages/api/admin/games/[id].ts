@@ -167,7 +167,23 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       }
     });
 
-    // 2. Trigger Cloudflare deploy webhook if configured to rebuild static pages
+    // 2. Trigger Cloudflare Edge Cache Purge for updated game
+    try {
+      const [updatedGame] = await turso
+        .select({ slug: games.slug })
+        .from(games)
+        .where(eq(games.id, id))
+        .limit(1);
+
+      if (updatedGame?.slug) {
+        const { purgeGameCache } = await import('../../../../lib/cloudflareCache');
+        await purgeGameCache(updatedGame.slug, cfEnv);
+      }
+    } catch (purgeErr) {
+      console.warn("⚠️ Cache purge trigger error:", purgeErr);
+    }
+
+    // 3. Trigger Cloudflare deploy webhook if configured to rebuild static pages
     if (cfEnv?.CLOUDFLARE_DEPLOY_WEBHOOK) {
       console.log("Triggering Cloudflare rebuild via deploy webhook...");
       try {

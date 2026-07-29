@@ -4,6 +4,14 @@ export const prerender = false;
 
 // Security: Whitelisted hosts permitted to fetch images via our proxy to prevent SSRF
 const ALLOWED_HOSTS = [
+  'iili.io',
+  'freeimage.host',
+  'catbox.moe',
+  'files.catbox.moe',
+  'litterbox.catbox.moe',
+  'res.cloudinary.com',
+  'cloudinary.com',
+  'tmpfiles.org',
   'images.igdb.com',
   'img.youtube.com',
   'youtube.com',
@@ -17,12 +25,13 @@ const ALLOWED_HOSTS = [
   'steamstatic.com',
   'steampowered.com',
   'media.steampowered.com',
+  'shared.cloudflare.steamstatic.com',
+  'cdn.akamai.steamstatic.com',
   'imgur.com',
   'i.imgur.com',
   'postimg.cc',
   'i.postimg.cc',
   'postimages.org',
-  'files.catbox.moe',
 ];
 
 export const GET: APIRoute = async ({ request }) => {
@@ -47,7 +56,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     const response = await fetch(targetUrl.href, {
       headers: {
-        'User-Agent': 'hoGAMEGATA-Image-Proxy/1.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 hoGAMEGATA-Image-Proxy/1.0',
       },
     });
 
@@ -61,7 +70,7 @@ export const GET: APIRoute = async ({ request }) => {
     return new Response(imageBuffer, {
       status: 200,
       headers: {
-        'Content-Type': contentType || 'image/jpeg',
+        'Content-Type': contentType || 'image/webp',
         // Instruct Cloudflare Edge CDN and browser client to cache aggressively for 1 year
         'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
         'Access-Control-Allow-Origin': '*',

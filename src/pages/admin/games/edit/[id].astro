@@ -288,6 +288,26 @@ const hasScareProfile = game.scareRating !== null;
           Game Screenshots
         </h2>
 
+        <!-- Selectable Hoster Toggle & Live Status Indicator -->
+        <div class="flex items-center justify-between gap-4 p-3 bg-[#050508] border border-[#1a1a24] rounded-lg flex-wrap">
+          <div class="flex items-center gap-2">
+            <label class="text-[11px] font-sans font-bold uppercase tracking-wider text-gray-400">Target Hoster:</label>
+            <select id="upload-provider-select" class="bg-[#07070a] border border-[#1a1a24] text-xs text-white rounded px-3 py-1.5 focus:outline-none focus:border-[#ff2a2a] cursor-pointer font-sans">
+              <option value="auto">⚡ Auto-Select (Fastest CDN)</option>
+              <option value="freeimage">FreeImage.host (iili.io CDN)</option>
+              <option value="catbox">Catbox.moe</option>
+            </select>
+          </div>
+          <div id="hoster-status-container" class="flex items-center gap-3 text-[10px] font-sans">
+            <span id="status-freeimage" class="inline-flex items-center gap-1.5 text-gray-400">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> FreeImage: Online
+            </span>
+            <span id="status-catbox" class="inline-flex items-center gap-1.5 text-gray-400">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span> Catbox: Blocked/Offline
+            </span>
+          </div>
+        </div>
+
         <!-- Drag & Drop Zone -->
         <div
           id="screenshot-dropzone"
@@ -307,20 +327,37 @@ const hasScareProfile = game.scareRating !== null;
           />
         </div>
 
+        <!-- Image Library Domain Sorting & Filters -->
+        <div class="flex items-center justify-between border-t border-[#1a1a24] pt-3 flex-wrap gap-2">
+          <span class="text-[11px] font-sans font-bold uppercase tracking-wider text-gray-400">Library Filter:</span>
+          <div id="domain-filter-tabs" class="flex items-center gap-1.5 text-[10px] font-sans flex-wrap">
+            <button type="button" data-domain="all" class="domain-filter-btn px-2.5 py-1 rounded bg-[#ff2a2a] text-white font-bold cursor-pointer">All Hosts</button>
+            <button type="button" data-domain="iili.io" class="domain-filter-btn px-2.5 py-1 rounded bg-[#0c0c12] border border-[#1a1a24] text-gray-400 hover:text-white cursor-pointer">iili.io CDN</button>
+            <button type="button" data-domain="catbox.moe" class="domain-filter-btn px-2.5 py-1 rounded bg-[#0c0c12] border border-[#1a1a24] text-gray-400 hover:text-white cursor-pointer">Catbox</button>
+            <button type="button" data-domain="other" class="domain-filter-btn px-2.5 py-1 rounded bg-[#0c0c12] border border-[#1a1a24] text-gray-400 hover:text-white cursor-pointer">Other / Steam</button>
+          </div>
+        </div>
+
         <!-- Thumbnails list -->
         <div id="screenshots-list" class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-          {existingScreenshots.map((url: string) => (
-            <div class="relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12]">
-              <img src={`/api/image-proxy?url=${encodeURIComponent(url)}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-              <button
-                type="button"
-                data-url={url}
-                class="remove-screenshot-btn absolute top-1 right-1 bg-black/80 hover:bg-[#ff2a2a] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition duration-150 cursor-pointer"
-              >
-                &times;
-              </button>
-            </div>
-          ))}
+          {existingScreenshots.map((url: string) => {
+            const domainHost = url.includes('iili.io') ? 'iili.io' : url.includes('catbox.moe') ? 'catbox.moe' : 'other';
+            return (
+              <div class="relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12] screenshot-item" data-host={domainHost}>
+                <img src={`/api/image-proxy?url=${encodeURIComponent(url)}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                <span class="absolute bottom-1 left-1 bg-black/80 text-[8px] font-sans font-bold px-1.5 py-0.5 rounded text-gray-300 border border-white/10 uppercase tracking-wider">
+                  {domainHost}
+                </span>
+                <button
+                  type="button"
+                  data-url={url}
+                  class="remove-screenshot-btn absolute top-1 right-1 bg-black/80 hover:bg-[#ff2a2a] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition duration-150 cursor-pointer"
+                >
+                  &times;
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -507,7 +544,8 @@ const hasScareProfile = game.scareRating !== null;
         <span id="form-feedback" class="text-xs font-sans text-gray-500"></span>
         <button
           type="submit"
-          class="font-sans text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-[#ff2a2a] hover:text-white border border-white hover:border-[#ff2a2a] px-8 py-3 transition duration-150 rounded cursor-pointer"
+          id="save-specs-btn"
+          class="font-sans text-xs font-bold uppercase tracking-wider bg-white text-black hover:bg-[#ff2a2a] hover:text-white border border-white hover:border-[#ff2a2a] px-8 py-3 transition duration-150 rounded cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Save Specifications
         </button>
@@ -682,41 +720,74 @@ const hasScareProfile = game.scareRating !== null;
     }
   });
 
-  async function compressToWebP(file: File): Promise<File> {
-    if (file.type === 'image/svg+xml' || file.type === 'image/webp') {
+  async function compressToWebP(file: File, maxDim = 1920): Promise<File> {
+    if (file.type === 'image/svg+xml') {
       return file;
     }
     return new Promise((resolve) => {
+      let resolved = false;
+      const safeResolve = (result: File) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(result);
+        }
+      };
+
+      const timer = setTimeout(() => {
+        safeResolve(file);
+      }, 5000);
+
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(url);
+        clearTimeout(timer);
+
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        // Downscale oversized images while preserving aspect ratio
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
         const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || img.width;
-        canvas.height = img.naturalHeight || img.height;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-          resolve(file);
+          safeResolve(file);
           return;
         }
-        ctx.drawImage(img, 0, 0);
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Native HTML5 Canvas WebP binary encoding (82% quality optimization)
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              resolve(file);
+              safeResolve(file);
               return;
             }
             const newName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
             const compressedFile = new File([blob], newName, { type: 'image/webp' });
-            resolve(compressedFile);
+            console.log(`⚡ [WebP Client Compression] Reduced "${file.name}" (${(file.size / 1024).toFixed(1)} KB) ➔ "${newName}" (${(compressedFile.size / 1024).toFixed(1)} KB)`);
+            safeResolve(compressedFile);
           },
           'image/webp',
-          0.85
+          0.82
         );
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        resolve(file);
+        clearTimeout(timer);
+        safeResolve(file);
       };
       img.src = url;
     });
@@ -743,8 +814,12 @@ const hasScareProfile = game.scareRating !== null;
       screenshotsList.appendChild(thumb);
 
       try {
+        const uploadProviderSelect = document.getElementById('upload-provider-select') as HTMLSelectElement | null;
+        const selectedProvider = uploadProviderSelect?.value || 'auto';
+
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('provider', selectedProvider);
 
         const response = await fetch('/api/admin/upload', {
           method: 'POST',
@@ -755,9 +830,15 @@ const hasScareProfile = game.scareRating !== null;
 
         if (response.ok && data.url) {
           uploadedScreenshots.push(data.url);
+          const domainHost = data.url.includes('iili.io') ? 'iili.io' : data.url.includes('catbox.moe') ? 'catbox.moe' : 'other';
           
+          thumb.className = 'relative group aspect-video rounded overflow-hidden border border-[#1a1a24] bg-[#0c0c12] screenshot-item';
+          thumb.setAttribute('data-host', domainHost);
           thumb.innerHTML = `
             <img src="/api/image-proxy?url=${encodeURIComponent(data.url)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            <span class="absolute bottom-1 left-1 bg-black/80 text-[8px] font-sans font-bold px-1.5 py-0.5 rounded text-gray-300 border border-white/10 uppercase tracking-wider">
+              ${domainHost}
+            </span>
             <button
               type="button"
               data-url="${data.url}"
@@ -777,7 +858,7 @@ const hasScareProfile = game.scareRating !== null;
             }
           });
         } else {
-          throw new Error('Upload failed');
+          throw new Error(data.error || 'Upload failed');
         }
       } catch (err) {
         console.error('Screenshot upload failed:', err);
@@ -792,6 +873,51 @@ const hasScareProfile = game.scareRating !== null;
       }
     });
   }
+
+  // Live Provider Status Checker
+  async function checkProviderStatuses() {
+    try {
+      const res = await fetch('/api/admin/upload-status');
+      const data = await res.json();
+      if (data.providers) {
+        data.providers.forEach((p: any) => {
+          const el = document.getElementById(`status-${p.name}`);
+          if (el) {
+            const isOnline = p.status === 'online';
+            const colorClass = isOnline ? 'bg-emerald-500' : 'bg-red-500';
+            const labelText = isOnline ? `Online (${p.latencyMs}ms)` : 'Blocked / Offline';
+            const nameCapitalized = p.name === 'freeimage' ? 'FreeImage' : p.name === 'catbox' ? 'Catbox' : p.name;
+            el.innerHTML = `<span class="w-2 h-2 rounded-full ${colorClass}"></span> ${nameCapitalized}: ${labelText}`;
+          }
+        });
+      }
+    } catch (e) {}
+  }
+  checkProviderStatuses();
+
+  // Domain Host Filter Tabs Handler
+  const filterBtns = document.querySelectorAll('.domain-filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetDomain = btn.getAttribute('data-domain');
+      filterBtns.forEach(b => {
+        b.classList.remove('bg-[#ff2a2a]', 'text-white');
+        b.classList.add('bg-[#0c0c12]', 'text-gray-400');
+      });
+      btn.classList.add('bg-[#ff2a2a]', 'text-white');
+      btn.classList.remove('bg-[#0c0c12]', 'text-gray-400');
+
+      const items = document.querySelectorAll('#screenshots-list .screenshot-item');
+      items.forEach(item => {
+        const itemHost = item.getAttribute('data-host');
+        if (targetDomain === 'all' || itemHost === targetDomain) {
+          (item as HTMLElement).style.display = 'block';
+        } else {
+          (item as HTMLElement).style.display = 'none';
+        }
+      });
+    });
+  });
 
   // Autocomplete variables
   let searchTimeout: any = null;
@@ -850,75 +976,78 @@ const hasScareProfile = game.scareRating !== null;
     }
   });
 
+  const saveSpecsBtn = document.getElementById('save-specs-btn') as HTMLButtonElement | null;
+
   // 2. Edit Game Specifications Handler
   editForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     formFeedback.textContent = 'Saving changes...';
     formFeedback.style.color = '#a3a3a3';
-
-    const title = gameTitleInput.value.trim();
-    const status = gameStatusSelect.value;
-    const releaseDate = gameReleaseInput.value;
-    const coverUrl = gameCoverInput.value.trim();
-    const trailerUrl = gameTrailerInput.value.trim();
-    const summary = gameSummaryText.value.trim();
-    const storyline = gameStorylineText.value.trim();
-
-    let developerId = devIdHidden.value;
-    const developerName = devSearchInput.value.trim();
-
-    // If developer name was entered but no ID selected (meaning user entered a new creator)
-    if (developerName && !developerId) {
-      formFeedback.textContent = 'Registering new developer...';
-      try {
-        const response = await fetch('/api/admin/developers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: developerName })
-        });
-        const data = await response.json();
-        if (response.ok && data.developer) {
-          developerId = data.developer.id;
-          devIdHidden.value = developerId;
-        } else {
-          throw new Error('Failed to register developer');
-        }
-      } catch (err) {
-        formFeedback.textContent = 'Failed to register developer.';
-        formFeedback.style.color = '#ef4444';
-        return;
-      }
-    }
-
-    // Assemble checked platforms list
-    const checkedPlats = Array.from(document.querySelectorAll('input[name="platforms"]:checked'))
-      .map((checkbox: any) => checkbox.value);
-
-    // Assemble Scare Meter structure
-    let scareRatingVal = null;
-    let scareProfileObj = null;
-
-    if (enableScareProfileCheck.checked) {
-      scareRatingVal = parseFloat(scareRating.value) || 0;
-      const warnings = playerWarningsInput.value
-        .split(',')
-        .map(w => w.trim().toUpperCase())
-        .filter(Boolean);
-
-      scareProfileObj = {
-        dread: parseInt(dread.value) || 0,
-        jumpscare: parseInt(jumpscare.value) || 0,
-        psychological: parseInt(psych.value) || 0,
-        gore: parseInt(gore.value) || 0,
-        tension: parseInt(tension.value) || 0,
-        disturbing: parseInt(disturbing.value) || 0,
-        isolation: parseInt(isolation.value) || 0,
-        shortSummary: scareSummary.value.trim() || undefined,
-        playerWarnings: warnings.length > 0 ? warnings : undefined
-      };
-    }
+    if (saveSpecsBtn) saveSpecsBtn.disabled = true;
 
     try {
+      const title = gameTitleInput.value.trim();
+      const status = gameStatusSelect.value;
+      const releaseDate = gameReleaseInput.value;
+      const coverUrl = gameCoverInput.value.trim();
+      const trailerUrl = gameTrailerInput.value.trim();
+      const summary = gameSummaryText.value.trim();
+      const storyline = gameStorylineText.value.trim();
+
+      let developerId = devIdHidden.value;
+      const developerName = devSearchInput.value.trim();
+
+      // If developer name was entered but no ID selected (meaning user entered a new creator)
+      if (developerName && !developerId) {
+        formFeedback.textContent = 'Registering new developer...';
+        try {
+          const response = await fetch('/api/admin/developers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: developerName })
+          });
+          const data = await response.json();
+          if (response.ok && data.developer) {
+            developerId = data.developer.id;
+            devIdHidden.value = developerId;
+          } else {
+            throw new Error('Failed to register developer');
+          }
+        } catch (err) {
+          formFeedback.textContent = 'Failed to register developer.';
+          formFeedback.style.color = '#ef4444';
+          return;
+        }
+      }
+
+      // Assemble checked platforms list
+      const checkedPlats = Array.from(document.querySelectorAll('input[name="platforms"]:checked'))
+        .map((checkbox: any) => checkbox.value);
+
+      // Assemble Scare Meter structure
+      let scareRatingVal = null;
+      let scareProfileObj = null;
+
+      if (enableScareProfileCheck.checked) {
+        scareRatingVal = parseFloat(scareRating.value) || 0;
+        const warnings = playerWarningsInput.value
+          .split(',')
+          .map(w => w.trim().toUpperCase())
+          .filter(Boolean);
+
+        scareProfileObj = {
+          dread: parseInt(dread.value) || 0,
+          jumpscare: parseInt(jumpscare.value) || 0,
+          psychological: parseInt(psych.value) || 0,
+          gore: parseInt(gore.value) || 0,
+          tension: parseInt(tension.value) || 0,
+          disturbing: parseInt(disturbing.value) || 0,
+          isolation: parseInt(isolation.value) || 0,
+          shortSummary: scareSummary.value.trim() || undefined,
+          playerWarnings: warnings.length > 0 ? warnings : undefined
+        };
+      }
+
       const pathname = window.location.pathname;
       const gameId = pathname.substring(pathname.lastIndexOf('/') + 1);
 
@@ -954,6 +1083,8 @@ const hasScareProfile = game.scareRating !== null;
     } catch (err) {
       formFeedback.textContent = 'Failed to save changes.';
       formFeedback.style.color = '#ef4444';
+    } finally {
+      if (saveSpecsBtn) saveSpecsBtn.disabled = false;
     }
   });
 

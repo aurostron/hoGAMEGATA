@@ -170,10 +170,23 @@ export const POST: APIRoute = async ({ request }) => {
       console.warn('⚠️ Discord notification dispatch error:', discordErr);
     }
 
+    // Trigger Cloudflare Cache Purge for updated game
+    try {
+      const { purgeGameCache } = await import('../../../../lib/cloudflareCache');
+      let cfEnv: any = null;
+      try {
+        const { env } = await import("cloudflare:workers");
+        cfEnv = env;
+      } catch (e) {}
+      await purgeGameCache(gameSlug, cfEnv);
+    } catch (purgeErr) {
+      console.warn('⚠️ Cache purge error:', purgeErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Edit suggestion approved. Game ${gameSlug} updated.`,
+        message: `Edit suggestion approved. Game ${gameSlug} updated and cache purged.`,
         revisionId,
         purgeCacheTag: `game-${gameSlug}`,
       }),
