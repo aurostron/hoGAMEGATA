@@ -33,7 +33,8 @@ export const AnnouncementManager: React.FC = () => {
   const fetchAnnouncements = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/announcements?limit=50');
+      // Use admin endpoint with cache: 'no-store' to ensure real-time fresh DB reads
+      const res = await fetch('/api/admin/announcements', { cache: 'no-store' });
       const data = await res.json();
       if (res.ok && data.success) {
         setAnnouncements(data.announcements || []);
@@ -65,6 +66,9 @@ export const AnnouncementManager: React.FC = () => {
     }
     setError(null);
     setSuccessMsg(null);
+
+    // Scroll form into view
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelEdit = () => {

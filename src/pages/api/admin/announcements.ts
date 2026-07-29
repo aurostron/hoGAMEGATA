@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { turso } from '../../../lib/turso';
 import { announcements } from '../../../db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { getServerUser, isAdminUser } from '../../../lib/serverAuth';
 
 export const prerender = false;
@@ -12,6 +12,38 @@ async function checkAdminAuth(request: Request, cookies: any) {
   if (!isAdminUser(user.email)) return { authorized: false, status: 403, error: "Forbidden: Admin access required" };
   return { authorized: true, user };
 }
+
+export const GET: APIRoute = async ({ request, cookies }) => {
+  try {
+    const authResult = await checkAdminAuth(request, cookies);
+    if (!authResult.authorized) {
+      return new Response(JSON.stringify({ error: authResult.error }), {
+        status: authResult.status,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const rows = await turso
+      .select()
+      .from(announcements)
+      .orderBy(desc(announcements.date))
+      .limit(100);
+
+    return new Response(JSON.stringify({ success: true, announcements: rows }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching admin announcements:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to fetch announcements" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+};
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
