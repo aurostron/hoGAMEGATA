@@ -134,13 +134,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isMaintenanceApi = pathname.startsWith("/api/maintenance");
   if (!isMaintenancePage && !isMaintenanceApi) {
     try {
-      const kv = (cfEnv as any).MAINTENANCE as KVNamespace | undefined;
+      const kv = (runtimeEnv as any).MAINTENANCE as KVNamespace | undefined;
       if (kv) {
         const maintenanceStatus = await kv.get("status");
         if (maintenanceStatus === "on") {
           // Check for developer bypass cookie
           const bypassCookie = context.cookies.get("maintenance_bypass")?.value;
-          const secret = (cfEnv as any).MAINTENANCE_SECRET;
+          const secret = (runtimeEnv as any).MAINTENANCE_SECRET;
           const hasBypass = bypassCookie && secret && bypassCookie === secret;
           if (!hasBypass) {
             // Use absolute URL redirect to avoid any relative-path confusion
@@ -162,7 +162,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // 5. Admin Panel Gating
   if (pathname.startsWith("/admin")) {
     const user = await getServerUser(context.request, context.cookies);
-    const isAdmin = user && isAdminUser(user.email, env);
+    const isAdmin = user && isAdminUser(user.email, runtimeEnv);
 
     if (!isAdmin) {
       if (context.cookies.has("admin_2fa_session")) {
@@ -223,7 +223,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const cacheControl = response.headers.get("Cache-Control");
       if (cacheControl && cacheControl.includes("public")) {
         const responseToCache = response.clone();
-        const cfCtx = (context.locals as any).runtime?.ctx;
+        let cfCtx: any;
+        try {
+          cfCtx = (context.locals as any)?.ctx;
+        } catch {}
         if (cfCtx?.waitUntil) {
           cfCtx.waitUntil(cache.put(cacheKey, responseToCache));
         } else {
