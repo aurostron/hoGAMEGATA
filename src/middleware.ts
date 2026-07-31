@@ -65,9 +65,9 @@ function applySecurityHeaders(res: Response): Response {
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
-  const runtimeEnv = (context.locals as any)?.runtime?.env || (isDev
+  const runtimeEnv = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
-    : cfEnv) || (typeof process !== "undefined" ? process.env : {});
+    : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
 
   initTursoForRequest(runtimeEnv);
   initTursoAuthForRequest(runtimeEnv);
