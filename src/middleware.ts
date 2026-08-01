@@ -69,9 +69,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
     : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
 
-  // Only eagerly init the main DB — tursoAuth & betterAuth are deferred
-  // until needed (admin routes, auth endpoints) to save CPU on public pages
+  // Initialize Turso DB instances for the request isolate
   initTursoForRequest(runtimeEnv);
+  initTursoAuthForRequest(runtimeEnv);
 
   const { url, redirect } = context;
   const { pathname } = url;

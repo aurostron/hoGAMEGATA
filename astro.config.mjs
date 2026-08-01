@@ -33,20 +33,12 @@ export default defineConfig({
       include: [
         'react',
         'react-dom',
-        'react-dom/server',
         'react-dom/client',
         'react/jsx-runtime',
         'react/jsx-dev-runtime',
         'lucide-react',
         'clsx',
-        'tailwind-merge',
-        '@sanity/client',
-        'drizzle-orm',
-        'drizzle-orm/libsql',
-        'drizzle-orm/sqlite-core',
-        '@libsql/client/web',
-        'better-auth',
-        'better-auth/adapters/drizzle',
+        'tailwind-merge'
       ]
     }
   },

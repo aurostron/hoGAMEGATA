@@ -35,11 +35,16 @@ export function initTursoAuthForRequest(env: any) {
 // Proxy that forwards all calls to the active request-scoped instance.
 export const tursoAuth = new Proxy({} as ReturnType<typeof drizzle<typeof authSchema>>, {
   get(target, prop, receiver) {
-    const activeInstance = (globalThis as any).tursoAuthInstance;
+    let activeInstance = (globalThis as any).tursoAuthInstance;
+    if (!activeInstance) {
+      // Attempt self-healing initialization from environment
+      initTursoAuthForRequest({});
+      activeInstance = (globalThis as any).tursoAuthInstance;
+    }
     if (!activeInstance) {
       const propStr = String(prop);
       if (["select", "insert", "update", "delete", "query", "selectDistinct"].includes(propStr)) {
-        throw new Error("Auth database client is not initialized. Ensure AUTH_DATABASE_URL is set.");
+        throw new Error("Auth database client is not initialized. Ensure AUTH_DATABASE_URL is set in environment.");
       }
       return undefined;
     }
