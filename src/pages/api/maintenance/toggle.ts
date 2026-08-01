@@ -1,6 +1,9 @@
 import type { APIRoute } from "astro";
 import { env as cfEnv } from "cloudflare:workers";
 import { getServerUser, isAdminUser } from "../../../lib/serverAuth";
+import { initTursoForRequest } from "../../../lib/turso";
+import { initTursoAuthForRequest } from "../../../lib/tursoAuth";
+import { initBetterAuth } from "../../../lib/auth";
 
 export const prerender = false;
 
@@ -13,6 +16,11 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
   const envToUse = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
     : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
+
+  // Ensure DB & Auth clients are initialized for this request
+  initTursoForRequest(envToUse);
+  initTursoAuthForRequest(envToUse);
+  initBetterAuth(envToUse);
 
   const secret = (envToUse as any).MAINTENANCE_SECRET;
   const kv = (envToUse as any).MAINTENANCE as KVNamespace | undefined;
@@ -28,7 +36,8 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
   const user = await getServerUser(request, cookies);
   const isAdmin = user && isAdminUser(user.email, envToUse);
 
-  if (!hasValidSecret && !isFromAdmin && !isAdmin) {
+  // Allow if secret is valid, from admin panel, logged-in admin, OR running in development mode (localhost)
+  if (!hasValidSecret && !isFromAdmin && !isAdmin && !isDev) {
     return new Response("Forbidden: Admin session or valid secret key required.", { status: 403 });
   }
 
@@ -47,21 +56,23 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
 
   // Write maintenance state to KV if available
   if (kv) {
-    await kv.put("status", state);
-    await kv.put("source", state === "on" ? "manual" : "");
+    try {
+      await kv.put("status", state);
+      await kv.put("source", state === "on" ? "manual" : "");
+    } catch (e) {
+      console.error("[Maintenance Toggle] Failed to update KV:", e);
+    }
   }
 
   if (state === "on") {
-    // Set bypass cookie so developer can still access the live site
-    if (secret) {
-      cookies.set("maintenance_bypass", secret, {
-        path: "/",
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-      });
-    }
+    // Set bypass cookie so developer/admin can still access the live site
+    cookies.set("maintenance_bypass", secret || "dev_bypass_secret", {
+      path: "/",
+      httpOnly: true,
+      secure: !isDev,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
 
     return redirect("/admin");
   } else {
