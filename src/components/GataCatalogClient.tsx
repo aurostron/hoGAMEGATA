@@ -376,6 +376,8 @@ function GataCatalogClientInner({
 
   // Sync state to URL and Fetch Games
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchGames = async () => {
       setLoading(true);
       try {
@@ -413,30 +415,40 @@ function GataCatalogClientInner({
           }
         }
 
-        const res = await fetch(`/api/games?${queryParams.toString()}`, { cache: "no-store" });
+        const res = await fetch(`/api/games?${queryParams.toString()}`, { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
-          setGames(data.games || []);
-          setTotalCount(data.totalCount || 0);
-          if (data.maxPrice && data.maxPrice > 0) {
-            setDbMaxPrice(data.maxPrice);
-            // Default slider to max if never moved
-            if (priceSlider === 60) setPriceSlider(data.maxPrice);
-          }
+          if (!controller.signal.aborted) {
+            setGames(data.games || []);
+            setTotalCount(data.totalCount || 0);
+            if (data.maxPrice && data.maxPrice > 0) {
+              setDbMaxPrice(data.maxPrice);
+              // Default slider to max if never moved
+              if (priceSlider === 60) setPriceSlider(data.maxPrice);
+            }
 
-          if (data.correctedQuery) {
-            setCorrectedQuery(data.correctedQuery);
-            setOriginalSearch(debouncedSearch);
+            if (data.correctedQuery) {
+              setCorrectedQuery(data.correctedQuery);
+              setOriginalSearch(debouncedSearch);
+            }
           }
         }
-      } catch (err) {
-        console.error("Failed to query catalog:", err);
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("Failed to query catalog:", err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchGames();
+
+    return () => {
+      controller.abort();
+    };
   }, [
     debouncedSearch,
     currentPage,

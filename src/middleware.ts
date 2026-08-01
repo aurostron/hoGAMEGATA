@@ -103,6 +103,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const isCacheableGet = context.request.method === "GET" && (
     pathname.startsWith("/game/") || 
     pathname.startsWith("/api/games") || 
+    pathname.startsWith("/api/search/suggest") ||
     pathname === "/directory" ||
     pathname === "/about" ||
     pathname === "/upcoming" ||
@@ -114,8 +115,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   const cleanUrl = new URL(context.request.url);
-  // For image-proxy, the ?url= query param IS the unique identifier — include it in the cache key
-  const cacheKeyUrl = pathname.startsWith("/api/image-proxy")
+  // For image-proxy and search/suggest, query params (e.g. ?q=... or ?url=...) ARE unique identifiers — include them in the cache key
+  const requiresQueryInCacheKey = pathname.startsWith("/api/image-proxy") || pathname.startsWith("/api/search/suggest");
+  const cacheKeyUrl = requiresQueryInCacheKey
     ? `${cleanUrl.origin}${cleanUrl.pathname}${cleanUrl.search}`
     : `${cleanUrl.origin}${cleanUrl.pathname}`;
   const cacheKey = isCacheableGet ? new Request(cacheKeyUrl, { method: "GET" }) : null;

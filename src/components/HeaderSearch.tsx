@@ -1,11 +1,31 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
+import { getCloudinaryFetchUrl } from "../lib/utils";
 
 interface GameSearchResult {
   id: string;
   title: string;
   slug: string;
+  coverUrl?: string | null;
   developerNames: string | null;
+}
+
+// Client-side in-memory LRU response cache (max 100 entries)
+// Provides 0ms instant responses for backspacing and repeated queries
+const clientSearchCache = new Map<string, GameSearchResult[]>();
+const MAX_CACHE_ENTRIES = 100;
+
+function getCachedResults(key: string): GameSearchResult[] | undefined {
+  return clientSearchCache.get(key.toLowerCase().trim());
+}
+
+function setCachedResults(key: string, data: GameSearchResult[]) {
+  const cleanKey = key.toLowerCase().trim();
+  if (clientSearchCache.size >= MAX_CACHE_ENTRIES) {
+    const firstKey = clientSearchCache.keys().next().value;
+    if (firstKey) clientSearchCache.delete(firstKey);
+  }
+  clientSearchCache.set(cleanKey, data);
 }
 
 export default function HeaderSearch() {
@@ -20,12 +40,21 @@ export default function HeaderSearch() {
   const activeQueryRef = useRef(query);
   activeQueryRef.current = query;
 
-  // Debounced search logic with AbortController & stale-query protection
+  // Debounced search logic with LRU cache, AbortController & stale-query protection
   useEffect(() => {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
       setResults([]);
       setIsOpen(false);
+      setLoading(false);
+      return;
+    }
+
+    // 1. Instant cache check (0ms response, 0 DB reads)
+    const cached = getCachedResults(trimmedQuery);
+    if (cached) {
+      setResults(cached);
+      setIsOpen(true);
       setLoading(false);
       return;
     }
@@ -36,27 +65,32 @@ export default function HeaderSearch() {
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/games?search=${encodeURIComponent(trimmedQuery)}&limit=6`,
+          `/api/search/suggest?q=${encodeURIComponent(trimmedQuery)}`,
           { signal: controller.signal }
         );
         if (response.ok) {
           const data = await response.json();
+          const fetchedGames: GameSearchResult[] = data.games || [];
+          
+          // Cache response in client memory
+          setCachedResults(trimmedQuery, fetchedGames);
+
           // Only update state if this is still the active search query
           if (activeQueryRef.current.trim() === trimmedQuery) {
-            setResults(data.games || []);
+            setResults(fetchedGames);
             setIsOpen(true);
           }
         }
       } catch (err: any) {
         if (err.name !== "AbortError") {
-          console.error("Header search error:", err);
+          console.error("Header search suggest error:", err);
         }
       } finally {
         if (activeQueryRef.current.trim() === trimmedQuery) {
           setLoading(false);
         }
       }
-    }, 150);
+    }, 250);
 
     return () => {
       controller.abort();
@@ -116,7 +150,7 @@ export default function HeaderSearch() {
           <Search className="w-5 h-5" />
         </button>
       ) : (
-        /* Expanded Search Input Bar (Mobile Full-Width Overlay vs Desktop Inline Input) */
+        /* Expanded Search Input Bar */
         <div className="fixed inset-x-0 top-0 h-14 bg-[#0d0d0f] z-50 px-3 flex items-center shadow-xl border-b border-white/10 sm:relative sm:inset-auto sm:top-auto sm:h-auto sm:bg-transparent sm:z-auto sm:px-0 sm:shadow-none sm:border-none sm:w-64">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -152,22 +186,36 @@ export default function HeaderSearch() {
 
       {/* Autocomplete Dropdown list */}
       {isOpen && isExpanded && (
-        <div className="fixed top-14 left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 mt-1.5 sm:w-80 bg-black/95 backdrop-blur-md border border-white/20 rounded-xl z-50 divide-y divide-white/10 max-h-72 overflow-y-auto shadow-2xl flex flex-col">
+        <div className="fixed top-14 left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 mt-1.5 sm:w-80 bg-black/95 backdrop-blur-md border border-white/20 rounded-xl z-50 divide-y divide-white/10 max-h-80 overflow-y-auto shadow-2xl flex flex-col">
           {results.length > 0 ? (
             results.map((game) => (
               <button
                 key={game.id}
                 onClick={() => handleSelectGame(game.slug)}
-                className="w-full text-left px-4 py-3 hover:bg-white hover:text-black transition-colors duration-150 cursor-pointer flex flex-col gap-0.5 select-none outline-none border-none bg-transparent group"
+                className="w-full text-left px-3.5 py-2.5 hover:bg-white hover:text-black transition-colors duration-150 cursor-pointer flex items-center gap-3 select-none outline-none border-none bg-transparent group"
               >
-                <span className="font-sans text-xs font-bold tracking-tight block">
-                  {game.title}
-                </span>
-                {game.developerNames && (
-                  <span className="font-mono text-[9px] text-white/50 group-hover:text-black/50 block font-medium transition-colors">
-                    by {game.developerNames}
-                  </span>
+                {game.coverUrl ? (
+                  <img
+                    src={getCloudinaryFetchUrl(game.coverUrl) || game.coverUrl}
+                    alt={game.title}
+                    className="w-8 h-10 object-cover rounded shadow border border-white/10 shrink-0 group-hover:border-black/20"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-8 h-10 bg-white/10 rounded flex items-center justify-center shrink-0 text-[10px] font-mono text-white/40">
+                    ?
+                  </div>
                 )}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="font-sans text-xs font-bold tracking-tight truncate block">
+                    {game.title}
+                  </span>
+                  {game.developerNames && (
+                    <span className="font-mono text-[9px] text-white/50 group-hover:text-black/60 truncate block font-medium transition-colors">
+                      by {game.developerNames}
+                    </span>
+                  )}
+                </div>
               </button>
             ))
           ) : (
