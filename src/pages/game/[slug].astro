@@ -59,7 +59,7 @@ if (!rawGame) {
 }
 
 // Track game view in background without blocking SSR page rendering
-const cfCtx = (Astro.locals as any).runtime?.ctx;
+const cfCtx = (Astro.locals as any).cfContext;
 if (cfCtx?.waitUntil) {
   cfCtx.waitUntil(trackGameView(rawGame.id, rawGame.title));
 } else {

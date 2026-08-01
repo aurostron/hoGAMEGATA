@@ -69,9 +69,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
     : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
 
+  // Only eagerly init the main DB — tursoAuth & betterAuth are deferred
+  // until needed (admin routes, auth endpoints) to save CPU on public pages
   initTursoForRequest(runtimeEnv);
-  initTursoAuthForRequest(runtimeEnv);
-  initBetterAuth(runtimeEnv);
 
   const { url, redirect } = context;
   const { pathname } = url;
@@ -114,7 +114,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   const cleanUrl = new URL(context.request.url);
-  const cacheKeyUrl = `${cleanUrl.origin}${cleanUrl.pathname}`;
+  // For image-proxy, the ?url= query param IS the unique identifier — include it in the cache key
+  const cacheKeyUrl = pathname.startsWith("/api/image-proxy")
+    ? `${cleanUrl.origin}${cleanUrl.pathname}${cleanUrl.search}`
+    : `${cleanUrl.origin}${cleanUrl.pathname}`;
   const cacheKey = isCacheableGet ? new Request(cacheKeyUrl, { method: "GET" }) : null;
 
   if (cache && isCacheableGet && cacheKey) {
@@ -125,6 +128,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
       }
     } catch (e) {
       console.error("[Edge Cache Match Error]", e);
+    }
+
+    // One-time purge: delete the old stale /api/image-proxy entry (no query string)
+    // that caused all screenshots to show the same image
+    if (pathname === "/api/image-proxy") {
+      try {
+        const staleKey = new Request(`${cleanUrl.origin}/api/image-proxy`, { method: "GET" });
+        await cache.delete(staleKey);
+      } catch {}
     }
   }
 
@@ -159,8 +171,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return applySecurityHeaders(await next());
   }
 
-  // 5. Admin Panel Gating
+  // 5. Admin Panel Gating — init auth clients only when needed
   if (pathname.startsWith("/admin")) {
+    initTursoAuthForRequest(runtimeEnv);
+    initBetterAuth(runtimeEnv);
     const user = await getServerUser(context.request, context.cookies);
     const isAdmin = user && isAdminUser(user.email, runtimeEnv);
 
@@ -225,7 +239,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         const responseToCache = response.clone();
         let cfCtx: any;
         try {
-          cfCtx = (context.locals as any)?.ctx;
+          cfCtx = (context.locals as any)?.cfContext;
         } catch {}
         if (cfCtx?.waitUntil) {
           cfCtx.waitUntil(cache.put(cacheKey, responseToCache));

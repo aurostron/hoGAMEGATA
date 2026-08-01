@@ -81,7 +81,8 @@ export function getCloudinaryFetchUrl(originalUrl: string | null, isTrending?: b
   }
   
   // Route all other remote images through our Cloudflare Edge-cached image proxy
-  return `/api/image-proxy?url=${encodeURIComponent(formattedUrl)}`;
+  // v=2 cache-buster: purges stale browser/CDN caches from the old stripped-query-key bug
+  return `/api/image-proxy?v=2&url=${encodeURIComponent(formattedUrl)}`;
 }
 
 export function cleanTitle(title: string): string {

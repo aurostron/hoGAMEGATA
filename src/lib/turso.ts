@@ -2,10 +2,11 @@ import { createClient as createWebClient } from "@libsql/client/web";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "../db/schema";
 
-// Database client is initialized per-request via initTursoForRequest().
-// We pass `fetch: (...args) => fetch(...args)` so every libSQL HTTP fetch call
-// is executed in the context of the active request, avoiding Cloudflare Worker
-// cross-request promise leakage / hung worker errors.
+// Cached singleton — creating new drizzle + libSQL clients per-request is too
+// CPU-expensive for Cloudflare Workers (10ms CPU limit on free plan).
+// We cache the instance and reuse it across requests in the same isolate.
+let cachedDb: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let cachedConfigKey = "";
 
 export function initTursoForRequest(env: any) {
   const dbUrl = env?.TURSO_DATABASE_URL || (typeof process !== "undefined" ? process.env?.TURSO_DATABASE_URL : null) || (import.meta as any).env?.TURSO_DATABASE_URL;
@@ -13,14 +14,22 @@ export function initTursoForRequest(env: any) {
 
   if (!dbUrl) return;
 
+  // Reuse cached instance if config hasn't changed (same isolate, same secrets)
+  const configKey = `${dbUrl}:${(dbToken || "").slice(0, 10)}`;
+  if (cachedDb && cachedConfigKey === configKey) {
+    (globalThis as any).tursoInstance = cachedDb;
+    return;
+  }
+
   const client = createWebClient({
     url: dbUrl,
     authToken: dbToken,
     fetch: (...args: [any, any?]) => fetch(...args),
   });
 
-  const db = drizzle(client, { schema });
-  (globalThis as any).tursoInstance = db;
+  cachedDb = drizzle(client, { schema });
+  cachedConfigKey = configKey;
+  (globalThis as any).tursoInstance = cachedDb;
 }
 
 // Proxy that forwards all calls to the active request-scoped instance.

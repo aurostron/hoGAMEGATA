@@ -17,8 +17,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const timestamp = request.headers.get('x-signature-timestamp');
     const rawBody = await request.text();
 
-    const env = (locals as any)?.runtime?.env || (typeof process !== 'undefined' ? process.env : {});
-    const publicKey = env.DISCORD_PUBLIC_KEY || (typeof process !== 'undefined' ? process.env?.DISCORD_PUBLIC_KEY : undefined);
+    const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+    const { env: cfEnv } = await import('cloudflare:workers');
+    const runtimeEnv = isDev
+      ? (typeof process !== 'undefined' && process.env ? process.env : cfEnv)
+      : (cfEnv || (typeof process !== 'undefined' ? process.env : {}));
+    const publicKey = (runtimeEnv as any).DISCORD_PUBLIC_KEY;
 
     // Verify signature if DISCORD_PUBLIC_KEY is configured
     if (publicKey) {
