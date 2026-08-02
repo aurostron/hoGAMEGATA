@@ -985,20 +985,36 @@ function GataCatalogClientInner({
         {/* ── Right Content Area ── */}
         <div className="flex-grow w-full space-y-6">
           
-          {/* ── Modern Pill Search Bar with Monochrome AI Glow Outline ── */}
+          {/* ── Seamless Full-Spanning AI Glow Pill Search Bar ── */}
           <div className="relative w-full">
-            {/* Glowing animated border wrapper */}
-            <div className="relative p-[1.5px] rounded-full overflow-hidden group shadow-[0_4px_25px_rgba(0,0,0,0.6)]">
-              {/* Animated Conic White Gradient Border (Shimmering AI outline) */}
-              <div 
-                className="absolute -inset-[100%] rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0deg,rgba(255,255,255,0.08)_120deg,rgba(255,255,255,0.9)_180deg,rgba(255,255,255,0.08)_240deg,transparent_360deg)] animate-[spin_5s_linear_infinite] opacity-75 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" 
-              />
-              
-              {/* Soft ambient white blur halo */}
-              <div className="absolute inset-0 rounded-full bg-white/10 blur-xs group-hover:bg-white/20 group-focus-within:bg-white/25 transition-all duration-300 pointer-events-none" />
+            <style>{`
+              @keyframes seamlessAiGlow {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+              }
+            `}</style>
 
-              {/* Actual Pill Search Input Bar */}
-              <div className="relative flex items-center w-full bg-[#121216] rounded-full z-10">
+            {/* Outer Pill Wrapper with Full-Spanning Shimmer Border */}
+            <div className="relative p-[1.5px] rounded-full overflow-hidden group shadow-[0_4px_25px_rgba(0,0,0,0.5)] transition-all duration-300">
+              
+              {/* Base subtle white border */}
+              <div className="absolute inset-0 rounded-full border border-white/20 group-hover:border-white/40 group-focus-within:border-white/60 transition-colors pointer-events-none z-10" />
+
+              {/* Full-Spanning Seamless Sweeping White AI Light Beam */}
+              <div 
+                className="absolute inset-0 rounded-full pointer-events-none opacity-70 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: "linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.05) 100%)",
+                  backgroundSize: "200% 100%",
+                  animation: "seamlessAiGlow 3.5s linear infinite",
+                }}
+              />
+
+              {/* Ambient White Halo behind the pill */}
+              <div className="absolute inset-0 rounded-full bg-white/5 blur-xs group-hover:bg-white/15 group-focus-within:bg-white/20 transition-all duration-300 pointer-events-none" />
+
+              {/* Pill Input Container */}
+              <div className="relative flex items-center w-full bg-[#121216] rounded-full z-20">
                 <div className="absolute left-4.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-150 z-10">
                   <Search className="w-4 h-4 text-white/40 group-focus-within:text-white transition-colors duration-200" />
                 </div>
