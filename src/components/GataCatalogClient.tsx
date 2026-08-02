@@ -293,8 +293,24 @@ function GataCatalogClientInner({
   const [hoverPosition, setHoverPosition] = useState<{ x: number; y: number; side: "left" | "right" }>({ x: 0, y: 0, side: "right" });
   const [activeScreenshotIdx, setActiveScreenshotIdx] = useState(0);
   const screenshotIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const gamesPerPage = 24;
+
+  // Keyboard shortcut listener (⌘K / Ctrl+K / / to focus search input)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.key === "k" && (e.metaKey || e.ctrlKey)) ||
+        (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA")
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Hydrate from URL query parameters on mount & popstate
   useEffect(() => {
@@ -969,28 +985,53 @@ function GataCatalogClientInner({
         {/* ── Right Content Area ── */}
         <div className="flex-grow w-full space-y-6">
           
-          {/* Prominent Search bar - Highlighted & Centered visually at the top */}
-          <div className="relative bg-[#131316] border border-[#222227] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)] select-none animate-fade-in">
-            <div className="flex flex-col gap-2">
-              <div className="relative">
-                <Search className="w-4 h-4 text-white/30 absolute left-4.5 top-3.5" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="SEARCH GAMES HERE..."
-                  className="w-full bg-[#1b1b22] border border-white/15 pl-11 pr-11 py-3 text-sm text-white placeholder:text-white/45 rounded-none focus:outline-none focus:border-white/35 focus:bg-[#20202a] transition-all font-mono uppercase tracking-wider font-medium"
-                />
-                {searchQuery && (
+          {/* ── Modern Pill Search Bar (Sans UI) ── */}
+          <div className="relative w-full">
+            <div className="relative flex items-center w-full group">
+              <div className="absolute left-4.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-150 z-10">
+                <Search className="w-4 h-4 text-white/40 group-focus-within:text-white transition-colors duration-200" />
+              </div>
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search games by title, developer, genre, or keyword..."
+                className="w-full h-12 pl-11 pr-24 bg-[#141419] hover:bg-[#181820] border border-white/15 focus:border-white/40 focus:bg-[#1b1b24] text-xs sm:text-sm text-white placeholder:text-white/40 rounded-full focus:outline-none focus:ring-2 focus:ring-white/10 transition-all duration-200 font-sans tracking-wide shadow-lg"
+              />
+              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
+                {searchQuery ? (
                   <button 
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-4 top-3.5 text-white/40 hover:text-white transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                    title="Clear search"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
+                ) : (
+                  <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2.5 py-1 text-[10px] font-mono font-medium bg-white/5 text-white/40 border border-white/10 rounded-full select-none">
+                    <span className="text-[9px]">⌘</span>K
+                  </kbd>
                 )}
               </div>
             </div>
+            {debouncedSearch.trim() && (
+              <div className="mt-2.5 px-4 flex items-center justify-between font-sans text-xs text-white/50 select-none">
+                <span>
+                  {loading ? (
+                    <span className="animate-pulse">Searching games database...</span>
+                  ) : (
+                    <span>Found <strong className="text-white font-semibold">{totalCount.toLocaleString()}</strong> results for "<span className="text-white italic">{debouncedSearch}</span>"</span>
+                  )}
+                </span>
+                <button 
+                  onClick={() => setSearchQuery("")} 
+                  className="text-white/40 hover:text-white transition-colors cursor-pointer text-xs underline font-medium"
+                >
+                  Clear filter
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Spelling auto-correction banner (Google styled) */}
