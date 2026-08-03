@@ -985,32 +985,51 @@ function GataCatalogClientInner({
         {/* ── Right Content Area ── */}
         <div className="flex-grow w-full space-y-6">
           
-          {/* ── Traveling AI Light Beam Pill Search Bar ── */}
+          {/* ── Single-Path SVG Perimeter AI Border Beam Pill Search Bar ── */}
           <div className="relative w-full">
             <style>{`
-              @keyframes aiBeamPingPong {
-                0% { background-position: 0% 0; }
-                50% { background-position: 100% 0; }
-                100% { background-position: 0% 0; }
+              @keyframes borderBeamTravel {
+                0% { stroke-dashoffset: 0; }
+                100% { stroke-dashoffset: -100; }
               }
             `}</style>
 
-            {/* Outer Pill Wrapper with Traveling Light Beam Border */}
+            {/* Outer Pill Wrapper with Perimeter Traveling Beam */}
             <div className="relative p-[1.5px] rounded-full overflow-hidden group shadow-[0_4px_25px_rgba(0,0,0,0.5)] transition-all duration-300">
               
               {/* Base subtle white border */}
               <div className="absolute inset-0 rounded-full border border-white/20 group-hover:border-white/40 group-focus-within:border-white/60 transition-colors pointer-events-none z-10" />
 
-              {/* Single Traveling White AI Light Beam (Left -> Right -> Left) */}
-              <div 
-                className="absolute inset-0 rounded-full pointer-events-none opacity-80 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
-                style={{
-                  background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.08) 75%, transparent 100%)",
-                  backgroundSize: "35% 100%",
-                  backgroundRepeat: "no-repeat",
-                  animation: "aiBeamPingPong 4s ease-in-out infinite",
-                }}
-              />
+              {/* Single-Path SVG Perimeter Beam (Top -> Right -> Bottom -> Left -> Top in 1 direction) */}
+              <svg 
+                className="absolute inset-0 w-full h-full rounded-full pointer-events-none z-20 overflow-visible opacity-85 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
+                style={{ filter: "drop-shadow(0 0 5px rgba(255,255,255,0.9))" }}
+              >
+                <defs>
+                  <linearGradient id="singleWhiteBeamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+                    <stop offset="30%" stopColor="#ffffff" stopOpacity="0.2" />
+                    <stop offset="50%" stopColor="#ffffff" stopOpacity="1" />
+                    <stop offset="70%" stopColor="#ffffff" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <rect
+                  x="1"
+                  y="1"
+                  width="calc(100% - 2px)"
+                  height="calc(100% - 2px)"
+                  rx="24"
+                  fill="none"
+                  stroke="url(#singleWhiteBeamGradient)"
+                  strokeWidth="2"
+                  pathLength="100"
+                  strokeDasharray="22 78"
+                  style={{
+                    animation: "borderBeamTravel 4s linear infinite",
+                  }}
+                />
+              </svg>
 
               {/* Ambient White Halo behind the pill */}
               <div className="absolute inset-0 rounded-full bg-white/5 blur-xs group-hover:bg-white/15 group-focus-within:bg-white/20 transition-all duration-300 pointer-events-none" />
