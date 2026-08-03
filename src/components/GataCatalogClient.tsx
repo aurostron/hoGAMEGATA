@@ -985,28 +985,30 @@ function GataCatalogClientInner({
         {/* ── Right Content Area ── */}
         <div className="flex-grow w-full space-y-6">
           
-          {/* ── Seamless Full-Spanning AI Glow Pill Search Bar ── */}
+          {/* ── Traveling AI Light Beam Pill Search Bar ── */}
           <div className="relative w-full">
             <style>{`
-              @keyframes seamlessAiGlow {
-                0% { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
+              @keyframes aiBeamPingPong {
+                0% { background-position: 0% 0; }
+                50% { background-position: 100% 0; }
+                100% { background-position: 0% 0; }
               }
             `}</style>
 
-            {/* Outer Pill Wrapper with Full-Spanning Shimmer Border */}
+            {/* Outer Pill Wrapper with Traveling Light Beam Border */}
             <div className="relative p-[1.5px] rounded-full overflow-hidden group shadow-[0_4px_25px_rgba(0,0,0,0.5)] transition-all duration-300">
               
               {/* Base subtle white border */}
               <div className="absolute inset-0 rounded-full border border-white/20 group-hover:border-white/40 group-focus-within:border-white/60 transition-colors pointer-events-none z-10" />
 
-              {/* Full-Spanning Seamless Sweeping White AI Light Beam */}
+              {/* Single Traveling White AI Light Beam (Left -> Right -> Left) */}
               <div 
-                className="absolute inset-0 rounded-full pointer-events-none opacity-70 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
+                className="absolute inset-0 rounded-full pointer-events-none opacity-80 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
                 style={{
-                  background: "linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.05) 100%)",
-                  backgroundSize: "200% 100%",
-                  animation: "seamlessAiGlow 3.5s linear infinite",
+                  background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 25%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.08) 75%, transparent 100%)",
+                  backgroundSize: "35% 100%",
+                  backgroundRepeat: "no-repeat",
+                  animation: "aiBeamPingPong 4s ease-in-out infinite",
                 }}
               />
 
