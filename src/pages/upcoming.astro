@@ -27,11 +27,15 @@ const tbaGames: typeof games = [];
 for (const game of games) {
   if (game.releaseDate) {
     const date = new Date(game.releaseDate);
-    const monthYear = date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
-    if (!groupedGames[monthYear]) {
-      groupedGames[monthYear] = [];
+    if (!isNaN(date.getTime())) {
+      const monthYear = date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+      if (!groupedGames[monthYear]) {
+        groupedGames[monthYear] = [];
+      }
+      groupedGames[monthYear].push(game);
+    } else {
+      tbaGames.push(game);
     }
-    groupedGames[monthYear].push(game);
   } else {
     tbaGames.push(game);
   }
@@ -168,7 +172,8 @@ if (!targetMonthSlug && sortedMonths.length > 0) {
               {/* Cards Grid */}
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {groupedGames[month].map((game) => {
-                  const isPast = game.releaseDate ? new Date(game.releaseDate) < new Date(now.getFullYear(), now.getMonth(), now.getDate()) : false;
+                  const relDate = game.releaseDate ? new Date(game.releaseDate) : null;
+                  const isPast = relDate && !isNaN(relDate.getTime()) ? relDate < new Date(now.getFullYear(), now.getMonth(), now.getDate()) : false;
 
                   return (
                     <div 
