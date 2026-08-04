@@ -7,6 +7,7 @@ import {
   List, 
   ChevronLeft, 
   ChevronRight, 
+  ChevronDown,
   ChevronsLeft,
   ChevronsRight,
   SlidersHorizontal, 
@@ -748,46 +749,61 @@ function GataCatalogClientInner({
       </div>
 
       {/* Mobile Filter Toggle Button */}
-      <div className="lg:hidden w-full">
+      <div className="lg:hidden w-full mb-4">
         <button
           onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-          className="w-full flex items-center justify-between bg-[#131316] border border-[#222227] px-4 py-3 font-mono text-xs text-white uppercase font-bold tracking-wider hover:bg-[#1a1a20] transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between bg-[#121217] border border-white/15 px-4 py-3 rounded-xl font-sans text-xs text-white font-semibold hover:bg-[#181820] transition-all cursor-pointer shadow-lg"
         >
           <span className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-white/80" />
             <span>Filters & Refinements</span>
             {activeFilterCount > 0 && (
-              <span className="bg-red-600 text-white text-[9.5px] px-2 py-0.5 rounded-full font-bold">
-                {activeFilterCount} Active
+              <span className="bg-white text-black text-[10px] px-2 py-0.5 rounded-full font-bold">
+                {activeFilterCount}
               </span>
             )}
           </span>
-          <span className="text-white/60 font-bold">{isMobileFilterOpen ? "[ Hide Filters ]" : "[ Show Filters ]"}</span>
+          <ChevronDown className={`w-4 h-4 text-white/60 transition-transform duration-200 ${isMobileFilterOpen ? "rotate-180" : ""}`} />
         </button>
       </div>
 
       {/* ── Main Catalog Frame ── */}
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         
-        {/* ── Left Sidebar Filters (Collapsed by default on mobile) ── */}
-        <aside className={`${isMobileFilterOpen ? "block" : "hidden"} lg:block w-full lg:w-64 shrink-0 space-y-6 bg-[#131316] border border-[#222227] p-5 rounded-none`}>
-          <div className="flex justify-between items-center pb-3 border-b border-white/15">
-            <span className="font-mono text-xs text-white uppercase font-black tracking-widest flex items-center gap-1.5">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
+        {/* ── Left Sidebar Filters (Modern Sans UI) ── */}
+        <aside className={`${isMobileFilterOpen ? "block" : "hidden"} lg:block w-full lg:w-64 shrink-0 space-y-5 bg-[#121217]/95 border border-white/12 p-5 rounded-2xl shadow-xl backdrop-blur-md`}>
+          {/* Sidebar Header */}
+          <div className="flex justify-between items-center pb-3.5 border-b border-white/10">
+            <span className="font-sans text-xs text-white uppercase font-bold tracking-wider flex items-center gap-2">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-white/70" />
               Filters
+              {activeFilterCount > 0 && (
+                <span className="bg-white/10 border border-white/15 text-white text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                  {activeFilterCount}
+                </span>
+              )}
             </span>
-            <button 
-              onClick={clearAllFilters}
-              className="font-mono text-[15px] text-white/40 hover:text-white uppercase font-bold tracking-wider hover:underline"
-            >
-              Clear All
-            </button>
+            {activeFilterCount > 0 && (
+              <button 
+                onClick={clearAllFilters}
+                className="font-sans text-[11px] font-semibold text-white/50 hover:text-white px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
+              >
+                Clear All
+              </button>
+            )}
           </div>
 
-          <div className="space-y-4 text-xs font-mono">
-            {/* Filter checkboxes: DLC / Free */}
-            <div className="space-y-2.5 pt-1.5 pb-2.5">
-              <label className="flex items-center gap-2.5 cursor-pointer text-white/70 hover:text-white select-none">
+          <div className="space-y-4 font-sans text-xs">
+            {/* Quick Toggle Checkboxes: DLC / Free */}
+            <div className="space-y-2.5 pb-3 border-b border-white/10">
+              <label className="flex items-center gap-2.5 cursor-pointer group select-none text-white/70 hover:text-white transition-colors">
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                  hideDlcs 
+                    ? "bg-white border-white text-black" 
+                    : "bg-white/5 border-white/20 group-hover:border-white/40"
+                }`}>
+                  {hideDlcs && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
                 <input
                   type="checkbox"
                   checked={hideDlcs}
@@ -795,12 +811,19 @@ function GataCatalogClientInner({
                     setCurrentPage(1);
                     setHideDlcs(e.target.checked);
                   }}
-                  className="accent-white cursor-pointer w-3.5 h-3.5"
+                  className="sr-only"
                 />
-                <span>Hide DLCs & Extras</span>
+                <span className="font-sans text-xs font-medium">Hide DLCs & Extras</span>
               </label>
 
-              <label className="flex items-center gap-2.5 cursor-pointer text-white/70 hover:text-white select-none">
+              <label className="flex items-center gap-2.5 cursor-pointer group select-none text-white/70 hover:text-white transition-colors">
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                  freeOnly 
+                    ? "bg-white border-white text-black" 
+                    : "bg-white/5 border-white/20 group-hover:border-white/40"
+                }`}>
+                  {freeOnly && <Check className="w-3 h-3 stroke-[3]" />}
+                </div>
                 <input
                   type="checkbox"
                   checked={freeOnly}
@@ -808,23 +831,23 @@ function GataCatalogClientInner({
                     setCurrentPage(1);
                     setFreeOnly(e.target.checked);
                   }}
-                  className="accent-white cursor-pointer w-3.5 h-3.5"
+                  className="sr-only"
                 />
-                <span>Show Only Free Games</span>
+                <span className="font-sans text-xs font-medium">Show Only Free Games</span>
               </label>
             </div>
 
             {/* Price Accordion */}
-            <div className="border-t border-white/10 pt-3">
+            <div className="border-b border-white/10 pb-3.5">
               <button 
                 onClick={() => toggleSection("price")}
-                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+                className="flex justify-between items-center w-full font-sans font-bold uppercase tracking-wider text-white/80 hover:text-white transition-colors py-1 text-xs"
               >
                 <span>Price Range</span>
-                <span className="text-[15px]">{openSections.price ? "-" : "+"}</span>
+                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform duration-200 ${openSections.price ? "rotate-180" : ""}`} />
               </button>
               {openSections.price && (
-                <div className="space-y-3 mt-2">
+                <div className="space-y-3 mt-3 animate-fade-in">
                   <div className="flex gap-2 items-center">
                     <input
                       type="number"
@@ -833,8 +856,8 @@ function GataCatalogClientInner({
                         setCurrentPage(1);
                         setMinPrice(e.target.value);
                       }}
-                      placeholder="Min"
-                      className="w-1/2 bg-[#1b1b22] border border-[#2d2d38] px-2 py-1.5 text-[12px] rounded-none focus:outline-none focus:border-white/50 focus:bg-[#20202a] transition-all font-mono text-center text-white placeholder:text-white/20"
+                      placeholder="Min ($)"
+                      className="w-1/2 bg-[#181820] border border-white/10 px-3 py-1.5 text-xs rounded-xl focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all font-sans text-center text-white placeholder:text-white/30"
                     />
                     <span className="text-white/30">—</span>
                     <input
@@ -844,12 +867,12 @@ function GataCatalogClientInner({
                         setCurrentPage(1);
                         setMaxPrice(e.target.value);
                       }}
-                      placeholder="Max"
-                      className="w-1/2 bg-[#1b1b22] border border-[#2d2d38] px-2 py-1.5 text-[12px] rounded-none focus:outline-none focus:border-white/50 focus:bg-[#20202a] transition-all font-mono text-center text-white placeholder:text-white/20"
+                      placeholder="Max ($)"
+                      className="w-1/2 bg-[#181820] border border-white/10 px-3 py-1.5 text-xs rounded-xl focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 transition-all font-sans text-center text-white placeholder:text-white/30"
                     />
                   </div>
                   {!freeOnly && !maxPrice && (
-                    <div className="space-y-1">
+                    <div className="space-y-1.5 pt-1">
                       <input
                         type="range"
                         min="0"
@@ -860,11 +883,11 @@ function GataCatalogClientInner({
                           setCurrentPage(1);
                           setPriceSlider(parseInt(e.target.value, 10));
                         }}
-                        className="w-full accent-white cursor-pointer h-1 bg-white/10 appearance-none"
+                        className="w-full accent-white cursor-pointer h-1.5 bg-white/10 rounded-lg appearance-none"
                       />
-                      <div className="flex justify-between text-[10px] text-white/40">
+                      <div className="flex justify-between text-[11px] font-sans text-white/40">
                         <span>Free</span>
-                        <span className="text-white font-bold">Max: {formatPrice(priceSlider)}</span>
+                        <span className="text-white font-semibold">Max: {formatPrice(priceSlider)}</span>
                       </div>
                     </div>
                   )}
@@ -873,53 +896,83 @@ function GataCatalogClientInner({
             </div>
 
             {/* Genres Accordion (Curated Horror Sub-genres) */}
-            <div className="border-t border-white/10 pt-3">
+            <div className="border-b border-white/10 pb-3.5">
               <button 
                 onClick={() => toggleSection("genres")}
-                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+                className="flex justify-between items-center w-full font-sans font-bold uppercase tracking-wider text-white/80 hover:text-white transition-colors py-1 text-xs"
               >
-                <span>Genres</span>
-                <span>{openSections.genres ? "-" : "+"}</span>
+                <span className="flex items-center gap-1.5">
+                  Genres
+                  {HORROR_SUBGENRES.filter(sub => selectedFeatures.includes(sub.slug)).length > 0 && (
+                    <span className="text-[10px] text-white/40 font-normal">
+                      ({HORROR_SUBGENRES.filter(sub => selectedFeatures.includes(sub.slug)).length})
+                    </span>
+                  )}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform duration-200 ${openSections.genres ? "rotate-180" : ""}`} />
               </button>
               {openSections.genres && (
-                <div className="space-y-2 mt-2 max-h-56 overflow-y-auto pr-1">
-                  {HORROR_SUBGENRES.map((sub) => (
-                    <label key={sub.slug} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
-                      <input
-                        type="checkbox"
-                        checked={selectedFeatures.includes(sub.slug)}
-                        onChange={() => toggleFeature(sub.slug)}
-                        className="accent-white cursor-pointer w-3.5 h-3.5"
-                      />
-                      <span>{sub.name}</span>
-                    </label>
-                  ))}
+                <div className="space-y-2 mt-3 max-h-56 overflow-y-auto pr-1 custom-scrollbar animate-fade-in">
+                  {HORROR_SUBGENRES.map((sub) => {
+                    const isChecked = selectedFeatures.includes(sub.slug);
+                    return (
+                      <label key={sub.slug} className="flex items-center gap-2.5 cursor-pointer group select-none text-white/70 hover:text-white transition-colors">
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                          isChecked 
+                            ? "bg-white border-white text-black" 
+                            : "bg-white/5 border-white/20 group-hover:border-white/40"
+                        }`}>
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleFeature(sub.slug)}
+                          className="sr-only"
+                        />
+                        <span className="font-sans text-xs font-medium">{sub.name}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
             {/* Systems Accordion */}
-            <div className="border-t border-white/10 pt-3">
+            <div className="border-b border-white/10 pb-3.5">
               <button 
                 onClick={() => toggleSection("systems")}
-                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+                className="flex justify-between items-center w-full font-sans font-bold uppercase tracking-wider text-white/80 hover:text-white transition-colors py-1 text-xs"
               >
-                <span>Operating Systems</span>
-                <span>{openSections.systems ? "-" : "+"}</span>
+                <span className="flex items-center gap-1.5">
+                  Operating Systems
+                  {selectedSystems.length > 0 && (
+                    <span className="text-[10px] text-white/40 font-normal">({selectedSystems.length})</span>
+                  )}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform duration-200 ${openSections.systems ? "rotate-180" : ""}`} />
               </button>
               {openSections.systems && (
-                <div className="space-y-2 mt-2">
+                <div className="space-y-2 mt-3 animate-fade-in">
                   {["win", "mac", "linux"].map((sys) => {
                     const label = sys === "win" ? "Windows" : sys === "mac" ? "macOS" : "Linux";
+                    const isChecked = selectedSystems.includes(sys);
                     return (
-                      <label key={sys} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
+                      <label key={sys} className="flex items-center gap-2.5 cursor-pointer group select-none text-white/70 hover:text-white transition-colors">
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                          isChecked 
+                            ? "bg-white border-white text-black" 
+                            : "bg-white/5 border-white/20 group-hover:border-white/40"
+                        }`}>
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
                         <input
                           type="checkbox"
-                          checked={selectedSystems.includes(sys)}
+                          checked={isChecked}
                           onChange={() => toggleSystem(sys)}
-                          className="accent-white cursor-pointer w-3.5 h-3.5"
+                          className="sr-only"
                         />
-                        <span>{label}</span>
+                        <span className="font-sans text-xs font-medium">{label}</span>
                       </label>
                     );
                   })}
@@ -928,53 +981,85 @@ function GataCatalogClientInner({
             </div>
 
             {/* Features Accordion */}
-            <div className="border-t border-white/10 pt-3">
+            <div className="border-b border-white/10 pb-3.5">
               <button 
                 onClick={() => toggleSection("features")}
-                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+                className="flex justify-between items-center w-full font-sans font-bold uppercase tracking-wider text-white/80 hover:text-white transition-colors py-1 text-xs"
               >
-                <span>Features</span>
-                <span>{openSections.features ? "-" : "+"}</span>
+                <span className="flex items-center gap-1.5">
+                  Features
+                  {COMMON_FEATURES.filter(f => selectedFeatures.includes(f.slug)).length > 0 && (
+                    <span className="text-[10px] text-white/40 font-normal">
+                      ({COMMON_FEATURES.filter(f => selectedFeatures.includes(f.slug)).length})
+                    </span>
+                  )}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform duration-200 ${openSections.features ? "rotate-180" : ""}`} />
               </button>
               {openSections.features && (
-                <div className="space-y-2 mt-2">
-                  {COMMON_FEATURES.map((feature) => (
-                    <label key={feature.slug} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
-                      <input
-                        type="checkbox"
-                        checked={selectedFeatures.includes(feature.slug)}
-                        onChange={() => toggleFeature(feature.slug)}
-                        className="accent-white cursor-pointer w-3.5 h-3.5"
-                      />
-                      <span>{feature.name}</span>
-                    </label>
-                  ))}
+                <div className="space-y-2 mt-3 animate-fade-in">
+                  {COMMON_FEATURES.map((feature) => {
+                    const isChecked = selectedFeatures.includes(feature.slug);
+                    return (
+                      <label key={feature.slug} className="flex items-center gap-2.5 cursor-pointer group select-none text-white/70 hover:text-white transition-colors">
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                          isChecked 
+                            ? "bg-white border-white text-black" 
+                            : "bg-white/5 border-white/20 group-hover:border-white/40"
+                        }`}>
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleFeature(feature.slug)}
+                          className="sr-only"
+                        />
+                        <span className="font-sans text-xs font-medium">{feature.name}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
             {/* Decades Accordion */}
-            <div className="border-t border-white/10 pt-3">
+            <div className="pt-0.5">
               <button 
                 onClick={() => toggleSection("decades")}
-                className="flex justify-between items-center w-full uppercase font-black tracking-wider text-white/80 pb-2 text-[15px]"
+                className="flex justify-between items-center w-full font-sans font-bold uppercase tracking-wider text-white/80 hover:text-white transition-colors py-1 text-xs"
               >
-                <span>Release Date</span>
-                <span>{openSections.decades ? "-" : "+"}</span>
+                <span className="flex items-center gap-1.5">
+                  Release Date
+                  {selectedDecades.length > 0 && (
+                    <span className="text-[10px] text-white/40 font-normal">({selectedDecades.length})</span>
+                  )}
+                </span>
+                <ChevronDown className={`w-4 h-4 text-white/50 transition-transform duration-200 ${openSections.decades ? "rotate-180" : ""}`} />
               </button>
               {openSections.decades && (
-                <div className="space-y-2 mt-2">
-                  {DECADES.map((dec) => (
-                    <label key={dec.slug} className="flex items-center gap-2 cursor-pointer text-white/70 hover:text-white">
-                      <input
-                        type="checkbox"
-                        checked={selectedDecades.includes(dec.slug)}
-                        onChange={() => toggleDecade(dec.slug)}
-                        className="accent-white cursor-pointer w-3.5 h-3.5"
-                      />
-                      <span>{dec.name}</span>
-                    </label>
-                  ))}
+                <div className="space-y-2 mt-3 animate-fade-in">
+                  {DECADES.map((dec) => {
+                    const isChecked = selectedDecades.includes(dec.slug);
+                    return (
+                      <label key={dec.slug} className="flex items-center gap-2.5 cursor-pointer group select-none text-white/70 hover:text-white transition-colors">
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                          isChecked 
+                            ? "bg-white border-white text-black" 
+                            : "bg-white/5 border-white/20 group-hover:border-white/40"
+                        }`}>
+                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleDecade(dec.slug)}
+                          className="sr-only"
+                        />
+                        <span className="font-sans text-xs font-medium">{dec.name}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -985,51 +1070,30 @@ function GataCatalogClientInner({
         {/* ── Right Content Area ── */}
         <div className="flex-grow w-full space-y-6">
           
-          {/* ── Single-Path SVG Perimeter AI Border Beam Pill Search Bar ── */}
+          {/* ── Seamless Full-Spanning AI Glow Pill Search Bar ── */}
           <div className="relative w-full">
             <style>{`
-              @keyframes borderBeamTravel {
-                0% { stroke-dashoffset: 0; }
-                100% { stroke-dashoffset: -100; }
+              @keyframes seamlessAiGlow {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
               }
             `}</style>
 
-            {/* Outer Pill Wrapper with Perimeter Traveling Beam */}
+            {/* Outer Pill Wrapper with Full-Spanning Shimmer Border */}
             <div className="relative p-[1.5px] rounded-full overflow-hidden group shadow-[0_4px_25px_rgba(0,0,0,0.5)] transition-all duration-300">
               
               {/* Base subtle white border */}
               <div className="absolute inset-0 rounded-full border border-white/20 group-hover:border-white/40 group-focus-within:border-white/60 transition-colors pointer-events-none z-10" />
 
-              {/* Single-Path SVG Perimeter Beam (Top -> Right -> Bottom -> Left -> Top in 1 direction) */}
-              <svg 
-                className="absolute inset-0 w-full h-full rounded-full pointer-events-none z-20 overflow-visible opacity-85 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
-                style={{ filter: "drop-shadow(0 0 5px rgba(255,255,255,0.9))" }}
-              >
-                <defs>
-                  <linearGradient id="singleWhiteBeamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-                    <stop offset="30%" stopColor="#ffffff" stopOpacity="0.2" />
-                    <stop offset="50%" stopColor="#ffffff" stopOpacity="1" />
-                    <stop offset="70%" stopColor="#ffffff" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <rect
-                  x="1"
-                  y="1"
-                  width="calc(100% - 2px)"
-                  height="calc(100% - 2px)"
-                  rx="24"
-                  fill="none"
-                  stroke="url(#singleWhiteBeamGradient)"
-                  strokeWidth="2"
-                  pathLength="100"
-                  strokeDasharray="22 78"
-                  style={{
-                    animation: "borderBeamTravel 4s linear infinite",
-                  }}
-                />
-              </svg>
+              {/* Full-Spanning Seamless Sweeping White AI Light Beam */}
+              <div 
+                className="absolute inset-0 rounded-full pointer-events-none opacity-70 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300"
+                style={{
+                  background: "linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.05) 100%)",
+                  backgroundSize: "200% 100%",
+                  animation: "seamlessAiGlow 3.5s linear infinite",
+                }}
+              />
 
               {/* Ambient White Halo behind the pill */}
               <div className="absolute inset-0 rounded-full bg-white/5 blur-xs group-hover:bg-white/15 group-focus-within:bg-white/20 transition-all duration-300 pointer-events-none" />
