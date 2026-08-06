@@ -24,22 +24,10 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     resolve: {
-      dedupe: ['react', 'react-dom', 'lucide-react']
-    },
-    ssr: {
-      noExternal: ['lucide-react', 'react', 'react-dom', 'clsx', 'tailwind-merge']
+      dedupe: ['react', 'react-dom']
     },
     optimizeDeps: {
-      include: [
-        'react',
-        'react-dom',
-        'react-dom/client',
-        'react/jsx-runtime',
-        'react/jsx-dev-runtime',
-        'lucide-react',
-        'clsx',
-        'tailwind-merge'
-      ]
+      exclude: ['better-auth', '@libsql/client']
     }
   },
 

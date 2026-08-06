@@ -216,7 +216,7 @@ if (latestGames.length > 0) {
 >
   <main class="max-w-5xl mx-auto px-6 mt-6 flex-1 pb-24 w-full">
     <GameCatalogClient
-      client:load
+      client:only="react"
       initialGames={latestGames}
       initialTotalGames={stats?.games || null}
       initialNextCursor={nextCursor}
