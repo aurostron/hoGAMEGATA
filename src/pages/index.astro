@@ -229,7 +229,19 @@ if (latestGames.length > 0) {
       catalogueDesc={content.catalogue_desc}
       supportTitle={content.support_title}
       supportDesc={content.support_desc}
-    />
+    >
+      <div slot="fallback" class="w-full space-y-8 animate-pulse py-4">
+        <div class="h-64 sm:h-72 bg-white/5 rounded-3xl border border-white/10 w-full flex items-center justify-center">
+          <div class="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="h-52 bg-white/5 rounded-2xl border border-white/10"></div>
+          <div class="h-52 bg-white/5 rounded-2xl border border-white/10"></div>
+          <div class="h-52 bg-white/5 rounded-2xl border border-white/10"></div>
+          <div class="h-52 bg-white/5 rounded-2xl border border-white/10"></div>
+        </div>
+      </div>
+    </GameCatalogClient>
   </main>
 </Layout>
 

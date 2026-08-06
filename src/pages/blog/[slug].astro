@@ -3,7 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import { sanityClient, urlFor } from '../../lib/sanity';
 import { PortableText } from 'astro-portabletext';
 import PortableTextImage from '../../components/PortableTextImage.astro';
-import { Calendar, ArrowLeft } from 'lucide-react';
 
 export const prerender = false;
 
@@ -18,27 +17,24 @@ try {
   post = await sanityClient.fetch(`
     *[_type == "post" && slug.current == $slug][0] {
       title,
+      slug,
       publishedAt,
       excerpt,
-      body,
-      coverImage
+      coverImage,
+      body
     }
   `, { slug });
-} catch (err) {
-  console.error("Failed to query post from Sanity:", err);
+} catch (e) {
+  console.error("Failed to fetch Sanity post:", e);
 }
 
 if (!post) {
   return Astro.redirect('/404');
 }
 
-const formattedDate = post.publishedAt
-  ? new Date(post.publishedAt).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-  : "Transmission Date Unknown";
+const formattedDate = post.publishedAt 
+  ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  : 'UNKNOWN DATE';
 
 const components = {
   type: {
@@ -60,7 +56,7 @@ const components = {
         href="/blog" 
         class="group flex items-center gap-2 font-bold text-[10px] text-white hover:text-[#ff2a2a] uppercase tracking-wider transition-colors font-bold w-fit"
       >
-        <ArrowLeft class="w-3.5 h-3.5" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
         <span> Return to Logs </span>
       </a>
     </div>
@@ -68,7 +64,7 @@ const components = {
     <!-- Article Header -->
     <header class="space-y-4 pb-8 border-b border-white/10 mb-8">
       <div class="flex items-center gap-2 font-mono text-[10px] text-white/40 uppercase font-black">
-        <Calendar class="w-3.5 h-3.5 text-[#ff2a2a]" />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-[#ff2a2a]"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
         <span>{formattedDate}</span>
       </div>
       
