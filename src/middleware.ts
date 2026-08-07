@@ -99,7 +99,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // 1.5. Cloudflare Edge Cache MATCH check (0 DB reads for cached pages)
-  const cache = typeof caches !== "undefined" && (caches as any).default;
+  const cache = !isDev && typeof caches !== "undefined" && (caches as any).default;
   const isCacheableGet = context.request.method === "GET" && (
     pathname.startsWith("/game/") || 
     pathname.startsWith("/api/games") || 

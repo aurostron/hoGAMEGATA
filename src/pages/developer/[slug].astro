@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from '../../layouts/Layout.astro';
 import { turso } from '../../lib/turso';
 import {
@@ -270,7 +270,7 @@ const devStyle = curated.style || computedStyle;
                   {/* Rating Badge */}
                   {game.rating && (
                     <span class="absolute top-3 left-3 font-mono text-[8px] uppercase tracking-widest bg-[#7f1d1d] text-[#fca5a5] border border-[#fca5a5] font-black px-1.5 py-0.5 z-10 flex items-center gap-1 shadow-glow">
-                      <Star class="w-2.5 h-2.5 fill-current" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5 fill-current"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                       {(game.rating / 10).toFixed(1)}
                     </span>
                   )}

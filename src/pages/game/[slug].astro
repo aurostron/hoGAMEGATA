@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from '../../layouts/Layout.astro';
 import { turso } from '../../lib/turso';
 import {
@@ -362,7 +362,7 @@ const editGameData = {
                 rel="noopener noreferrer"
                 class="flex items-center justify-center gap-2 px-4 py-3 mt-4 bg-[#fa5c5c] text-black text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-xl border border-[#fa5c5c] shadow-lg"
               >
-                <ExternalLink class="w-3.5 h-3.5 text-black" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                 <span>Buy / Download on itch.io</span>
               </a>
             );
@@ -484,7 +484,7 @@ const editGameData = {
             <div class="flex flex-col">
               {game.metacriticUrl ? (
                 <a href={game.metacriticUrl} target="_blank" rel="noopener noreferrer" class="group flex flex-col hover:opacity-80 transition-opacity">
-                  <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5 flex items-center gap-1">metacritic <ExternalLink class="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity" /></span>
+                  <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5 flex items-center gap-1">metacritic <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
                   <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.metacritic}<span class="text-neutral-500 text-lg">/100</span></span>
                 </a>
               ) : (
@@ -645,7 +645,7 @@ const editGameData = {
                     rel="noopener noreferrer"
                     class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                     <span>Support Creator ({link.storeName})</span>
                   </a>
                 ))}
@@ -657,7 +657,7 @@ const editGameData = {
                     rel="noopener noreferrer"
                     class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                     <span>Official Website</span>
                   </a>
                 )}
@@ -669,7 +669,7 @@ const editGameData = {
                     rel="noopener noreferrer"
                     class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                     <span>Reddit Community</span>
                   </a>
                 )}
@@ -792,7 +792,7 @@ const editGameData = {
                     rel="noopener noreferrer"
                     class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                     <span>Support Creator ({link.storeName})</span>
                   </a>
                 ))}
@@ -804,7 +804,7 @@ const editGameData = {
                     rel="noopener noreferrer"
                     class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                     <span>Official Website</span>
                   </a>
                 )}
@@ -816,7 +816,7 @@ const editGameData = {
                     rel="noopener noreferrer"
                     class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
                   >
-                    <ExternalLink class="w-3.5 h-3.5 text-white/70 group-hover:text-black" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                     <span>Reddit Community</span>
                   </a>
                 )}
