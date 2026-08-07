@@ -27,8 +27,12 @@ export default defineConfig({
       dedupe: ['react', 'react-dom']
     },
     optimizeDeps: {
-      exclude: ['better-auth', '@libsql/client']
-    }
+      exclude: ['better-auth', '@libsql/client', 'styled-components'],
+    },
+    ssr: {
+      external: ['better-auth', '@libsql/client', '@libsql/hrana-client'],
+      noExternal: [],
+    },
   },
 
   adapter: cloudflare()
