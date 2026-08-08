@@ -28,6 +28,7 @@ import { AuthProvider } from "../context/AuthContext";
 import HoverTrailer from "./HoverTrailer";
 
 import { searchNative } from "../lib/nativeSearchManager";
+import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
 
 const formatDate = (dateVal: string | Date | null | undefined) => {
   if (!dateVal) return "";
@@ -400,23 +401,15 @@ function GataCatalogClientInner({
     const fetchGames = async () => {
       setLoading(true);
       try {
+        const finalMaxPrice = maxPrice || (debouncedPriceSlider < dbMaxPrice ? debouncedPriceSlider.toString() : "");
+
+        // Cloud DB Query (Compulsory for full catalog search, sorting, and filtering)
         const queryParams = new URLSearchParams();
-        if (debouncedSearch.trim()) {
-          const nativeResults = await searchNative(debouncedSearch.trim(), 120);
-          if (nativeResults && nativeResults.length > 0) {
-            const matchedIds = nativeResults.map((r) => r.id).join(",");
-            queryParams.set("ids", matchedIds);
-          } else {
-            queryParams.set("search", debouncedSearch);
-          }
-        }
+        if (debouncedSearch.trim()) queryParams.set("search", debouncedSearch);
         if (sortBy) queryParams.set("sort", sortBy);
         if (!hideDlcs) queryParams.set("hideDlcs", "false");
         if (freeOnly) queryParams.set("freeOnly", "true");
         if (minPrice) queryParams.set("minPrice", minPrice);
-        
-        // Use slider price if not explicitly overridden by maxPrice input
-        const finalMaxPrice = maxPrice || (debouncedPriceSlider < dbMaxPrice ? debouncedPriceSlider.toString() : "");
         if (finalMaxPrice) queryParams.set("maxPrice", finalMaxPrice);
 
         if (selectedGenres.length > 0) queryParams.set("genres", selectedGenres.join(","));
@@ -442,6 +435,23 @@ function GataCatalogClientInner({
           }
         }
 
+        const cacheKey = queryParams.toString();
+        const cachedData = getCachedCatalogResponse(cacheKey);
+        if (cachedData && !controller.signal.aborted) {
+          setGames(cachedData.games || []);
+          setTotalCount(cachedData.totalCount || 0);
+          if (cachedData.maxPrice && cachedData.maxPrice > 0) {
+            setDbMaxPrice(cachedData.maxPrice);
+            if (priceSlider === 60) setPriceSlider(cachedData.maxPrice);
+          }
+          if (cachedData.correctedQuery) {
+            setCorrectedQuery(cachedData.correctedQuery);
+            setOriginalSearch(debouncedSearch);
+          }
+          setLoading(false);
+          return;
+        }
+
         const res = await fetch(`/api/games?${queryParams.toString()}`, { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
@@ -450,7 +460,6 @@ function GataCatalogClientInner({
             setTotalCount(data.totalCount || 0);
             if (data.maxPrice && data.maxPrice > 0) {
               setDbMaxPrice(data.maxPrice);
-              // Default slider to max if never moved
               if (priceSlider === 60) setPriceSlider(data.maxPrice);
             }
 
@@ -458,6 +467,9 @@ function GataCatalogClientInner({
               setCorrectedQuery(data.correctedQuery);
               setOriginalSearch(debouncedSearch);
             }
+
+            // Write to client cache
+            setCachedCatalogResponse(cacheKey, data);
           }
         }
       } catch (err: any) {

@@ -1,20 +1,15 @@
 import MiniSearch from "minisearch";
 
 export interface SearchIndexRecord {
-  i: number;           // id
+  i: string;           // id
   t: string;           // title
   s: string;           // slug
   c: string | null;    // coverUrl
-  r: number | null;    // rating
-  sr: number | null;   // steamRating
-  sc: number | null;   // scareRating
-  y: number | null;    // releaseYear
   d: string[];         // developers
-  g: string[];         // genres
 }
 
 let miniSearchInstance: MiniSearch<SearchIndexRecord> | null = null;
-let allRecordsMap = new Map<number, SearchIndexRecord>();
+let allRecordsMap = new Map<string, SearchIndexRecord>();
 
 self.onmessage = (event: MessageEvent) => {
   const { type, payload, id } = event.data;
@@ -22,13 +17,14 @@ self.onmessage = (event: MessageEvent) => {
   if (type === "INIT_INDEX") {
     try {
       const records: SearchIndexRecord[] = payload;
-      
+      allRecordsMap.clear();
+
       const ms = new MiniSearch<SearchIndexRecord>({
         idField: "i",
-        fields: ["t", "d", "g"], // search in title, developers, genres
-        storeFields: ["i", "t", "s", "c", "r", "sr", "sc", "y", "d", "g"],
+        fields: ["t", "d"], // title & developers for quick suggestion search
+        storeFields: ["i", "t", "s", "c", "d"],
         extractField: (document, fieldName) => {
-          if (fieldName === "d" || fieldName === "g") {
+          if (fieldName === "d") {
             return (document[fieldName] as string[])?.join(" ") || "";
           }
           return (document as any)[fieldName];
@@ -36,12 +32,12 @@ self.onmessage = (event: MessageEvent) => {
         searchOptions: {
           fuzzy: 0.2,
           prefix: true,
-          boost: { t: 10, d: 3, g: 2 },
+          boost: { t: 10, d: 3 },
           combineWith: "AND",
         },
       });
 
-      records.forEach(r => allRecordsMap.set(r.i, r));
+      records.forEach(r => allRecordsMap.set(String(r.i), r));
       ms.addAll(records);
       miniSearchInstance = ms;
 
@@ -58,27 +54,21 @@ self.onmessage = (event: MessageEvent) => {
         return;
       }
 
-      // Execute search with MiniSearch
-      const searchResults = miniSearchInstance.search(query, {
-        fuzzy: query.length > 3 ? 0.2 : false,
+      const searchResults = miniSearchInstance.search(query.trim(), {
+        fuzzy: query.trim().length > 3 ? 0.2 : false,
         prefix: true,
-        boost: { t: 10, d: 3, g: 2 },
+        boost: { t: 10, d: 3 },
       });
 
       const sliced = searchResults.slice(0, limit);
       const results = sliced.map(res => {
-        const fullRecord = allRecordsMap.get(res.id as number) || (res as unknown as SearchIndexRecord);
+        const fullRecord = allRecordsMap.get(String(res.id)) || (res as unknown as SearchIndexRecord);
         return {
-          id: fullRecord.i,
+          id: String(fullRecord.i),
           title: fullRecord.t,
           slug: fullRecord.s,
           coverUrl: fullRecord.c,
-          rating: fullRecord.r,
-          steamRating: fullRecord.sr,
-          scareRating: fullRecord.sc,
-          releaseYear: fullRecord.y,
-          developers: fullRecord.d,
-          genres: fullRecord.g,
+          developerNames: Array.isArray(fullRecord.d) ? fullRecord.d.join(", ") : null,
           score: res.score,
         };
       });

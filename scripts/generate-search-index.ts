@@ -5,41 +5,30 @@ import {
   games as gamesTable,
   developers as developersTable,
   gamesToDevelopers,
-  genres as genresTable,
-  gamesToGenres
 } from "../src/db/schema";
 import { eq } from "drizzle-orm";
 import * as fs from "fs";
 import * as path from "path";
 
 export interface SearchIndexRecord {
-  i: number;           // id
+  i: string;           // id
   t: string;           // title
   s: string;           // slug
   c: string | null;    // coverUrl
-  r: number | null;    // rating
-  sr: number | null;   // steamRating
-  sc: number | null;   // scareRating
-  y: number | null;    // releaseYear
   d: string[];         // developers
-  g: string[];         // genres
 }
 
 async function generateSearchIndex() {
-  console.log("🚀 Generating compact search index for desktop native search...");
+  console.log("🚀 Generating minimal search index for mini search bar...");
   const startTime = Date.now();
 
-  // 1. Fetch all games
+  // 1. Fetch active games
   const rawGames = await turso
     .select({
       id: gamesTable.id,
       title: gamesTable.title,
       slug: gamesTable.slug,
       coverUrl: gamesTable.coverUrl,
-      rating: gamesTable.rating,
-      steamRating: gamesTable.steamRating,
-      scareRating: gamesTable.scareRating,
-      releaseDate: gamesTable.releaseDate,
       status: gamesTable.status,
     })
     .from(gamesTable);
@@ -47,57 +36,31 @@ async function generateSearchIndex() {
   const visibleGames = rawGames.filter(g => g.status !== "hidden");
   console.log(`📦 Found ${visibleGames.length} active games in Turso.`);
 
-  // 2. Fetch developers and genres mapping
-  const [allDevs, allGenres] = await Promise.all([
-    turso
-      .select({
-        gameId: gamesToDevelopers.gameId,
-        name: developersTable.name,
-      })
-      .from(gamesToDevelopers)
-      .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id)),
-    turso
-      .select({
-        gameId: gamesToGenres.gameId,
-        name: genresTable.name,
-      })
-      .from(gamesToGenres)
-      .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
-  ]);
+  // 2. Fetch developers mapping
+  const allDevs = await turso
+    .select({
+      gameId: gamesToDevelopers.gameId,
+      name: developersTable.name,
+    })
+    .from(gamesToDevelopers)
+    .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id));
 
-  const devsMap = new Map<number, string[]>();
+  const devsMap = new Map<string, string[]>();
   allDevs.forEach(({ gameId, name }) => {
-    if (!devsMap.has(gameId)) devsMap.set(gameId, []);
-    devsMap.get(gameId)!.push(name);
+    const key = String(gameId);
+    if (!devsMap.has(key)) devsMap.set(key, []);
+    devsMap.get(key)!.push(name);
   });
 
-  const genresMap = new Map<number, string[]>();
-  allGenres.forEach(({ gameId, name }) => {
-    if (!genresMap.has(gameId)) genresMap.set(gameId, []);
-    genresMap.get(gameId)!.push(name);
-  });
-
-  // 3. Assemble compact search records
+  // 3. Assemble minimal search records
   const searchRecords: SearchIndexRecord[] = visibleGames.map(game => {
-    let year: number | null = null;
-    if (game.releaseDate) {
-      const d = new Date(game.releaseDate);
-      if (!isNaN(d.getTime()) && d.getFullYear() > 1970) {
-        year = d.getFullYear();
-      }
-    }
-
+    const idKey = String(game.id);
     return {
-      i: game.id,
+      i: idKey,
       t: game.title,
       s: game.slug,
       c: game.coverUrl || null,
-      r: game.rating || null,
-      sr: game.steamRating || null,
-      sc: game.scareRating || null,
-      y: year,
-      d: devsMap.get(game.id) || [],
-      g: genresMap.get(game.id) || [],
+      d: devsMap.get(idKey) || [],
     };
   });
 
@@ -117,6 +80,12 @@ async function generateSearchIndex() {
 }
 
 generateSearchIndex().catch(err => {
-  console.error("❌ Failed to generate search index:", err);
-  process.exit(1);
+  const outputPath = path.join(process.cwd(), "public", "search-index.json");
+  if (fs.existsSync(outputPath)) {
+    console.warn("⚠️ Database offline/blocked. Preserving existing public/search-index.json file.");
+    process.exit(0);
+  } else {
+    console.error("❌ Failed to generate search index:", err);
+    process.exit(1);
+  }
 });

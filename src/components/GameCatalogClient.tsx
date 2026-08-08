@@ -7,6 +7,7 @@ import PlatformLogos from "./PlatformLogos";
 import NyanLoader from "./NyanLoader";
 import { usePreferences } from "../hooks/usePreferences";
 import { searchNative } from "../lib/nativeSearchManager";
+import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
 import HeroCarousel from "./HeroCarousel";
 import TabCatalog from "./TabCatalog";
 import StorefrontLists from "./StorefrontLists";
@@ -750,13 +751,7 @@ function GameCatalogClientInner({
       try {
         const queryParams = new URLSearchParams();
         if (debouncedSearch && !isSemantic) {
-          const nativeResults = await searchNative(debouncedSearch.trim(), 40);
-          if (nativeResults && nativeResults.length > 0) {
-            const matchedIds = nativeResults.map((r) => r.id).join(",");
-            queryParams.set("ids", matchedIds);
-          } else {
-            queryParams.set("search", debouncedSearch);
-          }
+          queryParams.set("search", debouncedSearch);
           if (bypassExpansion) queryParams.set("expand", "false");
         } else if (debouncedSearch && isSemantic) {
           queryParams.set("search", debouncedSearch);
@@ -769,12 +764,24 @@ function GameCatalogClientInner({
         if (sortBy) queryParams.set("sort", sortBy);
         queryParams.set("limit", "20");
 
+        const cacheKey = queryParams.toString();
+        const cachedData = getCachedCatalogResponse(cacheKey);
+        if (cachedData) {
+          setGames(cachedData.games || []);
+          setNextCursor(cachedData.nextCursor || null);
+          setResolvedExpandedQuery(cachedData.expandedQuery || null);
+          setLoading(false);
+          setHasInitialFetchRun(true);
+          return;
+        }
+
         const response = await fetch(`/api/games?${queryParams.toString()}`);
         if (response.ok) {
           const data = await response.json();
           setGames(data.games || []);
           setNextCursor(data.nextCursor || null);
           setResolvedExpandedQuery(data.expandedQuery || null);
+          setCachedCatalogResponse(cacheKey, data);
         }
       } catch (err) {
         console.error("❌ Error fetching catalog:", err);

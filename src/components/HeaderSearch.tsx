@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { getCloudinaryFetchUrl } from "../lib/utils";
-import { searchNative } from "../lib/nativeSearchManager";
+import { searchNative, initNativeSearch } from "../lib/nativeSearchManager";
 
 interface GameSearchResult {
   id: string;
@@ -41,6 +41,11 @@ export default function HeaderSearch() {
   const activeQueryRef = useRef(query);
   activeQueryRef.current = query;
 
+  // Pre-warm local search index on component mount
+  useEffect(() => {
+    initNativeSearch();
+  }, []);
+
   // Search logic: Native worker first (0ms, 0 API calls), fallback to Cloud API
   useEffect(() => {
     const trimmedQuery = query.trim();
@@ -62,7 +67,7 @@ export default function HeaderSearch() {
 
     let isSubscribed = true;
 
-    // 2. Try instant Native Worker Search on Desktop
+    // 2. Try instant Native Worker/Client Search (All devices)
     searchNative(trimmedQuery, 8).then((nativeResults) => {
       if (!isSubscribed) return;
 
@@ -73,7 +78,7 @@ export default function HeaderSearch() {
           title: r.title,
           slug: r.slug,
           coverUrl: r.coverUrl,
-          developerNames: Array.isArray(r.developers) ? r.developers.join(", ") : null,
+          developerNames: r.developerNames || null,
         }));
 
         setCachedResults(trimmedQuery, mappedGames);

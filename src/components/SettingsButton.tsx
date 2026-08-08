@@ -128,13 +128,6 @@ function SettingsButtonInner() {
           <Sliders className="w-3.5 h-3.5" /> Preferences
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={toggleNativeSearch} className="flex items-center justify-between cursor-pointer">
-          <span className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5" /> Instant Local Search
-          </span>
-          {nativeSearch && <span className="font-bold text-emerald-400">✓</span>}
-        </DropdownMenuItem>
-
         {!isStandalone && (
           <DropdownMenuItem onClick={handleInstallPWA} className="flex items-center justify-between cursor-pointer text-emerald-400 font-bold">
             <span className="flex items-center gap-1.5">

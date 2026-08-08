@@ -1,22 +1,28 @@
 /**
- * Desktop Native Search Manager
+ * Native Client Search Manager
  * 
- * Manages background downloading, IndexedDB caching, and Web Worker execution
- * for 0ms latency, typo-tolerant native desktop search.
+ * Manages background downloading, IndexedDB caching, Web Worker execution,
+ * and main-thread fallback for 0ms latency, typo-tolerant native search
+ * suggestions across ALL devices (Desktop, Mobile, Tablet).
  */
 
+import MiniSearch from "minisearch";
+
 export interface NativeSearchResult {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   coverUrl: string | null;
-  rating: number | null;
-  steamRating: number | null;
-  scareRating: number | null;
-  releaseYear: number | null;
-  developers: string[];
-  genres: string[];
+  developerNames: string | null;
   score: number;
+}
+
+export interface SearchIndexRecord {
+  i: string;           // id
+  t: string;           // title
+  s: string;           // slug
+  c: string | null;    // coverUrl
+  d: string[];         // developers
 }
 
 const IDB_NAME = "GamegataSearchDB";
@@ -25,37 +31,35 @@ const IDB_VERSION = 1;
 const PREF_KEY = "gamegata_native_search_enabled";
 
 let workerInstance: Worker | null = null;
-let isWorkerReady = false;
+let mainThreadMiniSearch: MiniSearch<SearchIndexRecord> | null = null;
+let mainThreadRecordsMap = new Map<string, SearchIndexRecord>();
+let isEngineReady = false;
 let messageIdCounter = 0;
+let initPromise: Promise<boolean> | null = null;
 const pendingCallbacks = new Map<number, (data: any) => void>();
 
-// Helper: Check if device is Desktop (non-touch or large screen)
-export function isDesktopDevice(): boolean {
+// Device preference helper — enabled for ALL devices by default
+export function isNativeSearchEnabled(): boolean {
   if (typeof window === "undefined") return false;
-  
-  // User setting override check
   const preference = localStorage.getItem(PREF_KEY);
   if (preference !== null) {
     return preference === "true";
   }
-
-  // Auto-detect Desktop vs Mobile
-  const userAgent = navigator.userAgent || "";
-  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-  const isSmallScreen = window.innerWidth < 768;
-
-  return !isMobileUA && !isSmallScreen;
-}
-
-// User preference getter/setter
-export function getNativeSearchPreference(): boolean {
-  return isDesktopDevice();
+  return true; // Compulsory on all devices by default
 }
 
 export function setNativeSearchPreference(enabled: boolean): void {
   if (typeof window !== "undefined") {
     localStorage.setItem(PREF_KEY, enabled ? "true" : "false");
   }
+}
+
+// Backward compatibility helpers
+export function isDesktopDevice(): boolean {
+  return isNativeSearchEnabled();
+}
+export function getNativeSearchPreference(): boolean {
+  return isNativeSearchEnabled();
 }
 
 // IndexedDB Helper
@@ -73,7 +77,7 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-async function getCachedRecords(): Promise<{ records: any[]; timestamp: number } | null> {
+async function getCachedRecords(): Promise<{ records: SearchIndexRecord[]; timestamp: number } | null> {
   try {
     const db = await openDB();
     return new Promise((resolve) => {
@@ -88,7 +92,7 @@ async function getCachedRecords(): Promise<{ records: any[]; timestamp: number }
   }
 }
 
-async function saveCachedRecords(records: any[]): Promise<void> {
+async function saveCachedRecords(records: SearchIndexRecord[]): Promise<void> {
   try {
     const db = await openDB();
     const tx = db.transaction(IDB_STORE, "readwrite");
@@ -99,17 +103,45 @@ async function saveCachedRecords(records: any[]): Promise<void> {
   }
 }
 
-// Spawn and initialize worker
+// Initialize search engine (Worker first, Main thread fallback)
 export async function initNativeSearch(): Promise<boolean> {
-  if (typeof window === "undefined" || isWorkerReady) return isWorkerReady;
+  if (typeof window === "undefined") return false;
+  if (!isNativeSearchEnabled()) return false;
+  if (isEngineReady) return true;
+  if (initPromise) return initPromise;
 
-  if (!isDesktopDevice()) {
-    return false;
-  }
+  initPromise = (async () => {
+    try {
+      // 1. Try loading from IndexedDB first for instant startup
+      const cached = await getCachedRecords();
+      if (cached && cached.records && Array.isArray(cached.records) && cached.records.length > 0) {
+        await loadRecordsIntoEngine(cached.records);
+        isEngineReady = true;
 
+        // Background revalidate if cache is older than 24 hours
+        if (Date.now() - cached.timestamp > 86400000) {
+          fetchFreshIndex();
+        }
+        return true;
+      }
+
+      // 2. Otherwise fetch fresh search-index.json
+      return await fetchFreshIndex();
+    } catch (e) {
+      console.warn("Failed to initialize native search engine:", e);
+      return false;
+    } finally {
+      initPromise = null;
+    }
+  })();
+
+  return initPromise;
+}
+
+async function loadRecordsIntoEngine(records: SearchIndexRecord[]): Promise<void> {
+  // Try Web Worker initialization first
   try {
-    // 1. Create Web Worker instance
-    if (!workerInstance) {
+    if (!workerInstance && typeof Worker !== "undefined") {
       workerInstance = new Worker(
         new URL("../workers/searchWorker.ts", import.meta.url),
         { type: "module" }
@@ -120,7 +152,7 @@ export async function initNativeSearch(): Promise<boolean> {
         const callback = pendingCallbacks.get(id);
         if (callback) {
           pendingCallbacks.delete(id);
-          if (type.endsWith("_ERROR")) {
+          if (type && type.endsWith("_ERROR")) {
             callback({ error });
           } else {
             callback(results || event.data);
@@ -129,37 +161,51 @@ export async function initNativeSearch(): Promise<boolean> {
       };
     }
 
-    // 2. Try loading from IndexedDB first for instant startup
-    const cached = await getCachedRecords();
-    if (cached && cached.records && cached.records.length > 0) {
-      sendWorkerMessage("INIT_INDEX", cached.records).then(() => {
-        isWorkerReady = true;
-      });
-
-      // Background revalidate if cache is older than 24 hours
-      if (Date.now() - cached.timestamp > 86400000) {
-        fetchFreshIndex();
+    if (workerInstance) {
+      const res = await sendWorkerMessage("INIT_INDEX", records);
+      if (res && res.type === "INIT_SUCCESS") {
+        return; // Worker loaded successfully
       }
-      return true;
     }
-
-    // 3. Otherwise fetch fresh search-index.json
-    return await fetchFreshIndex();
-  } catch (e) {
-    console.warn("Failed to initialize native search engine:", e);
-    return false;
+  } catch (err) {
+    console.warn("Web Worker setup failed, falling back to main-thread MiniSearch:", err);
+    workerInstance = null;
   }
+
+  // Main-Thread Fallback if Worker is unavailable or fails
+  const ms = new MiniSearch<SearchIndexRecord>({
+    idField: "i",
+    fields: ["t", "d"],
+    storeFields: ["i", "t", "s", "c", "d"],
+    extractField: (document, fieldName) => {
+      if (fieldName === "d") {
+        return (document[fieldName] as string[])?.join(" ") || "";
+      }
+      return (document as any)[fieldName];
+    },
+    searchOptions: {
+      fuzzy: 0.2,
+      prefix: true,
+      boost: { t: 10, d: 3 },
+      combineWith: "AND",
+    },
+  });
+
+  mainThreadRecordsMap.clear();
+  records.forEach((r) => mainThreadRecordsMap.set(String(r.i), r));
+  ms.addAll(records);
+  mainThreadMiniSearch = ms;
 }
 
 async function fetchFreshIndex(): Promise<boolean> {
   try {
     const res = await fetch("/search-index.json", { cache: "default" });
     if (!res.ok) return false;
-    const records = await res.json();
+    const records: SearchIndexRecord[] = await res.json();
     if (Array.isArray(records) && records.length > 0) {
       await saveCachedRecords(records);
-      await sendWorkerMessage("INIT_INDEX", records);
-      isWorkerReady = true;
+      await loadRecordsIntoEngine(records);
+      isEngineReady = true;
       return true;
     }
   } catch (e) {
@@ -180,35 +226,62 @@ function sendWorkerMessage(type: string, payload: any): Promise<any> {
   });
 }
 
-// Public Native Search Function
+// Public Native Search Suggestion Function
 export async function searchNative(query: string, limit = 20): Promise<NativeSearchResult[] | null> {
+  if (!isNativeSearchEnabled()) return null;
   if (!query || !query.trim()) return [];
 
-  // Initialize if not already done
-  if (!isWorkerReady) {
+  if (!isEngineReady) {
     const ok = await initNativeSearch();
-    if (!ok || !isWorkerReady) return null; // fallback to cloud API
+    if (!ok || !isEngineReady) return null;
   }
 
-  try {
-    const response = await sendWorkerMessage("SEARCH", { query, limit });
-    if (response && Array.isArray(response.results)) {
-      return response.results;
+  // 1. Try Web Worker execution first
+  if (workerInstance) {
+    try {
+      const response = await sendWorkerMessage("SEARCH", { query, limit });
+      if (response && Array.isArray(response.results)) {
+        return response.results;
+      }
+    } catch (e) {
+      console.warn("Worker search failed, falling back to main thread:", e);
     }
-  } catch (e) {
-    console.warn("Native search execution failed:", e);
   }
 
-  return null; // fallback to cloud API
+  // 2. Main thread search fallback
+  if (mainThreadMiniSearch) {
+    try {
+      const searchResults = mainThreadMiniSearch.search(query.trim(), {
+        fuzzy: query.trim().length > 3 ? 0.2 : false,
+        prefix: true,
+        boost: { t: 10, d: 3 },
+      });
+
+      const sliced = searchResults.slice(0, limit);
+      return sliced.map((res) => {
+        const fullRecord = mainThreadRecordsMap.get(String(res.id)) || (res as unknown as SearchIndexRecord);
+        return {
+          id: String(fullRecord.i),
+          title: fullRecord.t,
+          slug: fullRecord.s,
+          coverUrl: fullRecord.c,
+          developerNames: Array.isArray(fullRecord.d) ? fullRecord.d.join(", ") : null,
+          score: res.score,
+        };
+      });
+    } catch (e) {
+      console.warn("Main thread search execution failed:", e);
+    }
+  }
+
+  return null;
 }
 
-// Auto-initialize background load on idle for desktop
+// Auto-initialize background load on idle for ALL devices
 if (typeof window !== "undefined") {
-  if (isDesktopDevice()) {
-    if ("requestIdleCallback" in window) {
-      (window as any).requestIdleCallback(() => initNativeSearch());
-    } else {
-      setTimeout(() => initNativeSearch(), 1000);
-    }
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(() => initNativeSearch());
+  } else {
+    setTimeout(() => initNativeSearch(), 500);
   }
 }

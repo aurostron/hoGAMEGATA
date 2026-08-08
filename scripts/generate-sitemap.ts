@@ -93,8 +93,14 @@ ${blogItems}
 
     console.log("🎉 Static sitemap.xml generated successfully!");
   } catch (err) {
-    console.error("❌ Static sitemap generation failed:", err);
-    process.exit(1);
+    const destPath = path.join(process.cwd(), "public", "sitemap.xml");
+    if (fs.existsSync(destPath)) {
+      console.warn("⚠️ Database offline/blocked. Preserving existing sitemap.xml file.");
+      process.exit(0);
+    } else {
+      console.error("❌ Static sitemap generation failed:", err);
+      process.exit(1);
+    }
   }
 }
 
