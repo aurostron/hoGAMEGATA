@@ -1228,9 +1228,9 @@ function GataCatalogClientInner({
           </div>
 
           {/* ── Sort & Layout Controls Top Bar ── */}
-          <div className="flex items-center justify-between bg-[#0f0f12] border border-[#222227] p-3 flex-wrap gap-3">
+          <div className="flex items-center justify-between bg-[#121217]/95 border border-white/12 p-3 sm:p-4 rounded-2xl flex-wrap gap-3 backdrop-blur-md shadow-xl">
             <div className="flex items-center gap-3">
-              <span className="font-mono text-[10px] text-white/45 uppercase tracking-widest font-bold">
+              <span className="font-sans text-xs text-white/50 font-semibold tracking-wide">
                 Sort by:
               </span>
               <select
@@ -1239,10 +1239,10 @@ function GataCatalogClientInner({
                   setCurrentPage(1);
                   setSortBy(e.target.value);
                 }}
-                className="bg-[#1b1b22] border border-[#2d2d38] px-3 py-1.5 text-xs text-white font-mono rounded-none focus:outline-none focus:border-white/50 font-bold cursor-pointer"
+                className="bg-[#181820] border border-white/15 px-3.5 py-2 text-xs text-white font-sans rounded-xl focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 font-bold cursor-pointer transition-all shadow-sm"
               >
                 {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
+                  <option key={opt.value} value={opt.value} className="bg-[#121217] text-white">
                     {opt.label}
                   </option>
                 ))}
@@ -1250,23 +1250,25 @@ function GataCatalogClientInner({
             </div>
 
             {/* Layout Mode Toggles */}
-            <div className="flex border border-[#2d2d38]">
+            <div className="flex bg-[#181820] border border-white/12 rounded-xl p-1 gap-1">
               <button
                 onClick={() => changeLayoutMode("grid")}
-                className={`p-1.5 transition-colors cursor-pointer
-                  ${layoutMode === "grid" 
-                    ? "bg-white text-black" 
-                    : "text-white/60 hover:text-white hover:bg-[#20202a]"}`}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  layoutMode === "grid" 
+                    ? "bg-white text-black font-bold shadow-md" 
+                    : "text-white/60 hover:text-white hover:bg-white/10"
+                }`}
                 title="Grid layout"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => changeLayoutMode("list")}
-                className={`p-1.5 transition-colors cursor-pointer border-l border-[#2d2d38]
-                  ${layoutMode === "list" 
-                    ? "bg-white text-black" 
-                    : "text-white/60 hover:text-white hover:bg-[#20202a]"}`}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${
+                  layoutMode === "list" 
+                    ? "bg-white text-black font-bold shadow-md" 
+                    : "text-white/60 hover:text-white hover:bg-white/10"
+                }`}
                 title="List layout"
               >
                 <List className="w-4 h-4" />
@@ -1325,10 +1327,10 @@ function GataCatalogClientInner({
                           )}
                           <a
                             href={`/game/${game.slug}`}
-                            className="group flex flex-col h-full bg-[#131316] border border-[#222227] hover:border-[#3a3a42] rounded-none transition-all duration-300 relative select-none overflow-hidden text-left shadow-[0_4px_12px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] hover:-translate-y-0.5 cursor-pointer"
+                            className="group flex flex-col h-full bg-[#121217] border border-white/12 hover:border-white/35 rounded-2xl transition-all duration-300 relative select-none overflow-hidden text-left shadow-lg hover:shadow-2xl hover:-translate-y-1 cursor-pointer"
                           >
                             {/* Cover aspect ratio */}
-                            <div className="aspect-[3/4] relative overflow-hidden bg-neutral-950 border-b border-[#222227] shrink-0">
+                            <div className="aspect-[3/4] relative overflow-hidden bg-neutral-950 border-b border-white/10 shrink-0">
                                <HoverTrailer
                                 trailerUrl={game.trailerUrl}
                                 coverUrl={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending)}
@@ -1338,7 +1340,7 @@ function GataCatalogClientInner({
 
                               {/* Category Badge on cover */}
                               {badge && (
-                                <span className="absolute top-2 left-2 font-mono text-[8px] uppercase tracking-widest bg-[#7a3bfa] text-white font-bold px-1.5 py-0.5 z-10 select-none">
+                                <span className="absolute top-2 left-2 text-[9px] font-bold bg-[#7a3bfa] text-white rounded-full px-2 py-0.5 z-10 select-none shadow-sm">
                                   {badge}
                                 </span>
                               )}
@@ -1353,12 +1355,12 @@ function GataCatalogClientInner({
                             </div>
 
                             {/* Text and Pricing */}
-                            <div className="p-3 sm:p-4 flex-grow flex flex-col justify-between gap-2.5 bg-[#18181c]">
+                            <div className="p-3.5 sm:p-4 flex-grow flex flex-col justify-between gap-2.5 bg-[#121217]">
                               <div className="space-y-1">
-                                <h4 className="text-white font-bold uppercase text-xs tracking-wider line-clamp-1 group-hover:underline">
+                                <h4 className="text-white font-bold text-xs sm:text-sm tracking-tight line-clamp-1 group-hover:text-white/90">
                                   {cleanTitle(game.title)}
                                 </h4>
-                                <span className="font-mono text-[10px] text-white/40 block leading-tight">
+                                <span className="text-xs text-white/50 block font-medium truncate">
                                   {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
                                 </span>
                               </div>
@@ -1368,32 +1370,32 @@ function GataCatalogClientInner({
                                 {finalDeal ? (
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     {finalDeal.discountPercent > 0 && (
-                                      <span className="font-mono text-[10px] font-black bg-[#7a3bfa] text-white px-1.5 py-0.5 select-none">
+                                      <span className="text-[10px] font-bold bg-[#7a3bfa] text-white px-1.5 py-0.5 rounded select-none">
                                         -{finalDeal.discountPercent}%
                                       </span>
                                     )}
                                     <div className="flex flex-col items-start leading-none">
-                                      <span className="font-mono text-xs font-bold text-white leading-none">
+                                      <span className="text-xs font-bold text-white leading-none">
                                         {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
                                       </span>
                                       {finalDeal.discountPercent > 0 && (
-                                        <span className="font-mono text-[9px] text-white/30 line-through mt-0.5">
+                                        <span className="text-[9px] text-white/40 line-through mt-0.5">
                                           {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
                                         </span>
                                       )}
                                     </div>
                                   </div>
                                 ) : itchLink ? (
-                                  <span className="font-mono text-[10px] text-[#fa5c5c] font-black border border-[#fa5c5c]/30 bg-[#fa5c5c]/5 px-2 py-1 select-none uppercase tracking-wider">
+                                  <span className="text-[10px] text-[#fa5c5c] font-bold border border-[#fa5c5c]/30 bg-[#fa5c5c]/10 px-2 py-0.5 rounded-full select-none uppercase tracking-wider">
                                     Itch.io
                                   </span>
                                 ) : (
-                                  <span className="font-mono text-[10px] text-white/20 uppercase select-none">—</span>
+                                  <span className="text-xs text-white/30 font-medium select-none">—</span>
                                 )}
 
                                 <div className="flex items-center gap-1.5">
                                   {/* Release status tag */}
-                                  <span className="font-mono text-[9px] text-white/75 border border-white/20 bg-white/5 px-2 py-0.5 uppercase tracking-widest font-black select-none">
+                                  <span className="text-[10px] text-white/70 border border-white/10 bg-white/5 px-2.5 py-0.5 rounded-full font-medium select-none">
                                     {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
                                   </span>
 
@@ -1408,15 +1410,15 @@ function GataCatalogClientInner({
                                         setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(game.id); return n; }), 1800);
                                       }}
                                       title="Add to cart"
-                                      className={`shrink-0 p-1 border transition-all duration-200 cursor-pointer ${
+                                      className={`shrink-0 p-1.5 rounded-full border transition-all duration-200 cursor-pointer ${
                                         addedIds.has(game.id)
                                           ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-400"
-                                          : "border-white/15 bg-white/5 text-white/50 hover:border-white/50 hover:bg-white/10 hover:text-white"
+                                          : "border-white/15 bg-white/5 text-white/60 hover:border-white hover:bg-white hover:text-black"
                                       }`}
                                     >
                                       {addedIds.has(game.id)
-                                        ? <CheckCheck className="w-3 h-3" />
-                                        : <ShoppingCart className="w-3 h-3" />}
+                                        ? <CheckCheck className="w-3.5 h-3.5" />
+                                        : <ShoppingCart className="w-3.5 h-3.5" />}
                                     </button>
                                   )}
                                 </div>
@@ -1462,34 +1464,34 @@ function GataCatalogClientInner({
                           )}
                           <a
                             href={`/game/${game.slug}`}
-                            className="group flex flex-row items-center justify-between border border-[#222227] hover:border-[#3a3a42] bg-[#131316] hover:bg-[#18181c] p-3 select-none text-left gap-4 shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.5)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                            className="group flex flex-row items-center justify-between border border-white/12 hover:border-white/35 bg-[#121217] hover:bg-[#16161d] p-3.5 rounded-2xl select-none text-left gap-4 shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
                           >
                             {/* Cover thumbnail */}
-                            <div className="relative shrink-0 w-12 h-16 bg-neutral-950 border border-[#222227] overflow-hidden flex items-center justify-center select-none">
+                            <div className="relative shrink-0 w-12 h-16 bg-neutral-950 border border-white/10 rounded-xl overflow-hidden flex items-center justify-center select-none shadow-sm">
                               {game.coverUrl && !failedImages[game.id] ? (
                                 <img
                                   src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
                                   alt={game.title}
-                                  className="object-cover w-full h-full"
+                                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                                   loading="lazy"
                                   onError={() => setFailedImages(prev => ({ ...prev, [game.id]: true }))}
                                 />
                               ) : (
-                                <span className="font-mono text-[8px] uppercase tracking-widest text-white/40 font-bold">[ NA ]</span>
+                                <span className="text-[10px] text-white/40 font-medium">[ NA ]</span>
                               )}
                             </div>
 
                             {/* Title and details */}
                             <div className="flex-grow min-w-0 space-y-1">
-                              <h4 className="text-white font-bold uppercase text-xs tracking-wider line-clamp-1 group-hover:underline flex items-center gap-2">
+                              <h4 className="text-white font-bold text-xs sm:text-sm tracking-tight line-clamp-1 group-hover:text-white/90 flex items-center gap-2">
                                 <span>{cleanTitle(game.title)}</span>
                                 {badge && (
-                                  <span className="font-mono text-[8px] uppercase tracking-widest bg-[#7a3bfa] text-white font-bold px-1 py-0.2 select-none">
+                                  <span className="text-[9px] font-bold bg-[#7a3bfa] text-white rounded-full px-2 py-0.5 select-none shadow-sm">
                                     {badge}
                                   </span>
                                 )}
                               </h4>
-                              <span className="font-mono text-[10px] text-white/40 block leading-tight truncate max-w-sm">
+                              <span className="text-xs text-white/50 block font-medium truncate max-w-sm">
                                 by {game.developerNames ? game.developerNames.split(", ")[0] : "Unknown Developer"}
                               </span>
                             </div>
@@ -1500,8 +1502,8 @@ function GataCatalogClientInner({
                             </div>
 
                             {/* Status */}
-                            <div className="hidden sm:block shrink-0 min-w-[75px] text-right font-mono text-[9px] text-white/70 uppercase">
-                              <span className="border border-white/20 bg-white/5 px-1.5 py-0.5 tracking-wider font-bold select-none">
+                            <div className="hidden sm:block shrink-0 min-w-[75px] text-right font-sans text-xs">
+                              <span className="border border-white/10 bg-white/5 px-2.5 py-0.5 rounded-full text-[10px] text-white/70 font-medium select-none">
                                 {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
                               </span>
                             </div>
@@ -1510,19 +1512,19 @@ function GataCatalogClientInner({
                             <div className="shrink-0 min-w-[95px] flex flex-col items-center justify-center font-mono select-none">
                               {game.displayRating !== null && game.displayRating !== undefined ? (
                                 <div className="flex flex-col items-center gap-1">
-                                  <div className={`px-2 py-0.5 border text-[10px] font-black tracking-wider ${
+                                  <div className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold tracking-wider ${
                                     game.displayRating >= 90
-                                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.2)]"
+                                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
                                       : game.displayRating >= 75
-                                      ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
+                                      ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
                                       : game.displayRating >= 50
-                                      ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
-                                      : "border-red-500/50 bg-red-500/10 text-red-400"
+                                      ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
+                                      : "border-red-500/40 bg-red-500/10 text-red-400"
                                   }`}>
                                     {Math.round(game.displayRating)} / 100
                                   </div>
                                   {game.isAbsoluteCinema && (
-                                    <span className="text-[7px] text-emerald-400 font-black tracking-widest uppercase leading-none mt-0.5">
+                                    <span className="text-[7px] text-emerald-400 font-bold tracking-widest uppercase leading-none mt-0.5">
                                       ABSOLUTE CINEMA
                                     </span>
                                   )}
@@ -1537,27 +1539,27 @@ function GataCatalogClientInner({
                               {finalDeal ? (
                                 <div className="flex items-center gap-2 justify-end">
                                   {finalDeal.discountPercent > 0 && (
-                                    <span className="font-mono text-[10px] font-black bg-[#7a3bfa] text-white px-1.5 py-0.5">
+                                    <span className="text-[10px] font-bold bg-[#7a3bfa] text-white px-1.5 py-0.5 rounded">
                                       -{finalDeal.discountPercent}%
                                     </span>
                                   )}
                                   <div className="text-right leading-none">
-                                    <span className="font-mono text-xs font-bold text-white">
+                                    <span className="text-xs font-bold text-white">
                                       {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
                                     </span>
                                     {finalDeal.discountPercent > 0 && (
-                                      <span className="font-mono text-[9px] text-white/30 line-through block mt-0.5">
+                                      <span className="text-[9px] text-white/40 line-through block mt-0.5">
                                         {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
                                       </span>
                                     )}
                                   </div>
                                 </div>
                               ) : itchLink ? (
-                                <span className="font-mono text-[9px] text-[#fa5c5c] font-black border border-[#fa5c5c]/30 bg-[#fa5c5c]/5 px-2 py-0.5 uppercase tracking-wider">
+                                <span className="text-[9px] text-[#fa5c5c] font-bold border border-[#fa5c5c]/30 bg-[#fa5c5c]/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
                                   Itch.io
                                 </span>
                               ) : (
-                                <span className="font-mono text-xs text-white/20 uppercase">—</span>
+                                <span className="text-xs text-white/30 font-medium uppercase">—</span>
                               )}
 
                               {/* Add to Cart button — list view */}
@@ -1571,10 +1573,10 @@ function GataCatalogClientInner({
                                     setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(game.id); return n; }), 1800);
                                   }}
                                   title="Add to cart"
-                                  className={`flex items-center gap-1 px-2 py-1 border font-mono text-[9px] uppercase tracking-wider font-bold transition-all duration-200 cursor-pointer ${
+                                  className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-semibold transition-all duration-200 cursor-pointer ${
                                     addedIds.has(game.id)
-                                      ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400"
-                                      : "border-white/15 bg-white/5 text-white/40 hover:border-white/50 hover:bg-white/10 hover:text-white"
+                                      ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-400"
+                                      : "border-white/15 bg-white/5 text-white/60 hover:border-white hover:bg-white hover:text-black"
                                   }`}
                                 >
                                   {addedIds.has(game.id)

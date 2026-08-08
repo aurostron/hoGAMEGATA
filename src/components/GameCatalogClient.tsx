@@ -191,10 +191,10 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
         }
       }}
       data-tour={index === 0 ? "game-card" : undefined}
-      className="group flex flex-row items-stretch border border-white/20 hover:border-white bg-black hover:bg-[#0d0d0d] transition-all duration-200 rounded-none overflow-hidden relative select-none min-h-[115px] sm:min-h-[140px]"
+      className="group flex flex-row items-stretch border border-white/12 hover:border-white/35 bg-[#121217] hover:bg-[#16161d] transition-all duration-300 rounded-2xl overflow-hidden relative select-none min-h-[115px] sm:min-h-[140px] shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
     >
       {/* ── Cover thumbnail ── */}
-      <div className="relative shrink-0 w-[115px] sm:w-[140px] h-full overflow-hidden bg-neutral-900">
+      <div className="relative shrink-0 w-[115px] sm:w-[140px] h-full overflow-hidden bg-neutral-950 border-r border-white/10">
         {game.coverUrl ? (
           <img
             src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
@@ -422,10 +422,10 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
         }
       }}
       data-tour={index === 0 ? "game-card" : undefined}
-      className="border border-white bg-transparent rounded-none overflow-hidden hover:bg-white hover:text-black group transition-all duration-150 flex flex-col h-full relative select-none"
+      className="group flex flex-col h-full bg-[#121217] border border-white/12 hover:border-white/35 rounded-2xl transition-all duration-300 relative select-none overflow-hidden text-left shadow-lg hover:shadow-2xl hover:-translate-y-1 cursor-pointer"
     >
       {/* Cover Image */}
-      <div className={`relative bg-neutral-900 overflow-hidden shrink-0 flex items-center justify-center w-full border-b border-white ${game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"}`}>
+      <div className={`relative bg-neutral-950 overflow-hidden shrink-0 flex items-center justify-center w-full border-b border-white/10 ${game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"}`}>
         <HoverTrailer
           trailerUrl={game.trailerUrl}
           coverUrl={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending)}
@@ -437,7 +437,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
         <button
           onClick={handleCartToggle}
           title={isInCart ? "Remove from cart" : "Add to cart"}
-          className={`absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center border transition-all duration-150 cursor-pointer select-none
+          className={`absolute top-2 right-2 z-20 w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-150 cursor-pointer select-none
             ${isInCart
               ? "bg-[#7b3fc4] border-[#7b3fc4] text-white shadow-[0_0_8px_rgba(123,63,196,0.9)]"
               : "bg-black/60 border-white/20 text-white/70 hover:bg-white hover:text-black hover:border-white hover:scale-110"
@@ -859,16 +859,16 @@ function GameCatalogClientInner({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={isSemantic ? "Describe horror themes, concepts, settings... (e.g. 'alien isolation but co-op')" : "Search by title, developer, genre, tag..."}
-                className="block w-full pl-10 pr-36 py-3.5 bg-black border border-white/30 focus:border-white rounded-none focus:outline-none text-sm text-white placeholder-white/45 transition-all duration-200 font-medium tracking-wide"
+                className="block w-full pl-10 pr-36 py-3.5 bg-[#121217] border border-white/12 focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-2xl focus:outline-none text-sm text-white placeholder-white/40 transition-all duration-200 font-medium tracking-wide"
               />
               {/* AI Concept Search toggle — right side of the input */}
               <button
                 onClick={() => setIsSemantic(prev => !prev)}
                 title={isSemantic ? "Switch to exact search" : "Switch to AI concept search"}
-                className={`absolute inset-y-0 right-0 flex items-center gap-1.5 px-3 border-l font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 cursor-pointer select-none ${
+                className={`absolute inset-y-0 right-0 flex items-center gap-1.5 px-4 border-l font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 cursor-pointer select-none rounded-r-2xl ${
                   isSemantic
                     ? "bg-white text-black border-white"
-                    : "bg-black text-white/40 border-white/20 hover:text-white hover:border-white/50"
+                    : "bg-[#181820] text-white/50 border-white/12 hover:text-white hover:bg-white/10"
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5 shrink-0" />
@@ -889,7 +889,7 @@ function GameCatalogClientInner({
               onClick={handleFeelingLucky}
               disabled={luckyLoading}
               title={searchQuery.trim() ? `Jump to best match for "${searchQuery}"` : "Open a random game"}
-              className="shrink-0 px-4 py-3.5 bg-black border border-white/30 text-white hover:border-white hover:bg-white hover:text-black transition-all duration-150 rounded-none cursor-pointer font-mono text-[11px] font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[50px]"
+              className="shrink-0 px-5 py-3.5 bg-[#121217] border border-white/12 text-white hover:border-white/30 hover:bg-white/10 transition-all duration-150 rounded-2xl cursor-pointer font-sans text-xs font-bold uppercase tracking-wider whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[50px] shadow-md"
             >
               {luckyLoading ? (
                 <span className="animate-pulse">Searching...</span>

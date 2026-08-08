@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "tsx scripts/generate-sitemap.ts && astro build",
+    "build": "tsx scripts/generate-sitemap.ts && astro build && node scripts/fix-manifest-urls.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
