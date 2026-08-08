@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon, Download } from "lucide-react";
+import { BookOpen, Sliders, Layout, LogIn, LogOut, User as UserIcon, Download, Zap } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuTrigger, 
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth, AuthProvider } from "@/context/AuthContext";
 import { usePreferences } from "@/hooks/usePreferences";
+import { getNativeSearchPreference, setNativeSearchPreference, initNativeSearch } from "@/lib/nativeSearchManager";
 
 function SettingsButtonInner() {
   const { user, logout } = useAuth();
@@ -20,10 +21,12 @@ function SettingsButtonInner() {
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [nativeSearch, setNativeSearch] = useState(false);
 
-  // Sync pathname and layout from localStorage on mount and listen to changes
+  // Sync pathname, layout, and native search preference from localStorage on mount
   useEffect(() => {
     setPathname(window.location.pathname);
+    setNativeSearch(getNativeSearchPreference());
 
     const saved = localStorage.getItem("gata-mobile-layout");
     if (saved === "list" || saved === "grid") {
@@ -59,6 +62,15 @@ function SettingsButtonInner() {
     localStorage.setItem("gata-mobile-layout", newLayout);
     setLayout(newLayout);
     window.dispatchEvent(new Event("gata-mobile-layout-changed"));
+  };
+
+  const toggleNativeSearch = () => {
+    const nextState = !nativeSearch;
+    setNativeSearchPreference(nextState);
+    setNativeSearch(nextState);
+    if (nextState) {
+      initNativeSearch();
+    }
   };
 
   const handleInstallPWA = async () => {
@@ -114,6 +126,13 @@ function SettingsButtonInner() {
         <DropdownMenuLabel>Personalize</DropdownMenuLabel>
         <DropdownMenuItem onClick={openModal} className="flex items-center gap-1.5 cursor-pointer">
           <Sliders className="w-3.5 h-3.5" /> Preferences
+        </DropdownMenuItem>
+
+        <DropdownMenuItem onClick={toggleNativeSearch} className="flex items-center justify-between cursor-pointer">
+          <span className="flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5" /> Instant Local Search
+          </span>
+          {nativeSearch && <span className="font-bold text-emerald-400">✓</span>}
         </DropdownMenuItem>
 
         {!isStandalone && (

@@ -27,6 +27,8 @@ import { CartProvider, useCart } from "../context/CartContext";
 import { AuthProvider } from "../context/AuthContext";
 import HoverTrailer from "./HoverTrailer";
 
+import { searchNative } from "../lib/nativeSearchManager";
+
 const formatDate = (dateVal: string | Date | null | undefined) => {
   if (!dateVal) return "";
   try {
@@ -399,7 +401,15 @@ function GataCatalogClientInner({
       setLoading(true);
       try {
         const queryParams = new URLSearchParams();
-        if (debouncedSearch) queryParams.set("search", debouncedSearch);
+        if (debouncedSearch.trim()) {
+          const nativeResults = await searchNative(debouncedSearch.trim(), 120);
+          if (nativeResults && nativeResults.length > 0) {
+            const matchedIds = nativeResults.map((r) => r.id).join(",");
+            queryParams.set("ids", matchedIds);
+          } else {
+            queryParams.set("search", debouncedSearch);
+          }
+        }
         if (sortBy) queryParams.set("sort", sortBy);
         if (!hideDlcs) queryParams.set("hideDlcs", "false");
         if (freeOnly) queryParams.set("freeOnly", "true");

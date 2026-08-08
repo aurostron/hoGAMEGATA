@@ -6,6 +6,7 @@ import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle
 import PlatformLogos from "./PlatformLogos";
 import NyanLoader from "./NyanLoader";
 import { usePreferences } from "../hooks/usePreferences";
+import { searchNative } from "../lib/nativeSearchManager";
 import HeroCarousel from "./HeroCarousel";
 import TabCatalog from "./TabCatalog";
 import StorefrontLists from "./StorefrontLists";
@@ -748,9 +749,18 @@ function GameCatalogClientInner({
       setLoading(true);
       try {
         const queryParams = new URLSearchParams();
-        if (debouncedSearch) {
+        if (debouncedSearch && !isSemantic) {
+          const nativeResults = await searchNative(debouncedSearch.trim(), 40);
+          if (nativeResults && nativeResults.length > 0) {
+            const matchedIds = nativeResults.map((r) => r.id).join(",");
+            queryParams.set("ids", matchedIds);
+          } else {
+            queryParams.set("search", debouncedSearch);
+          }
+          if (bypassExpansion) queryParams.set("expand", "false");
+        } else if (debouncedSearch && isSemantic) {
           queryParams.set("search", debouncedSearch);
-          if (isSemantic) queryParams.set("mode", "semantic");
+          queryParams.set("mode", "semantic");
           if (bypassExpansion) queryParams.set("expand", "false");
         }
         if (!debouncedSearch && explicitVibes && explicitVibes.length > 0) {

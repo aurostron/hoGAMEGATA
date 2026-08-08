@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { getCloudinaryFetchUrl } from "../lib/utils";
+import { searchNative } from "../lib/nativeSearchManager";
 
 interface GameSearchResult {
   id: string;
@@ -40,7 +41,7 @@ export default function HeaderSearch() {
   const activeQueryRef = useRef(query);
   activeQueryRef.current = query;
 
-  // Debounced search logic with LRU cache, AbortController & stale-query protection
+  // Search logic: Native worker first (0ms, 0 API calls), fallback to Cloud API
   useEffect(() => {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
@@ -59,42 +60,66 @@ export default function HeaderSearch() {
       return;
     }
 
-    const controller = new AbortController();
+    let isSubscribed = true;
 
-    const delayDebounce = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `/api/search/suggest?q=${encodeURIComponent(trimmedQuery)}`,
-          { signal: controller.signal }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const fetchedGames: GameSearchResult[] = data.games || [];
-          
-          // Cache response in client memory
-          setCachedResults(trimmedQuery, fetchedGames);
+    // 2. Try instant Native Worker Search on Desktop
+    searchNative(trimmedQuery, 8).then((nativeResults) => {
+      if (!isSubscribed) return;
 
-          // Only update state if this is still the active search query
-          if (activeQueryRef.current.trim() === trimmedQuery) {
-            setResults(fetchedGames);
-            setIsOpen(true);
-          }
-        }
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          console.error("Header search suggest error:", err);
-        }
-      } finally {
+      if (nativeResults !== null) {
+        // Native search succeeded!
+        const mappedGames: GameSearchResult[] = nativeResults.map((r) => ({
+          id: String(r.id),
+          title: r.title,
+          slug: r.slug,
+          coverUrl: r.coverUrl,
+          developerNames: Array.isArray(r.developers) ? r.developers.join(", ") : null,
+        }));
+
+        setCachedResults(trimmedQuery, mappedGames);
+
         if (activeQueryRef.current.trim() === trimmedQuery) {
+          setResults(mappedGames);
+          setIsOpen(true);
           setLoading(false);
         }
+        return;
       }
-    }, 250);
+
+      // 3. Fallback to Cloud API if Native search is not active (e.g. mobile or initializing)
+      const controller = new AbortController();
+      setLoading(true);
+
+      fetch(`/api/search/suggest?q=${encodeURIComponent(trimmedQuery)}`, {
+        signal: controller.signal,
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!isSubscribed) return;
+          if (data && data.games) {
+            const fetchedGames: GameSearchResult[] = data.games || [];
+            setCachedResults(trimmedQuery, fetchedGames);
+
+            if (activeQueryRef.current.trim() === trimmedQuery) {
+              setResults(fetchedGames);
+              setIsOpen(true);
+            }
+          }
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") {
+            console.error("Header search suggest error:", err);
+          }
+        })
+        .finally(() => {
+          if (isSubscribed && activeQueryRef.current.trim() === trimmedQuery) {
+            setLoading(false);
+          }
+        });
+    });
 
     return () => {
-      controller.abort();
-      clearTimeout(delayDebounce);
+      isSubscribed = false;
     };
   }, [query]);
 

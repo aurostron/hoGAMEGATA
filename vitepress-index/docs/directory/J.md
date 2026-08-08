@@ -1,0 +1,176 @@
+---
+title: "Games — J - hoGAMEGATA Index Mirror"
+description: "Alphabetical index of horror games starting with J (159 games)."
+---
+
+# Games — J
+
+**Total Games:** 159 | [Previous (I)](/directory/I) | [Next (K)](/directory/K)
+
+---
+
+| Game Title | Developer | Links |
+| :--- | :--- | :---: |
+| <a id="jai-trouve-le-manoir-hante" class="game-target"></a>**J'ai Trouvé! Le Manoir Hanté** | Unknown | <a href="https://gamegata.xyz/game/jai-trouve-le-manoir-hante" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="ja-in" class="game-target"></a>**Ja-in** | Kona Kona Kona Kona Kona | <a href="https://gamegata.xyz/game/ja-in" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jaafars-nightmare" class="game-target"></a>**Ja'afar's nightmare** | Unknown | <a href="https://gamegata.xyz/game/jaafars-nightmare" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack--1" class="game-target"></a>**Jack** | Unknown | <a href="https://gamegata.xyz/game/jack--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-b-nimble" class="game-target"></a>**Jack B. Nimble** | Noonan Design | <a href="https://gamegata.xyz/game/jack-b-nimble" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-holmes-master-of-puppets" class="game-target"></a>**Jack Holmes: Master of Puppets** | TonyDevGame | <a href="https://gamegata.xyz/game/jack-holmes-master-of-puppets" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-holmes-master-of-puppets-prologue" class="game-target"></a>**Jack Holmes: Master of Puppets - Prologue** | TonyDevGame | <a href="https://gamegata.xyz/game/jack-holmes-master-of-puppets-prologue" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-in-the-box" class="game-target"></a>**Jack in the Box** | tayoDEV | <a href="https://gamegata.xyz/game/jack-in-the-box" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-in-the-dark" class="game-target"></a>**Jack in the Dark** | Infogrames | <a href="https://gamegata.xyz/game/jack-in-the-dark" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-the-mime" class="game-target"></a>**Jack The Mime** | Unknown | <a href="https://gamegata.xyz/game/jack-the-mime" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-the-ripper" class="game-target"></a>**Jack the Ripper** | St. Bride's School | <a href="https://gamegata.xyz/game/jack-the-ripper" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jack-the-ripper--1" class="game-target"></a>**Jack the Ripper** | Galiléa | <a href="https://gamegata.xyz/game/jack-the-ripper--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jackie" class="game-target"></a>**Jackie** | brokensketch120 | <a href="https://gamegata.xyz/game/jackie" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jacob-jazzs-the-bus" class="game-target"></a>**Jacob Jazz's The Bus** | Celery Emblem | <a href="https://gamegata.xyz/game/jacob-jazzs-the-bus" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jaded" class="game-target"></a>**Jaded** | Unknown | <a href="https://gamegata.xyz/game/jaded" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jaden-williams-the-stalking-stairs" class="game-target"></a>**Jaden Williams' The Stalking Stairs** | Jaden Williams | <a href="https://gamegata.xyz/game/jaden-williams-the-stalking-stairs" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jailbreaker" class="game-target"></a>**JailBreaker** | Highwaystar | <a href="https://gamegata.xyz/game/jailbreaker" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jakes-halloween-night" class="game-target"></a>**Jake's Halloween Night** | DreamBones | <a href="https://gamegata.xyz/game/jakes-halloween-night" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jaki-crush" class="game-target"></a>**Jaki Crush** | Compile | <a href="https://gamegata.xyz/game/jaki-crush" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jam-and-the-mystery-of-the-mysteriously-spooky-mansion" class="game-target"></a>**Jam and the Mystery of the Mysteriously Spooky Mansion** | Res | <a href="https://gamegata.xyz/game/jam-and-the-mystery-of-the-mysteriously-spooky-mansion" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jamal-jones-hells-executioner" class="game-target"></a>**Jamal Jones: Hell's Executioner** | Unknown | <a href="https://gamegata.xyz/game/jamal-jones-hells-executioner" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="james-camerons-dark-angel" class="game-target"></a>**James Cameron's Dark Angel** | Radical Entertainment | <a href="https://gamegata.xyz/game/james-camerons-dark-angel" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jane-wilde" class="game-target"></a>**Jane Wilde** | Unknown | <a href="https://gamegata.xyz/game/jane-wilde" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jane-anyone-can-be-scared" class="game-target"></a>**Jane: Anyone can be Scared** | Never Grown Up Games | <a href="https://gamegata.xyz/game/jane-anyone-can-be-scared" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="janet-demornay-is-a-slumlord-and-a-witch" class="game-target"></a>**Janet DeMornay is a Slumlord (and a witch)** | Fuzzy Ghost | <a href="https://gamegata.xyz/game/janet-demornay-is-a-slumlord-and-a-witch" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="janitor-bleeds" class="game-target"></a>**JANITOR BLEEDS** | Korpus | <a href="https://gamegata.xyz/game/janitor-bleeds" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="january" class="game-target"></a>**January** | litrouke | <a href="https://gamegata.xyz/game/january" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="japan-stigmatized-property" class="game-target"></a>**Japan Stigmatized Property** | Unknown | <a href="https://gamegata.xyz/game/japan-stigmatized-property" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="japan-stigmatized-property-2" class="game-target"></a>**Japan Stigmatized Property 2** | Unknown | <a href="https://gamegata.xyz/game/japan-stigmatized-property-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jars" class="game-target"></a>**JARS** | Mousetrap Games | <a href="https://gamegata.xyz/game/jars" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jawbone-hollow" class="game-target"></a>**Jawbone Hollow** | Unknown | <a href="https://gamegata.xyz/game/jawbone-hollow" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jawbreaker--4" class="game-target"></a>**Jawbreaker** | Vincent Lade | <a href="https://gamegata.xyz/game/jawbreaker--4" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jawed" class="game-target"></a>**Jawed** | ReinerTheGod Games | <a href="https://gamegata.xyz/game/jawed" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jaws--1" class="game-target"></a>**Jaws** | Westone | <a href="https://gamegata.xyz/game/jaws--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jaws-unleashed" class="game-target"></a>**Jaws Unleashed** | Appaloosa Interactive | <a href="https://gamegata.xyz/game/jaws-unleashed" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeff-the-janitor" class="game-target"></a>**Jeff the Janitor** | Unknown | <a href="https://gamegata.xyz/game/jeff-the-janitor" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeff-the-killer--2" class="game-target"></a>**Jeff the Killer** | SU Company Games | <a href="https://gamegata.xyz/game/jeff-the-killer--2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeff-the-killer" class="game-target"></a>**Jeff The Killer** | Unknown | <a href="https://gamegata.xyz/game/jeff-the-killer" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeff-the-killer-revenge" class="game-target"></a>**Jeff the Killer Revenge** | Unknown | <a href="https://gamegata.xyz/game/jeff-the-killer-revenge" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeff-the-killer-vs-slendrina" class="game-target"></a>**Jeff The Killer vs. Slendrina** | Poison Games | <a href="https://gamegata.xyz/game/jeff-the-killer-vs-slendrina" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeff-the-killer-slendermans-betrayal" class="game-target"></a>**Jeff The Killer: Slendermans Betrayal** | Poison Games | <a href="https://gamegata.xyz/game/jeff-the-killer-slendermans-betrayal" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeffrey-eggstein" class="game-target"></a>**Jeffrey Eggstein** | Unknown | <a href="https://gamegata.xyz/game/jeffrey-eggstein" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeffys-infinite-irida" class="game-target"></a>**Jeffy's Infinite Irida** | Unknown | <a href="https://gamegata.xyz/game/jeffys-infinite-irida" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jelly-a-love-story" class="game-target"></a>**Jelly: A love story** | Chandler Groover | <a href="https://gamegata.xyz/game/jelly-a-love-story" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jennifer" class="game-target"></a>**Jennifer** | Masterderrico | <a href="https://gamegata.xyz/game/jennifer" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jennifer-janowski-is-doomed" class="game-target"></a>**Jennifer Janowski is Doomed** | Anna Anthropy | <a href="https://gamegata.xyz/game/jennifer-janowski-is-doomed" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="zzt-jj" class="game-target"></a>**Jennifer Janowski is Doomed** | Unknown | <a href="https://gamegata.xyz/game/zzt-jj" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jennifers-fragments" class="game-target"></a>**Jennifer's Fragments** | Studio Gathering Storm | <a href="https://gamegata.xyz/game/jennifers-fragments" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jenny-leclue-detectivu" class="game-target"></a>**Jenny LeClue - Detectivu** | Mografi | <a href="https://gamegata.xyz/game/jenny-leclue-detectivu" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jenny-love-you" class="game-target"></a>**Jenny Love You** | Unknown | <a href="https://gamegata.xyz/game/jenny-love-you" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jeremy-no" class="game-target"></a>**Jeremy, No!** | TomKT | <a href="https://gamegata.xyz/game/jeremy-no" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jermas-big-adventure-2" class="game-target"></a>**Jerma's Big Adventure 2** | Worblir | <a href="https://gamegata.xyz/game/jermas-big-adventure-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jester-party" class="game-target"></a>**Jester Party** | Unknown | <a href="https://gamegata.xyz/game/jester-party" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jester-a-foolish-ritual" class="game-target"></a>**Jester: A Foolish Ritual** | Fire Foot Studios | <a href="https://gamegata.xyz/game/jester-a-foolish-ritual" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jesus-ii" class="game-target"></a>**Jesus II** | Enix | <a href="https://gamegata.xyz/game/jesus-ii" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jesus-kyoufu-no-bio-monster" class="game-target"></a>**JESUS: Kyoufu no Bio Monster** | Unknown | <a href="https://gamegata.xyz/game/jesus-kyoufu-no-bio-monster" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jewelic-nightmare" class="game-target"></a>**Jewelic Nightmare** | Otomate | <a href="https://gamegata.xyz/game/jewelic-nightmare" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jiangshi-x-daoshi" class="game-target"></a>**Jiangshi x Daoshi** | Dendou Denki Dou | <a href="https://gamegata.xyz/game/jiangshi-x-daoshi" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jibchag-ui-mangja-jib-eulobuteoui-talchul" class="game-target"></a>**Jibchag-ui Mangja: Jib-eulobuteoui Talchul** | Unknown | <a href="https://gamegata.xyz/game/jibchag-ui-mangja-jib-eulobuteoui-talchul" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jigoku-seek" class="game-target"></a>**Jigoku Seek** | CRAFTWORK | <a href="https://gamegata.xyz/game/jigoku-seek" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jigoku-shoujo-akekazura" class="game-target"></a>**Jigoku Shoujo: Akekazura** | Compile Heart | <a href="https://gamegata.xyz/game/jigoku-shoujo-akekazura" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jigoku-train" class="game-target"></a>**Jigoku Train** | Memo | <a href="https://gamegata.xyz/game/jigoku-train" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jill-o-lantern" class="game-target"></a>**Jill O' Lantern** | Unknown | <a href="https://gamegata.xyz/game/jill-o-lantern" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jims-nightmare-chapter-1" class="game-target"></a>**Jim's Nightmare: Chapter 1** | Pumpkiny Games | <a href="https://gamegata.xyz/game/jims-nightmare-chapter-1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jimmu" class="game-target"></a>**Jimmu** | Chilla's Art | <a href="https://gamegata.xyz/game/jimmu" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jimmy-and-the-pulsating-mass" class="game-target"></a>**Jimmy and the Pulsating Mass** | Housekeeping | <a href="https://gamegata.xyz/game/jimmy-and-the-pulsating-mass" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jimmy-vs-zombies" class="game-target"></a>**Jimmy vs. Zombies** | Unknown | <a href="https://gamegata.xyz/game/jimmy-vs-zombies" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jimmys-no-44-house" class="game-target"></a>**Jimmy's No. 44 House** | JDHW | <a href="https://gamegata.xyz/game/jimmys-no-44-house" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jinro-metropolis" class="game-target"></a>**Jinro Metropolis** | Techneus | <a href="https://gamegata.xyz/game/jinro-metropolis" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jisatsu" class="game-target"></a>**Jisatsu** | Chilla's Art | <a href="https://gamegata.xyz/game/jisatsu" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jiu-mei-zi-zhi-si-zhaohe-shaonu-xuese-gaobai" class="game-target"></a>**Jiǔ Měi Zǐ Zhī Sǐ: Zhāohé Shàonǚ Xuèsè Gàobái** | LingVision Games | <a href="https://gamegata.xyz/game/jiu-mei-zi-zhi-si-zhaohe-shaonu-xuese-gaobai" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jiwa-the-damned-soul" class="game-target"></a>**Jiwa: The Damned Soul** | DoePlay Interactive | <a href="https://gamegata.xyz/game/jiwa-the-damned-soul" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jos-house" class="game-target"></a>**Jo's House** | Unknown | <a href="https://gamegata.xyz/game/jos-house" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="job-applications" class="game-target"></a>**Job Applications** | CatNamedJaspers | <a href="https://gamegata.xyz/game/job-applications" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="job-hunting" class="game-target"></a>**Job Hunting** | Benbu | <a href="https://gamegata.xyz/game/job-hunting" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="job-hunting-9000-dehlux" class="game-target"></a>**Job Hunting 9000 Dehlux** | Unknown | <a href="https://gamegata.xyz/game/job-hunting-9000-dehlux" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="itch-job-hunting-9000-deluhx" class="game-target"></a>**JOB HUNTING 9000 DELUHX [Free] [Visual Novel] [Windows] [macOS] [Linux] [Android]** | Axetrax1 | <a href="https://gamegata.xyz/game/itch-job-hunting-9000-deluhx" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="job-simulator" class="game-target"></a>**Job Simulator** | Owlchemy Labs | <a href="https://gamegata.xyz/game/job-simulator" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joexians-basics-in-bowling-and-video-making" class="game-target"></a>**Joexian's Basics In Bowling And Video Making** | Joexian Mercado | <a href="https://gamegata.xyz/game/joexians-basics-in-bowling-and-video-making" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jogo-satanista-para-praticar-o-mal" class="game-target"></a>**Jogo Satanista para Praticar o Mal** | Virgula Leal | <a href="https://gamegata.xyz/game/jogo-satanista-para-praticar-o-mal" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="john-carpenters-toxic-commando" class="game-target"></a>**John Carpenter's Toxic Commando** | Saber Interactive | <a href="https://gamegata.xyz/game/john-carpenters-toxic-commando" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="john-doe" class="game-target"></a>**John Doe** | Scopophobia Studios | <a href="https://gamegata.xyz/game/john-doe" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="john-doe-plus" class="game-target"></a>**John Doe +** | Scopophobia Studios | <a href="https://gamegata.xyz/game/john-doe-plus" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="john-saul-s-blackstone-chronicles" class="game-target"></a>**John Saul's Blackstone Chronicles** | Legend Entertainment | <a href="https://gamegata.xyz/game/john-saul-s-blackstone-chronicles" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="johnny-boy-red-moons-kiss" class="game-target"></a>**Johnny Boy: Red Moon's Kiss** | Solocub Entertainment | <a href="https://gamegata.xyz/game/johnny-boy-red-moons-kiss" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jojos-bizarre-adventure-phantom-blood" class="game-target"></a>**JoJo's Bizarre Adventure: Phantom Blood** | Anchor Inc | <a href="https://gamegata.xyz/game/jojos-bizarre-adventure-phantom-blood" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joker-show-horror-escape" class="game-target"></a>**Joker Show: Horror Escape** | Anton Shuligin | <a href="https://gamegata.xyz/game/joker-show-horror-escape" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jollibae" class="game-target"></a>**Jollibae** | Unknown | <a href="https://gamegata.xyz/game/jollibae" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jollibees-phase-1" class="game-target"></a>**Jollibee's: Phase 1** | Unknown | <a href="https://gamegata.xyz/game/jollibees-phase-1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jollibees-phase-2" class="game-target"></a>**Jollibee's: Phase 2** | Unknown | <a href="https://gamegata.xyz/game/jollibees-phase-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jolly" class="game-target"></a>**Jolly** | IvanG | <a href="https://gamegata.xyz/game/jolly" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jolly-2" class="game-target"></a>**Jolly 2** | IvanG | <a href="https://gamegata.xyz/game/jolly-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jolly-3-chapter-1" class="game-target"></a>**Jolly 3: Chapter 1** | IvanG | <a href="https://gamegata.xyz/game/jolly-3-chapter-1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jolly-3-chapter-2" class="game-target"></a>**Jolly 3: Chapter 2** | IvanG | <a href="https://gamegata.xyz/game/jolly-3-chapter-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jolly-laughter" class="game-target"></a>**Jolly Laughter** | LCB Game Studio | <a href="https://gamegata.xyz/game/jolly-laughter" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jons-dog" class="game-target"></a>**Jon's Dog** | derpug | <a href="https://gamegata.xyz/game/jons-dog" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jonathan" class="game-target"></a>**Jonathan** | Unknown | <a href="https://gamegata.xyz/game/jonathan" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jonathans-adventure-3" class="game-target"></a>**Jonathan's Adventure 3** | SevereCorp | <a href="https://gamegata.xyz/game/jonathans-adventure-3" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jongro-3-street" class="game-target"></a>**JongRo 3_Street** | Unknown | <a href="https://gamegata.xyz/game/jongro-3-street" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jorogumo" class="game-target"></a>**Jorogumo** | Nyxtales | <a href="https://gamegata.xyz/game/jorogumo" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="journey--2" class="game-target"></a>**Journey** | ChocoMame | <a href="https://gamegata.xyz/game/journey--2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="journey-into-darkness" class="game-target"></a>**Journey Into Darkness** | Unknown | <a href="https://gamegata.xyz/game/journey-into-darkness" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="journey-to-incrementalia" class="game-target"></a>**Journey to Incrementalia** | Adam Travers | <a href="https://gamegata.xyz/game/journey-to-incrementalia" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joy--1" class="game-target"></a>**Joy** | Edco Games | <a href="https://gamegata.xyz/game/joy--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joyful-masks" class="game-target"></a>**Joyful Masks** | Unknown | <a href="https://gamegata.xyz/game/joyful-masks" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joymaker" class="game-target"></a>**Joymaker** | Unknown | <a href="https://gamegata.xyz/game/joymaker" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joyville" class="game-target"></a>**Joyville** | KudPlay Games | <a href="https://gamegata.xyz/game/joyville" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="joyville-2" class="game-target"></a>**Joyville 2** | KudPlay Games | <a href="https://gamegata.xyz/game/joyville-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jrs" class="game-target"></a>**JR's** | Darroc | <a href="https://gamegata.xyz/game/jrs" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jrs-enter-the-flipside" class="game-target"></a>**JR's: Enter the Flipside** | Darroc | <a href="https://gamegata.xyz/game/jrs-enter-the-flipside" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="ju-men-cursed-masks" class="game-target"></a>**Ju-men: Cursed Masks** | Unknown | <a href="https://gamegata.xyz/game/ju-men-cursed-masks" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="ju-on-the-grudge" class="game-target"></a>**Ju-on: The Grudge** | Feelplus | <a href="https://gamegata.xyz/game/ju-on-the-grudge" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jubilee--1" class="game-target"></a>**Jubilee** | Gayleviticus | <a href="https://gamegata.xyz/game/jubilee--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="judas" class="game-target"></a>**Judas** | Studio48 | <a href="https://gamegata.xyz/game/judas" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="judgment-apocalypse-survival-simulation" class="game-target"></a>**Judgment: Apocalypse Survival Simulation** | Suncrash | <a href="https://gamegata.xyz/game/judgment-apocalypse-survival-simulation" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="judith" class="game-target"></a>**Judith** | Terry Cavanagh | <a href="https://gamegata.xyz/game/judith" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="juggernaut" class="game-target"></a>**Juggernaut** | Will | <a href="https://gamegata.xyz/game/juggernaut" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jujuju-club-potsunen" class="game-target"></a>**JuJuJu Club: Potsunen** | Whomor | <a href="https://gamegata.xyz/game/jujuju-club-potsunen" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="juken-jigoku" class="game-target"></a>**Juken Jigoku** | W&H Game Systems | <a href="https://gamegata.xyz/game/juken-jigoku" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="julia-was-alone" class="game-target"></a>**Julia Was Alone** | A. V. Dossow | <a href="https://gamegata.xyz/game/julia-was-alone" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="julian-and-friends" class="game-target"></a>**Julian & Friends** | Unknown | <a href="https://gamegata.xyz/game/julian-and-friends" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jump-frog--1" class="game-target"></a>**Jump Frog** | Unknown | <a href="https://gamegata.xyz/game/jump-frog--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jump-king" class="game-target"></a>**Jump King** | Nexile | <a href="https://gamegata.xyz/game/jump-king" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jumpscare-scare-jump" class="game-target"></a>**Jumpscare Scare Jump** | Rusimitu | <a href="https://gamegata.xyz/game/jumpscare-scare-jump" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jumpscare-simulator" class="game-target"></a>**Jumpscare Simulator** | Unknown | <a href="https://gamegata.xyz/game/jumpscare-simulator" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jumpscare-slayer" class="game-target"></a>**Jumpscare Slayer** | Rusimitu | <a href="https://gamegata.xyz/game/jumpscare-slayer" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jumpscare-storey-loop" class="game-target"></a>**Jumpscare Storey Loop** | Rusimitu | <a href="https://gamegata.xyz/game/jumpscare-storey-loop" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jumpscare-to-live" class="game-target"></a>**Jumpscare to Live** | Studio Spinner | <a href="https://gamegata.xyz/game/jumpscare-to-live" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="june-bride-nightmare" class="game-target"></a>**June Bride Nightmare** | Unknown | <a href="https://gamegata.xyz/game/june-bride-nightmare" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junji-ito-maniac-an-infinite-gaol" class="game-target"></a>**Junji Ito Maniac: An Infinite Gaol** | SOFTSTAR Entertainment | <a href="https://gamegata.xyz/game/junji-ito-maniac-an-infinite-gaol" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junk-sec" class="game-target"></a>**Junk Sec** | Unknown | <a href="https://gamegata.xyz/game/junk-sec" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junkienator" class="game-target"></a>**Junkienator** | Unknown | <a href="https://gamegata.xyz/game/junkienator" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junkoid" class="game-target"></a>**Junkoid** | P. Yoshi | <a href="https://gamegata.xyz/game/junkoid" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junktok-paranormal-investigators-challenge" class="game-target"></a>**JunkTok: Paranormal Investigators Challenge** | Unknown | <a href="https://gamegata.xyz/game/junktok-paranormal-investigators-challenge" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junkyard-file" class="game-target"></a>**Junkyard File** | Unknown | <a href="https://gamegata.xyz/game/junkyard-file" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junkyard-fury" class="game-target"></a>**Junkyard Fury** | Unknown | <a href="https://gamegata.xyz/game/junkyard-fury" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junkyard-fury-2" class="game-target"></a>**Junkyard Fury 2** | Unknown | <a href="https://gamegata.xyz/game/junkyard-fury-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="junkyard-fury-3" class="game-target"></a>**Junkyard Fury 3** | Dhood Gaming | <a href="https://gamegata.xyz/game/junkyard-fury-3" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jupiter-hell" class="game-target"></a>**Jupiter Hell** | ChaosForge  | <a href="https://gamegata.xyz/game/jupiter-hell" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jupiter-hell-classic" class="game-target"></a>**Jupiter Hell Classic** | ChaosForge | <a href="https://gamegata.xyz/game/jupiter-hell-classic" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurassic-park" class="game-target"></a>**Jurassic Park** | BlueSky Software | <a href="https://gamegata.xyz/game/jurassic-park" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurassic-park--1" class="game-target"></a>**Jurassic Park** | Ocean Software | <a href="https://gamegata.xyz/game/jurassic-park--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurassic-park-the-game" class="game-target"></a>**Jurassic Park: The Game** | Telltale Games | <a href="https://gamegata.xyz/game/jurassic-park-the-game" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurassic-world-vrse" class="game-target"></a>**Jurassic World VRSE** | Skyrocket Toys | <a href="https://gamegata.xyz/game/jurassic-world-vrse" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurassic-world-aftermath" class="game-target"></a>**Jurassic World: Aftermath** | Coatsink Software | <a href="https://gamegata.xyz/game/jurassic-world-aftermath" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurassic-world-aftermath-part-2" class="game-target"></a>**Jurassic World: Aftermath - Part 2** | Coatsink Software | <a href="https://gamegata.xyz/game/jurassic-world-aftermath-part-2" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurig-escape" class="game-target"></a>**Jurig Escape** | Digital Happiness | <a href="https://gamegata.xyz/game/jurig-escape" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="jurnal-malam-bestfriend" class="game-target"></a>**Jurnal Malam: Bestfriend** | RiMa Studio | <a href="https://gamegata.xyz/game/jurnal-malam-bestfriend" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-a-dream--1" class="game-target"></a>**Just A Dream** | akhsotoen | <a href="https://gamegata.xyz/game/just-a-dream--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-a-little-longer--1" class="game-target"></a>**Just a Little Longer** | Unknown | <a href="https://gamegata.xyz/game/just-a-little-longer--1" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-a-shadow-game" class="game-target"></a>**Just A Shadow Game** | TripleBricksGames | <a href="https://gamegata.xyz/game/just-a-shadow-game" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-an-ordinary-bike-ride" class="game-target"></a>**Just an Ordinary Bike Ride** | The Hemohscin Project | <a href="https://gamegata.xyz/game/just-an-ordinary-bike-ride" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-anomalies" class="game-target"></a>**Just Anomalies** | Unknown | <a href="https://gamegata.xyz/game/just-anomalies" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-another-night" class="game-target"></a>**Just Another Night** | Unknown | <a href="https://gamegata.xyz/game/just-another-night" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-grow" class="game-target"></a>**Just Grow** | Unknown | <a href="https://gamegata.xyz/game/just-grow" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-ignore-them" class="game-target"></a>**Just Ignore Them** | Stranga Games | <a href="https://gamegata.xyz/game/just-ignore-them" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-survive" class="game-target"></a>**Just Survive** | Daybreak Game Company | <a href="https://gamegata.xyz/game/just-survive" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-two" class="game-target"></a>**Just Two** | Unknown | <a href="https://gamegata.xyz/game/just-two" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+| <a id="just-work" class="game-target"></a>**Just Work** | Unknown | <a href="https://gamegata.xyz/game/just-work" target="_blank" class="link-hgg" title="View on hoGAMEGATA">HGG</a> |
+
+---
+
+*Jump to section:* [0-9](/directory/0-9) | [A](/directory/A) | [B](/directory/B) | [C](/directory/C) | [D](/directory/D) | [E](/directory/E) | [F](/directory/F) | [G](/directory/G) | [H](/directory/H) | [I](/directory/I) | [J](/directory/J) | [K](/directory/K) | [L](/directory/L) | [M](/directory/M) | [N](/directory/N) | [O](/directory/O) | [P](/directory/P) | [Q](/directory/Q) | [R](/directory/R) | [S](/directory/S) | [T](/directory/T) | [U](/directory/U) | [V](/directory/V) | [W](/directory/W) | [X](/directory/X) | [Y](/directory/Y) | [Z](/directory/Z)

@@ -346,6 +346,14 @@ export const GET: APIRoute = async ({ request, locals }) => {
           )
         );
       }
+      const idsParam = searchParams.get("ids")?.trim() || "";
+      if (idsParam) {
+        const idsList = idsParam.split(",").map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+        if (idsList.length > 0) {
+          conds.push(inArray(gamesTable.id, idsList));
+        }
+      }
+
       if (searchTerm) {
         const searchOrConds = [
           like(gamesTable.title, `%${searchTerm}%`),

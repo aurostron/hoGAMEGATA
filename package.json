@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "tsx scripts/generate-sitemap.ts && astro build && node scripts/fix-manifest-urls.mjs",
+    "build": "tsx scripts/generate-sitemap.ts && tsx scripts/generate-search-index.ts && astro build && node scripts/fix-manifest-urls.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
@@ -21,7 +21,11 @@
     "search:apply": "tsx scripts/apply-search-cache.ts",
     "search:deepseek": "tsx scripts/deepseek-cache.ts",
     "search:deepseek:random": "tsx scripts/deepseek-cache.ts --random=10",
-    "search:deepseek:manual": "tsx scripts/deepseek-cache.ts --manual"
+    "search:deepseek:manual": "tsx scripts/deepseek-cache.ts --manual",
+    "index:generate": "tsx scripts/generate-vitepress-index.ts",
+    "index:build": "tsx scripts/generate-vitepress-index.ts && cd vitepress-index && npm run docs:build",
+    "index:build-sql": "tsx scripts/generate-from-sql-dump.ts && cd vitepress-index && npm run docs:build",
+    "index:dev": "cd vitepress-index && npm run docs:dev"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.0",
@@ -47,6 +51,7 @@
     "discord-interactions": "^4.4.0",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.21.0",
+    "minisearch": "^7.2.0",
     "motion": "^12.42.2",
     "nanostores": "^1.4.2",
     "openai": "^6.45.0",

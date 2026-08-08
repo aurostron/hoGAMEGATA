@@ -458,7 +458,12 @@ const editGameData = {
         <div class="pt-1">
           <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-0.5">released</span>
           <span class="text-xl sm:text-2xl font-light font-mono text-white leading-none tabular-nums">
-            {game.releaseDate ? new Date(game.releaseDate).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "RELEASE DATE TBD"}
+            {(() => {
+              if (!game.releaseDate) return "TBD";
+              const d = new Date(game.releaseDate);
+              if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return "TBD";
+              return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+            })()}
           </span>
         </div>
 
@@ -466,23 +471,46 @@ const editGameData = {
         <div class="grid grid-cols-2 gap-4 sm:flex sm:items-end sm:gap-8 pt-1">
           <div class="flex flex-col">
             <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">avg. rating</span>
-            <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{ratingDisplay}</span>
+            {game.rating ? (
+              <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">
+                {(game.rating / 10).toFixed(1)}<span class="text-neutral-500 text-lg">/10</span>
+              </span>
+            ) : (
+              <span class="text-3xl font-light font-mono text-white/40 leading-none tabular-nums">
+                ?<span class="text-neutral-600 text-lg">/10</span>
+              </span>
+            )}
           </div>
-          {game.steamRating !== null && (
-            <div class="flex flex-col">
-              <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">steam</span>
-              <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.steamRating.toFixed(1)}<span class="text-neutral-500 text-lg">/10</span></span>
-            </div>
-          )}
-          {game.scareRating !== null && (
-            <div class="flex flex-col">
-              <span class="text-[10px] uppercase tracking-widest text-red-500/70 font-bold mb-0.5">scare score</span>
-              <span class="text-3xl font-light font-mono text-red-500 leading-none tabular-nums">{game.scareRating}<span class="text-red-400/50 text-lg">/100</span></span>
-            </div>
-          )}
-          {game.metacritic !== null && (
-            <div class="flex flex-col">
-              {game.metacriticUrl ? (
+          
+          <div class="flex flex-col">
+            <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">steam</span>
+            {game.steamRating !== null && game.steamRating !== undefined ? (
+              <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">
+                {game.steamRating.toFixed(1)}<span class="text-neutral-500 text-lg">/10</span>
+              </span>
+            ) : (
+              <span class="text-3xl font-light font-mono text-white/40 leading-none tabular-nums">
+                ?<span class="text-neutral-600 text-lg">/10</span>
+              </span>
+            )}
+          </div>
+          
+          <div class="flex flex-col">
+            <span class="text-[10px] uppercase tracking-widest text-red-500/70 font-bold mb-0.5">scare score</span>
+            {game.scareRating !== null && game.scareRating !== undefined ? (
+              <span class="text-3xl font-light font-mono text-red-500 leading-none tabular-nums">
+                {game.scareRating}<span class="text-red-400/50 text-lg">/100</span>
+              </span>
+            ) : (
+              <span class="text-3xl font-light font-mono text-red-500/40 leading-none tabular-nums">
+                ?<span class="text-red-950/60 text-lg">/100</span>
+              </span>
+            )}
+          </div>
+          
+          <div class="flex flex-col">
+            {game.metacritic !== null && game.metacritic !== undefined ? (
+              game.metacriticUrl ? (
                 <a href={game.metacriticUrl} target="_blank" rel="noopener noreferrer" class="group flex flex-col hover:opacity-80 transition-opacity">
                   <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5 flex items-center gap-1">metacritic <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5 opacity-0 group-hover:opacity-60 transition-opacity"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
                   <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.metacritic}<span class="text-neutral-500 text-lg">/100</span></span>
@@ -492,61 +520,70 @@ const editGameData = {
                   <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">metacritic</span>
                   <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">{game.metacritic}<span class="text-neutral-500 text-lg">/100</span></span>
                 </>
-              )}
-            </div>
+              )
+            ) : (
+              <>
+                <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">metacritic</span>
+                <span class="text-3xl font-light font-mono text-white/40 leading-none tabular-nums">?<span class="text-neutral-600 text-lg">/100</span></span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <!-- 3. Platforms Row -->
+        <div class="pt-1">
+          <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-1">platforms</span>
+          {platforms && platforms.length > 0 ? (
+            <PlatformLogos platforms={platforms} class="flex items-center gap-2 opacity-90 h-6" solid={true} />
+          ) : (
+            <span class="text-xs font-mono text-white/30 tracking-wider">TBD</span>
           )}
         </div>
 
-        <!-- 3. Platforms Row (Stacked) -->
-        {platforms && platforms.length > 0 && (
-          <div class="pt-1">
-            <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-1">platforms</span>
-            <PlatformLogos platforms={platforms} class="flex items-center gap-2 opacity-90 h-6" solid={true} />
-          </div>
-        )}
-
         <!-- 4. Linux Row -->
-        {steamAppId && (
-          <div class="pt-1">
-            <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-0.5">linux?</span>
-            {game.protonDbTier ? (
-              <a
-                href={`https://www.protondb.com/app/${steamAppId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="group inline-flex items-center gap-1.5 hover:opacity-75 transition-opacity"
-                title={game.protonDbConfidence && game.protonDbTotalReports ? `${game.protonDbConfidence} confidence · ${game.protonDbTotalReports} reports` : "ProtonDB"}
-              >
-                <span class={`text-2xl font-black font-mono leading-none capitalize tabular-nums ${
-                  game.protonDbTier === "native" || game.protonDbTier === "platinum"
-                    ? "text-emerald-400"
-                    : game.protonDbTier === "gold"
-                    ? "text-white"
-                    : game.protonDbTier === "silver"
-                    ? "text-white/50"
-                    : "text-red-400/60 line-through"
-                }`}>
-                  {game.protonDbTier}
-                </span>
-                {game.protonDbTotalReports !== null && game.protonDbTotalReports > 0 && (
-                  <span class="text-neutral-600 text-xs font-mono"> · {game.protonDbTotalReports} reports</span>
-                )}
-              </a>
-            ) : (
-              <span class="text-2xl font-black font-mono text-white/25 leading-none">—</span>
-            )}
-          </div>
-        )}
+        <div class="pt-1">
+          <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-0.5">linux?</span>
+          {steamAppId && game.protonDbTier ? (
+            <a
+              href={`https://www.protondb.com/app/${steamAppId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group inline-flex items-center gap-1.5 hover:opacity-75 transition-opacity"
+              title={game.protonDbConfidence && game.protonDbTotalReports ? `${game.protonDbConfidence} confidence · ${game.protonDbTotalReports} reports` : "ProtonDB"}
+            >
+              <span class={`text-2xl font-black font-mono leading-none capitalize tabular-nums ${
+                game.protonDbTier === "native" || game.protonDbTier === "platinum"
+                  ? "text-emerald-400"
+                  : game.protonDbTier === "gold"
+                  ? "text-white"
+                  : game.protonDbTier === "silver"
+                  ? "text-white/50"
+                  : "text-red-400/60 line-through"
+              }`}>
+                {game.protonDbTier}
+              </span>
+              {game.protonDbTotalReports !== null && game.protonDbTotalReports > 0 && (
+                <span class="text-neutral-600 text-xs font-mono"> · {game.protonDbTotalReports} reports</span>
+              )}
+            </a>
+          ) : (
+            <span class="text-2xl font-black font-mono text-white/25 leading-none">?</span>
+          )}
+        </div>
 
         <!-- 5. Avg Playtime Row -->
-        {game.playtime !== null && game.playtime > 0 && (
-          <div class="pt-1">
-            <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-0.5">avg. playtime</span>
+        <div class="pt-1">
+          <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-0.5">avg. playtime</span>
+          {game.playtime !== null && game.playtime !== undefined && game.playtime > 0 ? (
             <span class="text-2xl font-light font-mono text-white leading-none tabular-nums">
               {game.playtime}<span class="text-neutral-500 text-base"> hrs</span>
             </span>
-          </div>
-        )}
+          ) : (
+            <span class="text-2xl font-light font-mono text-white/30 leading-none tabular-nums">
+              ?<span class="text-neutral-600 text-base"> hrs</span>
+            </span>
+          )}
+        </div>
 
         <!-- 6. User Interaction Buttons -->
         <div class="pt-2">
@@ -706,16 +743,14 @@ const editGameData = {
           </div>
 
           <!-- Scare Profile -->
-          {game.scareRating !== null && game.scareProfile && (
-            <div class="pt-6">
-              <ScareMeter 
-                client:load
-                scareRating={game.scareRating} 
-                scareProfile={game.scareProfile as any} 
-                reviewCount={game.scareReviewCount}
-              />
-            </div>
-          )}
+          <div class="pt-6">
+            <ScareMeter 
+              client:load
+              scareRating={game.scareRating} 
+              scareProfile={game.scareProfile as any} 
+              reviewCount={game.scareReviewCount}
+            />
+          </div>
         </>
       ) : (
         <>
@@ -759,16 +794,14 @@ const editGameData = {
           )}
 
           <!-- Scare Profile -->
-          {game.scareRating !== null && game.scareProfile && (
-            <div class="pt-6">
-              <ScareMeter 
-                client:load
-                scareRating={game.scareRating} 
-                scareProfile={game.scareProfile as any} 
-                reviewCount={game.scareReviewCount}
-              />
-            </div>
-          )}
+          <div class="pt-6">
+            <ScareMeter 
+              client:load
+              scareRating={game.scareRating} 
+              scareProfile={game.scareProfile as any} 
+              reviewCount={game.scareReviewCount}
+            />
+          </div>
 
           <!-- Price comparison deals -->
           <PriceComparison
