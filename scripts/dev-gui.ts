@@ -760,6 +760,21 @@ const HTML_CONTENT = `<!DOCTYPE html>
             <button class="btn btn-primary" onclick="runGitSync()">Commit & Push</button>
           </div>
         </div>
+      <!-- VitePress Export & Skippable Deploy Card -->
+      <div class="card" style="border-left: 3px solid #10b981;">
+        <h2><span style="color:#10b981;">🌐</span> VitePress & App Deploy Controls (Skippable Stages)</h2>
+        <p>Run full or granular deployment pipelines. Skip DB fetches or builds when fixing typos or making quick updates.</p>
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="runScript('scripts/deploy-vitepress.ts', [], 'Full VitePress Deploy (DB -> Build -> Deploy)')">Full VitePress Pipeline</button>
+          <button class="btn btn-cyan" onclick="runScript('scripts/deploy-vitepress.ts', ['--skip-db'], 'Fast VitePress Deploy (Skip DB)')">Fast Deploy (Skip DB)</button>
+          <button class="btn" onclick="runScript('scripts/deploy-vitepress.ts', ['--build-only'], 'Fast Build Only (Skip DB)')">Build Only (Skip DB)</button>
+          <button class="btn" onclick="runScript('scripts/deploy-vitepress.ts', ['--deploy-only'], 'Deploy Only (Skip DB & Build)')">Deploy Only</button>
+        </div>
+        <div class="actions-row" style="margin-top: 0.5rem;">
+          <button class="btn" onclick="runCommand('npm', ['run', 'build:quick'], 'Main App Quick Build')">App Quick Build</button>
+          <button class="btn btn-primary" onclick="runCommand('npm', ['run', 'deploy:quick'], 'Main App Quick Deploy')">App Quick Deploy</button>
+          <button class="btn btn-danger" onclick="runCommand('npm', ['run', 'deploy'], 'Full App Deploy')">Full App Deploy</button>
+        </div>
       </div>
 
       <!-- Scheduler / Cron Jobs Card -->

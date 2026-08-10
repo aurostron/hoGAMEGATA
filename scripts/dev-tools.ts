@@ -61,6 +61,28 @@ function runScript(scriptPath: string, args: string[] = []): Promise<number> {
   });
 }
 
+function runCliCommand(command: string, args: string[] = [], cwd: string = process.cwd()): Promise<number> {
+  return new Promise((resolve) => {
+    console.log(`\n==================================================`);
+    console.log(`🚀 RUNNING: ${command} ${args.join(" ")}`);
+    console.log(`==================================================\n`);
+    
+    const isWindows = process.platform === "win32";
+    const child = spawn(command, args, {
+      cwd,
+      stdio: "inherit",
+      shell: isWindows,
+    });
+    
+    child.on("close", (code) => {
+      console.log(`\n==================================================`);
+      console.log(`🏁 COMPLETED: Exit Code ${code}`);
+      console.log(`==================================================`);
+      resolve(code || 0);
+    });
+  });
+}
+
 async function toggleMaintenanceMode() {
   console.log("\nChecking maintenance mode status...");
   try {
@@ -133,10 +155,11 @@ async function showMainMenu() {
   console.log("15. Developer Page & Link Management");
   console.log("16. Turso Database Environment Control");
   console.log("17. DeepSeek AI Search Caching & Batch Engine");
-  console.log("18. Exit Portal");
+  console.log("18. VitePress Index Export & Deployment Controls (Skippable)");
+  console.log("19. Exit Portal");
   console.log("==================================================");
 
-  const choice = await askQuestion("Select category [1-18]: ");
+  const choice = await askQuestion("Select category [1-19]: ");
 
   switch (choice) {
     case "1":
@@ -222,12 +245,75 @@ async function showMainMenu() {
       await showAiSearchMenu();
       break;
     case "18":
+      await showVitepressMenu();
+      break;
+    case "19":
       console.log("👋 Exiting portal.");
       process.exit(0);
     default:
       console.log("❌ Invalid choice.");
       await sleep(1000);
   }
+}
+
+async function showVitepressMenu() {
+  console.log("\n--------------------------------------------------");
+  console.log("🌐 VITEPRESS EXPORT & DEPLOYMENT CONTROLS");
+  console.log("--------------------------------------------------");
+  console.log("1. Full VitePress Pipeline (DB Query -> VitePress Build -> Deploy)");
+  console.log("2. Fast VitePress Build Only (SKIP DB query - for typo & doc edits)");
+  console.log("3. Fast VitePress Deploy Pipeline (SKIP DB query - build & deploy)");
+  console.log("4. Deploy Only (SKIP DB query & Build - deploy existing dist output)");
+  console.log("5. Export DB to VitePress Markdown Only (SKIP build & deploy)");
+  console.log("6. Export Markdown from Local SQL Dump File (dump.sql)");
+  console.log("7. Main App Quick Build (SKIP sitemap/search index)");
+  console.log("8. Main App Full Deploy (npm run deploy: full build -> wrangler)");
+  console.log("9. Main App Quick Deploy (npm run deploy:quick: fast build -> wrangler)");
+  console.log("10. Return to Main Menu");
+  console.log("--------------------------------------------------");
+
+  const choice = await askQuestion("Select action [1-10]: ");
+  switch (choice) {
+    case "1":
+      await runScript("scripts/deploy-vitepress.ts");
+      break;
+    case "2":
+      console.log("\n⚡ Running fast VitePress build (skipping DB query)...");
+      await runScript("scripts/deploy-vitepress.ts", ["--build-only"]);
+      break;
+    case "3":
+      console.log("\n⚡ Running fast VitePress deploy pipeline (skipping DB query)...");
+      await runScript("scripts/deploy-vitepress.ts", ["--skip-db"]);
+      break;
+    case "4":
+      console.log("\n⚡ Deploying existing VitePress dist build output directly...");
+      await runScript("scripts/deploy-vitepress.ts", ["--deploy-only"]);
+      break;
+    case "5":
+      await runScript("scripts/generate-vitepress-index.ts");
+      break;
+    case "6":
+      await runScript("scripts/generate-from-sql-dump.ts");
+      break;
+    case "7":
+      console.log("\n⚡ Running quick build for main app...");
+      await runCliCommand("npm", ["run", "build:quick"]);
+      break;
+    case "8":
+      console.log("\n🚀 Running full main app deploy...");
+      await runCliCommand("npm", ["run", "deploy"]);
+      break;
+    case "9":
+      console.log("\n⚡ Running quick main app deploy...");
+      await runCliCommand("npm", ["run", "deploy:quick"]);
+      break;
+    case "10":
+      return;
+    default:
+      console.log("❌ Invalid choice.");
+  }
+  await askQuestion("\n[Press Enter to return to VitePress menu]");
+  await showVitepressMenu();
 }
 
 async function showAiSearchMenu() {

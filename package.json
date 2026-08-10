@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "tsx scripts/generate-sitemap.ts && tsx scripts/generate-search-index.ts && astro build && node scripts/fix-manifest-urls.mjs",
+    "build:quick": "astro build && node scripts/fix-manifest-urls.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "generate-types": "wrangler types",
@@ -15,6 +16,8 @@
     "dev-gui": "tsx scripts/dev-gui.ts",
     "db:generate": "prisma generate",
     "deploy": "npm run build && wrangler deploy",
+    "deploy:quick": "npm run build:quick && wrangler deploy",
+    "deploy:only": "wrangler deploy",
     "count-igdb": "tsx scripts/count-igdb.ts",
     "credits": "tsx scripts/fetch-game-credits.ts",
     "search:pregenerate": "tsx scripts/pregenerate-draft.ts",
@@ -23,8 +26,13 @@
     "search:deepseek:random": "tsx scripts/deepseek-cache.ts --random=10",
     "search:deepseek:manual": "tsx scripts/deepseek-cache.ts --manual",
     "index:generate": "tsx scripts/generate-vitepress-index.ts",
+    "index:export": "tsx scripts/generate-vitepress-index.ts",
     "index:build": "tsx scripts/generate-vitepress-index.ts && cd vitepress-index && npm run docs:build",
+    "index:build-only": "cd vitepress-index && npm run docs:build",
     "index:build-sql": "tsx scripts/generate-from-sql-dump.ts && cd vitepress-index && npm run docs:build",
+    "index:deploy": "tsx scripts/deploy-vitepress.ts",
+    "index:deploy-quick": "tsx scripts/deploy-vitepress.ts --skip-db",
+    "index:deploy-only": "tsx scripts/deploy-vitepress.ts --skip-db --skip-build",
     "index:dev": "cd vitepress-index && npm run docs:dev"
   },
   "dependencies": {
