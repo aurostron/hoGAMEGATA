@@ -6,16 +6,16 @@ import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from "../
 import PlatformLogos from "./PlatformLogos";
 
 const formatDate = (dateVal: string | Date | null | undefined) => {
-  if (!dateVal) return "";
+  if (!dateVal) return "TBD";
   try {
     const d = new Date(dateVal);
-    if (isNaN(d.getTime())) return "";
+    if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return "TBD";
     return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short"
     });
   } catch {
-    return "";
+    return "TBD";
   }
 };
 
@@ -199,7 +199,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
               <div className="flex items-center justify-between pt-2 border-t border-white/5 font-mono text-[9px]">
                 <PlatformLogos platforms={game.platforms} platformNames={game.platformNames} />
                 <span className="px-2 py-0.5 border border-white/10 text-white/70 text-[9px] font-mono font-semibold uppercase tracking-wider rounded">
-                  {game.status === "released" && game.releaseDate ? formatDate(game.releaseDate) : game.status}
+                  {game.releaseDate ? formatDate(game.releaseDate) : (game.status === "upcoming" ? "TBD" : game.status || "TBD")}
                 </span>
               </div>
             </div>

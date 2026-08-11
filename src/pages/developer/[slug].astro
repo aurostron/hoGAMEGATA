@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from '../../layouts/Layout.astro';
 import { turso } from '../../lib/turso';
 import {
@@ -11,7 +11,7 @@ import {
   gamesToGenres
 } from '../../db/schema';
 import { eq, inArray, and, or, isNull, ne } from 'drizzle-orm';
-import { getCloudinaryFetchUrl, getHighResCoverUrl, stripHtml } from '../../lib/utils';
+import { getCloudinaryFetchUrl, getHighResCoverUrl, stripHtml, formatReleaseDate, getReleaseYear } from '../../lib/utils';
 import PlatformLogos from '../../components/PlatformLogos';
 
 export const prerender = false;
@@ -118,7 +118,11 @@ const avgRating = ratedGames.length > 0
   : null;
 
 const years = games
-  .map(g => g.releaseDate ? new Date(g.releaseDate).getFullYear() : null)
+  .map(g => {
+    if (!g.releaseDate) return null;
+    const d = new Date(g.releaseDate);
+    return (!isNaN(d.getTime()) && d.getFullYear() > 1970) ? d.getFullYear() : null;
+  })
   .filter(Boolean) as number[];
 const startYear = years.length > 0 ? Math.min(...years) : null;
 const endYear = years.length > 0 ? Math.max(...years) : null;
@@ -187,7 +191,7 @@ const devStyle = curated.style || computedStyle;
         </div>
         <div class="flex justify-between items-center text-xs">
           <span class="text-white/50 font-medium">Years active:</span>
-          <span class="text-white font-bold">{startYear ? `${startYear} - ${endYear || 'Present'}` : 'N/A'}</span>
+          <span class="text-white font-bold">{startYear ? (startYear === endYear ? `${startYear}` : `${startYear} - ${endYear || 'Present'}`) : 'TBD'}</span>
         </div>
         <div class="flex justify-between items-center text-xs">
           <span class="text-white/50 font-medium">Average score:</span>
@@ -234,10 +238,8 @@ const devStyle = curated.style || computedStyle;
       <div class="space-y-16 relative z-20">
         {games.map((game, index) => {
           const isLeft = index % 2 === 0;
-          const gameYear = game.releaseDate ? new Date(game.releaseDate).getFullYear() : 'TBD';
-          const cleanDate = game.releaseDate 
-            ? new Date(game.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
-            : 'TBD';
+          const gameYear = getReleaseYear(game.releaseDate, "TBD");
+          const cleanDate = formatReleaseDate(game.releaseDate, "TBD");
 
           return (
             <div 

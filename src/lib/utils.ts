@@ -140,3 +140,24 @@ export function formatEmbedVideoUrl(url: string | null | undefined): string | nu
   }
   return url;
 }
+
+export function formatReleaseDate(
+  rawDate: string | number | Date | null | undefined,
+  fallback = "TBD",
+  options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" }
+): string {
+  if (!rawDate) return fallback;
+  const d = new Date(rawDate);
+  if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return fallback;
+  return d.toLocaleDateString("en-US", options);
+}
+
+export function getReleaseYear(
+  rawDate: string | number | Date | null | undefined,
+  fallback = "TBD"
+): string {
+  if (!rawDate) return fallback;
+  const d = new Date(rawDate);
+  if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return fallback;
+  return d.getFullYear().toString();
+}

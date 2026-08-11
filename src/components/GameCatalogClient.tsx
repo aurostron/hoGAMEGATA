@@ -75,16 +75,16 @@ const formatPrice = (amount: number, currencyCode: string) => {
 };
 
 const formatDate = (dateVal: string | Date | null | undefined) => {
-  if (!dateVal) return "";
+  if (!dateVal) return "TBD";
   try {
     const d = new Date(dateVal);
-    if (isNaN(d.getTime())) return "";
+    if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return "TBD";
     return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short"
     });
   } catch {
-    return "";
+    return "TBD";
   }
 };
 
