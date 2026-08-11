@@ -50,9 +50,11 @@ export const DEFAULT_CONTENT = [
 export async function getOrSeedContent() {
   try {
     const current = await turso.select().from(siteContent);
-    if (current.length === 0) {
-      console.log("🌱 Seeding SiteContent table with default copy...");
-      for (const item of DEFAULT_CONTENT) {
+    const dbMap = new Map(current.map(item => [item.key, item]));
+
+    let updatedCount = 0;
+    for (const item of DEFAULT_CONTENT) {
+      if (!dbMap.has(item.key)) {
         await turso.insert(siteContent).values({
           key: item.key,
           value: item.value,
@@ -60,10 +62,15 @@ export async function getOrSeedContent() {
           label: item.label,
           section: item.section,
           updatedAt: new Date()
-        });
+        }).onConflictDoNothing();
+        updatedCount++;
       }
-      return DEFAULT_CONTENT;
     }
+
+    if (updatedCount > 0) {
+      return await turso.select().from(siteContent);
+    }
+
     return current;
   } catch (e) {
     console.error("Failed to fetch site content from Turso:", e);

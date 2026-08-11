@@ -390,7 +390,7 @@ export default function StorefrontLists({
 
         {/* Wording */}
         <p className="text-xs sm:text-sm text-white/60 max-w-2xl leading-relaxed font-medium">
-          {supportDesc || "hoGAMEGATA is a free, ad-free database. We never show ads, sell user data, or lock features behind paywalls. If you value horror game preservation or just like the purpose of this project, help us cover our database hosting and API operating costs."}
+          {supportDesc || "hoGAMEGATA is a free, ad-free database. We never show ads, sell user data, or lock features behind paywalls. If you value horror game preservation or just like the purpose of this project, help us cover our database hosting and API operating costs. A small donation keeps the website up, bring new features, and help make the experience better."}
         </p>
 
        
