@@ -84,7 +84,7 @@ export default function ScareMeter({ scareRating, scareProfile, reviewCount }: S
       {isPending ? (
         <div className="bg-white/5 border border-white/5 p-4 rounded-xl">
           <p className="text-xs text-neutral-400 leading-relaxed font-medium">
-            Community scare parameters pending. Horror metrics will update automatically as reviews are indexed.
+            Pending. Will update automatically ASAP when reviews are processed.
           </p>
         </div>
       ) : scareProfile?.shortSummary ? (
