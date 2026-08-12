@@ -83,7 +83,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     
     // Pagination offset & limit
     const limitParam = searchParams.get("limit");
-    const maxLimit = sort === "title" ? 20000 : 120;
+    const maxLimit = sort === "title" ? 500 : 120;
     const limit = Math.min(Math.max(parseInt(limitParam || "24", 10) || 24, 1), maxLimit);
     
     const offsetParam = searchParams.get("offset")?.trim() || "";

@@ -7,7 +7,7 @@ import { initBetterAuth } from "../../../lib/auth";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
+export const POST: APIRoute = async ({ url, cookies, redirect, request }) => {
   const key = url.searchParams.get("key");
   const state = url.searchParams.get("state"); // "on" | "off"
   const clearCookie = url.searchParams.get("clear_cookie") === "true";
@@ -28,16 +28,12 @@ export const GET: APIRoute = async ({ url, cookies, redirect, request }) => {
   // Check 1: Valid secret key
   const hasValidSecret = secret && key === secret;
 
-  // Check 2: Came from Admin Panel referer
-  const referer = request.headers.get("Referer") ?? "";
-  const isFromAdmin = referer.includes("/admin");
-
   // Check 3: Authenticated Admin Session (Logged-in Admin user)
   const user = await getServerUser(request, cookies);
   const isAdmin = user && isAdminUser(user.email, envToUse);
 
   // Allow if secret is valid, from admin panel, logged-in admin, OR running in development mode (localhost)
-  if (!hasValidSecret && !isFromAdmin && !isAdmin && !isDev) {
+  if (!hasValidSecret && !isAdmin && !isDev) {
     return new Response("Forbidden: Admin session or valid secret key required.", { status: 403 });
   }
 

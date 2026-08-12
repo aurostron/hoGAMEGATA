@@ -2,17 +2,61 @@ import type { APIRoute } from 'astro';
 import { turso } from '../../../lib/turso';
 import { bugReports } from '../../../db/schema';
 import { sendDiscordEditNotification } from '../../../lib/discord';
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
+import { env as cfEnv } from 'cloudflare:workers';
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
+    const clientIp = getClientIp(request, clientAddress);
+    const rl = await rateLimit(`bugs:${clientIp}`, 3, 3600);
+    if (!rl.allowed) return tooManyRequests(rl.retryAfter, 'Too many bug reports. Please try again later.');
+
     const body = await request.json().catch(() => null);
     if (!body || !body.title || !body.description || !body.pageUrl) {
       return new Response(
         JSON.stringify({ error: "Title, description, and page URL are required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    // Verify Turnstile CAPTCHA token
+    const turnstileToken = body.turnstileToken;
+    if (!turnstileToken) {
+      return new Response(
+        JSON.stringify({ error: 'CAPTCHA verification required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+    const runtimeEnv = isDev
+      ? (typeof process !== 'undefined' && process.env ? process.env : cfEnv)
+      : (cfEnv || (typeof process !== 'undefined' ? process.env : {}));
+    const turnstileSecret = (runtimeEnv as any).TURNSTILE_SECRET_KEY;
+
+    if (turnstileSecret) {
+      try {
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            secret: turnstileSecret,
+            response: turnstileToken,
+            remoteip: clientIp,
+          }),
+        });
+        const verifyData = await verifyRes.json() as { success: boolean };
+        if (!verifyData.success) {
+          return new Response(
+            JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
+            { status: 403, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      } catch (err) {
+        console.warn('[Turnstile] Verification request failed, allowing submission:', err);
+      }
     }
 
     const {

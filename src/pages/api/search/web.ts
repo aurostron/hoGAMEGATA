@@ -7,6 +7,9 @@ export const prerender = false;
 const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
 
 export const GET: APIRoute = async ({ request }) => {
+  if (!isDev) {
+    return new Response(JSON.stringify({ error: 'Not available' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");

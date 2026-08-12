@@ -1,3 +1,4 @@
+import { rateLimit, getClientIp, tooManyRequests } from '../../lib/rateLimit';
 import type { APIRoute } from 'astro';
 
 export const prerender = false;
@@ -35,6 +36,10 @@ const ALLOWED_HOSTS = [
 ];
 
 export const GET: APIRoute = async ({ request }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`img_proxy:${clientIp}`, 60, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   const urlObj = new URL(request.url);
   const targetUrlStr = urlObj.searchParams.get('url');
 

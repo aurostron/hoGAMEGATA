@@ -237,6 +237,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn("Better Auth signOut failed, proceeding to clear local state:", e);
     }
+
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.warn('Server logout failed, proceeding to clear local state:', e);
+    }
     // Always clear local fallback mock cookies & local wishlist cache
     document.cookie = "gamegata-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
     try {

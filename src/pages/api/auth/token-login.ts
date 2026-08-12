@@ -1,3 +1,4 @@
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import type { APIRoute } from 'astro';
 import { tursoAuth } from '../../../lib/tursoAuth';
 import { waitlist as waitlistTable, user as userTable } from '../../../db/auth-schema';
@@ -6,6 +7,10 @@ import { eq } from 'drizzle-orm';
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, cookies }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`token_login:${clientIp}`, 5, 900);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter, 'Too many login attempts. Please try again later.');
+
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get("token");

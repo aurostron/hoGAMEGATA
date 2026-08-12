@@ -2,10 +2,12 @@ import type { APIRoute } from 'astro';
 import { turso } from '../../../lib/turso';
 import { editSuggestions } from '../../../db/schema';
 import { evaluateEditWithAI } from '../../../lib/aiModeration';
+import { getServerUser } from '../../../lib/serverAuth';
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json().catch(() => null);
     if (!body) {
@@ -15,7 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { gameId, field, oldValue, newValue, reason, userId } = body;
+    const { gameId, field, oldValue, newValue, reason, userId: bodyUserId } = body;
 
     if (!gameId || typeof gameId !== "string" || !gameId.trim()) {
       return new Response(
@@ -38,7 +40,13 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const clientIp = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for") || "unknown";
+    const clientIp = getClientIp(request);
+    const rl = await rateLimit(`edits:${clientIp}`, 5, 600);
+    if (!rl.allowed) return tooManyRequests(rl.retryAfter, 'Too many edit suggestions. Please try again later.');
+
+    // Verify userId server-side — never trust client-supplied userId for reputation lookups
+    const sessionUser = await getServerUser(request, cookies);
+    const verifiedUserId = sessionUser?.id || null;
     const suggestionId = `edit_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const trackingId = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -52,7 +60,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Check user reputation for auto-approval qualification
     const { getUserReputation, LOW_RISK_FIELDS } = await import('../../../lib/userReputation');
-    const userRep = await getUserReputation(userId);
+    const userRep = await getUserReputation(verifiedUserId);
     const isTrustedUser = userRep && (userRep.tier === 'tier_1_trusted' || userRep.tier === 'tier_2_moderator');
     const isLowRisk = LOW_RISK_FIELDS.has(field.trim());
     const isAutoApproved = isTrustedUser && isLowRisk && aiResult.aiStatus === 'passed';
@@ -66,7 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
       id: suggestionId,
       trackingId: trackingId,
       gameId: gameId.trim(),
-      userId: typeof userId === "string" ? userId : null,
+      userId: typeof verifiedUserId === "string" ? verifiedUserId : null,
       userIp: clientIp,
       field: field.trim(),
       oldValue: oldValue ? String(oldValue).trim() : null,
@@ -99,7 +107,7 @@ export const POST: APIRoute = async ({ request }) => {
           id: revId,
           gameId: gameId.trim(),
           suggestionId: suggestionId,
-          editedBy: userId || 'trusted_contributor',
+          editedBy: verifiedUserId || 'trusted_contributor',
           changesJson: JSON.stringify({
             field: field.trim(),
             oldValue: oldValue ? String(oldValue).trim() : null,

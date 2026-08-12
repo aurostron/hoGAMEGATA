@@ -23,6 +23,10 @@
 		{
 			"binding": "MAINTENANCE",
 			"id": "42729c340d254d219a9c183752811d5e"
+		},
+		{
+			"binding": "RATE_LIMIT",
+			"id": "b4f797e76c9545d6aa41ea80be9ddb5a"
 		}
 	],
 	"observability": {

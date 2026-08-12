@@ -20,6 +20,7 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
   const [error, setError] = useState<string | null>(null);
   const [submittedTicketId, setSubmittedTicketId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -41,12 +42,48 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    // Load Turnstile script if not already loaded
+    if (!document.getElementById('turnstile-script')) {
+      const script = document.createElement('script');
+      script.id = 'turnstile-script';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+    // Reset token when modal opens
+    setTurnstileToken(null);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !mounted || submittedTicketId) return;
+    const interval = setInterval(() => {
+      const container = document.getElementById('bug-turnstile-container');
+      if (container && (window as any).turnstile && !container.hasChildNodes()) {
+        (window as any).turnstile.render(container, {
+          sitekey: import.meta.env?.PUBLIC_TURNSTILE_SITE_KEY || '1x000000000000000000001',
+          callback: (token: string) => setTurnstileToken(token),
+          theme: 'dark',
+          size: 'compact',
+        });
+        clearInterval(interval);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [isOpen, mounted, submittedTicketId]);
+
   if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) {
       setError('Please provide a short summary and description.');
+      return;
+    }
+
+    if (!turnstileToken) {
+      setError('Please complete the CAPTCHA verification.');
       return;
     }
 
@@ -65,6 +102,7 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
           pageUrl,
           contactEmail: contactEmail.trim() || undefined,
           userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+          turnstileToken,
         }),
       });
 
@@ -267,6 +305,9 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
               <span className="text-emerald-400">✓</span>
               <span className="truncate">Auto-attached page: <span className="text-white">{pageUrl}</span></span>
             </div>
+
+            {/* Turnstile CAPTCHA */}
+            <div id="bug-turnstile-container" className="flex justify-center" />
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-3 pt-2">

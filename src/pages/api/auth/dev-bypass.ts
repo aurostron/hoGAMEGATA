@@ -5,6 +5,10 @@ export const prerender = false;
 const DEV_BYPASS_CODE = "gamegata-dev-2026";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  if (!import.meta.env.DEV) {
+    return new Response(JSON.stringify({ error: "Not available" }), { status: 404, headers: { "Content-Type": "application/json" } });
+  }
+
   try {
     // Safety check: only allow this on localhost
     const host = request.headers.get("host") || "";

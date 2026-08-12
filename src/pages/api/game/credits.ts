@@ -1,6 +1,11 @@
 import type { APIRoute } from "astro";
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 
 export const GET: APIRoute = async ({ request }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`credits:${clientIp}`, 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   const url = new URL(request.url);
   const rawgSlug = url.searchParams.get("rawgSlug");
   const title = url.searchParams.get("title");

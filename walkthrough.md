@@ -30,3 +30,45 @@ Installed the Omnisync agentic coding harness into the `gamegata-v1` project dir
 - Verified directory structure and file contents using PowerShell `Get-ChildItem` and file inspections.
 
 ---
+
+## 2026-08-16 — API Security Hardening & Abuse Prevention
+
+### Summary
+Comprehensive hardening of all 25 public API endpoints following penetration test and abuse surface audit. Implemented KV-based rate limiting, fixed 3 critical authentication/authorization bypasses, enforced authentication on game likes, added Cloudflare Turnstile CAPTCHA to bug submissions, enforced server-side `userId` verification for edit suggestions, prevented CSRF on logout by transitioning to POST, and disabled legacy waitlist registration.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/lib/rateLimit.ts` | NEW — Cloudflare KV sliding-window rate limiter utility |
+| `wrangler.jsonc` | Modified — Bound `RATE_LIMIT` KV namespace (`b4f797e76c9545d6aa41ea80be9ddb5a`) |
+| `src/pages/api/maintenance/toggle.ts` | Modified — Removed spoofable `Referer` auth bypass, converted to POST-only |
+| `src/pages/api/discord/interactions.ts` | Modified — Enforced hard-fail on missing `DISCORD_PUBLIC_KEY` & invalid signatures |
+| `src/pages/api/auth/dev-bypass.ts` | Modified — Added `import.meta.env.DEV` guard (returns 404 in production) |
+| `src/pages/api/game/likes.ts` | Modified — Enforced session authentication (`getServerUser`) and added rate limiting |
+| `src/pages/api/edits/suggest.ts` | Modified — Enforced server-side `userId` verification and rate limiting (5 req/10 min) |
+| `src/pages/api/bugs/submit.ts` | Modified — Integrated Turnstile CAPTCHA verification and rate limiting (3 req/hr) |
+| `src/components/bugs/BugReportModal.tsx` | Modified — Added Turnstile CAPTCHA widget to bug report modal UI |
+| `src/pages/api/search/click.ts` | Modified — Added rate limiting (30 req/min) |
+| `src/pages/api/track/click.ts` | Modified — Added rate limiting (20 req/min) |
+| `src/pages/api/waitlist/join.ts` | Modified — Disabled endpoint permanently (returns 410 Gone) |
+| `src/pages/api/auth/logout.ts` | Modified — Converted from GET to POST to eliminate CSRF logout vulnerability |
+| `src/pages/api/auth/token-login.ts` | Modified — Added rate limiting against token brute-force (5 req/15 min) |
+| `src/layouts/AdminLayout.astro` | Modified — Updated logout link to submit via POST form |
+| `src/pages/admin/verify-2fa.astro` | Modified — Updated logout link to submit via POST form |
+| `src/context/AuthContext.tsx` | Modified — Added POST `/api/auth/logout` server call during logout flow |
+| `src/pages/api/image-proxy.ts` | Modified — Added rate limiting (60 req/min) |
+| `src/pages/api/game/credits.ts` | Modified — Added rate limiting (20 req/min) |
+| `src/pages/api/protondb/fetch.ts` | Modified — Added rate limiting (20 req/min) and edge cache-control headers |
+| `src/pages/api/search/web.ts` | Modified — Added non-dev environment guard (404 Not available) |
+| `src/pages/api/games/index.ts` | Modified — Capped `sort=title` max limit from 20000 to 500 records |
+
+### Design Decisions / Rationale
+- **Sliding-window KV rate limiter**: Implemented in `src/lib/rateLimit.ts` leveraging Cloudflare KV with TTL auto-expiry and fail-open resilience to prevent accidental outages on KV faults while stopping high-frequency bot abuse.
+- **Strict Server Auth Verification**: Replaced reliance on client-supplied body payloads (`body.userId`) with authenticated session tokens (`getServerUser`) on mutation endpoints to defeat identity spoofing and unauthorized reputation auto-approvals.
+- **CSRF Defense**: Converted `/api/auth/logout` to POST to eliminate `<img src="/api/auth/logout">` image-tag CSRF traps.
+
+### Verification
+- Ran full production build (`npm run build`) — static sitemap, search index, and Cloudflare Worker bundle compiled with 0 errors.
+- Verified Cloudflare `RATE_LIMIT` KV namespace creation via Wrangler CLI.
+
+---

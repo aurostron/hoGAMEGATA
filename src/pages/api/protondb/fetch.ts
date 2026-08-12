@@ -1,9 +1,14 @@
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import type { APIRoute } from 'astro';
 import { fetchProtonDbSummary } from '../../../lib/protondb';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, url }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`protondb:${clientIp}`, 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   const appId = url.searchParams.get('appId');
   if (!appId) {
     return new Response(
@@ -22,6 +27,6 @@ export const GET: APIRoute = async ({ url }) => {
 
   return new Response(
     JSON.stringify(summary),
-    { status: 200, headers: { 'Content-Type': 'application/json' } }
+    { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600, s-maxage=3600' } }
   );
 };

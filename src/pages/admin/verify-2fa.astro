@@ -245,9 +245,11 @@ if (base32Secret) {
 
       <!-- Action Footer Links -->
       <div class="text-center pt-2 border-t border-[#1a1a24]/30">
-        <a href="/api/auth/logout" class="text-[10px] font-bold font-sans text-gray-500 hover:text-white transition duration-150 uppercase tracking-widest">
-          Sign Out of Account
-        </a>
+        <form action="/api/auth/logout" method="POST" style="display:inline;">
+          <button type="submit" class="text-[10px] font-bold font-sans text-gray-500 hover:text-white transition duration-150 uppercase tracking-widest">
+            Logout
+          </button>
+        </form>
       </div>
 
     </div>

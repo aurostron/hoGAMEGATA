@@ -25,16 +25,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const publicKey = (runtimeEnv as any).DISCORD_PUBLIC_KEY;
 
     // Verify signature if DISCORD_PUBLIC_KEY is configured
-    if (publicKey) {
-      if (!signature || !timestamp) {
-        return new Response('Missing Discord signature headers', { status: 401 });
-      }
-      const isValid = verifyKey(rawBody, signature, timestamp, publicKey);
-      if (!isValid) {
-        return new Response('Invalid request signature', { status: 401 });
-      }
-    } else {
-      console.warn("⚠️ DISCORD_PUBLIC_KEY is not set in environment variables. Signature verification skipped.");
+    if (!publicKey) {
+      console.error('DISCORD_PUBLIC_KEY is not configured. Rejecting all interactions.');
+      return new Response('Server misconfiguration', { status: 500 });
+    }
+    if (!signature || !timestamp) {
+      return new Response('Missing Discord signature headers', { status: 401 });
+    }
+    const isValid = verifyKey(rawBody, signature, timestamp, publicKey);
+    if (!isValid) {
+      return new Response('Invalid request signature', { status: 401 });
     }
 
     let payload: any = {};

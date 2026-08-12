@@ -1,9 +1,14 @@
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import type { APIRoute } from "astro";
 import { trackLinkClick } from "../../../lib/analytics";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`track_click:${clientIp}`, 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   try {
     const { gameId, storeName, refTitle } = await request.json();
 
