@@ -132,19 +132,23 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
   const toggleWish = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!user) {
+      window.location.assign(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
     try {
       const saved: string[] = JSON.parse(localStorage.getItem("gamegata_wishlist") || "[]");
       const next = wished ? saved.filter(id => id !== game.id) : [...saved, game.id];
       localStorage.setItem("gamegata_wishlist", JSON.stringify(next));
 
-      if (user) {
-        const method = wished ? "DELETE" : "POST";
-        fetch("/api/user/wishlist", {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameId: game.id }),
-        }).catch(err => console.error("Cloud wishlist sync toggle failed:", err));
-      }
+      const method = wished ? "DELETE" : "POST";
+      fetch("/api/user/wishlist", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId: game.id }),
+      }).catch(err => console.error("Cloud wishlist sync toggle failed:", err));
     } catch { /* ignore */ }
     setWished(p => !p);
     setWishAnim(true);

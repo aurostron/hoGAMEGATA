@@ -121,6 +121,12 @@ export default function TabCatalog({
   const toggleWish = async (e: React.MouseEvent, gameId: string) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!user) {
+      window.location.assign(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+      return;
+    }
+
     try {
       const saved: string[] = JSON.parse(localStorage.getItem("gamegata_wishlist") || "[]");
       const isWished = wishedMap[gameId];
@@ -128,14 +134,12 @@ export default function TabCatalog({
       localStorage.setItem("gamegata_wishlist", JSON.stringify(next));
       setWishedMap(prev => ({ ...prev, [gameId]: !isWished }));
 
-      if (user) {
-        const method = isWished ? "DELETE" : "POST";
-        fetch("/api/user/wishlist", {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameId }),
-        }).catch(err => console.error("Cloud wishlist sync toggle failed:", err));
-      }
+      const method = isWished ? "DELETE" : "POST";
+      fetch("/api/user/wishlist", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId }),
+      }).catch(err => console.error("Cloud wishlist sync toggle failed:", err));
     } catch { /* ignore */ }
   };
 

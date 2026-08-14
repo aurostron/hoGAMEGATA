@@ -72,3 +72,26 @@ Comprehensive hardening of all 25 public API endpoints following penetration tes
 - Verified Cloudflare `RATE_LIMIT` KV namespace creation via Wrangler CLI.
 
 ---
+
+## 2026-08-16 — Enforce Client-Side Authentication on Likes and Wishlist Toggles
+
+### Summary
+Fixed optimistic guest interaction vulnerability where unauthenticated/incognito users could click Favorite / Like buttons and see optimistic state updates locally without logging in. Enforced strict authentication checks and automatic login redirect on all client components handling favorites, likes, and ratings.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/TrackControls.tsx` | Modified — Enforced `handleAuthRedirect()` when `!user` on `toggleWishlist` and `handleRatingChange`, preventing optimistic guest likes |
+| `src/components/GameCatalogClient.tsx` | Modified — Added `!user` authentication redirect on card favorite toggle |
+| `src/components/TabCatalog.tsx` | Modified — Added `!user` authentication redirect on tab game favorite toggle |
+| `src/components/HeroCarousel.tsx` | Modified — Added `!user` authentication redirect on hero carousel favorite toggle |
+| `src/components/StorefrontLists.tsx` | Modified — Added `!user` authentication redirect on storefront game favorite toggle |
+
+### Design Decisions / Rationale
+- Removed optimistic guest liking and guest `/api/game/likes` fallback from `TrackControls.tsx`. If a user is not authenticated (`!user`), interacting with Favorite/Like redirects to `/login?redirect=...`.
+- Aligned all client-side favorite toggles across catalog, hero carousel, tabs, and game pages with the backend authentication requirement.
+
+### Verification
+- Ran production build (`npm run build`) successfully with 0 errors.
+
+---

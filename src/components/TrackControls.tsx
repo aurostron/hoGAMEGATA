@@ -149,26 +149,17 @@ function TrackControlsInner({
   };
 
   const toggleWishlist = async () => {
+    if (!user) {
+      handleAuthRedirect();
+      return;
+    }
+
     const nextWishlisted = !wishlisted;
     const delta = nextWishlisted ? 1 : -1;
 
     // Optimistic UI update for immediate response
     setWishlisted(nextWishlisted);
     setLikesCount(prev => Math.max(0, prev + delta));
-
-    if (!user) {
-      // Guest favorite toggle: sync with public likes API
-      try {
-        await fetch("/api/game/likes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gameId, action: nextWishlisted ? "increment" : "decrement" }),
-        });
-      } catch (err) {
-        console.warn("Guest likes update failed:", err);
-      }
-      return;
-    }
 
     setLoading(true);
     const method = wishlisted ? "DELETE" : "POST";
@@ -276,6 +267,60 @@ function TrackControlsInner({
       }
     } catch (err) {
       console.error("Failed to set status:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRatingChange = async (newRating: number | null) => {
+    if (!user) {
+      handleAuthRedirect();
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/user/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gameId, rating: newRating }),
+      });
+
+      if (res.ok) {
+        setRating(newRating);
+
+        const libRaw = localStorage.getItem("gamegata_library");
+        const library = libRaw ? JSON.parse(libRaw) : {};
+        const existing = library[gameId] || {
+          gameId,
+          gameTitle,
+          gameSlug,
+          genres,
+          wishlisted,
+          status: collectionStatus,
+          rating: null,
+          updatedAt: Date.now()
+        };
+        existing.rating = newRating;
+        existing.updatedAt = Date.now();
+        library[gameId] = existing;
+        localStorage.setItem("gamegata_library", JSON.stringify(library));
+
+        const journalRaw = localStorage.getItem("gamegata_journal");
+        const journal = journalRaw ? JSON.parse(journalRaw) : [];
+        const entry: JournalItem = {
+          gameId,
+          gameTitle,
+          action: "rating",
+          value: newRating !== null ? `Rated ${newRating}/10` : "Cleared rating",
+          timestamp: Date.now()
+        };
+        journal.unshift(entry);
+        localStorage.setItem("gamegata_journal", JSON.stringify(journal.slice(0, 100)));
+        setHistory(journal.filter((item: JournalItem) => item.gameId === gameId));
+      }
+    } catch (err) {
+      console.error("Failed to set rating:", err);
     } finally {
       setLoading(false);
     }
