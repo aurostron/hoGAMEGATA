@@ -21,23 +21,30 @@ const ALLOWED_HOSTS = [
   'rawg.io',
   'img.itch.zone',
   'itch.zone',
+  'img.itch.io',
+  'itch.io',
+  'static.itch.io',
   'images-common.gog-statics.com',
   'gog-statics.com',
   'steamstatic.com',
   'steampowered.com',
   'media.steampowered.com',
   'shared.cloudflare.steamstatic.com',
+  'shared.akamai.steamstatic.com',
   'cdn.akamai.steamstatic.com',
   'imgur.com',
   'i.imgur.com',
   'postimg.cc',
   'i.postimg.cc',
   'postimages.org',
+  'media.giphy.com',
+  'giphy.com',
+  'images.unsplash.com',
 ];
 
 export const GET: APIRoute = async ({ request }) => {
   const clientIp = getClientIp(request);
-  const rl = await rateLimit(`img_proxy:${clientIp}`, 60, 60);
+  const rl = await rateLimit(`img_proxy:${clientIp}`, 600, 60);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter);
 
   const urlObj = new URL(request.url);

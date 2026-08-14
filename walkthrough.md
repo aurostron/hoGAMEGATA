@@ -95,3 +95,24 @@ Fixed optimistic guest interaction vulnerability where unauthenticated/incognito
 - Ran production build (`npm run build`) successfully with 0 errors.
 
 ---
+
+## 2026-08-16 — Fix Game Screenshots and Cover Image Rendering (Cloudinary 401 & Image Proxy)
+
+### Summary
+Fixed broken cover images and screenshot galleries on game pages (such as `/game/itch-backrooms-out-of-oxygen`). Resolved root cause where `getCloudinaryFetchUrl` was wrapping trending game URLs with Cloudinary's `image/fetch` feature which returned 401 Unauthorized for third-party hosting domains (`catbox.moe`, `iili.io`, etc.). Re-routed all remote game images through our Cloudflare Edge image proxy (`/api/image-proxy`), expanded `ALLOWED_HOSTS` domain whitelist, and increased proxy rate limits for screenshot galleries.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/lib/utils.ts` | Modified — Removed failing `res.cloudinary.com/image/fetch` route for trending games; routed all remote images through `/api/image-proxy?v=2&url=...` |
+| `src/pages/api/image-proxy.ts` | Modified — Expanded `ALLOWED_HOSTS` to include itch.io, giphy, unsplash, and akamai CDN domains; raised rate limit from 60 to 600 req/min for gallery browsing |
+
+### Design Decisions / Rationale
+- Cloudinary free tier accounts reject unauthorized `image/fetch` proxying on third-party image domains. Our Cloudflare Worker image proxy already supports CDN-level 1-year immutable caching and handles external host fetching reliably without external account restrictions.
+- Raised image proxy rate limit from 60 to 600 req/min so loading games with 12+ high-res screenshots never triggers rate-limiting false positives.
+
+### Verification
+- Tested `/api/image-proxy` against `catbox.moe` and `iili.io` URLs — returned `200 OK` with `Content-Type: image/webp` and `image/png`.
+- Ran full production build (`npm run build`) — compiled with 0 errors.
+
+---

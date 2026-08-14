@@ -57,7 +57,7 @@ export function getCategoryBadge(category: number | null, title?: string): strin
   return null;
 }
 
-export function getCloudinaryFetchUrl(originalUrl: string | null, isTrending?: boolean): string | null {
+export function getCloudinaryFetchUrl(originalUrl: string | null, _isTrending?: boolean): string | null {
   if (!originalUrl) return null;
 
   // If it's already a local path, return it directly
@@ -70,17 +70,7 @@ export function getCloudinaryFetchUrl(originalUrl: string | null, isTrending?: b
     formattedUrl = "https:" + formattedUrl;
   }
   
-  // Safe read of env variables for both client-side (Astro/Vite) and server-side (Node/Cloudflare)
-  const cloudName = import.meta.env?.PUBLIC_CLOUDINARY_CLOUD_NAME || 
-    import.meta.env?.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 
-    (typeof process !== "undefined" && process?.env ? process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME : undefined);
-  
-  if (isTrending && cloudName) {
-    // Uses Cloudinary's fetch feature to optimize and cache trending images
-    return `https://res.cloudinary.com/${cloudName}/image/fetch/f_auto,q_auto/${formattedUrl}`;
-  }
-  
-  // Route all other remote images through our Cloudflare Edge-cached image proxy
+  // Route all remote images through our Cloudflare Edge-cached image proxy
   // v=2 cache-buster: purges stale browser/CDN caches from the old stripped-query-key bug
   return `/api/image-proxy?v=2&url=${encodeURIComponent(formattedUrl)}`;
 }
