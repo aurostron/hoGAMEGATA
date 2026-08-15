@@ -1,5 +1,3 @@
-import { env as cfEnv } from "cloudflare:workers";
-
 interface RateLimitResult {
   allowed: boolean;
   remaining: number;
@@ -34,6 +32,12 @@ export async function rateLimit(
     if (isDev) {
       return { allowed: true, remaining: maxRequests, retryAfter: 0 };
     }
+
+    let cfEnv: any = {};
+    try {
+      const cf = await import("cloudflare:workers");
+      cfEnv = cf.env || {};
+    } catch {}
 
     const runtimeEnv = cfEnv || (typeof process !== "undefined" ? process.env : {});
     const kv = (runtimeEnv as any).RATE_LIMIT as KVNamespace | undefined;

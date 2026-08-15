@@ -1,5 +1,3 @@
-import { env as cfEnv } from 'cloudflare:workers';
-
 export interface DiscordEmbedField {
   name: string;
   value: string;
@@ -20,8 +18,14 @@ export async function sendDiscordEditNotification(
   env?: any
 ) {
   try {
+    let cfEnv: any = {};
+    try {
+      const cf = await import('cloudflare:workers');
+      cfEnv = cf.env || {};
+    } catch {}
+
     const getEnvVal = (key: string) => {
-      return (env && env[key]) || (typeof process !== 'undefined' && process.env ? process.env[key] : (cfEnv as any)?.[key]);
+      return (env && env[key]) || (typeof process !== 'undefined' && process.env ? process.env[key] : cfEnv?.[key]);
     };
 
     const webhookUrl = getEnvVal('DISCORD_EDIT_WEBHOOK_URL');

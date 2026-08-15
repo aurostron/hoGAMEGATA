@@ -50,6 +50,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const suggestionId = `edit_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const trackingId = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Resolve target game ID (supports both game.id and game.slug)
+    const { games } = await import('../../../db/schema');
+    const { eq, or } = await import('drizzle-orm');
+    const [targetGame] = await turso
+      .select({ id: games.id })
+      .from(games)
+      .where(or(eq(games.id, gameId.trim()), eq(games.slug, gameId.trim())))
+      .limit(1);
+
+    const resolvedGameId = targetGame?.id || gameId.trim();
+
     // Run AI Pre-Moderation Shield
     const aiResult = await evaluateEditWithAI({
       field: field.trim(),
@@ -73,7 +84,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     await turso.insert(editSuggestions).values({
       id: suggestionId,
       trackingId: trackingId,
-      gameId: gameId.trim(),
+      gameId: resolvedGameId,
       userId: typeof verifiedUserId === "string" ? verifiedUserId : null,
       userIp: clientIp,
       field: field.trim(),

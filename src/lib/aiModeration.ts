@@ -50,13 +50,19 @@ Respond ONLY with a valid JSON object matching this exact schema:
   "reasoning": string (short 1-sentence explanation)
 }`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+    const fetchPromise = ai.models.generateContent({
+      model: 'gemini-1.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
       },
     });
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('AI moderation timeout')), 3500)
+    );
+
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
 
     const text = response.text;
     if (!text) {

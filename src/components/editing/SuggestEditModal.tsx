@@ -76,7 +76,10 @@ export const SuggestEditModal: React.FC<SuggestEditModalProps> = ({
       if (contentType.includes('application/json')) {
         data = await res.json().catch(() => ({}));
       } else {
-        throw new Error(`Server returned non-JSON response (${res.status})`);
+        const textBody = await res.text().catch(() => '');
+        if (!res.ok) {
+          throw new Error(data?.error || textBody || `Server returned error (${res.status})`);
+        }
       }
 
       if (!res.ok) {

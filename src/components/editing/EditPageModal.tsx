@@ -227,7 +227,10 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
       if (contentType.includes('application/json')) {
         data = await response.json().catch(() => ({}));
       } else {
-        throw new Error(`Server returned non-JSON response (${response.status})`);
+        const textBody = await response.text().catch(() => '');
+        if (!response.ok) {
+          throw new Error(data?.error || textBody || `Server returned error (${response.status})`);
+        }
       }
 
       if (!response.ok) {

@@ -35,7 +35,11 @@ export function initTursoForRequest(env: any) {
 // Proxy that forwards all calls to the active request-scoped instance.
 export const turso = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
   get(target, prop, receiver) {
-    const activeInstance = (globalThis as any).tursoInstance;
+    let activeInstance = (globalThis as any).tursoInstance;
+    if (!activeInstance) {
+      initTursoForRequest({});
+      activeInstance = (globalThis as any).tursoInstance;
+    }
     if (!activeInstance) {
       const propStr = String(prop);
       if (["select", "insert", "update", "delete", "query", "selectDistinct"].includes(propStr)) {
