@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Send, Copy, Check, ShieldAlert, CheckCircle2, Loader2, Link2, Bug, FileText, Lightbulb } from 'lucide-react';
+import { TurnstileWidget } from '../ui/TurnstileWidget';
 
 interface BugReportModalProps {
   isOpen: boolean;
@@ -44,34 +45,8 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
 
   useEffect(() => {
     if (!isOpen) return;
-    // Load Turnstile script if not already loaded
-    if (!document.getElementById('turnstile-script')) {
-      const script = document.createElement('script');
-      script.id = 'turnstile-script';
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-      script.async = true;
-      document.head.appendChild(script);
-    }
-    // Reset token when modal opens
     setTurnstileToken(null);
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen || !mounted || submittedTicketId) return;
-    const interval = setInterval(() => {
-      const container = document.getElementById('bug-turnstile-container');
-      if (container && (window as any).turnstile && !container.hasChildNodes()) {
-        (window as any).turnstile.render(container, {
-          sitekey: import.meta.env?.PUBLIC_TURNSTILE_SITE_KEY || '1x000000000000000000001',
-          callback: (token: string) => setTurnstileToken(token),
-          theme: 'dark',
-          size: 'compact',
-        });
-        clearInterval(interval);
-      }
-    }, 200);
-    return () => clearInterval(interval);
-  }, [isOpen, mounted, submittedTicketId]);
 
   if (!isOpen || !mounted) return null;
 
@@ -106,12 +81,27 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to submit issue report');
+      const contentType = res.headers.get('content-type') || '';
+      let data: any = {};
+      if (contentType.includes('application/json')) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const textBody = await res.text().catch(() => '');
+        if (textBody.includes('<html') || textBody.includes('<!DOCTYPE')) {
+          const match = textBody.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i) || textBody.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+          const rawErr = match ? match[1].replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim() : '';
+          const shortErr = rawErr ? rawErr.split('\n')[0].substring(0, 150) : '';
+          data = { error: shortErr || `Server error (${res.status}). Please try again.` };
+        } else {
+          data = { error: textBody ? textBody.substring(0, 150) : `Server error (${res.status})` };
+        }
+      }
+
+      if (!res.ok) throw new Error(data.error || 'Failed to submit issue report. Please try again.');
 
       setSubmittedTicketId(data.ticketId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -307,7 +297,11 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
             </div>
 
             {/* Turnstile CAPTCHA */}
-            <div id="bug-turnstile-container" className="flex justify-center" />
+            <TurnstileWidget 
+              onVerify={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-3 pt-2">

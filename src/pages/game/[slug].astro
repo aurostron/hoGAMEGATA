@@ -39,6 +39,7 @@ import { HistoryButton } from '../../components/editing/HistoryButton';
 import { HelpMenuDropdown } from '../../components/editing/HelpMenuDropdown';
 import { BugReportTrigger } from '../../components/bugs/BugReportTrigger';
 import CoverFavoriteButton from '../../components/CoverFavoriteButton';
+import OfficialLinkIcon from '../../components/icons/OfficialLinkIcon.astro';
 import { trackGameView } from '../../lib/analytics';
 
 // SSR: render every game on-demand instead of pre-building a limited static set.
@@ -680,10 +681,11 @@ const editGameData = {
                     href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
+                    class="group inline-flex items-center gap-2.5 text-xs bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white text-white/90 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl cursor-pointer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                    <span>Support Creator ({link.storeName})</span>
+                    <OfficialLinkIcon name={link.storeName} class="w-4 h-4 text-white/80 group-hover:text-black transition-colors shrink-0" />
+                    <span>{isItchGame && link.storeName.toLowerCase().includes("itch") ? "Support Creator (itch.io)" : link.storeName}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:text-black transition-all ml-0.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                   </a>
                 ))}
 
@@ -692,10 +694,11 @@ const editGameData = {
                     href={game.websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
+                    class="group inline-flex items-center gap-2.5 text-xs bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white text-white/90 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl cursor-pointer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    <OfficialLinkIcon name="website" class="w-4 h-4 text-white/80 group-hover:text-black transition-colors shrink-0" />
                     <span>Official Website</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:text-black transition-all ml-0.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                   </a>
                 )}
 
@@ -704,10 +707,11 @@ const editGameData = {
                     href={game.redditUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
+                    class="group inline-flex items-center gap-2.5 text-xs bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white text-white/90 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl cursor-pointer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    <OfficialLinkIcon name="reddit" class="w-4 h-4 text-white/80 group-hover:text-black transition-colors shrink-0" />
                     <span>Reddit Community</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:text-black transition-all ml-0.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                   </a>
                 )}
               </div>
@@ -823,10 +827,11 @@ const editGameData = {
                     href={`/re/${game.slug}/${link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")}?gameId=${game.id}&fallbackUrl=${encodeURIComponent(link.url)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
+                    class="group inline-flex items-center gap-2.5 text-xs bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white text-white/90 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl cursor-pointer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                    <span>Support Creator ({link.storeName})</span>
+                    <OfficialLinkIcon name={link.storeName} class="w-4 h-4 text-white/80 group-hover:text-black transition-colors shrink-0" />
+                    <span>{link.storeName}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:text-black transition-all ml-0.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                   </a>
                 ))}
 
@@ -835,10 +840,11 @@ const editGameData = {
                     href={game.websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
+                    class="group inline-flex items-center gap-2.5 text-xs bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white text-white/90 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl cursor-pointer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    <OfficialLinkIcon name="website" class="w-4 h-4 text-white/80 group-hover:text-black transition-colors shrink-0" />
                     <span>Official Website</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:text-black transition-all ml-0.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                   </a>
                 )}
 
@@ -847,10 +853,11 @@ const editGameData = {
                     href={game.redditUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="group flex items-center gap-2 text-xs bg-white/5 border border-white/5 hover:bg-white hover:text-black text-white transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl"
+                    class="group inline-flex items-center gap-2.5 text-xs bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white text-white/90 transition-all duration-150 px-4 py-2.5 font-semibold rounded-xl cursor-pointer"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-white/70 group-hover:text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    <OfficialLinkIcon name="reddit" class="w-4 h-4 text-white/80 group-hover:text-black transition-colors shrink-0" />
                     <span>Reddit Community</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:text-black transition-all ml-0.5 shrink-0"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
                   </a>
                 )}
               </div>

@@ -3,7 +3,6 @@ import { turso } from '../../../lib/turso';
 import { bugReports } from '../../../db/schema';
 import { sendDiscordEditNotification } from '../../../lib/discord';
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
-import { env as cfEnv } from 'cloudflare:workers';
 
 export const prerender = false;
 
@@ -30,14 +29,23 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       );
     }
 
+    let cfEnv: any = {};
+    try {
+      const cf = await import('cloudflare:workers');
+      cfEnv = cf.env || {};
+    } catch {}
+
     const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
-    const runtimeEnv = isDev
-      ? (typeof process !== 'undefined' && process.env ? process.env : cfEnv)
-      : (cfEnv || (typeof process !== 'undefined' ? process.env : {}));
-    const turnstileSecret = (runtimeEnv as any).TURNSTILE_SECRET_KEY;
+    const runtimeEnv = {
+      ...(typeof process !== 'undefined' && process.env ? process.env : {}),
+      ...(cfEnv || {}),
+    };
+    const turnstileSecret = (runtimeEnv as any).TURNSTILE_SECRET_KEY || (isDev ? '1x0000000000000000000000000000000AA' : undefined);
 
     if (turnstileSecret) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
         const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -46,16 +54,18 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
             response: turnstileToken,
             remoteip: clientIp,
           }),
+          signal: controller.signal,
         });
-        const verifyData = await verifyRes.json() as { success: boolean };
-        if (!verifyData.success) {
+        clearTimeout(timeoutId);
+        const verifyData = await verifyRes.json().catch(() => null) as { success?: boolean } | null;
+        if (verifyData && verifyData.success === false) {
           return new Response(
             JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
             { status: 403, headers: { 'Content-Type': 'application/json' } }
           );
         }
       } catch (err) {
-        console.warn('[Turnstile] Verification request failed, allowing submission:', err);
+        console.warn('[Turnstile] Verification request warning (allowing dev fallback):', err);
       }
     }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
+import BrandIcon from "./icons/BrandIcon";
 
 interface PriceDeal {
   storeName: string;
@@ -264,7 +265,8 @@ export default function PriceComparison({
                   isCheapest ? "bg-[#10b981]/5 border-l-4 border-emerald-500" : ""
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
+                  <BrandIcon name={deal.storeName} className="w-4 h-4 text-white/70 shrink-0" />
                   <span className="font-sans text-sm font-semibold text-white">
                     {deal.storeName}
                   </span>

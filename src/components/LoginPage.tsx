@@ -43,7 +43,7 @@ function LoginForm() {
     // 1. Setup explicit Turnstile load callback on window
     (window as any).onloadTurnstileCallback = () => {
       if ((window as any).turnstile) {
-        const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x000000000000000000001";
+        const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
         turnstileWidgetId.current = (window as any).turnstile.render("#turnstile-container", {
           sitekey: siteKey,
           theme: "dark",

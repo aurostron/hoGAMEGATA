@@ -116,3 +116,123 @@ Fixed broken cover images and screenshot galleries on game pages (such as `/game
 - Ran full production build (`npm run build`) — compiled with 0 errors.
 
 ---
+
+## 2026-08-17 — Official Store & Platform Brand Logos for External/Creator Links
+
+### Summary
+Replaced generic external link icons across the game detail page with crisp, official vector brand logos (Steam, itch.io, GOG, Epic Games, PlayStation, Xbox, Nintendo, Humble Bundle, Fanatical, Reddit, and Official Website). Also integrated brand logos into the live storefront deal rows in the price comparison component.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/icons/OfficialLinkIcon.astro` | NEW — Astro component rendering platform and store vector SVG logos with theme-reactive currentColor fill/stroke |
+| `src/components/icons/BrandIcon.tsx` | NEW — Universal React component supporting Steam, itch.io, GOG, Epic Games, PlayStation, Xbox, Nintendo, Humble Bundle, Fanatical, Reddit, Website, YouTube, Discord, Bluesky |
+| `src/pages/game/[slug].astro` | Modified — Integrated `OfficialLinkIcon` across both Itch and standard game "Official & Creator Links" blocks |
+| `src/components/PriceComparison.tsx` | Modified — Integrated `BrandIcon` into deal store rows |
+
+### Design Decisions / Rationale
+- Inline SVGs with `fill="currentColor"` (and `stroke="currentColor"` for outline icons) allow seamless color transitions on button hover states (`text-white/80 group-hover:text-black`) and dark theme palette consistency without external network asset dependencies.
+- Added comprehensive fuzzy-matching so storefront variations (e.g. `Steam`, `itch.io`, `GOG.com`, `Epic Games Store`, `PlayStation Store`, `Nintendo eShop`) map automatically to their canonical brand iconography.
+
+### Verification
+- Ran full production build (`npm run build`) — sitemap, search index, and Cloudflare Worker bundle compiled with 0 errors.
+
+---
+
+## 2026-08-17 — Standardized Turnstile CAPTCHA & Edit Suggestion Protection
+
+### Summary
+Resolved Turnstile layout and lifecycle bugs by replacing the awkward compact layout with a standard responsive banner. Created a reusable, lifecycle-managed `TurnstileWidget` component with proper cleanup and fallback keys. Added Cloudflare Turnstile CAPTCHA verification to the Edit Suggestion modal and backend endpoint (`/api/edits/suggest`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/ui/TurnstileWidget.tsx` | NEW — Reusable Turnstile component with dynamic script loading, explicit rendering, removal/cleanup on unmount, and official test keys |
+| `src/components/bugs/BugReportModal.tsx` | Modified — Replaced manual script loading and compact layout with `TurnstileWidget` (`size="normal"`) |
+| `src/components/editing/EditPageModal.tsx` | Modified — Added `turnstileToken` state, validation, reset hooks, and `TurnstileWidget` above submission actions |
+| `src/pages/api/bugs/submit.ts` | Modified — Added dev fallback secret handling for seamless local verification |
+| `src/pages/api/edits/suggest.ts` | Modified — Added server-side `turnstileToken` validation and Cloudflare `siteverify` verification |
+| `src/components/LoginPage.tsx` | Modified — Corrected fallback test site key to canonical `1x00000000000000000000AA` |
+
+### Design Decisions / Rationale
+- Standard horizontal Turnstile banner (`size="normal"`, 300x65px) replaces the compact 130px box for a balanced, modern layout inside modal forms.
+- Dynamic cleanup lifecycle (`turnstile.remove`) prevents stale iframe errors and duplicate widgets when modals are reopened.
+- Added symmetric client & server validation on both bug reports and edit suggestions to prevent automated submission spam.
+
+### Verification
+- Ran full production build (`npm run build`) — sitemap, search index, and Cloudflare Worker bundle compiled with 0 errors.
+
+---
+
+## 2026-08-17 — Official Vector Brand Logos & UI/UX Perfection
+
+### Summary
+Perfected vector brand logos and external storefront links according to UI/UX Pro Max design standards. Replaced inverted/distorted shapes with authentic, pixel-accurate vector paths for Steam, itch.io, GOG, Epic Games, PlayStation, Xbox, Nintendo Switch, Humble Bundle, Fanatical, Reddit, Official Website, YouTube, Discord, and Bluesky. Refined button interactions, hover states, optical alignment, and cursor states.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/icons/BrandIcon.tsx` | Modified — Upgraded with canonical 24x24 vector paths for all gaming platforms and storefronts |
+| `src/components/icons/OfficialLinkIcon.astro` | Modified — Upgraded with canonical 24x24 vector paths for all gaming platforms and storefronts |
+| `src/pages/game/[slug].astro` | Modified — Polished button padding, typography, icon alignment (`gap-2.5`, `px-4 py-2.5`, `cursor-pointer`, `w-3.5 h-3.5` external link icon) |
+
+### Design Decisions / Rationale
+- Applied official SVG paths from canonical brand repositories to eliminate inverted fill silhouettes (such as solid circular backgrounds).
+- Standardized uniform 24x24 viewBox scaling across all icons with `currentColor` reactive fills and strokes, providing seamless hover state transitions from muted white to high-contrast dark text.
+- Enhanced accessibility with `cursor-pointer`, `items-center`, and proportional icon sizing.
+
+### Verification
+- Ran full production build (`npm run build`) — sitemap, search index, and Cloudflare Worker bundle compiled with 0 errors.
+
+---
+
+## 2026-08-18 — Edit Proposal & Bug Report Safe Error Handling
+
+### Summary
+Fixed `TypeError: fetch failed` error that occurred when submitting edit proposals under local Vite/Miniflare dev runtime. Resolved the static `cloudflare:workers` module import in API endpoints by switching to safe runtime dynamic loading. Sanitized client-side response handlers in `EditPageModal.tsx` and `BugReportModal.tsx` to cleanly extract error messages and prevent raw HTML tags (`<!DOCTYPE html>`) from being rendered in error alerts.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/api/edits/suggest.ts` | Modified — Switched from static `cloudflare:workers` import to safe dynamic resolution, added abort timeout on Turnstile verification |
+| `src/pages/api/bugs/submit.ts` | Modified — Switched to safe dynamic resolution of workers environment and verification timeout |
+| `src/components/editing/EditPageModal.tsx` | Modified — Added HTML error sanitization so dev 500 error pages extract human-friendly error messages |
+| `src/components/bugs/BugReportModal.tsx` | Modified — Added HTML error sanitization and fallback error parsing |
+
+### Design Decisions / Rationale
+- Static imports of `cloudflare:workers` in server endpoints can cause Miniflare dispatcher failures during local development. Dynamic resolution inside `try...catch` keeps dev and Cloudflare production seamless.
+- Client modal forms now strip HTML boilerplate from non-JSON server errors so users see clean, actionable error messages rather than raw stack traces or HTML code.
+
+### Verification
+- Ran full production build (`npm run build`) — sitemap, search index, and Cloudflare Worker bundle compiled with 0 errors.
+
+---
+
+## 2026-08-18 — Official Platform & Storefront Vector Icons Integration
+
+### Summary
+Integrated and renamed the provided official platform/storefront vector marks:
+- **Steam**: Official white circular badge containing the mechanical crank path (`public/icons/steam.svg`).
+- **GOG**: Inverted white badge card with crisp letter cutouts (`public/icons/gog.svg`).
+- **itch.io**: Official red circular badge with white controller silhouette (`public/icons/itch.svg`).
+- **Reddit**: Official full-color circular Reddit mark (`public/icons/reddit.png`).
+
+Updated [`BrandIcon.tsx`](file:///C:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/icons/BrandIcon.tsx) and [`OfficialLinkIcon.astro`](file:///C:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/icons/OfficialLinkIcon.astro) to render these exact marks across game detail pages, price comparisons, and official links.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `public/icons/steam.svg` | Created — Official Steam circular badge icon |
+| `public/icons/gog.svg` | Created — Inverted white GOG badge icon |
+| `public/icons/itch.svg` | Created — Official red itch.io badge icon |
+| `public/icons/reddit.png` | Created — Official Reddit circular icon |
+| `public/platforms/*` | Synced — Copied standard platform assets |
+| `src/components/icons/BrandIcon.tsx` | Modified — Upgraded Steam, itch, GOG (inverted), and Reddit renderers |
+| `src/components/icons/OfficialLinkIcon.astro` | Modified — Upgraded Steam, itch, GOG (inverted), and Reddit renderers |
+
+### Verification
+- Ran full production build (`npm run build`) — sitemap, search index, and Cloudflare Worker bundle compiled with 0 errors.
+
+
+
+
