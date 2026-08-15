@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const { gameId, field, oldValue, newValue, reason, userId: bodyUserId } = body;
+    const { gameId, field, oldValue, newValue, reason, userId: bodyUserId, turnstileToken } = body;
 
     if (!gameId || typeof gameId !== "string" || !gameId.trim()) {
       return new Response(
@@ -40,9 +40,64 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
+    if (!turnstileToken || typeof turnstileToken !== "string") {
+      return new Response(
+        JSON.stringify({ error: "CAPTCHA verification required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const clientIp = getClientIp(request);
     const rl = await rateLimit(`edits:${clientIp}`, 5, 600);
     if (!rl.allowed) return tooManyRequests(rl.retryAfter, 'Too many edit suggestions. Please try again later.');
+
+    let cfEnv: any = {};
+    try {
+      const cf = await import('cloudflare:workers');
+      cfEnv = cf.env || {};
+    } catch {}
+
+    const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+    const runtimeEnv = {
+      ...(typeof process !== 'undefined' && process.env ? process.env : {}),
+      ...(cfEnv || {}),
+    };
+    const turnstileSecret = (runtimeEnv as any).TURNSTILE_SECRET_KEY || (isDev ? '1x0000000000000000000000000000000AA' : undefined);
+
+    if (isDev && (turnstileToken === 'XXXX.DUMMY.TOKEN.XXXX' || turnstileToken.startsWith('XXXX.') || !turnstileSecret || turnstileSecret === '1x0000000000000000000000000000000AA')) {
+      // Auto-pass Turnstile in development mode
+    } else if (turnstileSecret) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            secret: turnstileSecret,
+            response: turnstileToken,
+            remoteip: clientIp,
+          }),
+          signal: controller.signal,
+        }).catch((err) => {
+          console.warn('[Turnstile] Siteverify fetch failed:', err?.message || err);
+          return null;
+        });
+        clearTimeout(timeoutId);
+
+        if (verifyRes) {
+          const verifyData = await verifyRes.json().catch(() => null) as { success?: boolean } | null;
+          if (verifyData && verifyData.success === false && !isDev) {
+            return new Response(
+              JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }),
+              { status: 403, headers: { 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('[Turnstile] Verification request warning (allowing dev fallback):', err);
+      }
+    }
 
     // Verify userId server-side — never trust client-supplied userId for reputation lookups
     const sessionUser = await getServerUser(request, cookies);

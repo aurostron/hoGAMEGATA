@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Pencil, CheckCircle2, AlertCircle, X, Loader2, Copy, Check, Link2, FileText, Building2, Star, Gamepad2, Terminal, RefreshCw } from 'lucide-react';
+import { TurnstileWidget } from '../ui/TurnstileWidget';
 
 interface EditPageModalProps {
   isOpen: boolean;
@@ -97,6 +98,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [submittedTrackingId, setSubmittedTrackingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // ProtonDB Auto-Fetch State
   const [steamInput, setSteamInput] = useState(() => String(gameData.steamAppId || ''));
@@ -118,6 +120,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
       setNewValue(fieldsConfig[field]?.value || '');
       setError(null);
       setProtonFetchNotice(null);
+      setTurnstileToken(null);
     }
   }, [isOpen, initialFieldKey]);
 
@@ -148,6 +151,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
     setNewValue(fieldsConfig[fieldKey]?.value || '');
     setError(null);
     setProtonFetchNotice(null);
+    setTurnstileToken(null);
   };
 
   const handleResetAndClose = () => {
@@ -155,6 +159,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
     setSubmittedTrackingId(null);
     setCopied(false);
     setProtonFetchNotice(null);
+    setTurnstileToken(null);
     onClose();
   };
 
@@ -204,6 +209,11 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!turnstileToken) {
+      setError('Please complete the CAPTCHA verification.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -219,6 +229,7 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
           oldValue: currentConfig.value,
           newValue,
           reason,
+          turnstileToken,
         }),
       });
 
@@ -228,18 +239,28 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
         data = await response.json().catch(() => ({}));
       } else {
         const textBody = await response.text().catch(() => '');
-        if (!response.ok) {
-          throw new Error(data?.error || textBody || `Server returned error (${response.status})`);
+        if (textBody.includes('<html') || textBody.includes('<!DOCTYPE')) {
+          let cleanErr = '';
+          if (textBody.includes('TypeError: fetch failed')) {
+            cleanErr = 'Server connection error (fetch failed). Please try again.';
+          } else {
+            const titleMatch = textBody.match(/<title[^>]*>(.*?)<\/title>/i);
+            const title = titleMatch ? titleMatch[1].trim() : '';
+            cleanErr = title && title !== 'Error' ? title : `Server error (${response.status}). Please try again.`;
+          }
+          data = { error: cleanErr };
+        } else {
+          data = { error: textBody ? textBody.replace(/<[^>]+>/g, '').substring(0, 150) : `Server error (${response.status})` };
         }
       }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit edit proposal');
+        throw new Error(data.error || 'Failed to submit edit proposal. Please try again.');
       }
 
       setSubmittedTrackingId(data.trackingId || String(Date.now()).slice(-6));
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -583,6 +604,13 @@ export const EditPageModal: React.FC<EditPageModalProps> = ({
                     className="w-full rounded-2xl bg-white/5 border border-white/10 p-3.5 text-xs font-mono text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/30 transition-all"
                   />
                 </div>
+
+                {/* Turnstile CAPTCHA */}
+                <TurnstileWidget
+                  onVerify={(token) => setTurnstileToken(token)}
+                  onExpire={() => setTurnstileToken(null)}
+                  onError={() => setTurnstileToken(null)}
+                />
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
