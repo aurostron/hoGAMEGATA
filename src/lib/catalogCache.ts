@@ -5,8 +5,22 @@
  * Slashes redundant network requests during pagination, filtering, and tab switching.
  */
 
-const CACHE_PREFIX = "gata_cat_cache_v1_";
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+const CACHE_PREFIX = "gata_cat_cache_v2_";
+const ONE_HOUR_MS = 60 * 60 * 1000; // 1 hour TTL for fresh counts
+
+// Automatically clear legacy v1 caches on load
+if (typeof window !== "undefined") {
+  try {
+    for (let i = sessionStorage.length - 1; i >= 0; i--) {
+      const k = sessionStorage.key(i);
+      if (k && (k.startsWith("gata_cat_cache_v1_") || !k.startsWith(CACHE_PREFIX))) {
+        if (k.startsWith("gata_cat_cache_")) {
+          sessionStorage.removeItem(k);
+        }
+      }
+    }
+  } catch {}
+}
 
 interface CachedPayload {
   timestamp: number;
@@ -20,8 +34,8 @@ export function getCachedCatalogResponse(key: string): any | null {
     if (!raw) return null;
     const parsed: CachedPayload = JSON.parse(raw);
     
-    // If cache entry is older than 7 days, expire it
-    if (Date.now() - parsed.timestamp > ONE_WEEK_MS) {
+    // If cache entry is older than 1 hour, expire it
+    if (Date.now() - parsed.timestamp > ONE_HOUR_MS) {
       sessionStorage.removeItem(CACHE_PREFIX + key);
       return null;
     }

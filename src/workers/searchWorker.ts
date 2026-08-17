@@ -54,10 +54,16 @@ self.onmessage = (event: MessageEvent) => {
         return;
       }
 
-      const searchResults = miniSearchInstance.search(query.trim(), {
-        fuzzy: query.trim().length > 3 ? 0.2 : false,
+      const trimmed = query.trim();
+      const searchResults = miniSearchInstance.search(trimmed, {
+        fuzzy: (term) => (term.length > 3 ? 0.25 : null),
         prefix: true,
-        boost: { t: 10, d: 3 },
+        boost: { t: 15, d: 5 },
+        combineWith: "OR",
+        weights: {
+          fuzzy: 0.45,
+          prefix: 0.65,
+        },
       });
 
       const sliced = searchResults.slice(0, limit);

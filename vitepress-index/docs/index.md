@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "hoGAMEGATA"
   text: "Index Mirror & Directory"
-  tagline: "A backed-up static index copy of all 18,763 games registered on hoGAMEGATA."
+  tagline: "A backed-up static index copy of all 1,07,810 games registered on hoGAMEGATA."
   actions:
     - theme: brand
       text: Browse Directory (A-Z)
@@ -15,7 +15,7 @@ hero:
 
 features:
   - title: Total Games
-    details: "18,763 horror games indexed."
+    details: "1,07,810 horror games indexed."
   - title: 100% Static Mirror
     details: "Ultra-fast, zero-server index generated from database."
   - title: Direct Game Search
@@ -36,6 +36,6 @@ Jump directly to any letter in the directory index:
 
 ---
 
-- **Total Developers:** 7,885
-- **Last Sync:** 2026-08-11
+- **Total Developers:** 64,764
+- **Last Sync:** 2026-08-21
 - **Original Source:** [gamegata.xyz](https://gamegata.xyz/directory)

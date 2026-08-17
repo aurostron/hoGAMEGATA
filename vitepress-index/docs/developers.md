@@ -3,511 +3,511 @@ title: "Developers Index - hoGAMEGATA Index Mirror"
 description: "Index of game developers registered on hoGAMEGATA."
 ---
 
-# Developers Index (7,885 Total)
+# Developers Index (64,764 Total)
 
 Below are top developers indexed on hoGAMEGATA sorted by title count:
 
 | Developer | Total Games |
 | :--- | :---: |
+| **Independent Creator** | 8653 |
 | **Capcom** | 145 |
+| **Dylan Hoctor** | 143 |
 | **07th Expansion** | 136 |
+| **Graphtet** | 130 |
+| **Vibegtag V2** | 85 |
 | **Dead Drop Studios LLC** | 82 |
+| **616 GAMES** | 69 |
+| **Lachlan S.** | 62 |
 | **Konami** | 62 |
+| **Absolute Panda** | 59 |
+| **htv9600** | 57 |
 | **Behaviour Interactive** | 57 |
-| **616 GAMES** | 46 |
-| **Inc.** | 46 |
+| **Inc.** | 52 |
+| **watase** | 47 |
+| **Andrea Pignataro** | 47 |
+| **Paulor94** | 45 |
+| **SeriousDaniel** | 44 |
 | **id Software** | 44 |
 | **Failbetter Games** | 44 |
+| **David Mills** | 42 |
+| **Poison Games** | 41 |
+| **Stefano Cagnani V3** | 39 |
+| **ReveVoodoo** | 38 |
+| **Yorda** | 37 |
+| **Chilla's Art** | 36 |
+| **A. V. Dossow** | 36 |
+| **ApeHardware** | 35 |
+| **Vidas Games** | 35 |
 | **Aza Game Studio** | 35 |
-| **Chilla's Art** | 33 |
-| **Poison Games** | 33 |
+| **SolitaryStudios** | 34 |
+| **Niven Hedinger** | 34 |
+| **Dave Microwaves Games** | 33 |
+| **YEWENXIN** | 33 |
+| **Nunaavy** | 32 |
 | **CHARON** | 31 |
+| **Volt Studio** | 29 |
+| **Ltd.** | 29 |
 | **Atlus** | 29 |
-| **Ltd.** | 28 |
+| **sobeano789** | 28 |
+| **AMAXANG GAMES** | 28 |
+| **Yahaha Horror** | 27 |
+| **Horror Hatch** | 26 |
+| **Aaron Wise** | 26 |
+| **Selfish Dream** | 25 |
+| **LLC** | 25 |
+| **Puppet Combo** | 25 |
 | **Supermassive Games** | 25 |
 | **Scottgames** | 25 |
+| **Lolscrubs** | 24 |
 | **Nippon Ichi Software** | 24 |
-| **Puppet Combo** | 24 |
+| **PEMSTD** | 24 |
+| **baldigaming99** | 24 |
+| **Tyler Brack** | 24 |
+| **Steelkrill Studio** | 23 |
 | **Visceral Games** | 23 |
+| **Matthew Ager** | 22 |
+| **SamerysAnimationWorld** | 22 |
+| **bcac144** | 22 |
+| **KIRILLVP GAMES** | 22 |
+| **Yvvvvv** | 22 |
 | **Techland** | 22 |
+| **Unknown Developer** | 21 |
+| **Combo Bomb Games** | 21 |
 | **Elephant Games** | 21 |
 | **Telltale Games** | 21 |
+| **VibeGtag** | 21 |
+| **AJ Games** | 20 |
+| **CokegamingStudios** | 20 |
 | **FromSoftware** | 20 |
-| **LLC** | 19 |
+| **GoldieDevX** | 20 |
+| **AltF4 Games** | 20 |
+| **Adrien Dittrick** | 19 |
+| **Migloper Productions** | 19 |
+| **FatHippo97** | 19 |
+| **Keplerians** | 19 |
+| **Ruha** | 19 |
 | **Mike Klubnika** | 19 |
-| **A. V. Dossow** | 18 |
-| **Keplerians** | 18 |
+| **MalacockyProductions** | 19 |
+| **thatonejake** | 18 |
+| **Sebastian Scaini** | 18 |
 | **Bloober Team** | 18 |
+| **Allen but on ich.io** | 18 |
+| **AntonyPlaysYT** | 18 |
 | **Naughty Dog** | 18 |
+| **Slender Nightmare** | 17 |
+| **1.0.1Studios** | 17 |
+| **SirTartarus** | 17 |
+| **Portrait Prophecies** | 17 |
+| **zhanyeshen** | 17 |
+| **Docent Dev** | 17 |
 | **Monolith Productions** | 17 |
+| **FPG** | 17 |
+| **LuuuLuuuL** | 17 |
+| **ToothandClaw** | 17 |
+| **Stickman and Friends 2006** | 17 |
 | **KenForest** | 17 |
+| **Warkus** | 17 |
 | **The Farm 51** | 17 |
+| **KiraLoo** | 17 |
 | **Blizzard Entertainment** | 17 |
-| **ToothandClaw** | 16 |
+| **Damm** | 17 |
+| **chanpiñon dash moderlatinodeincredibox** | 17 |
+| **burstroom** | 17 |
+| **MagicChickenStudios** | 16 |
+| **aJumpyGuy** | 16 |
+| **Stenblood** | 16 |
+| **Steven2PM** | 16 |
+| **Jivapeira** | 16 |
+| **Futuregames** | 16 |
 | **Chandler Groover** | 16 |
+| **RuptureGames** | 16 |
+| **PvbIizher** | 16 |
 | **Wales Interactive** | 16 |
+| **Euphoric Brothers** | 16 |
+| **Astro** | 16 |
 | **DVloper** | 16 |
-| **Dave Microwaves Games** | 15 |
+| **Real_Pokeb6l** | 16 |
+| **SBSonk** | 15 |
+| **Bored Clerk Games** | 15 |
+| **LittleMaru** | 15 |
+| **picklejarpotatoes** | 15 |
+| **Omarion_YT4Realz** | 15 |
+| **Frostcano Games** | 15 |
+| **BadKitty5678** | 15 |
 | **Frictional Games** | 15 |
+| **TheOtherGuy** | 15 |
+| **Joyless** | 15 |
 | **Capcom Production Studio 1** | 15 |
-| **Euphoric Brothers** | 15 |
+| **LoveKN** | 15 |
+| **The Shoodigity (INACTIVE // ARCHIVE)** | 15 |
+| **Miso.Mika** | 15 |
 | **Tarsier Studios** | 15 |
 | **Octavi Navarro** | 15 |
 | **Tamsoft** | 15 |
 | **Red Barrels** | 15 |
 | **Capcom Development Division 1** | 15 |
 | **Kitty Horrorshow** | 14 |
+| **EnterGameStudio** | 14 |
+| **Uberto** | 14 |
+| **Wrath** | 14 |
+| **Awecom** | 14 |
+| **Eduardo Scarpato** | 14 |
+| **BaggerHead** | 14 |
+| **BeastInTheCave** | 14 |
+| **SpoocleMacBoogle** | 14 |
+| **Revvalution Studio** | 14 |
+| **Chodex Productions** | 14 |
+| **theenkoded** | 14 |
+| **FabTheGamer** | 14 |
+| **M.Y. Hauger** | 14 |
+| **TheOnlyKross** | 14 |
+| **Feverdream Johnny** | 14 |
+| **GBoxing** | 14 |
+| **Bryce Bucher** | 14 |
+| **2435073954** | 14 |
 | **Yai Gameworks** | 14 |
+| **ShowmakerCC** | 14 |
 | **Frogwares** | 14 |
 | **Zen Studios** | 14 |
+| **Korvinrular** | 13 |
+| **Punga** | 13 |
+| **Vuk Dobric** | 13 |
 | **Remedy Entertainment** | 13 |
+| **Strange Scaffold** | 13 |
+| **BroodyGaming** | 13 |
+| **Icie** | 13 |
+| **Zed_Technician** | 13 |
+| **TheDoctor989** | 13 |
+| **Alex** | 13 |
+| **Pro2044** | 13 |
+| **Tag of fearless vr** | 13 |
+| **AzaGameStudio** | 13 |
 | **Doesn't Matter Games Studio** | 13 |
+| **Plomadilla** | 13 |
 | **David Szymanski** | 13 |
+| **Victor (Just For Laughs)** | 13 |
+| **Scythe Dev Team** | 13 |
+| **AppleTheCode** | 13 |
 | **Valve** | 13 |
+| **Brem** | 13 |
+| **URIEL_SILVEIRA** | 13 |
 | **Red Hook Studios** | 13 |
+| **Wandering Artist** | 13 |
+| **SWANCHIME** | 13 |
+| **Fletchpike** | 13 |
+| **umn** | 13 |
+| **Games By Dima (MalyshMemonskin)** | 13 |
 | **Steel Wool Studios** | 13 |
+| **ThatNerdPunk Games** | 13 |
+| **PIZZAPRANKS** | 13 |
+| **ArtDeveloper** | 13 |
+| **winder125** | 13 |
 | **4A Games** | 13 |
+| **IwillProbablyDie?** | 13 |
+| **swin** | 13 |
 | **Nikson** | 13 |
+| **Mestre dos Amargos** | 13 |
+| **Norbez Jones (call me Bez)** | 12 |
+| **2d creator** | 12 |
+| **tintwotin** | 12 |
+| **Bendo** | 12 |
+| **Charlie** | 12 |
+| **Sussy Amogus (Moved to another profile)** | 12 |
+| **JWG The Artist** | 12 |
+| **Virgula Leal** | 12 |
+| **Game by SHIZUKA AIEDA** | 12 |
+| **Studio Lemi** | 12 |
+| **HouckDev** | 12 |
+| **NotHack Europa** | 12 |
+| **SnakeWinter** | 12 |
 | **Madmind Studio** | 12 |
 | **The Creative Assembly** | 12 |
 | **Gearbox Software** | 12 |
+| **The Side** | 12 |
 | **The Chinese Room** | 12 |
+| **OffBrand** | 12 |
+| **Professional Villains** | 12 |
+| **vikintor** | 12 |
+| **winabees** | 12 |
+| **vlowoid** | 12 |
+| **KIRA** | 12 |
+| **Atrax Studios** | 12 |
+| **Abra Geroni** | 12 |
+| **quakr** | 12 |
+| **Sky High Games** | 12 |
+| **Melancholy Marionette** | 12 |
 | **Nightdive Studios** | 12 |
 | **Radiance Team** | 12 |
+| **BetaFiesta** | 12 |
+| **TetyaGovno** | 12 |
+| **Donitz** | 12 |
 | **Treyarch** | 12 |
-| **Warkus** | 12 |
+| **Napping Penguin** | 12 |
+| **Murushii** | 12 |
+| **Guillotine** | 12 |
 | **Human Entertainment** | 12 |
 | **Siactro** | 12 |
 | **Tango Gameworks** | 12 |
 | **Capcom Production Studio 4** | 12 |
+| **Reyshio** | 12 |
+| **FredRichi** | 12 |
 | **Gavin Inglis** | 12 |
+| **Александр Афтон** | 12 |
+| **iMakeStuffSC** | 12 |
+| **FM Studio** | 12 |
 | **Kane Carter** | 12 |
+| **Mickeyfan254_Official** | 11 |
+| **har** | 11 |
+| **zhangyangzz** | 11 |
+| **CDFGAMES** | 11 |
+| **wr41thx** | 11 |
+| **SkyShard** | 11 |
+| **Ahmet Kamil Keleş** | 11 |
+| **Dev88** | 11 |
+| **hankworx** | 11 |
+| **Miti** | 11 |
 | **JustTomcuk** | 11 |
-| **Strange Scaffold** | 11 |
+| **Rabbitboy0606** | 11 |
+| **Flamez Plays** | 11 |
+| **ArtieParty** | 11 |
+| **HakunaSoft** | 11 |
+| **DK_Productions** | 11 |
+| **GooseStranger** | 11 |
+| **Indie_RU** | 11 |
 | **Modus Interactive Games** | 11 |
 | **Glowstick Entertainment** | 11 |
-| **KIRA** | 11 |
+| **MatiasFatias** | 11 |
+| **VaporShark** | 11 |
+| **wataduck** | 11 |
+| **Bullhead Studios** | 11 |
+| **TheMascotHorrorTeam** | 11 |
+| **Toxic Roseworks** | 11 |
 | **Terminal Reality** | 11 |
 | **Kanawo** | 11 |
 | **The Game Kitchen** | 11 |
-| **Bryce Bucher** | 11 |
-| **Scythe Dev Team** | 11 |
+| **Darkblueshark** | 11 |
+| **Goose Studios** | 11 |
+| **Archeon Media** | 11 |
 | **MercurySteam** | 11 |
+| **plownouse studios** | 11 |
+| **Adriano Silva** | 11 |
+| **Jaybee** | 11 |
 | **727 Not Hound** | 11 |
 | **Tose** | 11 |
+| **Event Horizon School** | 11 |
 | **Mary Goodden** | 11 |
+| **Voltz** | 11 |
+| **Max Horror** | 11 |
+| **levin259** | 11 |
+| **Joykeratif** | 11 |
+| **Siamesecat** | 11 |
+| **itch.io official** | 11 |
+| **Sungmingamerpro13 Oficial** | 11 |
+| **𝐦𝐚𝐠𝐩𝐮𝐩𝐩𝐲𐙚** | 10 |
+| **Jacob Jazz** | 10 |
+| **Airem** | 10 |
+| **Malic** | 10 |
+| **Nyxline Interactive** | 10 |
+| **Charm Cochran** | 10 |
+| **Diamond Electronics** | 10 |
 | **Rebellion Developments** | 10 |
-| **Steelkrill Studio** | 10 |
+| **Studiohammergames** | 10 |
+| **ThorGameDev** | 10 |
+| **Halkind** | 10 |
+| **OldColdStone** | 10 |
+| **MrScottyPieey** | 10 |
+| **SJ Logo transparent** | 10 |
 | **Vidas Salavejus** | 10 |
+| **Cheeselover69** | 10 |
 | **Joey Drew Studios** | 10 |
-| **Melancholy Marionette** | 10 |
+| **ks98** | 10 |
+| **564 game Dev** | 10 |
+| **PixelSpeed** | 10 |
+| **Mysticmancer** | 10 |
+| **lilnak** | 10 |
 | **Tecmo** | 10 |
 | **Serafini Productions** | 10 |
+| **James Earl Cox III** | 10 |
+| **nathanux** | 10 |
 | **MOYA Horror** | 10 |
+| **Bedevil Games** | 10 |
+| **High Player** | 10 |
+| **chibixi** | 10 |
+| **Yizhitu666** | 10 |
 | **Genius Studio Japan** | 10 |
+| **Bored Leviathan** | 10 |
+| **TheLoneGameDev** | 10 |
+| **Fred the fred** | 10 |
+| **paupertony** | 10 |
 | **Team GrisGris** | 10 |
-| **Feverdream Johnny** | 10 |
+| **Skyward Games** | 10 |
+| **PurpleSnake** | 10 |
+| **DarkEcho Games** | 10 |
+| **Noxus Games Studio** | 10 |
+| **Andries_Benade** | 10 |
+| **Horror Unit Games** | 10 |
 | **ICOM Simulations** | 10 |
 | **Airdorf Games** | 10 |
+| **wdu** | 10 |
+| **Nannings** | 10 |
+| **radical** | 10 |
+| **EMIKA_GAMES** | 10 |
 | **Emil Macko** | 10 |
+| **Jayden Entertainment** | 10 |
+| **DarkStone Digital** | 10 |
+| **Uri** | 10 |
 | **Edmund McMillen** | 10 |
 | **Black Tabby Games** | 10 |
+| **Apollo'sBoy** | 10 |
+| **Kevin Hutchins** | 9 |
+| **Mr.Simon 2!** | 9 |
+| **Falonso** | 9 |
+| **Fierce Studios** | 9 |
+| **Sean** | 9 |
+| **ArgondevilGuiderods** | 9 |
+| **Baby3** | 9 |
+| **Sayorii** | 9 |
+| **Ominart** | 9 |
+| **Trick** | 9 |
 | **Fista Games** | 9 |
+| **N4bA** | 9 |
+| **Christine_890** | 9 |
+| **jadedResearcher** | 9 |
+| **Far Away Times** | 9 |
 | **Vladimere Lhore** | 9 |
+| **SirCartaux** | 9 |
+| **BMP Productions** | 9 |
+| **bitterkarella** | 9 |
+| **Dareint** | 9 |
+| **Skuttie** | 9 |
+| **Chris Danelon** | 9 |
+| **1ncors** | 9 |
+| **VideoVault Productions** | 9 |
+| **Pyxwin** | 9 |
+| **DoubleVGames** | 9 |
+| **AJB GAMES STUDIO** | 9 |
+| **dis0rder** | 9 |
+| **Blue Sofa Studio** | 9 |
+| **Cranus** | 9 |
+| **Gabrielndjldc** | 9 |
 | **Dark Dome** | 9 |
 | **Euphoria Games** | 9 |
 | **garmentdistrict** | 9 |
 | **Nanakorobi Hachikorogari** | 9 |
+| **Meiri** | 9 |
 | **Arkane Studios** | 9 |
+| **LZ-INK** | 9 |
+| **LiminAce** | 9 |
+| **Hollow toy** | 9 |
+| **Desert Fox** | 9 |
+| **CatTrigger** | 9 |
+| **BaldilomGamesYT** | 9 |
+| **BarneyErrorMaker** | 9 |
+| **Dosevz** | 9 |
+| **SamuraiDev** | 9 |
+| **MStudios** | 9 |
+| **Drone Garden Studios** | 9 |
+| **Ramose Tsimbina** | 9 |
+| **billoystuff** | 9 |
+| **CapCrowGames** | 9 |
+| **xlsdst** | 9 |
+| **CorgiStudios** | 9 |
 | **Crystal Dynamics** | 9 |
 | **Hyperstrange** | 9 |
 | **Black Eyed Priest** | 9 |
+| **Dragon Studic** | 9 |
 | **Digital Happiness** | 9 |
+| **homuriso** | 9 |
 | **papercookies** | 9 |
 | **Neurobew** | 9 |
+| **Xezien** | 9 |
+| **Silentrooms** | 9 |
+| **Spring Rabbit** | 9 |
+| **iamderlencer** | 9 |
+| **Adam** | 9 |
+| **Wenudu** | 9 |
+| **communistsister** | 9 |
 | **Ice-Pick Lodge** | 9 |
+| **Milkbar Lads** | 9 |
+| **SVAN PRODUCTIONS** | 9 |
 | **Scriptwelder** | 9 |
+| **HandsomelessKing** | 9 |
+| **sodaraptor** | 9 |
+| **Cosmic Games** | 9 |
+| **Manux Creations** | 9 |
+| **Ways** | 9 |
+| **Fɾҽxƈҽʅʅσɾ** | 9 |
+| **LeozimGrannyStudio** | 9 |
+| **TzapfronPresents** | 9 |
+| **Jonny's Games** | 9 |
+| **aplove** | 9 |
+| **GhostGamesXS** | 9 |
+| **TripleLGames** | 9 |
+| **MarceloGamePinkieHD** | 9 |
+| **Sculptureyt :3** | 9 |
 | **Dominigames** | 9 |
+| **Joseph Whitehead** | 9 |
 | **Ebi-Hime** | 9 |
-| **Uri** | 9 |
+| **Scary Creepy Pasta** | 9 |
+| **ChrisDaCoolGuy** | 9 |
+| **Ifeelodd** | 9 |
+| **Pixel Ghost** | 9 |
 | **HeartBeat Plus** | 9 |
 | **Vainsane** | 9 |
+| **巫夢恩Umoon** | 9 |
 | **Mob Entertainment** | 9 |
-| **Vuk Dobric** | 8 |
+| **thecoolkid2485** | 8 |
+| **Pomex official** | 8 |
+| **obliviist** | 8 |
+| **LastWinterR** | 8 |
+| **8-Bit Slasher** | 8 |
+| **Scratch2-0 Studios** | 8 |
+| **Smart-Studiulation** | 8 |
+| **Andrey Dev Games** | 8 |
+| **HudsonIs.Online** | 8 |
+| **Aircat Donut** | 8 |
+| **Voxelvoid** | 8 |
+| **Maroon Fox** | 8 |
+| **Bagenzo** | 8 |
+| **arijan!** | 8 |
+| **OneRedEyeDev** | 8 |
+| **TaleHammer** | 8 |
+| **BlueGameBr** | 8 |
+| **GoemGames** | 8 |
+| **SomethingShiny** | 8 |
+| **FallingWallGames** | 8 |
+| **James Moore** | 8 |
 | **Anamik Majumdar** | 8 |
+| **MTC** | 8 |
 | **Jesse Makkonen** | 8 |
+| **infernalwolf08** | 8 |
+| **Monochrome Moe** | 8 |
+| **Ethanozzo** | 8 |
 | **WayForward** | 8 |
-| **Meiri** | 8 |
+| **In entertainment** | 8 |
+| **Nekosounds** | 8 |
+| **Psionic Games** | 8 |
+| **KOEX studio** | 8 |
+| **Glory Meat** | 8 |
+| **DRAKO STUDIO** | 8 |
+| **Michael T Moreno** | 8 |
+| **Crawdad105** | 8 |
+| **Pougamer1995** | 8 |
+| **Scinacz** | 8 |
+| **GamesRock** | 8 |
+| **Jesse Eisenbart** | 8 |
+| **MARKO SOROKA** | 8 |
+| **blue koi** | 8 |
+| **Bug Baker Games** | 8 |
+| **AppSir Games** | 8 |
+| **Neuroticfly Games** | 8 |
 | **Torple Dook** | 8 |
-| **Revvalution Studio** | 8 |
-| **LuuuLuuuL** | 8 |
-| **Sting** | 8 |
-| **David Mills** | 8 |
-| **SmileStrawbunny** | 8 |
-| **SCE Cambridge Studio** | 8 |
-| **Pastasfuture** | 8 |
-| **VaporShark** | 8 |
-| **Innocent Grey** | 8 |
-| **Taito** | 8 |
-| **Beshbarmak Games** | 8 |
-| **communistsister** | 8 |
-| **Rusty Lake** | 8 |
-| **Darkling Room** | 8 |
-| **Milkbar Lads** | 8 |
-| **Koei Tecmo Games** | 8 |
-| **N4bA** | 8 |
-| **sodaraptor** | 8 |
-| **Klei Entertainment** | 8 |
-| **Saber Interactive** | 8 |
-| **Harry Tuffs** | 8 |
-| **EMIKA_GAMES** | 8 |
-| **Jonny's Games** | 8 |
-| **KUNOLEO** | 8 |
-| **FM Studio** | 8 |
-| **Notovia** | 8 |
-| **Chunsoft** | 8 |
-| **DarkStone Digital** | 8 |
-| **Tripwire Interactive** | 8 |
-| **Zeoworks** | 8 |
-| **GSC Game World** | 8 |
-| **Team Silent** | 8 |
-| **Celery Emblem** | 7 |
-| **Ben "Yahtzee" Croshaw** | 7 |
-| **Malrat_** | 7 |
-| **JeliLiam** | 7 |
-| **Irrational Games** | 7 |
-| **tmnecro** | 7 |
-| **Kona Kona Kona Kona Kona** | 7 |
-| **Team17** | 7 |
-| **Stenblood** | 7 |
-| **vikintor** | 7 |
-| **corpsepile** | 7 |
-| **Reality Games** | 7 |
-| **Desert Fox** | 7 |
-| **Rocksteady Studios** | 7 |
-| **Autumn Rain** | 7 |
-| **2K Australia** | 7 |
-| **xena-spectrale** | 7 |
-| **Weather Factory** | 7 |
-| **Virgula Leal** | 7 |
-| **5pb.** | 7 |
-| **Pixelberry Studios** | 7 |
-| **SeriousDaniel** | 7 |
-| **Digital Pictures** | 7 |
-| **Fireplay Studio** | 7 |
-| **Markus Korda** | 7 |
-| **We Create Stuff** | 7 |
-| **SolitaryStudios** | 7 |
-| **Reflect Studios** | 7 |
-| **Compile Heart** | 7 |
-| **Playstige Interactive** | 7 |
-| **High Voltage Software** | 7 |
-| **Microids** | 7 |
-| **Simulmondo** | 7 |
-| **Deep Root Interactive** | 7 |
-| **Oleander Garden** | 7 |
-| **11 bit studios** | 7 |
-| **Deep-Sea Prisoner** | 7 |
-| **Scumhead** | 7 |
-| **Scary Creepy Pasta** | 7 |
-| **Hatoge** | 7 |
-| **Grasshopper Manufacture** | 7 |
-| **3 Minute Games** | 7 |
-| **WOW Entertainment** | 7 |
-| **Jonochrome** | 7 |
-| **Nankidai** | 7 |
-| **Otomate** | 6 |
-| **Garrett McKay** | 6 |
-| **alienmelon** | 6 |
-| **Bagenzo** | 6 |
-| **Stanislaw Truchowski** | 6 |
-| **Stormind Games** | 6 |
-| **Phisnom** | 6 |
-| **NeitherNathan** | 6 |
-| **whilegameisfalse** | 6 |
-| **Vertigo Games** | 6 |
-| **Gameloft** | 6 |
-| **Cold Iron Studios** | 6 |
-| **Powerhoof** | 6 |
-| **Infogrames** | 6 |
-| **Airem** | 6 |
-| **Vidas Games/ Vidas Salavejus** | 6 |
-| **Turtle Rock Studios** | 6 |
-| **LCB Game Studio** | 6 |
-| **Konami Digital Entertainment** | 6 |
-| **PuKoStudio** | 6 |
-| **Bloober Team SA** | 6 |
-| **Psygnosis** | 6 |
-| **Harvester Games** | 6 |
-| **Adam Pype** | 6 |
-| **Kelven** | 6 |
-| **Spring Rabbit** | 6 |
-| **StoryTale Studios** | 6 |
-| **RachelDrawsThis** | 6 |
-| **Davide Puato** | 6 |
-| **Steppe Hare Studio** | 6 |
-| **Idea Factory / Compile Heart** | 6 |
-| **CAVE Interactive** | 6 |
-| **Shining Gate Software** | 6 |
-| **SCE Japan Studio** | 6 |
-| **Nihon Falcom** | 6 |
-| **SpoocleMacBoogle** | 6 |
-| **Capcom Planning Room 2** | 6 |
-| **Granzella Inc.** | 6 |
-| **Yames** | 6 |
-| **Lovely Hellplace** | 6 |
-| **Daniel Mullins Games** | 6 |
-| **Porpentine** | 6 |
-| **Logic Obscure Productions** | 6 |
-| **VladisLive Dev Studios** | 6 |
-| **ImCyan** | 6 |
-| **Tainted Pact Games** | 6 |
-| **TimeGate Studios** | 6 |
-| **Rayll Studios** | 6 |
-| **Seekz** | 6 |
-| **ASCII Entertainment & Communications** | 6 |
-| **Sega** | 6 |
-| **Angela He** | 6 |
-| **Ninja Theory** | 6 |
-| **Puchi** | 6 |
-| **Somewhat Software** | 6 |
-| **Ocean Software** | 6 |
-| **Soft Studio Wing** | 6 |
-| **Moonbit** | 6 |
-| **GungHo Online Entertainment America** | 6 |
-| **Parsec Productions** | 6 |
-| **Protocol Games** | 6 |
-| **Looking Glass Studios** | 6 |
-| **Black Widow Games** | 6 |
-| **FM Simple Games Studio** | 5 |
-| **Sons of Welder** | 5 |
-| **TaleHammer** | 5 |
-| **litrouke** | 5 |
-| **Rare** | 5 |
-| **AGaming+ Studio** | 5 |
-| **Pandora Box** | 5 |
-| **Yuuyami no Kisetsu** | 5 |
-| **Sega Enterprises** | 5 |
-| **Cryo Interactive** | 5 |
-| **Hydravision Entertainment** | 5 |
-| **Authogin** | 5 |
-| **Quinn K.** | 5 |
-| **NBAN Dev** | 5 |
-| **Fragile Seraph** | 5 |
-| **Daybloom Project** | 5 |
-| **Zed_Technician** | 5 |
-| **Stranga Games** | 5 |
-| **Spike Chunsoft** | 5 |
-| **Nitro Plus** | 5 |
-| **Egg** | 5 |
-| **Marginal act** | 5 |
-| **Gregory Avery-Weir** | 5 |
-| **Pine Games** | 5 |
-| **Mascot Bro Studio** | 5 |
-| **Hodslate** | 5 |
-| **Psionic Games** | 5 |
-| **Eduardo Scarpato** | 5 |
-| **Nextech** | 5 |
-| **2K Boston** | 5 |
-| **ArcadeKitten** | 5 |
-| **Namco** | 5 |
-| **iwilliams** | 5 |
-| **Hudson Soft** | 5 |
-| **MyMadnessWorks** | 5 |
-| **Capcom Vancouver** | 5 |
-| **Yu Ro** | 5 |
-| **Two Star Games** | 5 |
-| **Tarba Paul Cornel** | 5 |
-| **Adriano Silva** | 5 |
-| **Veynn** | 5 |
-| **Studio [notes.]** | 5 |
-| **Catchweight Studio** | 5 |
-| **MAGES.** | 5 |
-| **AMISOGUMI** | 5 |
-| **10tons** | 5 |
-| **WARP** | 5 |
-| **Bend Studio** | 5 |
-| **Dambuster Studios** | 5 |
-| **Housemarque** | 5 |
-| **NeoBards Entertainment** | 5 |
-| **Zeekerss** | 5 |
-| **SWLRW** | 5 |
-| **Renegade Kid** | 5 |
-| **oates** | 5 |
-| **Darius Immanuel D. Guerrero** | 5 |
-| **Labory** | 5 |
-| **a1esska** | 5 |
-| **NoxusGamesStudio** | 5 |
-| **Nerve Software** | 5 |
-| **Bullfrog Productions** | 5 |
-| **ZykovEddy** | 5 |
-| **Z. Bill** | 5 |
-| **Astra Playroom** | 5 |
-| **Toge Productions** | 5 |
-| **NOVECT** | 5 |
-| **Alexander Wiseman** | 5 |
-| **Night Asobu** | 5 |
-| **Marco Antonio** | 5 |
-| **OA3Games** | 5 |
-| **AtmoPixel** | 5 |
-| **Kuraishimi** | 5 |
-| **Cloak and Dagger Games** | 5 |
-| **Glitch Games Ltd** | 5 |
-| **SnowConeSolid Productions** | 5 |
-| **Atari** | 5 |
-| **Iggymob** | 5 |
-| **Specialbit Studio** | 5 |
-| **Kanoguti** | 5 |
-| **etherane** | 5 |
-| **Squeaks D'Corgeh** | 5 |
-| **Scopophobia Studios** | 5 |
-| **Alawar Entertainment** | 5 |
-| **Dreamloop Games** | 5 |
-| **PikPok** | 5 |
-| **IvanG** | 5 |
-| **ThatNerdPunk Games** | 5 |
-| **MachineGames** | 5 |
-| **Dingaling** | 5 |
-| **Sen** | 5 |
-| **Vaka Game Magazine** | 5 |
-| **Nebula Nova Games** | 5 |
-| **Capybaraforce** | 5 |
-| **Roawr Video Store** | 5 |
-| **Ibrahim Oezhan** | 5 |
-| **Fiendish Fiction** | 5 |
-| **Korvinrular** | 5 |
-| **Messier Games** | 5 |
-| **Eipix** | 5 |
-| **Running With Scissors** | 5 |
-| **viv** | 5 |
-| **Undead Labs** | 5 |
-| **Striking Distance Studios** | 5 |
-| **Karapon Games** | 5 |
-| **riinwin** | 4 |
-| **lol** | 4 |
-| **indie_games_studio** | 4 |
-| **Headware Games** | 4 |
-| **Eurocom Entertainment Software** | 4 |
-| **RenderPi** | 4 |
-| **silver978** | 4 |
-| **beyondbooleans** | 4 |
-| **Casper Croes** | 4 |
-| **Deceptive Games Ltd.** | 4 |
-| **Mangledmaw Games** | 4 |
-| **unseconds** | 4 |
-| **Hoshikuzu KRNKRN** | 4 |
-| **Professional Villains** | 4 |
-| **Dreampainters Software** | 4 |
-| **Caramel Games** | 4 |
-| **Secret Cow Level** | 4 |
-| **thecatamites** | 4 |
-| **mebius** | 4 |
-| **Valerie Dusk** | 4 |
-| **Metropolis Software** | 4 |
-| **Echo Project** | 4 |
-| **Aegon Games** | 4 |
-| **Blood Machine** | 4 |
-| **Asteristic Game Studio** | 4 |
-| **MYSTERY CROWN** | 4 |
-| **Czester16** | 4 |
-| **CGI LAB GAMES** | 4 |
-| **Slothcube Studios** | 4 |
-| **Basically** | 4 |
-| **Games!** | 4 |
-| **Cipherwild** | 4 |
-| **Glacier LTD** | 4 |
-| **Undertow Games** | 4 |
-| **Robot Invader** | 4 |
-| **Yellow Basement Games** | 4 |
-| **Camel 101** | 4 |
-| **David Rodríguez Madriñán** | 4 |
-| **Postmodern Adventures** | 4 |
-| **Digital Extremes** | 4 |
-| **Cranberry Production** | 4 |
-| **CapCrowGames** | 4 |
-| **Silicon Knights** | 4 |
-| **MicroProse Software** | 4 |
-| **CatNamedJaspers** | 4 |
-| **Arydk** | 4 |
-| **Spooon** | 4 |
-| **Buriki Clock** | 4 |
-| **Sometimes You** | 4 |
-| **JordiBoi** | 4 |
-| **Cavia** | 4 |
-| **qureate** | 4 |
-| **Tipsheda** | 4 |
-| **kurethedead** | 4 |
-| **Lunar Finch** | 4 |
-| **Alex Olinkiewicz** | 4 |
-| **Raven Software** | 4 |
-| **Ammonite Design Studios** | 4 |
-| **Ozone Interactive** | 4 |
-| **Wrong Organ** | 4 |
-| **Baroque Decay** | 4 |
-| **Redact Games** | 4 |
-| **Akabaka** | 4 |
-| **Aaron Wise** | 4 |
-| **Taldius** | 4 |
-| **TeamKill Media** | 4 |
-| **OKSoft** | 4 |
-| **Marutoku Base** | 4 |
-| **Zoetrope Interactive** | 4 |
-| **Stef Pinto** | 4 |
-| **Creepy Brothers** | 4 |
-| **Virtua Worlds** | 4 |
-| **Locomalito** | 4 |
-| **Cecile Richard** | 4 |
-| **FYRE Games** | 4 |
-| **katanalevy** | 4 |
-| **Bit Golem** | 4 |
-| **LucyDream** | 4 |
-| **Realmforge Studios** | 4 |
-| **Koei** | 4 |
-| **Lexip Games** | 4 |
-| **Zombie Studios** | 4 |
-| **Invader Studios** | 4 |
-| **Belief Engine** | 4 |
-| **flower studio** | 4 |
-| **FairyTale** | 4 |
-| **Capcom Game Studio Vancouver** | 4 |
-| **Access Games** | 4 |
-| **Sang Hendrix** | 4 |
-| **Impostersyndrome** | 4 |
-| **melessthanthree** | 4 |
-| **Kojima Productions** | 4 |
-| **Ben Jelter** | 4 |
-| **Bored Leviathan** | 4 |
-| **Rotheart Games** | 4 |
-| **ENIGMA STUDIO** | 4 |
-| **Nikki Kalpa** | 4 |
-| **Experience Inc.** | 4 |
-| **Dirigo Games** | 4 |
-| **Saffeine** | 4 |
-| **Christoph Frey** | 4 |
-| **Clapperheads** | 4 |
-| **Renderise** | 4 |
-| **John Szymanski** | 4 |
-| **Wither Studios** | 4 |
-| **Black Salt Games** | 4 |
-| **Monumental Collab** | 4 |
-| **GrantRimi** | 4 |
-| **68k Studios** | 4 |
-| **Carrot Patch Games** | 4 |
-| **Minor Key Games** | 4 |
-| **visualmemoryunit_** | 4 |
-| **Skaar Game Productions** | 4 |
-| **Electronic Arts** | 4 |
-| **DeadlyCrow Games** | 4 |
-| **Carlos Coronado** | 4 |
-| **Flying Wild Hog** | 4 |
-| **Graham Robertson** | 4 |
-| **Nintendo** | 4 |
-| **Aarre** | 4 |
-| **Matthew Ager** | 4 |
-| **Polypaw** | 4 |
-| **Project Siren** | 4 |
-| **GuardHouse** | 4 |
-| **DangerousBob Studio LLC** | 4 |
-| **Blue Wizard Digital** | 4 |
+| **Danielle's Games** | 8 |
+| **Vitriol Entertainment** | 8 |
+| **yeah2345wesley** | 8 |
+| **Paul Lypovetsky** | 8 |
+| **6028yang** | 8 |
+| **Sungmingamer13** | 8 |
+| **Saturno Interactive** | 8 |
 
-*Showing top 500 developers out of 7,885 total.*
+*Showing top 500 developers out of 64,764 total.*

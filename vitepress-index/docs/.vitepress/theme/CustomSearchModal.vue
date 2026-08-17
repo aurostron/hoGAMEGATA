@@ -139,9 +139,14 @@ onMounted(async () => {
       fields: ['t', 'd'],
       storeFields: ['t', 's', 'd', 'g'],
       searchOptions: {
-        fuzzy: 0.2,
+        fuzzy: (term) => (term.length > 3 ? 0.25 : null),
         prefix: true,
-        boost: { t: 5, d: 2 }
+        boost: { t: 15, d: 5 },
+        combineWith: 'OR',
+        weights: {
+          fuzzy: 0.45,
+          prefix: 0.65,
+        },
       }
     })
 
@@ -161,7 +166,16 @@ watch(query, (val) => {
     return
   }
   if (miniSearch) {
-    const hits = miniSearch.search(q).slice(0, 20)
+    const hits = miniSearch.search(q, {
+      fuzzy: (term) => (term.length > 3 ? 0.25 : null),
+      prefix: true,
+      boost: { t: 15, d: 5 },
+      combineWith: 'OR',
+      weights: {
+        fuzzy: 0.45,
+        prefix: 0.65,
+      },
+    }).slice(0, 25)
     results.value = hits as unknown as GameDoc[]
   }
 })

@@ -1,12 +1,14 @@
 import type { APIRoute } from 'astro';
-import { turso } from '../../../lib/turso';
+import { turso, initTursoForRequest } from '../../../lib/turso';
 import { games as gamesTable, gameRecommendations as gameRecommendationsTable, aiSearchCache as aiSearchCacheTable } from '../../../db/schema';
 import { or, isNull, ne, eq, like, and, inArray } from 'drizzle-orm';
+import { env as cfWorkerEnv } from "cloudflare:workers";
 import {
   normalizeQueryForCache,
   validateDSL,
   executeDSLQuery,
-  preprocessSearchQuery
+  preprocessSearchQuery,
+  localRelevanceSearch,
 } from '../../../lib/searchEngine';
 import { enrichGamesWithRelations } from '../../../lib/gameQueries';
 
@@ -14,64 +16,17 @@ export const prerender = false;
 
 const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
 
-import * as nodeFs from "node:fs";
-import * as nodePath from "node:path";
-let cfEnv: any = null;
-
-// Local file cache helpers for development mode
-const getLocalCachePath = () => {
-  if (!nodePath) return "";
-  return nodePath.join(process.cwd(), '.astro', 'local_search_cache.json');
-};
-
-const readLocalCache = (): Record<string, string> => {
-  if (!nodeFs) return {};
-  try {
-    const cachePath = getLocalCachePath();
-    if (nodeFs.existsSync(cachePath)) {
-      return JSON.parse(nodeFs.readFileSync(cachePath, 'utf8'));
-    }
-  } catch (e) {}
-  return {};
-};
-
-const writeLocalCache = (cache: Record<string, string>) => {
-  if (!nodeFs) return;
-  try {
-    const cachePath = getLocalCachePath();
-    const dir = nodePath.dirname(cachePath);
-    if (!nodeFs.existsSync(dir)) nodeFs.mkdirSync(dir, { recursive: true });
-    nodeFs.writeFileSync(cachePath, JSON.stringify(cache, null, 2), 'utf8');
-  } catch (e) {}
-};
-
-function getKVCache(): any {
-  const env = isDev
-    ? (typeof process !== 'undefined' && process.env ? process.env : cfEnv)
-    : cfEnv;
-  
-  const cloudflareKV = (env as any)?.AI_SEARCH_CACHE;
-  if (cloudflareKV) return cloudflareKV;
-
-  // Local development file cache fallback
-  if (isDev) {
-    return {
-      get: async (key: string) => {
-        const cache = readLocalCache();
-        return cache[key] || null;
-      },
-      put: async (key: string, value: string) => {
-        const cache = readLocalCache();
-        cache[key] = value;
-        writeLocalCache(cache);
-      }
-    };
-  }
-
-  return undefined;
+function getKVCache(runtimeEnv: any) {
+  return (runtimeEnv as any)?.AI_SEARCH_CACHE || undefined;
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  const runtimeEnv = isDev
+    ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
+    : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));
+
+  initTursoForRequest(runtimeEnv);
+
   try {
     const body = await request.json();
     const { query, dsl } = body;
@@ -80,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: "Missing or invalid query parameter" }), { status: 400 });
     }
 
-    const kv = getKVCache();
+    const kv = getKVCache(runtimeEnv);
     const CACHE_VERSION = "v3"; // Bumped version to clear old layouts
     const normalized = normalizeQueryForCache(query);
     const cacheKey = `ai-cache:${CACHE_VERSION}:${normalized}`;
@@ -180,8 +135,8 @@ export const POST: APIRoute = async ({ request }) => {
         }
       }
 
-      if (matchedGame) {
-        // Fetch precalculated recommendations from DB for instant, 100% accurate results
+      if (matchedGame && (cleanedQuery.toLowerCase() === (matchedGame.title || "").toLowerCase() || rawLower === (matchedGame.title || "").toLowerCase())) {
+        // Exact single title match: fetch vector recommendations
         const recs = await turso
           .select({
             recommendedGameId: gameRecommendationsTable.recommendedGameId,
@@ -189,7 +144,7 @@ export const POST: APIRoute = async ({ request }) => {
           .from(gameRecommendationsTable)
           .where(eq(gameRecommendationsTable.gameId, matchedGame.id))
           .orderBy(gameRecommendationsTable.distance)
-          .limit(4);
+          .limit(5);
 
         let finalGames = [matchedGame];
 
@@ -203,7 +158,6 @@ export const POST: APIRoute = async ({ request }) => {
               or(isNull(gamesTable.status), ne(gamesTable.status, "hidden"))
             ));
 
-          // Sort recGames in the exact order of the precalculated recommendation distance
           const idToIndex = new Map(recIds.map((id, idx) => [id, idx]));
           recGames.sort((a, b) => (idToIndex.get(a.id) ?? 99) - (idToIndex.get(b.id) ?? 99));
 
@@ -212,7 +166,6 @@ export const POST: APIRoute = async ({ request }) => {
 
         const enriched = await enrichGamesWithRelations(finalGames);
         
-        // Cache direct title match in KV for 30 days
         if (kv && normalized) {
           try {
             await kv.put(directCacheKey, JSON.stringify({ results: enriched }));
@@ -226,7 +179,23 @@ export const POST: APIRoute = async ({ request }) => {
         );
       }
 
-      // 4. Cache miss: signal that client translation is required
+      // 4. High-Relevance Multi-Token Local Search across 107k+ Games
+      const localResults = await localRelevanceSearch(query, 24);
+      if (localResults.length > 0) {
+        if (kv && normalized) {
+          try {
+            await kv.put(cacheKey, JSON.stringify({ results: localResults, cachedAt: new Date().toISOString() }));
+          } catch (e) {
+            console.error("KV search cache write failed:", e);
+          }
+        }
+        return new Response(
+          JSON.stringify({ status: "success", results: localResults }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // 5. Cache miss and zero local keyword matches: signal that client translation is required
       return new Response(
         JSON.stringify({ status: "needs_translation", normalizedQuery: normalized }),
         { status: 200, headers: { "Content-Type": "application/json" } }
@@ -262,6 +231,9 @@ export const POST: APIRoute = async ({ request }) => {
 
   } catch (error) {
     console.error("❌ AI Search handler error:", error);
-    return new Response(JSON.stringify({ error: "Search failed due to internal error" }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Search failed due to internal error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 };

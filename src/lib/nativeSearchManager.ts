@@ -184,10 +184,14 @@ async function loadRecordsIntoEngine(records: SearchIndexRecord[]): Promise<void
       return (document as any)[fieldName];
     },
     searchOptions: {
-      fuzzy: 0.2,
+      fuzzy: (term) => (term.length > 3 ? 0.25 : null),
       prefix: true,
-      boost: { t: 10, d: 3 },
-      combineWith: "AND",
+      boost: { t: 15, d: 5 },
+      combineWith: "OR",
+      weights: {
+        fuzzy: 0.45,
+        prefix: 0.65,
+      },
     },
   });
 
@@ -252,9 +256,14 @@ export async function searchNative(query: string, limit = 20): Promise<NativeSea
   if (mainThreadMiniSearch) {
     try {
       const searchResults = mainThreadMiniSearch.search(query.trim(), {
-        fuzzy: query.trim().length > 3 ? 0.2 : false,
+        fuzzy: (term) => (term.length > 3 ? 0.25 : null),
         prefix: true,
-        boost: { t: 10, d: 3 },
+        boost: { t: 15, d: 5 },
+        combineWith: "OR",
+        weights: {
+          fuzzy: 0.45,
+          prefix: 0.65,
+        },
       });
 
       const sliced = searchResults.slice(0, limit);

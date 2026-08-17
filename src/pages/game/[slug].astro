@@ -66,6 +66,19 @@ if (cfCtx?.waitUntil) {
   trackGameView(rawGame.id, rawGame.title).catch(() => {});
 }
 
+// Fast redirect for standalone itch games pending detail enrichment pass
+if (rawGame.source === 'itch' && !rawGame.trailerUrl && !rawGame.screenshots) {
+  const [itchLink] = await turso
+    .select({ url: purchaseLinksTable.url })
+    .from(purchaseLinksTable)
+    .where(eq(purchaseLinksTable.gameId, rawGame.id))
+    .limit(1);
+
+  if (itchLink?.url) {
+    return Astro.redirect(itchLink.url, 307);
+  }
+}
+
 if (rawGame.status === "hidden") {
   const { getServerUser, isAdminUser } = await import('../../lib/serverAuth');
   const user = await getServerUser(Astro.request, Astro.cookies);
@@ -134,7 +147,7 @@ const game = {
   purchaseLinks: linksData
 };
 
-const priceSnapshots = priceSnapshotsData || [];
+const isItchGame = Boolean(game.slug.startsWith("itch-") || (game as any).source === "itch" || (game as any).source === "itchio");
 
 // Cache this rendered page at the Cloudflare edge for 30 days, with 1-year background revalidation.
 Astro.response.headers.set(
@@ -142,10 +155,29 @@ Astro.response.headers.set(
   'public, s-maxage=2592000, stale-while-revalidate=31536000'
 );
 
-const purchaseLinks = (game.purchaseLinks as any[]) || [];
+let purchaseLinks = (game.purchaseLinks as any[]) || [];
+let priceSnapshots = priceSnapshotsData || [];
+
+// Strictly isolate non-itch games: never show itch purchase links, itch badges, or $0 itch price snapshots on non-itch titles
+if (!isItchGame) {
+  purchaseLinks = purchaseLinks.filter((link: any) => 
+    link && 
+    link.storeName && 
+    link.storeName.toLowerCase() !== "itch.io" && 
+    link.storeName.toLowerCase() !== "itch" && 
+    !link.url?.includes("itch.io")
+  );
+  priceSnapshots = priceSnapshots.filter((snap: any) => 
+    snap && 
+    snap.storeName && 
+    snap.storeName.toLowerCase() !== "itch.io" && 
+    snap.storeName.toLowerCase() !== "itch" && 
+    snap.provider !== "itch"
+  );
+}
 
 // Redirect dry/unenriched itch.io games directly to their itch page (with purchase popup open)
-if (game.slug.startsWith("itch-") && !game.rawgEnriched) {
+if (isItchGame && game.slug.startsWith("itch-") && !game.rawgEnriched) {
   const itchLink = purchaseLinks.find((link: any) => link.storeName.toLowerCase() === "itch.io");
   if (itchLink && itchLink.url) {
     const directPurchaseUrl = itchLink.url.endsWith("/purchase")
@@ -161,7 +193,6 @@ const steamLink = purchaseLinks?.find((link: any) =>
 const steamAppId = steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null;
 
 const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
-const isItchGame = game.slug.startsWith("itch-") || (game as any).source === "itch" || (game as any).source === "itchio";
 const hasGogBadge = purchaseLinks?.some((link: any) => link.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
 
 const tags = (game.tags as any[]) || [];
@@ -351,6 +382,7 @@ const editGameData = {
         </div>
 
         {(() => {
+          if (!isItchGame) return null;
           const itchLink = purchaseLinks?.find((link: any) => link.storeName.toLowerCase() === "itch.io");
           if (itchLink && itchLink.url) {
             const directPurchaseUrl = itchLink.url.endsWith("/purchase")

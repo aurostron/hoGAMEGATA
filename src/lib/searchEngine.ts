@@ -732,3 +732,108 @@ export async function executeDSLQuery(dsl: SearchDSL) {
   
   return await enrichGamesWithRelations(slicedResults);
 }
+
+/**
+ * Fast Multi-Token Local Relevance Search across 107k+ Games
+ * Returns ranked results by title similarity, developer match, token overlap, and rating.
+ */
+export async function localRelevanceSearch(rawQuery: string, limit = 20): Promise<any[]> {
+  if (!rawQuery || !rawQuery.trim()) return [];
+
+  const rawLower = rawQuery.toLowerCase().trim().replace(/['"]/g, "");
+  const expanded = expandAbbreviations(rawLower) || rawLower;
+  const { cleanedQuery } = preprocessSearchQuery(expanded);
+  const targetQuery = cleanedQuery && cleanedQuery.length >= 2 ? cleanedQuery : rawLower;
+
+  const terms = targetQuery.split(/\s+/).filter(t => t.length >= 2);
+  const prefixQuery = `${targetQuery}%`;
+  const substringQuery = `%${targetQuery}%`;
+
+  const conditions = [
+    like(gamesTable.title, substringQuery),
+    like(gamesTable.developerNames, substringQuery),
+    like(gamesTable.genreNames, substringQuery),
+  ];
+
+  for (const term of terms) {
+    conditions.push(like(gamesTable.title, `%${term}%`));
+    conditions.push(like(gamesTable.developerNames, `%${term}%`));
+  }
+
+  const firstTermPrefix = terms.length > 0 ? `${terms[0]}%` : prefixQuery;
+
+  const candidates = await turso
+    .select()
+    .from(gamesTable)
+    .where(
+      and(
+        or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")),
+        or(...conditions)
+      )
+    )
+    .limit(100);
+
+  if (candidates.length === 0) return [];
+
+  // Rank candidates by relevance
+  const scored = candidates.map(game => {
+    const titleLower = (game.title || "").toLowerCase();
+    const devLower = (game.developerNames || "").toLowerCase();
+    const genreLower = (game.genreNames || "").toLowerCase();
+    const summaryLower = (game.summary || "").toLowerCase();
+
+    let score = 0;
+
+    // 1. Exact title match
+    if (titleLower === targetQuery || titleLower === rawLower) {
+      score += 1200;
+    } else if (titleLower.startsWith(targetQuery) || titleLower.startsWith(rawLower)) {
+      score += 600;
+    } else if (titleLower.includes(targetQuery) || titleLower.includes(rawLower)) {
+      score += 350;
+    } else if (titleLower.startsWith(terms[0] || "")) {
+      score += 200;
+    }
+
+    // 2. Token overlap in title
+    let matchedTermsCount = 0;
+    for (const term of terms) {
+      if (titleLower.includes(term)) {
+        score += 90;
+        matchedTermsCount++;
+      }
+      if (devLower.includes(term)) {
+        score += 60;
+      }
+      if (genreLower.includes(term)) {
+        score += 40;
+      }
+      if (summaryLower.includes(term)) {
+        score += 20;
+      }
+    }
+
+    // All terms matched bonus
+    if (terms.length > 1 && matchedTermsCount === terms.length) {
+      score += 250;
+    }
+
+    // Developer match
+    if (devLower.includes(targetQuery)) {
+      score += 150;
+    }
+
+    // 3. Quality & Popularity boosts
+    if (game.isTrending) score += 40;
+    if (game.rating) score += Math.min(25, game.rating / 4);
+    if (game.popularity) score += Math.min(20, Math.log10(game.popularity + 1) * 6);
+
+    return { game, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  const topGames = scored.slice(0, limit).map(s => s.game);
+  return await enrichGamesWithRelations(topGames);
+}
+

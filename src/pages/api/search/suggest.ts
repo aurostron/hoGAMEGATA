@@ -16,9 +16,9 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get("q")?.trim() || searchParams.get("search")?.trim() || "";
+    const rawQ = searchParams.get("q")?.trim() || searchParams.get("search")?.trim() || "";
 
-    if (!q || q.length === 0) {
+    if (!rawQ || rawQ.length === 0) {
       return new Response(
         JSON.stringify({ games: [] }),
         {
@@ -31,9 +31,32 @@ export const GET: APIRoute = async ({ request }) => {
       );
     }
 
-    const cleanQuery = q.toLowerCase();
+    const cleanQuery = rawQ.toLowerCase().replace(/['"]/g, "");
+    const terms = cleanQuery.split(/\s+/).filter(t => t.length > 0);
     const prefixQuery = `${cleanQuery}%`;
     const substringQuery = `%${cleanQuery}%`;
+
+    // Build conditions: match full substring or individual tokens
+    const conditions = [
+      like(gamesTable.title, substringQuery),
+      like(gamesTable.developerNames, substringQuery),
+    ];
+
+    for (const term of terms) {
+      if (term.length >= 2) {
+        conditions.push(like(gamesTable.title, `%${term}%`));
+        conditions.push(like(gamesTable.developerNames, `%${term}%`));
+      }
+    }
+
+    // Build dynamic relevance scoring:
+    // 1. Exact match: 1000 pts
+    // 2. Starts with query: 500 pts
+    // 3. Substring match in title: 300 pts
+    // 4. Developer exact/prefix match: 200 pts
+    // 5. Individual term matches: 50 pts each
+    const firstTerm = terms[0] || cleanQuery;
+    const firstTermPrefix = `${firstTerm}%`;
 
     const rows = await turso
       .select({
@@ -43,28 +66,30 @@ export const GET: APIRoute = async ({ request }) => {
         coverUrl: gamesTable.coverUrl,
         developerNames: gamesTable.developerNames,
         isTrending: gamesTable.isTrending,
+        rating: gamesTable.rating,
+        popularity: gamesTable.popularity,
       })
       .from(gamesTable)
       .where(
         and(
           ne(gamesTable.status, "hidden"),
-          or(
-            like(gamesTable.title, substringQuery),
-            like(gamesTable.developerNames, substringQuery)
-          )
+          or(...conditions)
         )
       )
       .orderBy(
         sql`CASE 
-          WHEN LOWER(${gamesTable.title}) = ${cleanQuery} THEN 0
-          WHEN LOWER(${gamesTable.title}) LIKE ${prefixQuery} THEN 1
-          WHEN LOWER(${gamesTable.title}) LIKE ${substringQuery} THEN 2
-          ELSE 3
-        END ASC`,
+          WHEN LOWER(${gamesTable.title}) = ${cleanQuery} THEN 1000
+          WHEN LOWER(${gamesTable.title}) LIKE ${prefixQuery} THEN 500
+          WHEN LOWER(${gamesTable.title}) LIKE ${substringQuery} THEN 300
+          WHEN LOWER(${gamesTable.title}) LIKE ${firstTermPrefix} THEN 200
+          WHEN LOWER(${gamesTable.developerNames}) LIKE ${substringQuery} THEN 150
+          ELSE 50
+        END DESC`,
         desc(gamesTable.isTrending),
+        desc(gamesTable.rating),
         desc(gamesTable.popularity)
       )
-      .limit(6);
+      .limit(10);
 
     return new Response(
       JSON.stringify({ games: rows }),

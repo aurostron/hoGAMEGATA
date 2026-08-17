@@ -30,37 +30,24 @@ async function generateSearchIndex() {
       slug: gamesTable.slug,
       coverUrl: gamesTable.coverUrl,
       status: gamesTable.status,
+      developerNames: gamesTable.developerNames,
     })
     .from(gamesTable);
 
   const visibleGames = rawGames.filter(g => g.status !== "hidden");
   console.log(`📦 Found ${visibleGames.length} active games in Turso.`);
 
-  // 2. Fetch developers mapping
-  const allDevs = await turso
-    .select({
-      gameId: gamesToDevelopers.gameId,
-      name: developersTable.name,
-    })
-    .from(gamesToDevelopers)
-    .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id));
-
-  const devsMap = new Map<string, string[]>();
-  allDevs.forEach(({ gameId, name }) => {
-    const key = String(gameId);
-    if (!devsMap.has(key)) devsMap.set(key, []);
-    devsMap.get(key)!.push(name);
-  });
-
-  // 3. Assemble minimal search records
+  // 2. Assemble minimal search records directly from cached developerNames
   const searchRecords: SearchIndexRecord[] = visibleGames.map(game => {
-    const idKey = String(game.id);
+    const devs = game.developerNames
+      ? game.developerNames.split(',').map((d: string) => d.trim()).filter(Boolean)
+      : [];
     return {
-      i: idKey,
+      i: String(game.id),
       t: game.title,
       s: game.slug,
       c: game.coverUrl || null,
-      d: devsMap.get(idKey) || [],
+      d: devs,
     };
   });
 

@@ -1,9 +1,17 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import GataCatalogClient from '../components/GataCatalogClient';
-import { turso } from '../lib/turso';
+import { turso, initTursoForRequest } from '../lib/turso';
 import { games, genres, tags, platforms } from '../db/schema';
 import { count } from 'drizzle-orm';
+import { env as cfWorkerEnv } from "cloudflare:workers";
+
+const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
+const runtimeEnv = isDev
+  ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
+  : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));
+
+initTursoForRequest(runtimeEnv);
 
 Astro.response.headers.set(
   'Cache-Control',
