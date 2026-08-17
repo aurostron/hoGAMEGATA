@@ -2,10 +2,15 @@ import type { APIRoute } from 'astro';
 import { turso } from '../../../lib/turso';
 import { gameRevisions } from '../../../db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, url }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`history:${clientIp}`, 30, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   try {
     const gameId = url.searchParams.get("gameId");
 

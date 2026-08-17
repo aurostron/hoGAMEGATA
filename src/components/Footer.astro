@@ -23,7 +23,7 @@ import { BugReportTrigger } from './bugs/BugReportTrigger';
       <span class="text-white/30">•</span>
       <a href="/blog" class="hover:text-white transition-colors">Blog</a>
       <span class="text-white/30">•</span>
-      <a href="/directory" class="hover:text-white transition-colors">All Games</a>
+      <a href="https://project-hgg.github.io" target="_blank" rel="noopener" class="hover:text-white transition-colors">All Games</a>
       <span class="text-white/30">•</span>
       <a href="/submit-game" class="hover:text-white transition-colors">Submit Game</a>
     </div>
@@ -33,6 +33,10 @@ import { BugReportTrigger } from './bugs/BugReportTrigger';
       <BugReportTrigger client:only="react" />
       <span>Made with <span class="text-red-500">❤️</span> by aurostron and team.</span>
     </div>
+
+    <!-- Security Honeypot Decoys: Real users cannot see or interact with these; automated scrapers are trapped -->
+    <a href="/api/games/dump" rel="nofollow" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1">Export Data</a>
+    <a href="/api/v1/export" rel="nofollow" style="display:none;" aria-hidden="true" tabindex="-1">Raw Index Dump</a>
 
   </div>
 </footer>

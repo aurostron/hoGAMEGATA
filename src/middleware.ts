@@ -91,11 +91,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return applySecurityHeaders(await next());
   }
 
-  // 1.2. If not in development mode, block AI search UI and API endpoints in production
-  if (!isDev) {
-    if (pathname === "/search" || pathname === "/api/search/ai" || pathname === "/api/search/web") {
-      return applySecurityHeaders(redirect("/"));
-    }
+  // 1.1. Instant 301 fast-redirect for /directory to GitHub Pages mirror
+  if (pathname === "/directory" || pathname === "/directory/") {
+    return applySecurityHeaders(redirect("https://project-hgg.github.io", 301));
   }
 
   // 1.5. Cloudflare Edge Cache MATCH check (0 DB reads for cached pages)
@@ -104,7 +102,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname.startsWith("/game/") || 
     pathname.startsWith("/api/games") || 
     pathname.startsWith("/api/search/suggest") ||
-    pathname === "/directory" ||
     pathname === "/about" ||
     pathname === "/upcoming" ||
     pathname.startsWith("/blog") ||
@@ -115,8 +112,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   const cleanUrl = new URL(context.request.url);
-  // For image-proxy and search/suggest, query params (e.g. ?q=... or ?url=...) ARE unique identifiers — include them in the cache key
-  const requiresQueryInCacheKey = pathname.startsWith("/api/image-proxy") || pathname.startsWith("/api/search/suggest");
+  // For image-proxy, search/suggest, and games catalog API, query params ARE unique identifiers — include them in the cache key
+  const requiresQueryInCacheKey = pathname.startsWith("/api/image-proxy") || pathname.startsWith("/api/search/suggest") || pathname.startsWith("/api/games");
   const cacheKeyUrl = requiresQueryInCacheKey
     ? `${cleanUrl.origin}${cleanUrl.pathname}${cleanUrl.search}`
     : `${cleanUrl.origin}${cleanUrl.pathname}`;
@@ -132,11 +129,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
       console.error("[Edge Cache Match Error]", e);
     }
 
-    // One-time purge: delete the old stale /api/image-proxy entry (no query string)
-    // that caused all screenshots to show the same image
-    if (pathname === "/api/image-proxy") {
+    // One-time purge: delete old stale non-query entries
+    if (pathname === "/api/image-proxy" || pathname === "/api/games") {
       try {
-        const staleKey = new Request(`${cleanUrl.origin}/api/image-proxy`, { method: "GET" });
+        const staleKey = new Request(`${cleanUrl.origin}${pathname}`, { method: "GET" });
         await cache.delete(staleKey);
       } catch {}
     }
@@ -173,8 +169,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return applySecurityHeaders(await next());
   }
 
-  // 5. Admin Panel Gating — init auth clients only when needed
-  if (pathname.startsWith("/admin")) {
+  // 5. Admin Panel & Admin API Gating — init auth clients only when needed
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     initTursoAuthForRequest(runtimeEnv);
     initBetterAuth(runtimeEnv);
     const user = await getServerUser(context.request, context.cookies);

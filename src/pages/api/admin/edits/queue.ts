@@ -2,10 +2,27 @@ import type { APIRoute } from 'astro';
 import { turso } from '../../../../lib/turso';
 import { editSuggestions, games } from '../../../../db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { getServerUser, isAdminUser } from '../../../../lib/serverAuth';
+import { logSecurityEvent } from '../../../../lib/auditLogger';
+import { getClientIp, forbiddenResponse } from '../../../../lib/rateLimit';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, cookies, url }) => {
+  const clientIp = getClientIp(request);
+  const user = await getServerUser(request, cookies);
+  if (!user || !isAdminUser(user.email)) {
+    logSecurityEvent({
+      eventType: "unauthorized_scope",
+      severity: "high",
+      clientIp,
+      path: "/api/admin/edits/queue",
+      method: "GET",
+      details: { reason: "Unauthorized attempt to view moderation queue" },
+    });
+    return forbiddenResponse("Forbidden: Admin access required.");
+  }
+
   try {
     const statusFilter = url.searchParams.get("status") || "pending";
 

@@ -2,10 +2,27 @@ import type { APIRoute } from 'astro';
 import { turso } from '../../../../lib/turso';
 import { bugReports } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { getServerUser, isAdminUser } from '../../../../lib/serverAuth';
+import { logSecurityEvent } from '../../../../lib/auditLogger';
+import { getClientIp, forbiddenResponse } from '../../../../lib/rateLimit';
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const clientIp = getClientIp(request);
+  const user = await getServerUser(request, cookies);
+  if (!user || !isAdminUser(user.email)) {
+    logSecurityEvent({
+      eventType: "unauthorized_scope",
+      severity: "high",
+      clientIp,
+      path: "/api/admin/bugs/status",
+      method: "POST",
+      details: { reason: "Unauthorized attempt to update bug status" },
+    });
+    return forbiddenResponse("Forbidden: Admin access required.");
+  }
+
   try {
     const body = await request.json().catch(() => null);
     if (!body || !body.reportId || !body.status) {

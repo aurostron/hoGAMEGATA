@@ -2,10 +2,27 @@ import type { APIRoute } from "astro";
 import { turso } from "../../../lib/turso";
 import { analyticsEvents, analyticsDaily } from "../../../db/schema";
 import { eq, desc, and, gte, sum } from "drizzle-orm";
+import { getServerUser, isAdminUser } from "../../../lib/serverAuth";
+import { logSecurityEvent } from "../../../lib/auditLogger";
+import { getClientIp, forbiddenResponse } from "../../../lib/rateLimit";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, cookies }) => {
+  const clientIp = getClientIp(request);
+  const user = await getServerUser(request, cookies);
+  if (!user || !isAdminUser(user.email)) {
+    logSecurityEvent({
+      eventType: "unauthorized_scope",
+      severity: "high",
+      clientIp,
+      path: "/api/admin/analytics",
+      method: "GET",
+      details: { reason: "Unauthorized attempt to access admin analytics" },
+    });
+    return forbiddenResponse("Forbidden: Admin access required.");
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const range = searchParams.get("range") || "7d";

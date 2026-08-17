@@ -1,15 +1,77 @@
+import { logSecurityEvent } from "./auditLogger";
+
 interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   retryAfter: number;
 }
 
+async function getRateLimitKv(): Promise<KVNamespace | null> {
+  let cfEnv: any = {};
+  try {
+    const cf = await import("cloudflare:workers");
+    cfEnv = cf.env || {};
+  } catch {}
+
+  const runtimeEnv = cfEnv || (typeof process !== "undefined" ? process.env : {});
+  return ((runtimeEnv as any).RATE_LIMIT as KVNamespace) || null;
+}
+
+/**
+ * Check if a client IP is currently on the active blocklist (e.g., honeypot trigger).
+ */
+export async function isIpBlocked(ip: string): Promise<boolean> {
+  if (!ip || ip === "unknown") return false;
+  try {
+    const isDev =
+      import.meta.env?.DEV ||
+      (typeof process !== "undefined" &&
+        process.env &&
+        process.env.NODE_ENV === "development");
+    if (isDev) return false;
+
+    const kv = await getRateLimitKv();
+    if (!kv) return false;
+
+    const blocked = await kv.get(`block:${ip}`);
+    return Boolean(blocked);
+  } catch (err) {
+    console.error("[RateLimit] Error checking IP blocklist:", err);
+    return false;
+  }
+}
+
+/**
+ * Place a malicious scraper IP on a temporary or 24-hour blocklist.
+ */
+export async function blockIp(ip: string, reason: string, durationSecs: number = 86400): Promise<void> {
+  if (!ip || ip === "unknown") return;
+  try {
+    const kv = await getRateLimitKv();
+    if (!kv) return;
+
+    await kv.put(`block:${ip}`, JSON.stringify({ reason, blockedAt: Math.floor(Date.now() / 1000) }), {
+      expirationTtl: durationSecs,
+    });
+
+    logSecurityEvent({
+      eventType: "ip_blocked",
+      severity: "high",
+      clientIp: ip,
+      path: "*",
+      method: "*",
+      details: { reason, durationSecs },
+    });
+  } catch (err) {
+    console.error("[RateLimit] Error writing IP block:", err);
+  }
+}
+
 /**
  * KV-based sliding window rate limiter for Cloudflare Workers.
  *
  * Uses Cloudflare KV with TTL-based auto-expiry — no cleanup needed.
- * Not perfectly accurate under extreme concurrency (KV is eventually consistent),
- * but sufficient for abuse prevention.
+ * Checks IP blocklist first before evaluating request counters.
  *
  * @param key        Unique rate limit key, e.g. `"likes:192.168.1.1"`
  * @param maxRequests Maximum allowed requests within the window
@@ -33,19 +95,26 @@ export async function rateLimit(
       return { allowed: true, remaining: maxRequests, retryAfter: 0 };
     }
 
-    let cfEnv: any = {};
-    try {
-      const cf = await import("cloudflare:workers");
-      cfEnv = cf.env || {};
-    } catch {}
-
-    const runtimeEnv = cfEnv || (typeof process !== "undefined" ? process.env : {});
-    const kv = (runtimeEnv as any).RATE_LIMIT as KVNamespace | undefined;
+    const kv = await getRateLimitKv();
 
     // If KV binding is not available, fail open (allow the request)
     if (!kv) {
       console.warn("[RateLimit] RATE_LIMIT KV namespace not bound — skipping rate limit");
       return { allowed: true, remaining: maxRequests, retryAfter: 0 };
+    }
+
+    // Check if key contains an IP that is directly blocked
+    const ipPart = key.split(":")[1];
+    if (ipPart && await isIpBlocked(ipPart)) {
+      logSecurityEvent({
+        eventType: "rate_limit_exceeded",
+        severity: "medium",
+        clientIp: ipPart,
+        path: key,
+        method: "RATE_LIMITED",
+        details: { blocked: true, key },
+      });
+      return { allowed: false, remaining: 0, retryAfter: 86400 };
     }
 
     const kvKey = `rl:${key}`;
@@ -74,6 +143,14 @@ export async function rateLimit(
     // Window is still active
     if (record.count >= maxRequests) {
       const retryAfter = windowSecs - (now - record.windowStart);
+      logSecurityEvent({
+        eventType: "rate_limit_exceeded",
+        severity: "low",
+        clientIp: ipPart || "unknown",
+        path: key,
+        method: "RATE_LIMITED",
+        details: { count: record.count, maxRequests, windowSecs },
+      });
       return {
         allowed: false,
         remaining: 0,
@@ -127,3 +204,30 @@ export function tooManyRequests(retryAfter: number, message?: string): Response 
     }
   );
 }
+
+/**
+ * Helper to build a standard 403 Forbidden response.
+ */
+export function forbiddenResponse(message?: string): Response {
+  return new Response(
+    JSON.stringify({ error: message || "Forbidden. Access denied." }),
+    {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+}
+
+/**
+ * Helper to build a standard 401 Unauthorized response.
+ */
+export function unauthorizedResponse(message?: string): Response {
+  return new Response(
+    JSON.stringify({ error: message || "Authentication required." }),
+    {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+}
+

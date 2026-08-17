@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { turso } from '../../../lib/turso';
+import { turso, initTursoForRequest } from '../../../lib/turso';
+import { env as cfWorkerEnv } from "cloudflare:workers";
 import {
   games as gamesTable,
   developers as developersTable,
@@ -18,8 +19,11 @@ import { enrichGamesWithRelations } from '../../../lib/gameQueries';
 import { count, isNull, isNotNull, desc, asc, and, or, eq, gt, gte, lt, lte, inArray, like, ne, sql } from 'drizzle-orm';
 import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngine';
 import { trackSearch } from '../../../lib/analytics';
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 
 export const prerender = false;
+
+const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
 
 let cachedGameTitles: string[] | null = null;
 async function getGameTitles(): Promise<string[]> {
@@ -39,6 +43,16 @@ async function getGameTitles(): Promise<string[]> {
 }
 
 export const GET: APIRoute = async ({ request, locals }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`games_api:${clientIp}`, 90, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
+  const runtimeEnv = isDev
+    ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
+    : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));
+
+  initTursoForRequest(runtimeEnv);
+
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
@@ -305,7 +319,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       const conds = [];
       
       // Filter out hidden games
-      conds.push(ne(gamesTable.status, "hidden"));
+      conds.push(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")));
       
       const todayDate = new Date();
       if (sort === "upcoming") {
@@ -318,8 +332,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
       } else {
         conds.push(
           and(
-            ne(gamesTable.status, "upcoming"),
-            lte(gamesTable.releaseDate, todayDate)
+            or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
+            or(
+              isNull(gamesTable.releaseDate),
+              lte(gamesTable.releaseDate, todayDate)
+            )
           )
         );
       }
@@ -525,6 +542,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       ) as any;
     } else if (sort === "latest") {
       baseQuery = baseQuery.orderBy(
+        sql`CASE WHEN ${gamesTable.releaseDate} IS NOT NULL THEN 0 ELSE 1 END`,
         desc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;

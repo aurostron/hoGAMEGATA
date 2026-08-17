@@ -4,6 +4,9 @@ import { turso } from '../../../../lib/turso';
 import { games, gamesToDevelopers, developers, gamesToPlatforms, platforms } from '../../../../db/schema';
 import { eq, inArray } from 'drizzle-orm';
 import { syncCatboxAlbum } from '../../../../lib/catbox';
+import { adminGamePatchSchema } from '../../../../lib/validations/adminSchemas';
+import { logSecurityEvent } from '../../../../lib/auditLogger';
+import { getClientIp } from '../../../../lib/rateLimit';
 
 let cfEnv: any = null;
 try {
@@ -19,8 +22,17 @@ const checkAdmin = async (request: Request, cookies: any) => {
 };
 
 export const PATCH: APIRoute = async ({ params, request, cookies }) => {
+  const clientIp = getClientIp(request);
   try {
     if (!await checkAdmin(request, cookies)) {
+      logSecurityEvent({
+        eventType: "unauthorized_scope",
+        severity: "high",
+        clientIp,
+        path: `/api/admin/games/${params.id || ""}`,
+        method: "PATCH",
+        details: { reason: "Non-admin attempted game edit" },
+      });
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
     }
 
@@ -30,6 +42,22 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
     }
 
     const body = await request.json();
+    const validation = adminGamePatchSchema.safeParse(body);
+    if (!validation.success) {
+      logSecurityEvent({
+        eventType: "invalid_payload",
+        severity: "low",
+        clientIp,
+        path: `/api/admin/games/${id}`,
+        method: "PATCH",
+        details: { errors: validation.error.flatten() },
+      });
+      return new Response(
+        JSON.stringify({ error: "Validation failed", details: validation.error.flatten() }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const {
       title,
       status,
@@ -44,11 +72,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       platformIds,
       screenshots,
       isTrending
-    } = body;
-
-    if (!title || !title.trim()) {
-      return new Response(JSON.stringify({ error: "Title is required" }), { status: 400 });
-    }
+    } = validation.data;
 
     const parsedReleaseDate = releaseDate ? new Date(releaseDate) : null;
 

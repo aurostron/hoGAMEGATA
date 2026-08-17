@@ -3,6 +3,8 @@ import type { APIRoute } from 'astro';
 export const prerender = false;
 
 import { verifyKey } from 'discord-interactions';
+import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
+import { logSecurityEvent } from '../../../lib/auditLogger';
 
 export const GET: APIRoute = async () => {
   return new Response('hoGAMEGATA Discord Interactions Endpoint Ready', {
@@ -12,6 +14,10 @@ export const GET: APIRoute = async () => {
 };
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`discord_interactions:${clientIp}`, 60, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   try {
     const signature = request.headers.get('x-signature-ed25519');
     const timestamp = request.headers.get('x-signature-timestamp');
@@ -32,8 +38,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!signature || !timestamp) {
       return new Response('Missing Discord signature headers', { status: 401 });
     }
+
+    // Replay attack prevention: reject timestamps older than 5 minutes
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const reqTimestamp = parseInt(timestamp, 10);
+    if (!isDev && (isNaN(reqTimestamp) || Math.abs(nowSeconds - reqTimestamp) > 300)) {
+      logSecurityEvent({
+        eventType: "auth_failure",
+        severity: "medium",
+        clientIp,
+        path: "/api/discord/interactions",
+        method: "POST",
+        details: { reason: "Expired or invalid Discord timestamp signature", reqTimestamp, nowSeconds },
+      });
+      return new Response('Expired timestamp', { status: 401 });
+    }
+
     const isValid = verifyKey(rawBody, signature, timestamp, publicKey);
     if (!isValid) {
+      logSecurityEvent({
+        eventType: "auth_failure",
+        severity: "high",
+        clientIp,
+        path: "/api/discord/interactions",
+        method: "POST",
+        details: { reason: "Invalid Discord Ed25519 signature" },
+      });
       return new Response('Invalid request signature', { status: 401 });
     }
 

@@ -3,6 +3,10 @@ import { turso } from '../../../../lib/turso';
 import { editSuggestions, games, gameRevisions } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
 
+import { getServerUser, isAdminUser } from '../../../../lib/serverAuth';
+import { logSecurityEvent } from '../../../../lib/auditLogger';
+import { getClientIp, forbiddenResponse } from '../../../../lib/rateLimit';
+
 export const prerender = false;
 
 // Allowed fields that can be edited via community proposals
@@ -24,7 +28,21 @@ const ALLOWED_GAME_FIELDS: Record<string, string> = {
   redditUrl: "redditUrl",
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const clientIp = getClientIp(request);
+  const user = await getServerUser(request, cookies);
+  if (!user || !isAdminUser(user.email)) {
+    logSecurityEvent({
+      eventType: "unauthorized_scope",
+      severity: "high",
+      clientIp,
+      path: "/api/admin/edits/approve",
+      method: "POST",
+      details: { reason: "Unauthorized attempt to approve edit suggestion" },
+    });
+    return forbiddenResponse("Forbidden: Admin access required.");
+  }
+
   try {
     const body = await request.json().catch(() => null);
     if (!body || !body.suggestionId) {
@@ -34,7 +52,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    const { suggestionId, reviewerId } = body;
+    const { suggestionId } = body;
+    const reviewerId = user.email;
 
     // Fetch suggestion and associated game in 1 single DB query (saving 1 DB read)
     const [row] = await turso

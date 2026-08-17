@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
 import { env as cfEnv } from "cloudflare:workers";
+import { rateLimit, getClientIp, tooManyRequests } from "../../../lib/rateLimit";
+import { logSecurityEvent } from "../../../lib/auditLogger";
 
 export const prerender = false;
 
@@ -7,6 +9,10 @@ export const prerender = false;
 // Authorization is via Bearer token in the Authorization header.
 // Payload key field: monitor_status = "online" | "offline"
 export const POST: APIRoute = async ({ request }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`webhook:maintenance:${clientIp}`, 20, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+
   const kv = (cfEnv as any).MAINTENANCE as KVNamespace;
   const webhookSecret = (cfEnv as any).BETTERSTACK_WEBHOOK_SECRET;
 
@@ -15,6 +21,14 @@ export const POST: APIRoute = async ({ request }) => {
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
   if (!webhookSecret || token !== webhookSecret) {
+    logSecurityEvent({
+      eventType: "auth_failure",
+      severity: "high",
+      clientIp,
+      path: "/api/maintenance/webhook",
+      method: "POST",
+      details: { reason: "Invalid webhook secret" },
+    });
     return new Response("Unauthorized", { status: 401 });
   }
 
