@@ -17,7 +17,9 @@
 		"PUBLIC_SANITY_DATASET": "production",
 		"GOOGLE_CLIENT_ID": "",
 		"BETTER_AUTH_URL": "https://gamegata.xyz",
-		"CATBOX_USERHASH": ""
+		"CATBOX_USERHASH": "",
+		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAADxZWPj99fIewEFh",
+		"TURNSTILE_SECRET_KEY": ""
 	},
 	"kv_namespaces": [
 		{

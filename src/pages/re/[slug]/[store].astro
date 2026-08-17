@@ -1,9 +1,17 @@
 ---
-import { turso } from "../../../lib/turso";
+import { turso, initTursoForRequest } from "../../../lib/turso";
 import { games as gamesTable } from "../../../db/schema";
 import { eq } from "drizzle-orm";
+import { env as cfWorkerEnv } from "cloudflare:workers";
 
 export const prerender = false;
+
+const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+const runtimeEnv = isDev
+  ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
+  : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));
+
+initTursoForRequest(runtimeEnv);
 
 const { slug = "", store = "" } = Astro.params;
 const { searchParams } = Astro.url;
@@ -47,10 +55,15 @@ const storeMap: Record<string, string> = {
   greenman: "GreenManGaming",
   gamersgate: "GamersGate",
   gamebillet: "GameBillet",
-  voidu: "Voidu"
+  voidu: "Voidu",
+  itchio: "itch.io",
+  itch: "itch.io"
 };
 const matchedStore = storeMap[store.toLowerCase()] || store;
-const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY 
+  || (typeof process !== "undefined" && process.env?.PUBLIC_TURNSTILE_SITE_KEY)
+  || import.meta.env.PUBLIC_TURNSTILE_SITE_KEY 
+  || "0x4AAAAAADxZWPj99fIewEFh";
 ---
 
 <!DOCTYPE html>
@@ -221,7 +234,9 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x0000000000000000
         <!-- Turnstile Widget -->
         <div class="cf-turnstile" 
              data-sitekey={siteKey} 
-             data-callback="onCaptchaVerified" 
+             data-callback="onCaptchaVerified"
+             data-error-callback="onCaptchaError"
+             data-expired-callback="onCaptchaExpired"
              data-theme="dark">
         </div>
       </div>
@@ -234,37 +249,85 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x0000000000000000
   </div>
 
   <script is:inline>
+    let isVerifying = false;
+
     function onCaptchaVerified(token) {
+      if (isVerifying) return;
+      isVerifying = true;
+
       const statusEl = document.getElementById("status");
       const spinnerEl = document.getElementById("spinner");
 
-      statusEl.querySelector("span").textContent = "Redirecting you shortly...";
-      spinnerEl.style.display = "inline-block";
+      if (statusEl) {
+        const textSpan = statusEl.querySelector("span");
+        if (textSpan) textSpan.textContent = "Redirecting you shortly...";
+      }
+      if (spinnerEl) spinnerEl.style.display = "inline-block";
 
-      const queryParams = window.location.search;
+      const cleanPath = window.location.pathname.replace(/\/+$/, "");
+      const search = window.location.search || "";
+      const verifyEndpoint = cleanPath + "/verify" + search;
 
-      fetch(window.location.pathname + "/verify" + queryParams, {
+      fetch(verifyEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token })
       })
-      .then(res => {
-        if (!res.ok) throw new Error("Captcha verification failed.");
-        return res.json();
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.error || "Captcha verification failed.");
+        }
+        return data;
       })
       .then(data => {
         if (data.redirectUrl) {
           window.location.href = data.redirectUrl;
         } else {
-          statusEl.querySelector("span").textContent = "Verification error. Please refresh.";
-          spinnerEl.style.display = "none";
+          if (statusEl) {
+            const textSpan = statusEl.querySelector("span");
+            if (textSpan) textSpan.textContent = "Verification error. Please refresh.";
+          }
+          if (spinnerEl) spinnerEl.style.display = "none";
+          isVerifying = false;
         }
       })
       .catch(err => {
-        console.error(err);
-        statusEl.querySelector("span").textContent = "Verification failed. Try again.";
-        spinnerEl.style.display = "none";
+        console.error("Gateway verification error:", err);
+        if (statusEl) {
+          const textSpan = statusEl.querySelector("span");
+          if (textSpan) textSpan.textContent = err.message || "Verification failed. Try again.";
+        }
+        if (spinnerEl) spinnerEl.style.display = "none";
+        isVerifying = false;
+        if (window.turnstile) {
+          try {
+            window.turnstile.reset();
+          } catch {}
+        }
       });
+    }
+
+    function onCaptchaError() {
+      const statusEl = document.getElementById("status");
+      const spinnerEl = document.getElementById("spinner");
+      if (statusEl) {
+        const textSpan = statusEl.querySelector("span");
+        if (textSpan) textSpan.textContent = "Captcha connection error. Retrying...";
+      }
+      if (spinnerEl) spinnerEl.style.display = "none";
+      isVerifying = false;
+    }
+
+    function onCaptchaExpired() {
+      const statusEl = document.getElementById("status");
+      const spinnerEl = document.getElementById("spinner");
+      if (statusEl) {
+        const textSpan = statusEl.querySelector("span");
+        if (textSpan) textSpan.textContent = "Verification expired. Please re-verify.";
+      }
+      if (spinnerEl) spinnerEl.style.display = "none";
+      isVerifying = false;
     }
   </script>
 

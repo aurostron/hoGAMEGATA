@@ -3,6 +3,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import OnboardingModal from '../components/OnboardingModal';
 import BottomNav from '../components/BottomNav';
+import RandomWarpOverlay from '../components/RandomWarpOverlay';
 import '../styles/global.css';
 import { count } from 'drizzle-orm';
 import { turso } from '../lib/turso';
@@ -177,6 +178,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     </div>
     <Footer />
     <BottomNav client:only="react" />
+    <RandomWarpOverlay client:only="react" />
     <OnboardingModal client:only="react" />
 
     <!-- Register PWA Service Worker -->

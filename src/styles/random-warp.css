@@ -1,0 +1,11 @@
+/* ── 3D Time Warp Overlay Styles & Transitions ── */
+
+.cursor-wait {
+  cursor: wait !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  canvas {
+    display: none !important;
+  }
+}

@@ -1,12 +1,15 @@
 import type { APIRoute } from 'astro';
 import { generateAffiliateLink } from '../../../../lib/affiliate';
-import { turso } from '../../../../lib/turso';
-import { tursoAuth } from '../../../../lib/tursoAuth';
+import { turso, initTursoForRequest } from '../../../../lib/turso';
+import { tursoAuth, initTursoAuthForRequest } from '../../../../lib/tursoAuth';
 import { referralClick as referralClickTable } from '../../../../db/auth-schema';
 import { games as gamesTable, purchaseLinks as purchaseLinksTable } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { env as cfWorkerEnv } from "cloudflare:workers";
 
 export const prerender = false;
+
+const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
 
 function matchStoreName(slug: string): string {
   const s = slug.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -23,6 +26,13 @@ function matchStoreName(slug: string): string {
 }
 
 export const POST: APIRoute = async ({ params, request }) => {
+  const runtimeEnv = isDev
+    ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
+    : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));
+
+  initTursoForRequest(runtimeEnv);
+  initTursoAuthForRequest(runtimeEnv);
+
   const { slug = "", store = "" } = params;
   const { searchParams } = new URL(request.url);
   const fallbackUrl = searchParams.get("fallbackUrl") || "";
@@ -38,17 +48,29 @@ export const POST: APIRoute = async ({ params, request }) => {
     }
 
     // 1. Verify Cloudflare Turnstile Captcha
-    const secretKey = import.meta.env.TURNSTILE_SECRET_KEY || process.env.TURNSTILE_SECRET_KEY || "1x0000000000000000000000000000000AA";
+    const secretKey = (runtimeEnv as any)?.TURNSTILE_SECRET_KEY
+      || (typeof process !== "undefined" && process.env?.TURNSTILE_SECRET_KEY)
+      || import.meta.env.TURNSTILE_SECRET_KEY
+      || "";
+
+    const verifyParams = new URLSearchParams({
+      secret: secretKey,
+      response: token
+    });
+
     const cfVerifyResponse = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${secretKey}&response=${token}`
+      body: verifyParams.toString()
     });
 
-    const cfVerifyData = await cfVerifyResponse.json() as any;
-    if (!cfVerifyData.success) {
+    const cfVerifyData = await cfVerifyResponse.json().catch(() => null) as any;
+    if (!cfVerifyData || !cfVerifyData.success) {
       console.warn("[Turnstile Validation Fail] Response:", cfVerifyData);
-      return new Response(JSON.stringify({ error: "Verification failed. Please try again." }), {
+      return new Response(JSON.stringify({ 
+        error: "Verification failed. Please try again.",
+        details: cfVerifyData?.["error-codes"] || []
+      }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });

@@ -4,6 +4,7 @@ import {
   Home,
   Gamepad2,
   Search,
+  Dices,
   Shuffle,
   MoreHorizontal,
   X,
@@ -45,7 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   {
     id: "random",
     label: "Random",
-    icon: <Shuffle strokeWidth={1.8} />,
+    icon: <Dices strokeWidth={1.8} />,
     href: "action:random",
   },
   {
@@ -212,8 +213,9 @@ export default function BottomNav() {
       }
 
       if (item.href === "action:random") {
-        // Mock: navigate to /games with a random offset
-        window.location.assign("/games");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("gamegata:random-warp"));
+        }
         return;
       }
 

@@ -3,6 +3,7 @@ import SciFiLogo from './SciFiLogo';
 import SettingsButton from './SettingsButton';
 import HeaderSearch from './HeaderSearch';
 import CartButton from './CartButton';
+import RandomDiceButton from './RandomDiceButton';
 import { NotificationBell } from './notifications/NotificationBell';
 import { EditPageButton } from './editing/EditPageButton';
 import { BugReportTrigger } from './bugs/BugReportTrigger';
@@ -78,6 +79,14 @@ const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
     <div class="flex items-center h-full gap-1.5 sm:gap-2 pr-2 sm:pr-4">
       <div class="h-full flex items-center justify-center transition-all duration-300">
         <HeaderSearch client:only="react" />
+      </div>
+
+      <div class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11">
+        <RandomDiceButton client:only="react">
+          <div slot="fallback" class="flex items-center justify-center text-white/70 hover:text-white transition-all duration-150 w-full h-full rounded-xl cursor-pointer bg-transparent">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 sm:w-5.5 sm:h-5.5 text-white/80"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3.16l-4.76-4.76a2.24 2.24 0 0 0-3.16 0L10 6.08"/><path d="M6 14h.01"/><path d="M10 18h.01"/><path d="M14 6h.01"/><path d="M18 10h.01"/></svg>
+          </div>
+        </RandomDiceButton>
       </div>
 
       <div class="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11">
