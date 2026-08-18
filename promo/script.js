@@ -274,17 +274,15 @@ function initWebAudioSynth() {
 }
 
 // ==========================================================================
-// 4. VIDEO TIMELINE & CONTINUOUS SMOOTH PROGRESS
+// 4. VIDEO TIMELINE & SEAMLESS CONTINUOUS LOOP (SHORT & SNAPPY)
 // ==========================================================================
 function initVideoTimeline(stats, audio, threeAtmosphere) {
   const scenes = Array.from(document.querySelectorAll(".scene"));
-  const markers = Array.from(document.querySelectorAll(".scene-marker"));
-  const scrubFill = document.getElementById("scrub-fill");
 
   let currentIdx = 0;
   let isPlaying = true;
-  const SCENE_DURATION_MS = 6000; // 6 seconds per scene
-  const TOTAL_DURATION_MS = SCENE_DURATION_MS * scenes.length; // 36s total video reel
+  const SCENE_DURATION_MS = 3800; // 3.8s per scene (snappy, fast cinematic cuts)
+  const TOTAL_DURATION_MS = SCENE_DURATION_MS * scenes.length; // ~22.8s total video reel
   let startTime = performance.now();
   let animationFrameId = null;
 
@@ -299,14 +297,6 @@ function initVideoTimeline(stats, audio, threeAtmosphere) {
         s.classList.add("active");
       } else {
         s.classList.remove("active");
-      }
-    });
-
-    markers.forEach((m, i) => {
-      if (i === currentIdx) {
-        m.classList.add("active");
-      } else {
-        m.classList.remove("active");
       }
     });
 
@@ -325,13 +315,8 @@ function initVideoTimeline(stats, audio, threeAtmosphere) {
     if (!isPlaying) return;
 
     const elapsedTotal = (now - startTime) % TOTAL_DURATION_MS;
-    const progressPercent = (elapsedTotal / TOTAL_DURATION_MS) * 100;
-
-    if (scrubFill) {
-      scrubFill.style.width = `${progressPercent}%`;
-    }
-
     const calculatedScene = Math.floor(elapsedTotal / SCENE_DURATION_MS);
+    
     if (calculatedScene !== currentIdx && calculatedScene < scenes.length) {
       showScene(calculatedScene);
     }
@@ -349,14 +334,6 @@ function initVideoTimeline(stats, audio, threeAtmosphere) {
     isPlaying = false;
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
   }
-
-  markers.forEach(m => {
-    m.addEventListener("click", () => {
-      const target = parseInt(m.getAttribute("data-scene"), 10);
-      startTime = performance.now() - (target * SCENE_DURATION_MS);
-      showScene(target);
-    });
-  });
 
   // Global Keyboard Controls (Zero UI buttons required on video)
   window.addEventListener("keydown", e => {

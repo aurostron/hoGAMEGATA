@@ -912,6 +912,43 @@ Addressed broken/placeholder covers spotted in the 3D Netflix wall:
 ### Verification
 - Verified the 3D poster wall renders MADiSON, Silent Hill 2, and Resident Evil 4 with crisp, official horror art without placeholders.
 
+---
+
+## 2026-08-22 — Video-First UI Cleanup, Seamless Loop & Mobile Text Alignment
+
+### Summary
+Cleaned up the PC promotional page to look 100% like a pure recorded video with snappy timing and seamless infinite looping:
+1. **Removed All UI Scroller Bars & Controls**:
+   - Removed bottom scrub line (`.cinematic-scrub-bar`) and scene navigation dots (`.scene-markers`).
+   - Removed upper scroller elements.
+   - Removed all upper pill tags (`.hero-pill`) above headlines across all scenes.
+2. **Text Alignment & Unslop**:
+   - Replaced PC slide copy with the user's punchy, authentic mobile version text:
+     - *"From survival horror to experimental horror, the most diverse database you'll ever see."*
+     - *"BUILT FOR THE HORROR FANS."*
+     - *"itch.io Games and Game Jam Projects preserved forever."*
+     - *"LIVE DEALS. ZERO OVERPAYING. NO BS."*
+     - *"NO ADS. NO PAYWALLS."*
+     - *"live at gamegata.xyz"*
+3. **Snappy Timing & Seamless Infinite Loop**:
+   - Tuned scene timing to `3800ms` per slide for fast, engaging video cuts (~22.8s total loop).
+   - Seamless transition from Scene 6 directly back to Scene 1 with continuous Three.js 3D camera and ember particle interpolation.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/index.html` | Modified — Removed pills, scrubber bars, updated to unslop mobile text |
+| `promo/styles.css` | Modified — Cleaned UI controls, tuned video cross-fade styling |
+| `promo/script.js` | Modified — Tuned to 3.8s cuts, seamless continuous loop |
+| `promo/mobile.html` | Modified — Fixed minor typo in Scene 1 text |
+| `src/pages/promo.astro` | Modified — Synced desktop video-first layout |
+| `src/pages/promo/mobile.astro` | Modified — Synced mobile route |
+| `public/promo-assets/` | Synchronized all static assets |
+
+### Verification
+- Tested continuous 6-scene playback — smoothly loops from Scene 6 back to Scene 1 without stutter, and all progress bars/pills are completely gone.
+
+
 
 
 

@@ -1,4 +1,4 @@
-/* === HOGAMEGATA CINEMATIC PROMO REEL (ELEMENT-WISE STAGGER & RICH FX) === */
+/* === HOGAMEGATA CINEMATIC PROMO REEL (PURE VIDEO MODE - SEAMLESS LOOP) === */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
 
 :root {
@@ -39,7 +39,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Hide cursor automatically in recording mode when idle */
+/* Hide cursor automatically in video recording mode when idle */
 body.hide-cursor {
   cursor: none !important;
 }
@@ -74,7 +74,7 @@ body.hide-cursor {
   opacity: 0.3;
 }
 
-/* === MINIMALIST VIDEO WATERMARK === */
+/* === MINIMALIST VIDEO WATERMARK (ALL WHITE) === */
 .video-header-watermark {
   position: absolute;
   top: 36px;
@@ -95,6 +95,7 @@ body.hide-cursor {
   color: #ffffff;
   display: flex;
   align-items: center;
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
 }
 
 .video-brand-logo span.italic {
@@ -103,36 +104,6 @@ body.hide-cursor {
   color: #ffffff;
   text-transform: lowercase;
   margin-right: 2px;
-}
-
-.video-live-dot {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-family: var(--font-body);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-weight: 700;
-}
-
-.live-pulse-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 10px #ef4444;
-  animation: liveBlink 1.6s infinite ease-in-out;
-}
-
-@keyframes liveBlink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(0.8); }
 }
 
 /* Audio indicator pill top right */
@@ -188,56 +159,7 @@ body.hide-cursor {
   100% { height: 100%; }
 }
 
-/* === CINEMATIC TIMELINE PROGRESS BAR === */
-.cinematic-scrub-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  z-index: 50;
-}
-
-.scrub-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #e50914, #ff2a3b);
-  box-shadow: 0 0 16px var(--crimson);
-  transition: width 0.1s linear;
-}
-
-/* Scene markers over scrub bar */
-.scene-markers {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  opacity: 0.8;
-  transition: opacity 0.3s;
-}
-
-.scene-marker {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  cursor: pointer;
-  transition: all 0.35s var(--ease-cinematic);
-}
-
-.scene-marker.active {
-  width: 24px;
-  border-radius: 9999px;
-  background: var(--crimson);
-  box-shadow: 0 0 12px var(--crimson);
-}
-
-/* === SCENE VIEWPORT === */
+/* === SCENE VIEWPORT & SEAMLESS CROSS-FADE === */
 .scene-viewport {
   position: relative;
   width: 100vw;
@@ -258,129 +180,105 @@ body.hide-cursor {
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s ease;
+  transform: scale(0.98) translateY(12px);
+  filter: blur(8px);
+  transition: opacity 0.65s var(--ease-cinematic), transform 0.65s var(--ease-cinematic), filter 0.65s var(--ease-cinematic);
   padding: 0 40px;
 }
 
 .scene.active {
   opacity: 1;
   pointer-events: auto;
+  transform: scale(1) translateY(0);
+  filter: blur(0px);
 }
 
 /* ==========================================================================
    ELEMENT-WISE KINETIC STAGGER ANIMATIONS (PER-ELEMENT EFFECTS)
    ========================================================================== */
-.anim-badge {
-  opacity: 0;
-  transform: scale(0.8) translateY(16px);
-  filter: blur(6px);
-  transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), filter 0.55s var(--ease-spring);
-}
-
-.scene.active .anim-badge {
-  opacity: 1;
-  transform: scale(1) translateY(0);
-  filter: blur(0px);
-  transition-delay: 0.08s;
-}
-
 .anim-title {
   opacity: 0;
-  transform: translateY(28px);
-  filter: blur(10px);
-  transition: opacity 0.75s var(--ease-cinematic), transform 0.75s var(--ease-cinematic), filter 0.75s var(--ease-cinematic);
+  transform: translateY(24px);
+  filter: blur(8px);
+  transition: opacity 0.6s var(--ease-cinematic), transform 0.6s var(--ease-cinematic), filter 0.6s var(--ease-cinematic);
 }
 
 .scene.active .anim-title {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0px);
-  transition-delay: 0.18s;
+  transition-delay: 0.12s;
 }
 
 .anim-sub {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(18px);
   filter: blur(6px);
-  transition: opacity 0.7s var(--ease-cinematic), transform 0.7s var(--ease-cinematic), filter 0.7s var(--ease-cinematic);
+  transition: opacity 0.6s var(--ease-cinematic), transform 0.6s var(--ease-cinematic), filter 0.6s var(--ease-cinematic);
 }
 
 .scene.active .anim-sub {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0px);
-  transition-delay: 0.28s;
+  transition-delay: 0.22s;
 }
 
 /* Stagger Item Delays */
 .anim-item-1 {
   opacity: 0;
-  transform: translateY(32px) scale(0.96);
+  transform: translateY(24px) scale(0.97);
   filter: blur(6px);
-  transition: opacity 0.65s var(--ease-spring), transform 0.65s var(--ease-spring), filter 0.65s var(--ease-spring);
+  transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), filter 0.55s var(--ease-spring);
 }
 
 .scene.active .anim-item-1 {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0px);
-  transition-delay: 0.36s;
+  transition-delay: 0.3s;
 }
 
 .anim-item-2 {
   opacity: 0;
-  transform: translateY(32px) scale(0.96);
+  transform: translateY(24px) scale(0.97);
   filter: blur(6px);
-  transition: opacity 0.65s var(--ease-spring), transform 0.65s var(--ease-spring), filter 0.65s var(--ease-spring);
+  transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), filter 0.55s var(--ease-spring);
 }
 
 .scene.active .anim-item-2 {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0px);
-  transition-delay: 0.48s;
+  transition-delay: 0.4s;
 }
 
 .anim-item-3 {
   opacity: 0;
-  transform: translateY(32px) scale(0.96);
+  transform: translateY(24px) scale(0.97);
   filter: blur(6px);
-  transition: opacity 0.65s var(--ease-spring), transform 0.65s var(--ease-spring), filter 0.65s var(--ease-spring);
+  transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), filter 0.55s var(--ease-spring);
 }
 
 .scene.active .anim-item-3 {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0px);
-  transition-delay: 0.60s;
+  transition-delay: 0.5s;
 }
 
 .anim-item-4 {
   opacity: 0;
-  transform: translateY(32px) scale(0.96);
+  transform: translateY(24px) scale(0.97);
   filter: blur(6px);
-  transition: opacity 0.65s var(--ease-spring), transform 0.65s var(--ease-spring), filter 0.65s var(--ease-spring);
+  transition: opacity 0.55s var(--ease-spring), transform 0.55s var(--ease-spring), filter 0.55s var(--ease-spring);
 }
 
 .scene.active .anim-item-4 {
   opacity: 1;
   transform: translateY(0) scale(1);
   filter: blur(0px);
-  transition-delay: 0.72s;
-}
-
-.anim-item-5 {
-  opacity: 0;
-  transform: translateY(32px) scale(0.96);
-  filter: blur(6px);
-  transition: opacity 0.65s var(--ease-spring), transform 0.65s var(--ease-spring), filter 0.65s var(--ease-spring);
-}
-
-.scene.active .anim-item-5 {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0px);
-  transition-delay: 0.84s;
+  transition-delay: 0.6s;
 }
 
 /* ==========================================================================
@@ -444,7 +342,6 @@ body.hide-cursor {
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85);
   flex-shrink: 0;
   position: relative;
-  transition: transform 0.3s var(--ease-cinematic), box-shadow 0.3s ease;
 }
 
 .game-poster-card img {
@@ -460,24 +357,6 @@ body.hide-cursor {
   background: linear-gradient(to top, rgba(3,3,5,0.85) 0%, transparent 60%);
 }
 
-.card-info {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  right: 8px;
-  z-index: 2;
-}
-
-.card-title {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .scene-hero-overlay {
   position: relative;
   z-index: 20;
@@ -489,24 +368,6 @@ body.hide-cursor {
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 50px rgba(229, 9, 20, 0.15);
-}
-
-.hero-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 18px;
-  background: rgba(229, 9, 20, 0.12);
-  border: 1px solid var(--border-glow);
-  border-radius: 9999px;
-  font-family: var(--font-body);
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #ff3849;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-  letter-spacing: 0.1em;
-  box-shadow: 0 0 20px rgba(229, 9, 20, 0.2);
 }
 
 .hero-headline {
@@ -546,7 +407,7 @@ body.hide-cursor {
   gap: 24px;
   max-width: 1080px;
   width: 100%;
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
 .stat-monolith {
@@ -570,12 +431,6 @@ body.hide-cursor {
   right: 0;
   height: 3px;
   background: linear-gradient(90deg, transparent, var(--crimson), transparent);
-}
-
-.stat-monolith:hover {
-  transform: translateY(-6px);
-  border-color: var(--border-glow);
-  box-shadow: 0 25px 50px rgba(229, 9, 20, 0.2);
 }
 
 .stat-number {
@@ -615,7 +470,7 @@ body.hide-cursor {
 }
 
 /* ==========================================================================
-   SCENE 3: SUBGENRE CURATION SHOWCASE (PER-CARD STAGGER & FX)
+   SCENE 3: SUBGENRE CURATION SHOWCASE
    ========================================================================== */
 .curation-grid {
   display: grid;
@@ -623,7 +478,7 @@ body.hide-cursor {
   gap: 18px;
   max-width: 1180px;
   width: 100%;
-  margin-top: 34px;
+  margin-top: 28px;
 }
 
 .curation-card {
@@ -650,12 +505,6 @@ body.hide-cursor {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--crimson), transparent);
   opacity: 0.6;
-}
-
-.curation-card:hover {
-  transform: translateY(-8px);
-  border-color: var(--crimson);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(229, 9, 20, 0.22);
 }
 
 .curation-tag {
@@ -728,12 +577,6 @@ body.hide-cursor {
   border-radius: 18px;
   backdrop-filter: blur(16px);
   transition: all 0.25s var(--ease-cinematic);
-}
-
-.feature-pill-card:hover {
-  border-color: var(--border-glow);
-  transform: translateX(6px);
-  background: rgba(20, 22, 34, 0.9);
 }
 
 .feature-emoji-icon {
@@ -827,40 +670,11 @@ body.hide-cursor {
 }
 
 /* ==========================================================================
-   SCENE 5: DEDICATION & MISSION SLIDE
+   SCENE 5: MISSION SLIDE
    ========================================================================== */
 .mission-scene-content {
   text-align: center;
   max-width: 760px;
-}
-
-.mission-pill-box {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 28px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 32px;
-  backdrop-filter: blur(16px);
-}
-
-.mission-pill-box span.tag {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--crimson-bright);
-  letter-spacing: 0.12em;
-}
-
-.mission-pill-box span.url {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.04em;
 }
 
 /* ==========================================================================
