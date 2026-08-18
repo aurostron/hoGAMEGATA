@@ -712,6 +712,15 @@ html, body {
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
+.final-made-with span.heart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin: 0 4px;
+  animation: heartPulse 1.8s infinite ease-in-out;
+}
+
 .final-made-with span.heart {
   display: inline-block;
   animation: heartPulse 1.8s infinite ease-in-out;

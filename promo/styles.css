@@ -579,10 +579,9 @@ body.hide-cursor {
   transition: all 0.25s var(--ease-cinematic);
 }
 
-.feature-emoji-icon {
-  font-size: 24px;
-  width: 46px;
-  height: 46px;
+.feature-icon-box {
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   background: rgba(229, 9, 20, 0.12);
   border: 1px solid var(--border-glow);
@@ -590,6 +589,39 @@ body.hide-cursor {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--crimson-bright);
+  box-shadow: 0 0 16px rgba(229, 9, 20, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature-pill-card:hover .feature-icon-box {
+  background: rgba(229, 9, 20, 0.22);
+  transform: scale(1.05);
+  box-shadow: 0 0 22px var(--blood-glow);
+}
+
+.feature-icon-box svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--crimson-bright);
+}
+
+.deal-verify-note {
+  margin-top: 18px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  text-align: left;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.deal-verify-note svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  stroke: #38bdf8;
 }
 
 .feature-info h4 {
@@ -712,6 +744,15 @@ body.hide-cursor {
   color: #f1f5f9;
   letter-spacing: 0.02em;
   text-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+}
+
+.final-made-with span.heart-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin: 0 4px;
+  animation: heartPulse 1.8s infinite ease-in-out;
 }
 
 .final-made-with span.heart {

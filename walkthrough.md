@@ -948,6 +948,33 @@ Cleaned up the PC promotional page to look 100% like a pure recorded video with 
 ### Verification
 - Tested continuous 6-scene playback — smoothly loops from Scene 6 back to Scene 1 without stutter, and all progress bars/pills are completely gone.
 
+---
+
+## 2026-08-22 — Replaced Emojis with Modular SVG Icons
+
+### Summary
+Replaced all raster emojis across the promotional reels with clean, modular, glowing inline SVG icons:
+1. **Lightning / Zap**: Replaced `⚡` with Lucide/Tabler-style vector polygon icon inside `.feature-icon-box`.
+2. **Target / Search**: Replaced `🎯` with vector triple concentric target crosshair icon.
+3. **Film / Clapperboard**: Replaced `🎬` with vector cinema clapperboard icon.
+4. **Shield / Verification**: Replaced `🛡️` with vector shield-check icon in direct gateway note.
+5. **Heart Outro**: Replaced `❤️` with clean vector pulsating heart icon across both desktop and mobile reels.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/index.html` | Modified — Replaced emojis with inline SVG modular icons |
+| `promo/styles.css` | Modified — Added styling for `.feature-icon-box`, `.deal-verify-note`, and `.heart-icon` |
+| `promo/mobile.html` | Modified — Replaced unicode heart with modular SVG heart icon |
+| `promo/mobile.css` | Modified — Added `.heart-icon` pulse styling |
+| `src/pages/promo.astro` | Modified — Synchronized desktop astro page |
+| `src/pages/promo/mobile.astro` | Modified — Synchronized mobile astro page |
+| `public/promo-assets/` | Synchronized static assets |
+
+### Verification
+- Verified all icons render as crisp vector paths with crimson/emerald/cyan neon accents and zero reliance on OS emoji fonts.
+
+
 
 
 
