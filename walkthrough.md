@@ -493,6 +493,439 @@ Implemented comprehensive defense-in-depth security hardening across network, au
 
 ---
 
+## 2026-08-22 — Turnstile Gateway Verification Race Condition & URL Normalization Fix
+
+### Summary
+Fixed the `/re/[slug]/[store]` redirect gateway bug where the Turnstile CAPTCHA widget would show green `Success!` while the text below flashed `Verification failed. Try again.`:
+1. **Root Cause Analysis**:
+   - **Single-Use Token Race Condition**: Turnstile tokens are strictly single-use. If `onCaptchaVerified` was invoked in rapid succession or re-triggered, the second POST request sent the consumed token to Cloudflare, causing `timeout-or-duplicate` rejection and setting the status to "Verification failed".
+   - **Trailing Slash 404s**: String concatenation `window.location.pathname + "/verify"` on paths with a trailing slash (`/re/visage/gog/`) generated `//verify`, returning a 404 and failing verification.
+2. **Fix Implemented**:
+   - In `src/pages/re/[slug]/[store].astro`, added an `isVerifying` state lock guard to prevent double-token submissions.
+   - Normalized the verify endpoint URL to safely strip trailing slashes: `window.location.pathname.replace(/\/+$/, "") + "/verify"`.
+   - Added automatic `window.turnstile.reset()` on error/retry, along with `data-error-callback` and `data-expired-callback` handlers to keep the widget responsive.
+   - In `src/pages/re/[slug]/[store]/verify.ts`, serialized POST payloads using `new URLSearchParams` for RFC-compliant Cloudflare `siteverify` communication and returned structured error details.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/re/[slug]/[store].astro` | Modified — Added `isVerifying` guard, URL normalization, auto widget reset on error, error & expiration callbacks |
+| `src/pages/re/[slug]/[store]/verify.ts` | Modified — Standardized `URLSearchParams` body and structured verification error responses |
+
+### Verification
+- Tested live `/re/visage/gog` on `https://gamegata.xyz`:
+  - `GET /re/visage/gog?fallbackUrl=...` -> Status 200, Turnstile widget rendered with valid site key and `isVerifying` guard (Verified PASS).
+  - `POST /re/visage/gog/verify` -> Properly handles single-use token validations and returns 400 for missing tokens (Verified PASS).
+- Deployed to Cloudflare (`npm run deploy`): Version ID `8af91854-d68d-4340-ad9a-7b8d38fbc2be` live on `https://gamegata.xyz`.
+
+---
+
+## 2026-08-22 — Random Dice Button & Cosmic Void Warp Page Transition
+
+### Summary
+Implemented a random game discovery button with a multi-phase "Void Warp" cosmic space tunnel / spooky mist transition:
+1. **Interactive Dice Button**:
+   - Created [`RandomDiceButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomDiceButton.tsx) featuring a dynamic rolling animation on click and subtle hover effects matching the sci-fi/horror header aesthetic.
+   - Added the button to [`Header.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/Header.astro) right action cluster alongside Search, Notifications, Cart, and Settings.
+   - Updated [`BottomNav.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/BottomNav.tsx) to use the `Dices` icon and connect the mobile `action:random` trigger to the warp system.
+2. **Cosmic Void Warp Transition Overlay**:
+   - Created [`RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx) and keyframe styles in [`random-warp.css`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/styles/random-warp.css) mounted globally in [`Layout.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro).
+   - Multi-phase cinematic sequence:
+     - Deep crimson & purple counter-rotating nebula mist layers.
+     - Accelerated hyperspace star streaks and rotating dashed event horizon rings.
+     - Central gravitational singularity core pulse with high-frequency camera jitter.
+     - Blinding white/crimson supernova hyper-flash masking the SSR page transition cleanly.
+   - Respects `prefers-reduced-motion` for instant redirection without animation.
+3. **JSON Random Pre-fetch Endpoint**:
+   - Created [`/api/random.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/random.ts) returning random game slug and title as JSON so the client fetches the target in parallel during the warp animation before navigating.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/api/random.ts` | Created — Fast JSON API endpoint returning random non-hidden game metadata |
+| `src/styles/random-warp.css` | Created — GPU-composited CSS keyframes for warp tunnel, mist, star streaks, and hyper-flash |
+| `src/styles/global.css` | Modified — Imported `random-warp.css` |
+| `src/components/RandomDiceButton.tsx` | Created — Header dice button with roll micro-interaction and event dispatcher |
+| `src/components/RandomWarpOverlay.tsx` | Created — Fullscreen cosmic warp transition overlay with parallel slug pre-fetching |
+| `src/components/Header.astro` | Modified — Added `RandomDiceButton` in header action cluster |
+| `src/components/BottomNav.tsx` | Modified — Updated random nav item with `Dices` icon and wired `action:random` to warp event |
+| `src/layouts/Layout.astro` | Modified — Mounted `RandomWarpOverlay` globally |
+
+### Verification
+- Ran full production build (`npm run build`):
+  - Sitemap generated for 107,814 games.
+  - Server entrypoints, Vite chunks, static pages, and Cloudflare Worker bundle compiled cleanly in 9.42s with **0 errors**.
+
+---
+
+## 2026-08-22 — Promotional 3D Web Landing Reel (Ready for Screen Recording)
+
+### Summary
+Built a standalone, high-impact promotional landing page and cinematic video presentation in `promo/` designed specifically for screen recording as a promo video for **hoGAMEGATA** (`gamegata.xyz`):
+1. **Netflix 3D Angled Wall Carousel**:
+   - 4-row continuous infinite multi-directional marquee in an angled 3D perspective (`perspective: 1200px`, `rotateX(24deg) rotateY(-8deg) rotateZ(-12deg)`) populated with 160+ real horror game covers from the live database.
+   - Interactive 3D hover depth cards that pop out on cursor focus.
+2. **Database Scale & Stats Explosion**:
+   - Animated count-up easing for **107,814+ games**, **89,157+ indie/itch titles**, and **68,034+ developers**.
+3. **Curated Diversity & Features**:
+   - Showcases Retro PS1 Low-Poly Dread, Psychological Cosmic Terror, Classic Survival Horror, and Underground Game Jams.
+   - Interactive live price comparison demo across Steam, GOG, Humble, Fanatical, Epic, and Itch.io.
+4. **Authentic Indie Spirit (Unslop Voice)**:
+   - Punchy, direct marketing copy celebrating that hoGAMEGATA is solo-developed by **aurostron** with ❤️.
+   - 100% Free, zero ads, zero corporate tracking.
+5. **Cinematic Controller & Synthesizer Sound Engine**:
+   - Automated 5-scene timeline with play/pause, scene selector, progress tracker, and keyboard shortcuts (`Space` = Play/Pause, `F` = Fullscreen, `M` = Sound, `1-5` = Jump to Scene).
+   - Built-in Web Audio API sub-bass drone and ethereal chime generator (zero external mp3 dependencies).
+
+### Files Created
+| File | Description |
+|------|-------------|
+| `promo/index.html` | Standalone zero-dependency HTML presentation container |
+| `promo/styles.css` | 3D perspective wall, typography, lighting, and marquee animations |
+| `promo/script.js` | Timeline scene manager, Web Audio synth, canvas particles, and 3D parallax |
+| `promo/data.json` | 160 curated horror game posters & live database stats |
+| `promo/README.md` | Screen-recording guide and hotkeys reference |
+| `src/pages/promo.astro` | Astro page wrapper accessible directly at `/promo` |
+| `public/promo-assets/` | Static asset bundle for `/promo` web route |
+
+### Verification
+- Verified `promo/index.html`, `styles.css`, `script.js`, and `data.json` are self-contained and render without external build steps.
+- Tested standalone loading and verified all 160 game covers and stats render smoothly at 60fps with active 3D mouse parallax and Web Audio synthesis.
+
+---
+
+## 2026-08-22 — 3D Canvas Hyperspace Time-Warp Engine Upgrade
+
+### Summary
+Replaced the initial 2D CSS gradient rings with a true 60fps **3D HTML5 Canvas Hyperspace Time-Warp Engine** matching the neon cyberpunk/synthwave time-warp references:
+1. **3D Perspective Laser Particle Streaks**:
+   - Simulated 500+ particles with 3D Cartesian coordinates (`x, y, z`) projected via true perspective equations (`FOV / z`) from a central vanishing point.
+   - Non-linear exponential acceleration curve transitioning smoothly from subtle drift (`20px/frame`) to hyper-speed stretch (`270px/frame`).
+   - Draw dynamic laser beam streaks between previous frame `(prevX, prevY)` and current `(currX, currY)` with dynamic line widths and bright head flares.
+2. **Neon Palette & Spiral Wormhole Curvature**:
+   - Curated high-contrast color palette: Electric Cyan (`#00f0ff`), Ice Blue (`#38bdf8`), Neon Magenta (`#ff007f`), Hyper Pink-Violet (`#e026ff`), Cosmic Violet (`#9333ea`), and Pure White Core (`#ffffff`).
+   - Added Z-axis angular velocity creating a sweeping vortex/wormhole twist.
+   - Central singularity glow core with multi-stop radial gradients and high-frequency camera vibration during peak velocity.
+3. **Supernova Hyper-Flash & Transition Masking**:
+   - At terminal velocity (`t > 0.82`), a radial supernova bloom washes across the screen to pure white, masking the subsequent SSR navigation with zero visual pop or stutter.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/RandomWarpOverlay.tsx` | Modified — Upgraded with 60fps 3D HTML5 Canvas hyperspace time-warp simulation |
+| `src/styles/random-warp.css` | Modified — Streamlined CSS to cursor utilities and reduced-motion rules |
+| `src/pages/promo.astro` | Modified — Added `is:inline` to public script tag |
+
+### Verification
+- Ran full production build (`npm run build`):
+  - Sitemap generated for 107,814 games.
+  - Server entrypoints and Cloudflare Worker bundle compiled cleanly in 9.20s with **0 errors**.
+
+---
+
+## 2026-08-22 — Video-Ready UI Redesign & 6-Row Netflix 3D Wall Upgrade
+
+### Summary
+Overhauled the promotional presentation in `promo/` and `src/pages/promo.astro` to look like a clean, broadcast-ready motion graphics video for screen recording:
+1. **Removed All UI Clutter & Control Hints**:
+   - Removed all on-screen button labels, hotkey text hints, and generic web controls.
+   - Added a minimalist trailer-style corner watermark (`hoGAMEGATA • 107K+ LIVE ARCHIVE`) and discrete audio toggle pill.
+   - Replaced heavy HUD bars with a sleek, Netflix-style continuous red progress scrub line along the bottom edge.
+   - Added automatic cursor hiding (`hide-cursor`) when the mouse is idle for 1.5 seconds.
+2. **Dense 6-Row 3D Netflix Marquee Wall**:
+   - Upgraded from 4 to **6 continuous multi-directional marquee rows** in an expansive 3D perspective (`rotateX(22deg) rotateY(-16deg) rotateZ(-9deg) scale(1.3)`) covering the entire background depth like the Netflix landing reference.
+3. **Unslop Copywriting**:
+   - Rewrote all 5 scenes with punchy, high-energy, authentic marketing copy emphasizing scale, indie depth, real-time price comparisons, and the solo creator mission.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/styles.css` | Modified — Upgraded with 6-row 3D marquee grid, cinema film scanlines, sleek scrub bar, and cursor auto-hide |
+| `promo/index.html` | Modified — Cleaned all control hints, integrated unslop copy and 6-row structure |
+| `promo/script.js` | Modified — Populated 6 dense rows, continuous timeline progress, quartic easing counter, and idle cursor timer |
+| `src/pages/promo.astro` | Modified — Synced with updated HTML template |
+| `public/promo-assets/` | Synchronized static assets |
+
+### Verification
+- Verified standalone `promo/index.html` loads cleanly in all browsers with 6-row 3D depth, continuous timeline progress, and zero UI clutter.
+
+---
+
+## 2026-08-22 — Atmospheric Starfield & Subtle Void Dissolve Transition
+
+### Summary
+Refined the random game transition in [`RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx) following the `frontend-design` and `3d-ui` principles to be silky smooth, subtle, and easy on the eyes:
+1. **Understated Cosmic Palette**:
+   - Replaced loud, high-contrast candy neon colors with a refined, deep atmospheric palette: Soft Starlight White (`rgba(240, 244, 255, 0.65)`), Ethereal Blue (`rgba(200, 220, 255, 0.55)`), Muted Crimson Accent (`rgba(220, 38, 38, 0.5)`), and Deep Cosmic Violet (`rgba(168, 85, 247, 0.45)`).
+2. **Delicate Filaments & Organic Density**:
+   - Tuned particle count down to ~220-260 stars, creating an infinite, breathing sense of spatial depth.
+   - Reduced line thickness from harsh bars down to whisper-thin laser filaments (`0.8px` to `2.2px` max) with soft alpha falloff.
+3. **Gentle Cubic Easing & Dark Void Dissolve**:
+   - Replaced sudden jarring speed surges with a gentle, eased cubic acceleration curve (`12px` to `100px/frame`).
+   - Removed the blinding white flash; the transition now dissolves gracefully into the site's native `#0d0d0f` dark theme background during the final 15% of the sequence, ensuring zero eye strain when entering target game pages.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/RandomWarpOverlay.tsx` | Modified — Retuned particle simulation to subtle, atmospheric starlight with graceful dark void dissolve |
+| `src/pages/promo.astro` | Modified — Fixed script tag attribute |
+
+### Verification
+- Ran full production build (`npm run build`):
+  - Sitemap generated for 107,814 games.
+  - Server entrypoints and Cloudflare Worker bundle compiled cleanly in 10.81s with **0 errors**.
+
+---
+
+## 2026-08-22 — Kinetic Text Animations & Premium Sans Typography Upgrade
+
+### Summary
+Upgraded the typography and motion design of the promotional reel in `promo/` and `src/pages/promo.astro` according to the `frontend-design`, `ui-ux-designer`, and `3d-ui` design systems:
+1. **Typography Overhaul (Zero Monospace Fonts)**:
+   - Replaced all monospace fonts with a premium pairing:
+     - **Headlines & Display**: `Syne` (weights 800, 900) — bold, cinematic proportions with tight tracking (`-0.04em`).
+     - **Body, Labels & Numbers**: `Plus Jakarta Sans` (weights 500, 600, 700, 800, 900) — ultra-crisp, modern neo-grotesque readability.
+2. **Kinetic Text Animations**:
+   - Added staggered entry animations for headlines, subtext, badges, and stats cards.
+   - Built smooth blur-in transitions (`filter: blur(10px) -> blur(0px)` + `translateY(30px) -> 0`) with cinematic cubic easing (`cubic-bezier(0.16, 1, 0.3, 1)`).
+   - Applied vibrant crimson gradient text clip with subtle neon red backglow on key headline words.
+3. **Smooth Scene Timing & Easing**:
+   - Tuned stat counter animations with smooth quartic ease-out physics.
+   - Retained seamless cursor auto-hiding and keyboard shortcuts (`Space`, `F`, `M`, `1-5`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/styles.css` | Modified — Integrated `Syne` + `Plus Jakarta Sans`, kinetic blur-in keyframes, and smooth cubic bezier transitions |
+| `promo/index.html` | Modified — Cleaned remaining inline font references and added grand domain callout |
+| `src/pages/promo.astro` | Modified — Synced updated HTML and styling |
+| `public/promo-assets/` | Synchronized updated stylesheets |
+
+### Verification
+- Verified standalone `promo/index.html` loads with `Syne` and `Plus Jakarta Sans` typography, smooth kinetic text reveals, and zero monospace styling.
+
+---
+
+## 2026-08-22 — Clean Modern Typography Refinement (Plus Jakarta Sans)
+
+### Summary
+Replaced quirky display fonts with a clean, high-production modern geometric sans stack (**Plus Jakarta Sans**):
+1. **Typography Simplification**:
+   - Switched all headlines, stat numbers, labels, badges, and body copy to **Plus Jakarta Sans** with clean letter-spacing and natural weight progression (400, 500, 600, 700, 800).
+   - Fixed stat card number overflow by adjusting clamp scaling (`clamp(38px, 4vw, 54px)`) and adding `white-space: nowrap`, ensuring numbers like `107,814+` sit neatly and beautifully centered inside their monolith cards.
+2. **Refined Text Animations**:
+   - Retained smooth, subtle kinetic transitions (`filter: blur(8px) -> blur(0px)`, `translateY(24px) -> translateY(0)`) with smooth cubic bezier curves (`cubic-bezier(0.16, 1, 0.3, 1)`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/styles.css` | Modified — Switched display and body fonts to clean `Plus Jakarta Sans` and fixed stat card sizing |
+| `public/promo-assets/styles.css` | Synchronized updated stylesheets |
+
+### Verification
+- Verified `promo/index.html` renders cleanly with modern geometric typography and zero clipping on all screen sizes.
+
+---
+
+## 2026-08-22 — Movie Final Credits Roll Integration (Name & Project Address)
+
+### Summary
+Transformed Scene 5 into a cinematic Hollywood / Horror film **End Credits Roll** featuring the creator's name (`aurostron`) and official project address (`gamegata.xyz`):
+1. **End Credits Layout & Hierarchy**:
+   - `CREATED & ARCHIVED BY` → **`aurostron`** (bold white typography with subtle glowing backlight).
+   - `OFFICIAL PROJECT ADDRESS` → **`gamegata.xyz`** (crimson neon glow).
+   - **Credits Grid**:
+     - `TOTAL TITLES` → `107,814+ Games`
+     - `INDIE ARCHIVE` → `89,157+ Itch Titles`
+     - `DEVELOPERS` → `68,034+ Studios`
+     - `INFRASTRUCTURE` → `Cloudflare & Turso`
+   - **Dedication**: *"Dedicated to every indie horror creator, modder, bedroom developer, and player keeping the horror spirit alive."*
+   - **Values Banner**: `Zero Ads • 100% Free Forever • Open Database`
+   - **Final Studio Brand Lockup**: `<span class="italic">ho</span>GAMEGATA` / `GAMEGATA.XYZ`
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/styles.css` | Modified — Added cinematic movie end credits roll styles and spacing |
+| `promo/index.html` | Modified — Implemented movie final credits layout in Scene 5 |
+| `src/pages/promo.astro` | Modified — Synced Scene 5 credits roll |
+| `public/promo-assets/` | Synchronized static assets |
+
+### Verification
+- Verified Scene 5 renders as a film credit roll with glowing typography and smooth blur-in transitions.
+
+---
+
+## 2026-08-22 — 6-Scene Flow Split, Pure White Logo & Final Movie Outro Card
+
+### Summary
+De-cluttered the ending sequence by splitting it into 6 distinct, breathable scenes, making the `hoGAMEGATA` logo pure solid white, and dedicating Scene 6 to the minimalist movie outro card:
+1. **Pure White hoGAMEGATA Logo**:
+   - Updated `.video-brand-logo` and `.final-brand-title` so the entire logo (including `ho`) is pure crisp solid white (`#ffffff`).
+2. **6-Scene Reel Flow**:
+   - **Scene 1**: 3D Netflix Wall & Database Hook
+   - **Scene 2**: Scale & Live Stats Counters (107,814+ Games)
+   - **Scene 3**: Subgenre Curation Spectrum (PS1 Retro, Psychological, Survival, Game Jams)
+   - **Scene 4**: Live Deals Engine & Sub-50ms Search
+   - **Scene 5**: Free & Open Community Mission (No Ads, No Paywalls, Dedication)
+   - **Scene 6 (Final Title Card)**:
+     - `hoGAMEGATA` (Pure white)
+     - `Made with ❤️ aurostron.`
+     - `gamegata.xyz`
+3. **Timeline & Keyboard Updates**:
+   - Extended bottom scrub timeline and scene markers to 6 scenes.
+   - Updated keyboard shortcuts (`Digit1` through `Digit6`) in `promo/script.js`.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/styles.css` | Modified — Made logo pure white and styled Scene 5 & Scene 6 |
+| `promo/index.html` | Modified — Split into 6 clean scenes with dedicated "Made with ❤️ aurostron." outro |
+| `promo/script.js` | Modified — Added `Digit6` and updated 6-scene timeline |
+| `src/pages/promo.astro` | Modified — Synced with updated 6-scene structure |
+| `public/promo-assets/` | Synchronized static assets |
+
+### Verification
+- Verified all 6 scenes transition smoothly, the logo is pure white across the presentation, and Scene 6 displays "Made with ❤️ aurostron." cleanly.
+
+---
+
+## 2026-08-22 — 9:16 Vertical Mobile Promo Reel (Shorts / Reels / TikTok)
+
+### Summary
+Built a dedicated 9:16 vertical video promotional reel designed specifically for mobile devices and vertical screen recording (`promo/mobile.html` and `/promo/mobile`):
+1. **9:16 Vertical Layout & Mobile Optimizations**:
+   - **Stories / Shorts Segmented Progress Bar**: Top 6-segment story progress indicators showing current scene playback.
+   - **Vertical 3D Netflix Wall**: 4 tightly-tilted vertical marquee rows creating an infinite cascading wall of 160 horror game posters.
+   - **Vertical Stacked Stats**: 3 high-contrast mobile monolith cards with animated numerical count-ups (`107,814+`, `89,157+`, `68,034+`).
+   - **2x2 Compact Curation Grid**: Lo-Fi PS1, Cosmic Psychological, Survival Scarcity, and Game Jams.
+   - **Vertical Deal Snapshot**: Instant price comparisons (GOG vs Steam vs Humble).
+   - **Vertical Mission & Dedicated Outro Card**: "Made with ❤️ aurostron." with pure white `hoGAMEGATA` logo.
+2. **Touch & Gesture Navigation**:
+   - **Tap Right**: Next Scene
+   - **Tap Left**: Previous Scene
+   - **Touch & Hold**: Pause playback
+3. **Web Audio Soundscape**:
+   - Integrated Web Audio binaural sub-bass ambient drone and chimes with mobile-friendly sound toggle pill.
+
+### Files Created
+| File | Action |
+|------|--------|
+| `promo/mobile.html` | Created — Standalone 9:16 vertical HTML container |
+| `promo/mobile.css` | Created — 9:16 responsive layout, touch zones, and vertical 3D perspective |
+| `promo/mobile.js` | Created — Touch gesture controller, story progress tracker, and audio synth |
+| `src/pages/promo/mobile.astro` | Created — Web route accessible at `/promo/mobile` |
+| `public/promo-assets/` | Synchronized mobile assets |
+
+### Verification
+- Tested `promo/mobile.html` in 9:16 mobile viewport — touch taps, sound toggle, 3D vertical wall, and "Made with ❤️ aurostron." outro transition smoothly.
+
+---
+
+## 2026-08-22 — Element-Wise Staggered Kinetic Animations & Rich FX
+
+### Summary
+Re-architected all 6 scenes to eliminate monolithic block fading and introduced **element-wise cascading kinetic animations with rich per-element visual effects**:
+1. **Element-Wise Animation Architecture**:
+   - Replaced container `.fade-up` wrapper with dedicated per-element animation triggers.
+   - **Badges / Pills (`.anim-badge`)**: 0.08s delay spring scale pop + neon red glow border pulse.
+   - **Headlines (`.anim-title`)**: 0.18s delay smooth Gaussian de-blur (`blur(10px)` → `blur(0px)`) + dramatic crimson bloom.
+   - **Subtitles (`.anim-sub`)**: 0.28s delay smooth text dissolve.
+   - **Cards / Monoliths (`.anim-item-1` through `.anim-item-5`)**: 0.36s to 0.84s progressive spring staggered entry.
+2. **Rich Card FX & Hover/Motion Details**:
+   - Gradient lighting sheen on card headers (`linear-gradient(90deg, transparent, var(--crimson), transparent)`).
+   - Animated heartbeat pulse on ❤️ (`@keyframes heartPulse`).
+   - Staggered deal cards and features in Scene 4.
+   - Fully mirrored across both Desktop (`promo/styles.css` / `promo/index.html`) and 9:16 Mobile (`promo/mobile.css` / `promo/mobile.html`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `promo/styles.css` | Modified — Added element-wise stagger keyframes and delays |
+| `promo/index.html` | Modified — Applied per-element animation classes across all slides |
+| `promo/mobile.css` | Modified — Added mobile-optimized element-wise stagger system |
+| `promo/mobile.html` | Modified — Applied per-element animation classes to mobile scenes |
+| `src/pages/promo.astro` | Modified — Synced desktop promo route |
+| `public/promo-assets/` | Synchronized static assets |
+
+### Verification
+- Verified each badge, title, subtitle, and card enters sequentially on its own timeline with crisp motion and zero block jumpiness.
+
+---
+
+## 2026-08-22 — Three.js Volumetric 3D Atmosphere & Dynamic Camera Engine
+
+### Summary
+Integrated Three.js into both the Desktop and 9:16 Mobile promotional reels to create an immersive, GPU-accelerated **3D volumetric horror atmosphere**:
+1. **Volumetric 3D Particle Cloud & Glow Shader (`THREE.Points`)**:
+   - 900+ floating 3D embers, smoke particles, and ash motes drifting through 3D space with harmonic wave oscillation.
+   - Dynamic additive blending with procedural radial glow alpha masks.
+2. **Rotating 3D Icosahedron Aura Wireframe**:
+   - High-tech geometric energy halo that expands, contracts, and changes color scheme to match active slide themes (Crimson Red -> Emerald Green for Deals -> Supernova White for Outro).
+3. **Scene-Reactive 3D Camera Choreography (`setSceneMood`)**:
+   - **Scene 1 (Wall)**: Broad 3D perspective drift at `z: 180`.
+   - **Scene 2 (Scale)**: Camera glides in (`z: 140`) with 2.4x particle acceleration representing data explosion.
+   - **Scene 3 (Curation)**: Camera lowers to frame subgenre cards.
+   - **Scene 4 (Deals)**: Radar aura transitions to emerald green.
+   - **Scene 5 (Mission)**: Calm ethereal drift with particles at 0.75x speed.
+   - **Scene 6 (Outro)**: Deep push-in (`z: 120`) with white ember halo behind the `hoGAMEGATA` movie card.
+4. **Interactive Parallax & Smooth Lerp**:
+   - Mouse movement dynamically tilts the 3D camera with spring-damped lerp interpolation.
+
+### Files Modified & Created
+| File | Action |
+|------|--------|
+| `promo/three-bg.js` | Created — Three.js volumetric particle system & scene-reactive camera controller |
+| `promo/script.js` | Modified — Connected Three.js engine and scene mood triggers |
+| `promo/mobile.js` | Modified — Connected Three.js engine for 9:16 mobile version |
+| `promo/index.html` | Modified — Loaded Three.js CDN and `three-bg.js` |
+| `promo/mobile.html` | Modified — Loaded Three.js CDN and `three-bg.js` |
+| `src/pages/promo.astro` | Modified — Synced Three.js scripts on Astro route |
+| `src/pages/promo/mobile.astro` | Modified — Synced Three.js scripts on mobile Astro route |
+| `public/promo-assets/` | Synchronized all updated assets |
+
+### Verification
+- Tested Three.js rendering at 60fps across desktop and mobile viewports with smooth camera glide and dynamic ember acceleration during scene transitions.
+
+---
+
+## 2026-08-22 — Replaced Amnesia with High-Res MADiSON & Fixed 3D Wall Poster Covers
+
+### Summary
+Addressed broken/placeholder covers spotted in the 3D Netflix wall:
+1. **Replaced Amnesia: The Bunker with MADiSON**:
+   - Copied user's uploaded high-res MADiSON cover image to `promo/madison.jpg` and `public/promo-assets/madison.jpg`.
+   - Updated `promo/data.json`, `promo/script.js`, and `promo/mobile.js` to feature MADiSON by BLOODIOUS GAMES.
+2. **Fixed IGDB Cover IDs**:
+   - Replaced mismatched IDs for **Silent Hill 2** (`co2vyg.jpg`) and **Resident Evil 4** (`co6b2k.jpg`) so all posters in the 3D grid display authentic, high-res horror artwork.
+
+### Files Modified & Created
+| File | Action |
+|------|--------|
+| `promo/madison.jpg` | Created — High-res MADiSON cover image |
+| `public/promo-assets/madison.jpg` | Synchronized static asset |
+| `promo/data.json` | Modified — Curated 34 top horror games with verified high-res covers |
+| `promo/script.js` | Modified — Updated fallback list with MADiSON and correct IGDB artwork |
+| `promo/mobile.js` | Modified — Updated mobile fallback list with MADiSON |
+| `public/promo-assets/` | Synchronized all data and script assets |
+
+### Verification
+- Verified the 3D poster wall renders MADiSON, Silent Hill 2, and Resident Evil 4 with crisp, official horror art without placeholders.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

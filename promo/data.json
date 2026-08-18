@@ -1,0 +1,215 @@
+{
+  "stats": {
+    "totalGames": 107814,
+    "totalDevelopers": 68034,
+    "itchGames": 89157,
+    "totalLinks": 102276,
+    "totalSnapshots": 95418
+  },
+  "games": [
+    {
+      "title": "MADiSON",
+      "developerNames": "BLOODIOUS GAMES",
+      "coverUrl": "madison.jpg",
+      "genreNames": "Psychological Horror"
+    },
+    {
+      "title": "Silent Hill 2",
+      "developerNames": "Team Silent",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2vyg.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "Resident Evil 4",
+      "developerNames": "Capcom",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6b2k.jpg",
+      "genreNames": "Action Horror"
+    },
+    {
+      "title": "Visage",
+      "developerNames": "SadSquare Studio",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co20uv.jpg",
+      "genreNames": "Psychological Horror"
+    },
+    {
+      "title": "Signalis",
+      "developerNames": "rose-engine",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co52b1.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "Iron Lung",
+      "developerNames": "David Szymanski",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co4nla.jpg",
+      "genreNames": "Sci-Fi Horror"
+    },
+    {
+      "title": "Darkwood",
+      "developerNames": "Acid Wizard Studio",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1x4n.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "FAITH: The Unholy Trinity",
+      "developerNames": "Airdorf Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5p1d.jpg",
+      "genreNames": "Retro Horror"
+    },
+    {
+      "title": "Crow Country",
+      "developerNames": "SFB Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co7uxp.jpg",
+      "genreNames": "PS1 Horror"
+    },
+    {
+      "title": "Mouthwashing",
+      "developerNames": "Wrong Organ",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co8jdf.jpg",
+      "genreNames": "Psychological Horror"
+    },
+    {
+      "title": "Alan Wake 2",
+      "developerNames": "Remedy Entertainment",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6q0n.jpg",
+      "genreNames": "Psychological Horror"
+    },
+    {
+      "title": "Dead Space",
+      "developerNames": "Motive Studio",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5k3i.jpg",
+      "genreNames": "Sci-Fi Horror"
+    },
+    {
+      "title": "Alien: Isolation",
+      "developerNames": "Creative Assembly",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tq9.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "Outlast",
+      "developerNames": "Red Barrels",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1sps.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "Outlast 2",
+      "developerNames": "Red Barrels",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1v6a.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "Lethal Company",
+      "developerNames": "Zeekerss",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co7i7l.jpg",
+      "genreNames": "Co-op Horror"
+    },
+    {
+      "title": "Cry of Fear",
+      "developerNames": "Team Psykskallar",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2k34.jpg",
+      "genreNames": "Psychological Horror"
+    },
+    {
+      "title": "The Evil Within",
+      "developerNames": "Tango Gameworks",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1x5a.jpg",
+      "genreNames": "Survival Horror"
+    },
+    {
+      "title": "The Mortuary Assistant",
+      "developerNames": "DarkStone Digital",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co517h.jpg",
+      "genreNames": "Indie Horror"
+    },
+    {
+      "title": "Phasmophobia",
+      "developerNames": "Kinetic Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co20u9.jpg",
+      "genreNames": "Investigation Horror"
+    },
+    {
+      "title": "SOMA",
+      "developerNames": "Frictional Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r8c.jpg",
+      "genreNames": "Sci-Fi Horror"
+    },
+    {
+      "title": "Layers of Fear",
+      "developerNames": "Bloober Team",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r3k.jpg",
+      "genreNames": "Psychological Horror"
+    },
+    {
+      "title": "Tormented Souls",
+      "developerNames": "Dual Effect",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3w6d.jpg",
+      "genreNames": "Classic Survival"
+    },
+    {
+      "title": "Inscryption",
+      "developerNames": "Daniel Mullins Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3wnn.jpg",
+      "genreNames": "Card Horror"
+    },
+    {
+      "title": "Little Nightmares II",
+      "developerNames": "Tarsier Studios",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2v67.jpg",
+      "genreNames": "Atmospheric Horror"
+    },
+    {
+      "title": "Fears to Fathom",
+      "developerNames": "Rayll",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co72t8.jpg",
+      "genreNames": "Episodic Horror"
+    },
+    {
+      "title": "Bloodwash",
+      "developerNames": "Black Eyed Priest",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3un3.jpg",
+      "genreNames": "Giallo Horror"
+    },
+    {
+      "title": "Stay Out of the House",
+      "developerNames": "Puppet Combo",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5feg.jpg",
+      "genreNames": "Slasher Horror"
+    },
+    {
+      "title": "Nun Massacre",
+      "developerNames": "Puppet Combo",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3037.jpg",
+      "genreNames": "Stealth Horror"
+    },
+    {
+      "title": "Buckshot Roulette",
+      "developerNames": "Mike Klubnika",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co7n01.jpg",
+      "genreNames": "Tabletop Horror"
+    },
+    {
+      "title": "World of Horror",
+      "developerNames": "panstasz",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2382.jpg",
+      "genreNames": "Roguelite Horror"
+    },
+    {
+      "title": "Dead by Daylight",
+      "developerNames": "Behaviour Interactive",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co8j9v.jpg",
+      "genreNames": "Multiplayer Horror"
+    },
+    {
+      "title": "Detention",
+      "developerNames": "Red Candle Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1tqg.jpg",
+      "genreNames": "Taiwanese Horror"
+    },
+    {
+      "title": "Devour",
+      "developerNames": "Straight Back Games",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2r4j.jpg",
+      "genreNames": "Co-op Horror"
+    }
+  ]
+}

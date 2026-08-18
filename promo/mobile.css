@@ -1,0 +1,752 @@
+/* === HOGAMEGATA 9:16 VERTICAL MOBILE PROMO REEL (ELEMENT-WISE STAGGER) === */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&display=swap');
+
+:root {
+  --bg-deep: #030305;
+  --bg-surface: #0a0b10;
+  --crimson: #e50914;
+  --crimson-bright: #ff2a3b;
+  --blood-glow: rgba(229, 9, 20, 0.55);
+  --border-glow: rgba(229, 9, 20, 0.35);
+  --emerald: #10b981;
+  --text-main: #ffffff;
+  --text-sub: #cbd5e1;
+  --text-dim: #94a3b8;
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #000000;
+  color: var(--text-main);
+  font-family: var(--font-family);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 9:16 Container Wrapper (Centers on Desktop, 100% on Mobile) */
+.mobile-viewport-frame {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 480px;
+  background: var(--bg-deep);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.95);
+}
+
+@media (min-aspect-ratio: 9/16) and (min-width: 500px) {
+  .mobile-viewport-frame {
+    height: 94vh;
+    border-radius: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* === CINEMATIC BACKGROUND CANVAS & FILM TEXTURE === */
+#particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.cinema-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  background: radial-gradient(circle at center, rgba(5,5,7,0.05) 0%, rgba(5,5,7,0.5) 60%, rgba(3,3,5,0.96) 100%);
+}
+
+.film-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+  background-size: 100% 3px, 3px 100%;
+  opacity: 0.3;
+}
+
+/* === STORIES / SHORTS TOP SEGMENTED PROGRESS BARS === */
+.stories-progress-header {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 50;
+  display: flex;
+  gap: 6px;
+}
+
+.story-segment {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.story-segment-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.story-segment.completed .story-segment-fill {
+  width: 100%;
+}
+
+/* Top Branding Watermark */
+.mobile-top-bar {
+  position: absolute;
+  top: 26px;
+  left: 16px;
+  right: 16px;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-brand-logo {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.mobile-brand-logo span.italic {
+  font-style: italic;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: lowercase;
+  margin-right: 1px;
+}
+
+.mobile-audio-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-sub);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+
+.audio-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.audio-bar {
+  width: 2px;
+  background: var(--crimson-bright);
+  border-radius: 1px;
+  height: 30%;
+}
+
+.audio-active .audio-bar:nth-child(1) { animation: soundWave 0.75s infinite ease-in-out alternate; }
+.audio-active .audio-bar:nth-child(2) { animation: soundWave 0.55s infinite ease-in-out alternate 0.15s; }
+.audio-active .audio-bar:nth-child(3) { animation: soundWave 0.85s infinite ease-in-out alternate 0.35s; }
+
+@keyframes soundWave {
+  0% { height: 20%; }
+  100% { height: 100%; }
+}
+
+/* === SCENE VIEWPORT & TRANSITIONS === */
+.scene-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.scene.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==========================================================================
+   ELEMENT-WISE STAGGER ANIMATIONS (MOBILE)
+   ========================================================================== */
+.anim-badge {
+  opacity: 0;
+  transform: scale(0.85) translateY(12px);
+  filter: blur(5px);
+  transition: opacity 0.5s var(--ease-spring), transform 0.5s var(--ease-spring), filter 0.5s var(--ease-spring);
+}
+
+.scene.active .anim-badge {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  filter: blur(0px);
+  transition-delay: 0.06s;
+}
+
+.anim-title {
+  opacity: 0;
+  transform: translateY(22px);
+  filter: blur(8px);
+  transition: opacity 0.7s var(--ease-cinematic), transform 0.7s var(--ease-cinematic), filter 0.7s var(--ease-cinematic);
+}
+
+.scene.active .anim-title {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0px);
+  transition-delay: 0.16s;
+}
+
+.anim-sub {
+  opacity: 0;
+  transform: translateY(16px);
+  filter: blur(5px);
+  transition: opacity 0.65s var(--ease-cinematic), transform 0.65s var(--ease-cinematic), filter 0.65s var(--ease-cinematic);
+}
+
+.scene.active .anim-sub {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0px);
+  transition-delay: 0.26s;
+}
+
+.anim-item-1 {
+  opacity: 0;
+  transform: translateY(24px) scale(0.96);
+  filter: blur(5px);
+  transition: opacity 0.6s var(--ease-spring), transform 0.6s var(--ease-spring), filter 0.6s var(--ease-spring);
+}
+
+.scene.active .anim-item-1 {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transition-delay: 0.34s;
+}
+
+.anim-item-2 {
+  opacity: 0;
+  transform: translateY(24px) scale(0.96);
+  filter: blur(5px);
+  transition: opacity 0.6s var(--ease-spring), transform 0.6s var(--ease-spring), filter 0.6s var(--ease-spring);
+}
+
+.scene.active .anim-item-2 {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transition-delay: 0.44s;
+}
+
+.anim-item-3 {
+  opacity: 0;
+  transform: translateY(24px) scale(0.96);
+  filter: blur(5px);
+  transition: opacity 0.6s var(--ease-spring), transform 0.6s var(--ease-spring), filter 0.6s var(--ease-spring);
+}
+
+.scene.active .anim-item-3 {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transition-delay: 0.54s;
+}
+
+.anim-item-4 {
+  opacity: 0;
+  transform: translateY(24px) scale(0.96);
+  filter: blur(5px);
+  transition: opacity 0.6s var(--ease-spring), transform 0.6s var(--ease-spring), filter 0.6s var(--ease-spring);
+}
+
+.scene.active .anim-item-4 {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transition-delay: 0.64s;
+}
+
+/* ==========================================================================
+   SCENE 1: 9:16 VERTICAL 3D NETFLIX WALL
+   ========================================================================== */
+.wall-scene-container {
+  position: absolute;
+  inset: -25%;
+  width: 150%;
+  height: 150%;
+  perspective: 900px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.wall-3d-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 180%;
+  transform: rotateX(20deg) rotateY(-12deg) rotateZ(-6deg) translateY(-20px) scale(1.4);
+  transform-style: preserve-3d;
+}
+
+.marquee-row {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  will-change: transform;
+}
+
+.marquee-left { animation: scrollLeft 45s linear infinite; }
+.marquee-right { animation: scrollRight 40s linear infinite; }
+.marquee-left-fast { animation: scrollLeft 35s linear infinite; }
+.marquee-right-fast { animation: scrollRight 38s linear infinite; }
+
+@keyframes scrollLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scrollRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.game-poster-card {
+  width: 110px;
+  height: 155px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #14151b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.game-poster-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-overlay-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(3,3,5,0.85) 0%, transparent 60%);
+}
+
+.scene-hero-overlay {
+  position: relative;
+  z-index: 20;
+  text-align: center;
+  max-width: 360px;
+  padding: 32px 24px;
+  border-radius: 24px;
+  background: radial-gradient(circle, rgba(10, 11, 16, 0.95) 0%, rgba(10, 11, 16, 0.8) 70%, transparent 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 35px rgba(229, 9, 20, 0.2);
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(229, 9, 20, 0.12);
+  border: 1px solid var(--border-glow);
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #ff3849;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 16px rgba(229, 9, 20, 0.2);
+}
+
+.hero-headline {
+  font-size: clamp(32px, 8vw, 42px);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  color: #fff;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.9);
+}
+
+.hero-headline span.crimson {
+  color: var(--crimson-bright);
+  text-shadow: 0 0 30px var(--blood-glow);
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--text-sub);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* ==========================================================================
+   SCENE 2: VERTICAL SCALE MONOLITH STACK
+   ========================================================================== */
+.vertical-stats-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 18px;
+}
+
+.stat-card-mobile {
+  background: rgba(14, 16, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 18px 20px;
+  text-align: left;
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-mobile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--crimson);
+}
+
+.stat-number-mobile {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.stat-number-mobile span.plus {
+  color: var(--crimson-bright);
+  font-size: 0.75em;
+  margin-left: 2px;
+}
+
+.stat-label-mobile {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.stat-desc-mobile {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   SCENE 3: 2x2 CURATION GRID
+   ========================================================================== */
+.curation-grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 18px;
+}
+
+.curation-box-mobile {
+  background: rgba(13, 14, 20, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 150px;
+  backdrop-filter: blur(14px);
+}
+
+.curation-tag-mobile {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--crimson-bright);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.curation-title-mobile {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.curation-badge-mobile {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: fit-content;
+}
+
+/* ==========================================================================
+   SCENE 4: VERTICAL SMART ENGINE & DEALS
+   ========================================================================== */
+.deals-mobile-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 18px;
+}
+
+.deal-card-mobile {
+  background: #0b0c12;
+  border: 1px solid var(--border-glow);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.85);
+  text-align: left;
+}
+
+.deal-status-header {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--emerald);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  letter-spacing: 0.06em;
+}
+
+.deal-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 8px var(--emerald);
+}
+
+.deal-row-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.deal-row-mobile.best {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.deal-row-mobile.best .price {
+  color: #10b981;
+  font-weight: 800;
+}
+
+.feature-mini-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(14, 16, 24, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-align: left;
+}
+
+.feature-mini-pill span.icon {
+  font-size: 18px;
+}
+
+.feature-mini-pill h5 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.feature-mini-pill p {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ==========================================================================
+   SCENE 5: VERTICAL COMMUNITY MISSION
+   ========================================================================== */
+.mission-mobile-box {
+  text-align: center;
+  max-width: 340px;
+}
+
+.mission-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ==========================================================================
+   SCENE 6: FINAL VERTICAL MOVIE CARD
+   ========================================================================== */
+.final-mobile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.final-brand-title {
+  font-size: clamp(38px, 10vw, 48px);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  text-shadow: 0 0 35px rgba(255, 255, 255, 0.35);
+}
+
+.final-brand-title span.italic {
+  font-style: italic;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: lowercase;
+}
+
+.final-made-with {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.final-made-with span.heart {
+  display: inline-block;
+  animation: heartPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.15); }
+}
+
+.final-project-url {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--crimson-bright);
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+/* === INTERACTIVE TOUCH SENSING OVERLAY === */
+.touch-control-zones {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+}
+
+.touch-zone-left {
+  flex: 1;
+  height: 100%;
+}
+
+.touch-zone-right {
+  flex: 1;
+  height: 100%;
+}
