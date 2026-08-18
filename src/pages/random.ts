@@ -1,37 +1,46 @@
 import type { APIRoute } from 'astro';
-import { turso } from '../lib/turso';
-import { games as gamesTable } from '../db/schema';
-import { count, or, isNull, ne } from 'drizzle-orm';
+import { initTursoForRequest, libsqlClient } from '../lib/turso';
+import { env as cfEnv } from 'cloudflare:workers';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ redirect }) => {
+  const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+  const runtimeEnv = isDev
+    ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
+    : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
+
+  initTursoForRequest(runtimeEnv);
+
   try {
-    const [countRow] = await turso
-      .select({ total: count() })
-      .from(gamesTable)
-      .where(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")));
+    const randomSeed = Math.floor(Math.random() * 107800) + 1;
+    const res = await libsqlClient.execute({
+      sql: `SELECT slug FROM Game 
+            WHERE rowid >= ? 
+            AND (status IS NULL OR status != 'hidden') 
+            LIMIT 1;`,
+      args: [randomSeed]
+    });
 
-    const totalGames = countRow?.total || 0;
-    if (totalGames === 0) {
-      return redirect("/");
+    let game = res.rows[0];
+
+    if (!game || !game.slug) {
+      const fallbackRes = await libsqlClient.execute({
+        sql: `SELECT slug FROM Game 
+              WHERE (status IS NULL OR status != 'hidden') 
+              LIMIT 1;`,
+        args: []
+      });
+      game = fallbackRes.rows[0];
     }
 
-    const randomIndex = Math.floor(Math.random() * totalGames);
-    const [randomGame] = await turso
-      .select({ slug: gamesTable.slug })
-      .from(gamesTable)
-      .where(or(isNull(gamesTable.status), ne(gamesTable.status, "hidden")))
-      .limit(1)
-      .offset(randomIndex);
-
-    if (!randomGame?.slug) {
-      return redirect("/");
+    if (!game?.slug) {
+      return redirect("/game/silent-hill-2");
     }
 
-    return redirect(`/game/${randomGame.slug}`);
+    return redirect(`/game/${game.slug}`);
   } catch (error) {
     console.error("❌ Random redirect failed:", error);
-    return redirect("/");
+    return redirect("/games");
   }
 };

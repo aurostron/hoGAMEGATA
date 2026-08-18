@@ -28,9 +28,10 @@ const COSMIC_PALETTE = [
 export default function RandomWarpOverlay() {
   const [isActive, setIsActive] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const targetUrlRef = useRef<string>("/random");
+  const targetUrlRef = useRef<string>("/games");
   const animFrameIdRef = useRef<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const failsafeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerWarp = useCallback(async () => {
     // Respect reduced motion preference
@@ -44,33 +45,52 @@ export default function RandomWarpOverlay() {
     }
 
     setIsActive(true);
-    targetUrlRef.current = "/random";
+    targetUrlRef.current = "/games"; // Safe fallback
 
-    // Fetch random game slug in parallel
-    try {
-      const controller = new AbortController();
-      const fetchTimer = setTimeout(() => controller.abort(), 3000);
+    // Parallel fetch with fast 1200ms abort
+    const fetchPromise = (async () => {
+      try {
+        const controller = new AbortController();
+        const fetchTimer = setTimeout(() => controller.abort(), 1200);
 
-      const res = await fetch("/api/random", {
-        signal: controller.signal,
-        headers: { Accept: "application/json" },
-      });
-      clearTimeout(fetchTimer);
+        const res = await fetch("/api/random", {
+          signal: controller.signal,
+          headers: { Accept: "application/json" },
+        });
+        clearTimeout(fetchTimer);
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.slug) {
-          targetUrlRef.current = `/game/${data.slug}`;
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.slug) {
+            const url = `/game/${data.slug}`;
+            targetUrlRef.current = url;
+
+            // Instant prefetch for seamless navigation
+            if (typeof document !== "undefined") {
+              const prefetchLink = document.createElement("link");
+              prefetchLink.rel = "prefetch";
+              prefetchLink.href = url;
+              document.head.appendChild(prefetchLink);
+            }
+          }
         }
+      } catch {
+        // Keeps targetUrlRef as fallback
       }
-    } catch {
-      // Fallback stays as '/random'
-    }
+    })();
 
-    // Graceful dark dissolve navigation at 1.6s
-    timeoutRef.current = setTimeout(() => {
-      window.location.assign(targetUrlRef.current);
-    }, 1600);
+    // Early navigation handoff at 1150ms during dark dissolve
+    timeoutRef.current = setTimeout(async () => {
+      await fetchPromise;
+      if (typeof window !== "undefined") {
+        window.location.assign(targetUrlRef.current);
+      }
+    }, 1150);
+
+    // Failsafe auto-dismiss: If navigation is stalled or aborted by browser, fade out overlay
+    failsafeTimerRef.current = setTimeout(() => {
+      setIsActive(false);
+    }, 2800);
   }, []);
 
   useEffect(() => {
@@ -80,13 +100,26 @@ export default function RandomWarpOverlay() {
       }
     };
 
+    const handlePageHide = () => {
+      setIsActive(false);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isActive) {
+        setIsActive(false);
+      }
+    };
+
     window.addEventListener("gamegata:random-warp", handleCustomEvent);
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("gamegata:random-warp", handleCustomEvent);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("keydown", handleKeyDown);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
     };
   }, [isActive, triggerWarp]);
 
@@ -146,7 +179,6 @@ export default function RandomWarpOverlay() {
       const progress = Math.min(elapsed / DURATION, 1);
 
       // Smooth, silky acceleration (starts gentle, peaks gracefully, fades into dark void)
-      // Eased cubic progression
       const easeInOutCubic =
         progress < 0.5
           ? 4 * progress * progress * progress
@@ -214,7 +246,7 @@ export default function RandomWarpOverlay() {
 
         // Subtle depth fading & smooth entry/exit envelope
         const depthFactor = 1 - p.z / MAX_DEPTH;
-        const fadeEnvelope = Math.sin(progress * Math.PI); // Fades in smoothly and fades out smoothly
+        const fadeEnvelope = Math.sin(progress * Math.PI);
         const alpha = Math.min(
           0.85,
           Math.max(0.05, depthFactor * p.baseAlpha * (0.6 + fadeEnvelope * 0.8))
