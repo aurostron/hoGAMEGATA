@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { FALLBACK_RANDOM_GAMES, type RandomGameItem } from "../data/randomPool";
 
 /* ──────────────────────────────────────────────
    Atmospheric Starfield & Subtle Cosmic Void Palette
@@ -27,67 +28,48 @@ const COSMIC_PALETTE = [
 
 export default function RandomWarpOverlay() {
   const [isActive, setIsActive] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<RandomGameItem | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const targetUrlRef = useRef<string>("/games");
   const animFrameIdRef = useRef<number | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const failsafeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const triggerWarp = useCallback(async () => {
+  const triggerWarp = useCallback(() => {
+    // 1. Instantly pick a random game from the curated pool in 0ms (0 DB queries, 0 quota)
+    const pool = FALLBACK_RANDOM_GAMES.length > 0 ? FALLBACK_RANDOM_GAMES : [{ slug: "silent-hill-2", title: "Silent Hill 2" }];
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const game = pool[randomIndex];
+    setSelectedGame(game);
+
     // Respect reduced motion preference
     const prefersReducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
-      window.location.assign("/random");
+      window.location.assign(`/game/${game.slug}`);
       return;
     }
 
     setIsActive(true);
-    targetUrlRef.current = "/games"; // Safe fallback
 
-    // Parallel fetch with fast 1200ms abort
-    const fetchPromise = (async () => {
-      try {
-        const controller = new AbortController();
-        const fetchTimer = setTimeout(() => controller.abort(), 1200);
+    // Instant document prefetching at t=0ms
+    if (typeof document !== "undefined") {
+      const url = `/game/${game.slug}`;
+      const prefetchLink = document.createElement("link");
+      prefetchLink.rel = "prefetch";
+      prefetchLink.href = url;
+      document.head.appendChild(prefetchLink);
+    }
 
-        const res = await fetch("/api/random", {
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        });
-        clearTimeout(fetchTimer);
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.slug) {
-            const url = `/game/${data.slug}`;
-            targetUrlRef.current = url;
-
-            // Instant prefetch for seamless navigation
-            if (typeof document !== "undefined") {
-              const prefetchLink = document.createElement("link");
-              prefetchLink.rel = "prefetch";
-              prefetchLink.href = url;
-              document.head.appendChild(prefetchLink);
-            }
-          }
-        }
-      } catch {
-        // Keeps targetUrlRef as fallback
-      }
-    })();
-
-    // Early navigation handoff at 1150ms during dark dissolve
-    timeoutRef.current = setTimeout(async () => {
-      await fetchPromise;
+    // Seamless navigation handoff at 1100ms
+    timeoutRef.current = setTimeout(() => {
       if (typeof window !== "undefined") {
-        window.location.assign(targetUrlRef.current);
+        window.location.assign(`/game/${game.slug}`);
       }
-    }, 1150);
+    }, 1100);
 
-    // Failsafe auto-dismiss: If navigation is stalled or aborted by browser, fade out overlay
+    // Safety auto-dismiss: If navigation is cancelled or browser stalls, cleanly dismiss
     failsafeTimerRef.current = setTimeout(() => {
       setIsActive(false);
     }, 2800);
@@ -104,26 +86,37 @@ export default function RandomWarpOverlay() {
       setIsActive(false);
     };
 
+    const handlePageShow = (e: PageTransitionEvent) => {
+      // Handles BFCache (back button returns to cached page)
+      if (e.persisted || !e.persisted) {
+        setIsActive(false);
+      }
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isActive) {
         setIsActive(false);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
       }
     };
 
     window.addEventListener("gamegata:random-warp", handleCustomEvent);
     window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("gamegata:random-warp", handleCustomEvent);
       window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("keydown", handleKeyDown);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
     };
   }, [isActive, triggerWarp]);
 
-  // Smooth, subtle 3D starfield warp simulation
+  // Smooth 3D Canvas Warp Animation
   useEffect(() => {
     if (!isActive) return;
 
@@ -144,10 +137,9 @@ export default function RandomWarpOverlay() {
     window.addEventListener("resize", handleResize);
 
     const MAX_DEPTH = 1400;
-    const NUM_PARTICLES = width < 768 ? 160 : 260; // Clean, elegant density
+    const NUM_PARTICLES = width < 768 ? 160 : 260;
     const FOV = Math.min(width, height) * 0.85;
 
-    // Initialize 3D particles in a spacious cylindrical volume
     const particles: StarParticle[] = [];
     for (let i = 0; i < NUM_PARTICLES; i++) {
       const palette = COSMIC_PALETTE[Math.floor(Math.random() * COSMIC_PALETTE.length)];
@@ -168,9 +160,8 @@ export default function RandomWarpOverlay() {
     }
 
     const startTime = performance.now();
-    const DURATION = 1600; // ms
+    const DURATION = 1500; // ms
 
-    // Clear initial canvas background
     ctx.fillStyle = "#09090b";
     ctx.fillRect(0, 0, width, height);
 
@@ -178,22 +169,20 @@ export default function RandomWarpOverlay() {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / DURATION, 1);
 
-      // Smooth, silky acceleration (starts gentle, peaks gracefully, fades into dark void)
       const easeInOutCubic =
         progress < 0.5
           ? 4 * progress * progress * progress
           : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
-      const currentSpeed = 12 + easeInOutCubic * 88; // 12 -> 100px/frame (smooth, not harsh)
+      const currentSpeed = 12 + easeInOutCubic * 88;
 
       const cx = width / 2;
       const cy = height / 2;
 
-      // Soft persistence clear with organic motion trail
-      ctx.fillStyle = "rgba(9, 9, 12, 0.22)";
+      ctx.fillStyle = "rgba(9, 9, 12, 0.24)";
       ctx.fillRect(0, 0, width, height);
 
-      // Soft central nebula ambient glow (deep, muted, atmospheric)
+      // Subtle ambient core glow
       const coreRadius = Math.min(width, height) * (0.2 + progress * 0.35);
       const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius);
       const glowOpacity = Math.sin(progress * Math.PI) * 0.25;
@@ -207,7 +196,6 @@ export default function RandomWarpOverlay() {
       ctx.arc(cx, cy, coreRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Render 3D Starfield Filaments
       ctx.lineCap = "round";
 
       for (let i = 0; i < particles.length; i++) {
@@ -215,7 +203,6 @@ export default function RandomWarpOverlay() {
         p.prevZ = p.z;
         p.z -= currentSpeed * p.speedMultiplier;
 
-        // Recycle star when it passes camera
         if (p.z <= 1) {
           p.z = MAX_DEPTH;
           p.prevZ = MAX_DEPTH;
@@ -225,7 +212,6 @@ export default function RandomWarpOverlay() {
           p.y = Math.sin(newAngle) * newDist;
         }
 
-        // 3D Perspective Projection
         const k = FOV / p.z;
         const screenX = cx + p.x * k;
         const screenY = cy + p.y * k;
@@ -234,7 +220,6 @@ export default function RandomWarpOverlay() {
         const prevScreenX = cx + p.x * prevK;
         const prevScreenY = cy + p.y * prevK;
 
-        // Skip if outside viewport bounds
         if (
           (screenX < -50 && prevScreenX < -50) ||
           (screenX > width + 50 && prevScreenX > width + 50) ||
@@ -244,7 +229,6 @@ export default function RandomWarpOverlay() {
           continue;
         }
 
-        // Subtle depth fading & smooth entry/exit envelope
         const depthFactor = 1 - p.z / MAX_DEPTH;
         const fadeEnvelope = Math.sin(progress * Math.PI);
         const alpha = Math.min(
@@ -252,7 +236,6 @@ export default function RandomWarpOverlay() {
           Math.max(0.05, depthFactor * p.baseAlpha * (0.6 + fadeEnvelope * 0.8))
         );
 
-        // Thin, delicate streak lines (0.8px to 2.2px max)
         const strokeWidth = Math.max(0.6, p.size * k * 0.85);
 
         ctx.strokeStyle = p.color;
@@ -264,7 +247,6 @@ export default function RandomWarpOverlay() {
         ctx.lineTo(screenX, screenY);
         ctx.stroke();
 
-        // Subtle soft point flare at head
         if (depthFactor > 0.6) {
           ctx.fillStyle = p.color;
           ctx.beginPath();
@@ -275,7 +257,7 @@ export default function RandomWarpOverlay() {
 
       ctx.globalAlpha = 1;
 
-      // Dark Void Dissolve (Final 15% dissolves into native #0d0d0f dark theme background)
+      // Dark Void Dissolve (Final 15%)
       if (progress > 0.82) {
         const darkFade = (progress - 0.82) / 0.18;
         ctx.fillStyle = `rgba(13, 13, 15, ${darkFade * darkFade})`;
@@ -297,6 +279,12 @@ export default function RandomWarpOverlay() {
     };
   }, [isActive]);
 
+  const handleCancel = () => {
+    setIsActive(false);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
+  };
+
   return (
     <AnimatePresence>
       {isActive && (
@@ -309,11 +297,38 @@ export default function RandomWarpOverlay() {
           className="fixed inset-0 z-[9999] pointer-events-auto select-none overflow-hidden bg-[#09090b]"
           style={{ willChange: "opacity" }}
         >
+          {/* 3D Canvas Background */}
           <canvas
             ref={canvasRef}
-            className="w-full h-full block cursor-wait"
-            style={{ display: "block" }}
+            className="absolute inset-0 w-full h-full block cursor-wait"
           />
+
+          {/* Cinematic Horror Discovery HUD */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ delay: 0.15, duration: 0.4 }}
+              className="text-center max-w-lg"
+            >
+              <span className="inline-block text-[11px] sm:text-xs font-semibold tracking-[0.25em] text-red-400 uppercase drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] mb-2">
+                Summoning Nightmare
+              </span>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white/95 drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] line-clamp-2">
+                {selectedGame?.title || "Exploring the Abyss..."}
+              </h2>
+            </motion.div>
+          </div>
+
+          {/* Subtle Cancel Button in Top Right */}
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="absolute top-5 right-5 z-20 px-3 py-1.5 rounded-lg bg-black/40 hover:bg-black/70 border border-white/10 text-white/60 hover:text-white text-xs font-medium tracking-wide transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
         </motion.div>
       )}
     </AnimatePresence>

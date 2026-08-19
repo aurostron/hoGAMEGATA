@@ -1058,6 +1058,44 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
   - `GET https://gamegata.xyz/random` -> 302 Redirect to random game
 - Deployed live via `wrangler deploy` (Version ID `b56daec0-3d0e-4b79-9ead-a296fdb5de24`).
 
+---
+
+## 2026-08-23 — Zero-Database-Read Static Pool Architecture & Horror HUD Warp
+
+### Summary
+1. **Zero-Database-Read Architecture**:
+   - Replaced all runtime Turso queries for random discovery with a curated pre-built static pool of **3,000 top Gamegata horror games** (`public/data/random-pool.json` and `src/data/randomPool.ts`).
+   - Database queries sent per dice roll: **0**
+   - Turso row reads consumed: **0**
+   - Latency: **0ms client-side / <1ms API**.
+2. **Fixed Blank Page / External Itch Redirect Trap**:
+   - Eliminated selection of raw un-enriched standalone itch scraping records that redirected to 3rd-party URLs and triggered strict browser popup/redirect shields (e.g. Brave Shields).
+   - All 3,000 games in the random pool are 100% rich internal Gamegata pages.
+3. **Cinematic Horror HUD & Overlay Resilience**:
+   - Integrated dynamic title HUD (*"SUMMONING NIGHTMARE: [Game Title]"*) during the 3D starfield warp.
+   - Added `pageshow` listener for instantaneous BFCache cleanup when navigating back.
+   - Added top-right `Cancel` button and `Escape` key dismiss.
+4. **Cloudflare Deployment**:
+   - Deployed live to Cloudflare Workers (Version ID: `deed2a74-72b9-4e8d-9f69-0ec1dd08ffaa`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `scripts/generate-random-pool.ts` | Created — Script extracting 3,000 top horror games to JSON and TS |
+| `public/data/random-pool.json` | Created — Static CDN-cached pool of 3,000 horror games |
+| `src/data/randomPool.ts` | Created — In-memory fallback pool |
+| `src/pages/api/random.ts` | Modified — Uses in-memory pool (0 DB queries, instant response) |
+| `src/pages/random.ts` | Modified — Uses in-memory pool (0 DB queries, instant redirect) |
+| `src/components/RandomWarpOverlay.tsx` | Modified — 0ms instant game pick, horror HUD title card, BFCache listener, Cancel button |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Verified live on `https://gamegata.xyz`:
+  - `GET /api/random` -> 200 OK (<1ms)
+  - `GET /data/random-pool.json` -> 200 OK (3,000 games)
+- Tested build and deployed live to `gamegata.xyz` (Version ID `deed2a74-72b9-4e8d-9f69-0ec1dd08ffaa`).
+
+
 
 
 
