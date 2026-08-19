@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { FALLBACK_RANDOM_GAMES, type RandomGameItem } from "../data/randomPool";
 
@@ -31,92 +31,87 @@ export default function RandomWarpOverlay() {
   const [selectedGame, setSelectedGame] = useState<RandomGameItem | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const failsafeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const triggerWarp = useCallback(() => {
-    // 1. Instantly pick a random game from the curated pool in 0ms (0 DB queries, 0 quota)
-    const pool = FALLBACK_RANDOM_GAMES.length > 0 ? FALLBACK_RANDOM_GAMES : [{ slug: "silent-hill-2", title: "Silent Hill 2" }];
-    const randomIndex = Math.floor(Math.random() * pool.length);
-    const game = pool[randomIndex];
-    setSelectedGame(game);
-
-    // Respect reduced motion preference
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefersReducedMotion) {
-      window.location.assign(`/game/${game.slug}`);
-      return;
-    }
-
-    setIsActive(true);
-
-    // Instant document prefetching at t=0ms
-    if (typeof document !== "undefined") {
-      const url = `/game/${game.slug}`;
-      const prefetchLink = document.createElement("link");
-      prefetchLink.rel = "prefetch";
-      prefetchLink.href = url;
-      document.head.appendChild(prefetchLink);
-    }
-
-    // Seamless navigation handoff at 1100ms
-    timeoutRef.current = setTimeout(() => {
-      if (typeof window !== "undefined") {
-        window.location.assign(`/game/${game.slug}`);
-      }
-    }, 1100);
-
-    // Safety auto-dismiss: If navigation is cancelled or browser stalls, cleanly dismiss
-    failsafeTimerRef.current = setTimeout(() => {
-      setIsActive(false);
-    }, 2800);
-  }, []);
-
+  // 1. Global Event Listener (mounted once, never cancels navigation timers)
   useEffect(() => {
-    const handleCustomEvent = () => {
-      if (!isActive) {
-        triggerWarp();
+    const handleWarp = (e: Event) => {
+      const customEvent = e as CustomEvent<{ slug?: string; title?: string }>;
+      let game = customEvent.detail;
+      if (!game || !game.slug) {
+        const pool =
+          FALLBACK_RANDOM_GAMES.length > 0
+            ? FALLBACK_RANDOM_GAMES
+            : [{ slug: "silent-hill-2", title: "Silent Hill 2" }];
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        game = pool[randomIndex];
       }
-    };
 
-    const handlePageHide = () => {
-      setIsActive(false);
-    };
+      // Respect reduced motion preference
+      const prefersReducedMotion =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const handlePageShow = (e: PageTransitionEvent) => {
-      // Handles BFCache (back button returns to cached page)
-      if (e.persisted || !e.persisted) {
-        setIsActive(false);
+      if (prefersReducedMotion) {
+        window.location.assign(`/game/${game.slug}`);
+        return;
       }
+
+      // Prefetch target document immediately at t=0ms
+      try {
+        const prefetchLink = document.createElement("link");
+        prefetchLink.rel = "prefetch";
+        prefetchLink.href = `/game/${game.slug}`;
+        document.head.appendChild(prefetchLink);
+      } catch {}
+
+      setSelectedGame(game);
+      setIsActive(true);
     };
 
+    const handlePageHide = () => setIsActive(false);
+    const handlePageShow = () => setIsActive(false);
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isActive) {
+      if (e.key === "Escape") {
         setIsActive(false);
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
       }
     };
 
-    window.addEventListener("gamegata:random-warp", handleCustomEvent);
+    window.addEventListener("gamegata:random-warp", handleWarp);
     window.addEventListener("pagehide", handlePageHide);
     window.addEventListener("pageshow", handlePageShow);
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("gamegata:random-warp", handleCustomEvent);
+      window.removeEventListener("gamegata:random-warp", handleWarp);
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("keydown", handleKeyDown);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
     };
-  }, [isActive, triggerWarp]);
+  }, []);
 
-  // Smooth 3D Canvas Warp Animation
+  // 2. Navigation Lifecycle: triggered exclusively when isActive becomes true
+  useEffect(() => {
+    if (!isActive || !selectedGame) return;
+
+    // Navigate at 1050ms during the smooth dark dissolve
+    const navTimer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.location.assign(`/game/${selectedGame.slug}`);
+      }
+    }, 1050);
+
+    // Failsafe auto-dismiss at 3500ms so screen is never trapped
+    const failsafeTimer = setTimeout(() => {
+      setIsActive(false);
+    }, 3500);
+
+    return () => {
+      clearTimeout(navTimer);
+      clearTimeout(failsafeTimer);
+    };
+  }, [isActive, selectedGame]);
+
+  // 3. Smooth 3D Canvas Warp Animation
   useEffect(() => {
     if (!isActive) return;
 
@@ -182,7 +177,7 @@ export default function RandomWarpOverlay() {
       ctx.fillStyle = "rgba(9, 9, 12, 0.24)";
       ctx.fillRect(0, 0, width, height);
 
-      // Subtle ambient core glow
+      // Ambient core glow
       const coreRadius = Math.min(width, height) * (0.2 + progress * 0.35);
       const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius);
       const glowOpacity = Math.sin(progress * Math.PI) * 0.25;
@@ -281,8 +276,6 @@ export default function RandomWarpOverlay() {
 
   const handleCancel = () => {
     setIsActive(false);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (failsafeTimerRef.current) clearTimeout(failsafeTimerRef.current);
   };
 
   return (
@@ -313,7 +306,7 @@ export default function RandomWarpOverlay() {
               className="text-center max-w-lg"
             >
               <span className="inline-block text-[11px] sm:text-xs font-semibold tracking-[0.25em] text-red-400 uppercase drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] mb-2">
-                Summoning Nightmare
+                Summoning
               </span>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white/95 drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] line-clamp-2">
                 {selectedGame?.title || "Exploring the Abyss..."}

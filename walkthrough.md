@@ -1095,6 +1095,50 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
   - `GET /data/random-pool.json` -> 200 OK (3,000 games)
 - Tested build and deployed live to `gamegata.xyz` (Version ID `deed2a74-72b9-4e8d-9f69-0ec1dd08ffaa`).
 
+---
+
+## 2026-08-23 — React Navigation Timer Lifecycle Bugfix
+
+### Summary
+1. **Root Cause of Stuck Screen on Random Roll**:
+   - In `src/components/RandomWarpOverlay.tsx`, the event listener `useEffect` had `isActive` in its dependency array.
+   - When the user clicked the dice, `triggerWarp()` created the navigation `setTimeout(window.location.assign, 1100)` and called `setIsActive(true)`.
+   - Because `isActive` changed from `false` to `true`, React triggered a component re-render and executed the previous effect's cleanup function (`return () => { clearTimeout(timeoutRef.current) }`).
+   - This cancelled the navigation timer 1 millisecond after it was created, causing the navigation to never execute and freezing the overlay indefinitely.
+2. **Dedicated Decoupled Lifecycle Architecture**:
+   - Decoupled the event listener into a single-mount effect (`[]` dependencies) so it never re-runs or clears timers on state changes.
+   - Created a dedicated navigation effect bound to `[isActive, selectedGame]` that initiates `window.location.assign(/game/[slug])` cleanly at 1050ms and only unmounts on page exit or explicit cancel.
+   - Verified clean local production build.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/RandomWarpOverlay.tsx` | Modified — Fixed effect cleanup race condition cancelling navigation timer |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — 0 errors.
+- Awaiting user review before deployment.
+
+---
+
+## 2026-08-23 — HUD Badge Label Update
+
+### Summary
+- Updated the overlay HUD badge label from `"SUMMONING NIGHTMARE"` to `"SUMMONING"` in [`src/components/RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx).
+- Retained clean local build verification.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/RandomWarpOverlay.tsx` | Modified — Changed HUD badge label to "SUMMONING" |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — 0 errors.
+
+
+
 
 
 
