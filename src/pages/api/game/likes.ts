@@ -10,7 +10,7 @@ export const prerender = false;
 // GET: Fetch current likes count for a game
 export const GET: APIRoute = async ({ request, url }) => {
   const clientIp = getClientIp(request);
-  const rl = await rateLimit(`likes_get:${clientIp}`, 10, 300);
+  const rl = await rateLimit(`likes_get:${clientIp}`, 90, 300);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
 
   const gameId = url.searchParams.get("gameId");
