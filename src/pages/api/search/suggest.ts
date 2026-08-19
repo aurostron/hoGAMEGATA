@@ -3,10 +3,14 @@ import { turso, initTursoForRequest } from "../../../lib/turso";
 import { games as gamesTable } from "../../../db/schema";
 import { and, or, ne, like, sql, desc } from "drizzle-orm";
 import { env as cfEnv } from "cloudflare:workers";
+import { rateLimit, getClientIp, tooManyRequests } from "../../../lib/rateLimit";
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`search_suggest:${clientIp}`, 60, 60);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
   const runtimeEnv = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)

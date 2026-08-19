@@ -4,6 +4,8 @@ import { getServerUser, isAdminUser } from "./lib/serverAuth";
 import { initTursoForRequest } from "./lib/turso";
 import { initTursoAuthForRequest } from "./lib/tursoAuth";
 import { initBetterAuth } from "./lib/auth";
+import { createRateLimitHtmlResponse } from "./lib/rateLimitHtml";
+import { isIpBlocked, getClientIp, rateLimit } from "./lib/rateLimit";
 import { env as cfEnv } from "cloudflare:workers";
 
 const PUBLIC_PATHS = [
@@ -91,6 +93,30 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|css|js|woff2|woff|ttf|ico)$/i)
   ) {
     return applySecurityHeaders(await next());
+  }
+
+  // 1.0. Global Security Check: Is Client IP Blocked or Lockout Cookie Active?
+  const clientIp = getClientIp(context.request);
+  const isBlocked = await isIpBlocked(clientIp);
+  if (isBlocked) {
+    return applySecurityHeaders(createRateLimitHtmlResponse(429, 86400));
+  }
+
+  const acceptHeader = context.request.headers.get("accept") || "";
+  const secFetchDest = context.request.headers.get("sec-fetch-dest") || "";
+  const isDocumentRequest = acceptHeader.includes("text/html") || secFetchDest === "document";
+
+  // Check persistent lockout cookie for HTML page navigation
+  if (isDocumentRequest && context.cookies.get("api_rate_limit_lockout")?.value === "1") {
+    return applySecurityHeaders(createRateLimitHtmlResponse(429, 300));
+  }
+
+  // Enforce global document request rate limit (120 page views / min per IP)
+  if (isDocumentRequest) {
+    const docRl = await rateLimit(`doc_nav:${clientIp}`, 120, 60);
+    if (!docRl.allowed) {
+      return applySecurityHeaders(createRateLimitHtmlResponse(429, docRl.retryAfter));
+    }
   }
 
   // 1.1. Instant 301 fast-redirect for /directory to GitHub Pages mirror
@@ -230,6 +256,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   const response = await next();
+
+  // If an API route returns 429 (Rate Limit) or 500 (Internal Server Error)
+  if (pathname.startsWith("/api/")) {
+    if (response.status === 429 || response.status === 500) {
+      const accept = context.request.headers.get("accept") || "";
+      const secFetchDest = context.request.headers.get("sec-fetch-dest") || "";
+      if (accept.includes("text/html") || secFetchDest === "document" || url.searchParams.has("html")) {
+        return applySecurityHeaders(createRateLimitHtmlResponse(response.status));
+      }
+    }
+  }
 
   // Cloudflare Edge Cache PUT check
   if (cache && isCacheableGet && cacheKey && response.status === 200) {

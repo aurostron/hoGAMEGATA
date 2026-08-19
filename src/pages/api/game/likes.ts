@@ -8,7 +8,11 @@ import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit'
 export const prerender = false;
 
 // GET: Fetch current likes count for a game
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request, url }) => {
+  const clientIp = getClientIp(request);
+  const rl = await rateLimit(`likes_get:${clientIp}`, 10, 300);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
+
   const gameId = url.searchParams.get("gameId");
   if (!gameId) {
     return new Response(JSON.stringify({ error: "Missing gameId" }), { status: 400 });
@@ -25,7 +29,7 @@ export const GET: APIRoute = async ({ url }) => {
       status: 200,
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=30, s-maxage=120",
+        "Cache-Control": "no-cache, s-maxage=120",
       },
     });
   } catch (err) {
@@ -45,7 +49,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const clientIp = getClientIp(request);
     const rl = await rateLimit(`likes:${clientIp}`, 30, 300);
-    if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+    if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
 
     const { gameId, action } = await request.json();
     if (!gameId) {

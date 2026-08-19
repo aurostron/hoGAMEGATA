@@ -191,5 +191,85 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
         });
       }
     </script>
+
+    <!-- Global API Error & Rate Limit Lockout -->
+    <script is:inline>
+      (function setupApiErrorInterceptor() {
+        function showFullTabLockout() {
+          try {
+            sessionStorage.setItem('api_rate_limit_lockout', '1');
+            document.cookie = "api_rate_limit_lockout=1; max-age=300; path=/; SameSite=Lax";
+          } catch (e) {}
+
+          let container = document.getElementById('full-tab-rate-limit-overlay');
+          if (!container) {
+            container = document.createElement('div');
+            container.id = 'full-tab-rate-limit-overlay';
+            container.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:#000;z-index:99999999;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+            
+            const img = document.createElement('img');
+            img.src = '/images/rate-limit.jpeg';
+            img.alt = 'Access Restricted';
+            img.style.cssText = 'width:100%;height:100%;object-fit:fill;object-position:center;display:block;pointer-events:none;';
+            
+            container.appendChild(img);
+            document.documentElement.appendChild(container);
+          }
+          
+          if (document.body) {
+            document.body.style.overflow = 'hidden';
+          }
+
+          // No go back options: Freeze browser history
+          history.pushState(null, null, location.href);
+          window.onpopstate = function () {
+            history.pushState(null, null, location.href);
+          };
+
+          window.addEventListener('keydown', function(e) {
+            if (
+              (e.altKey && (e.key === 'ArrowLeft' || e.key === 'Left')) ||
+              e.key === 'Backspace' ||
+              (e.ctrlKey && (e.key === 'r' || e.key === 'R'))
+            ) {
+              e.preventDefault();
+            }
+          });
+        }
+
+        // Auto-trigger if lockout active in storage/cookie
+        try {
+          if (sessionStorage.getItem('api_rate_limit_lockout') === '1' || document.cookie.includes('api_rate_limit_lockout=1')) {
+            showFullTabLockout();
+          }
+        } catch (e) {}
+
+        // Intercept window.fetch to track API errors (429 and repeated 500s)
+        let apiErrorCount = 0;
+        const originalFetch = window.fetch;
+        if (typeof originalFetch === 'function') {
+          window.fetch = async function(...args) {
+            const response = await originalFetch.apply(this, args);
+            try {
+              const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : String(args[0] || ''));
+
+              if (response.status === 429) {
+                showFullTabLockout();
+              } else if (url.includes('/api/')) {
+                if (response.status === 500) {
+                  apiErrorCount++;
+                  if (apiErrorCount >= 2) {
+                    showFullTabLockout();
+                  }
+                } else if (response.ok) {
+                  apiErrorCount = Math.max(0, apiErrorCount - 1);
+                }
+              }
+            } catch (e) {}
+            return response;
+          };
+        }
+      })();
+    </script>
 	</body>
 </html>

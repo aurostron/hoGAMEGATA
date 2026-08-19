@@ -45,7 +45,7 @@ async function getGameTitles(): Promise<string[]> {
 export const GET: APIRoute = async ({ request, locals }) => {
   const clientIp = getClientIp(request);
   const rl = await rateLimit(`games_api:${clientIp}`, 90, 60);
-  if (!rl.allowed) return tooManyRequests(rl.retryAfter);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
 
   const runtimeEnv = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)

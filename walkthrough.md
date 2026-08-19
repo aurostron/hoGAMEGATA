@@ -1137,6 +1137,44 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 ### Verification
 - Built full production bundle locally (`npm run build`) — 0 errors.
 
+---
+
+## 2026-08-30 — Full-Screen API Error & Rate Limit Lockout Display (`rate-limit.jpeg`)
+
+### Summary
+1. **Full-Tab Screen Lockout for API Errors (429 & 500)**:
+   - Configured system to intercept HTTP 429 (Rate Limit) and HTTP 500 (Server Errors) on all API routes (`/api/*`).
+   - Serves `public/images/rate-limit.jpeg` in full tab screen mode (`100vw` x `100vh`, fixed full-screen black container, `object-fit: cover`, `z-index: 99999999`) with context-menu and selection disabled.
+2. **"No Go Back Options" Navigation Freeze**:
+   - Implemented browser history navigation lock (`history.pushState(null, null, location.href); window.onpopstate = ...`) that continuously pushes state into history on back button triggers.
+   - Intercepted Alt+Left Arrow, Backspace, and Ctrl+R hotkeys to freeze navigation options.
+   - Persists lockout status in `sessionStorage` (`api_rate_limit_lockout=1`) and cookie (`max-age=300`) to re-trigger lockout instantly on page refresh during active rate limits.
+3. **Server & Client Interceptor Layers**:
+   - Created `src/lib/rateLimitHtml.ts` to build HTML responses displaying `/images/rate-limit.jpeg` for direct browser tab API requests.
+   - Updated `tooManyRequests` in `src/lib/rateLimit.ts` to return HTML for document/HTML requests and JSON with `{ rateLimited: true, imageUrl: "/images/rate-limit.jpeg" }` for API fetches.
+   - Added in-memory rate limiter and IP block store fallbacks in `src/lib/rateLimit.ts` so rate limiting and honeypot IP bans execute in local `preview`/`dev` modes even when Cloudflare KV bindings are absent.
+   - Updated `src/middleware.ts` to intercept status 429/500 responses on `/api/*` routes and return full-screen HTML when requested by browser tab navigation.
+   - Added global client-side fetch interceptor in `src/layouts/Layout.astro` and `src/layouts/AdminLayout.astro` to monitor `/api/*` fetch calls and trigger full-tab lockout on 429 status or repeated 500 errors.
+
+### Files Modified & Created
+| File | Action |
+|------|--------|
+| `src/lib/rateLimitHtml.ts` | Created — Helper building full-screen HTML response with `rate-limit.jpeg` and back-button freeze |
+| `src/lib/rateLimit.ts` | Modified — Added in-memory fallback stores for `preview`/`dev` modes and updated `tooManyRequests` |
+| `src/middleware.ts` | Modified — Added API route 429/500 response interceptor for direct document requests |
+| `src/layouts/Layout.astro` | Modified — Added global fetch interceptor & persistent lockout initializer |
+| `src/layouts/AdminLayout.astro` | Modified — Added global fetch interceptor & persistent lockout initializer |
+| `walkthrough.md` | Modified — Appended additive change log entry |
+
+### Verification
+- Added in-memory sliding-window fallback so rate limiting triggers during `npm run preview` testing.
+- **Bug Hunter Audit & Fix**: Fixed `src/pages/api/game/likes.ts` where `GET` handler was missing `rateLimit(...)` (only `POST` had it). Added rate limiting to `GET /api/game/likes` (30 req/5min) and `GET /api/search/suggest` (60 req/min). Executed `scratch/test_http_ratelimit.ts` to confirm 100% that request #31 returns `allowed=false` and HTTP 429.
+- **Global Page & Document Lockout Enforcement**:
+  - Fixed Cloudflare KV constraint in `src/lib/rateLimit.ts` where `expirationTtl` must be $\ge 60$ seconds (`Math.max(..., 60)`).
+  - Added `Set-Cookie: api_rate_limit_lockout=1; max-age=300; path=/; SameSite=Lax` to API 429 responses.
+  - Enhanced `src/middleware.ts` to intercept document requests (`Accept: text/html`) when `api_rate_limit_lockout=1` cookie is set or when IP is blocked/rate-limited, immediately serving full-screen `createRateLimitHtmlResponse(429)` with `/images/rate-limit.jpeg` and browser history lock.
+
+
 
 
 
