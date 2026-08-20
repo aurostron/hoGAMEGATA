@@ -241,7 +241,7 @@ export function tooManyRequests(retryAfter: number, message?: string, request?: 
       headers: {
         "Content-Type": "application/json",
         "Retry-After": String(retryAfter),
-        "Set-Cookie": "api_rate_limit_lockout=1; max-age=300; path=/; SameSite=Lax",
+        "Set-Cookie": "api_rate_limit_lockout=1; max-age=900; path=/; SameSite=Lax",
       },
     }
   );

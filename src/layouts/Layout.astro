@@ -198,7 +198,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
         function showFullTabLockout() {
           try {
             sessionStorage.setItem('api_rate_limit_lockout', '1');
-            document.cookie = "api_rate_limit_lockout=1; max-age=300; path=/; SameSite=Lax";
+            document.cookie = "api_rate_limit_lockout=1; max-age=900; path=/; SameSite=Lax";
           } catch (e) {}
 
           let container = document.getElementById('full-tab-rate-limit-overlay');

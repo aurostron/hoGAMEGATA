@@ -2,7 +2,7 @@
  * Generates a full-tab HTML response displaying /images/rate-limit.jpeg
  * with history navigation lock ("no go back options") for 429 / 500 API errors.
  */
-export function createRateLimitHtmlResponse(status: number = 429, retryAfter: number = 60): Response {
+export function createRateLimitHtmlResponse(status: number = 429, retryAfter: number = 900): Response {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +48,7 @@ export function createRateLimitHtmlResponse(status: number = 429, retryAfter: nu
     (function lockNavigation() {
       try {
         sessionStorage.setItem('api_rate_limit_lockout', '1');
-        document.cookie = "api_rate_limit_lockout=1; max-age=300; path=/; SameSite=Lax";
+        document.cookie = "api_rate_limit_lockout=1; max-age=900; path=/; SameSite=Lax";
       } catch (e) {}
 
       // Freeze browser history navigation (no go back options)
