@@ -8,13 +8,13 @@ import { count } from "drizzle-orm";
 let stats: any = null;
 try {
   const [
-    [{ gamesCount }],
-    [{ devsCount }],
-    [{ tagsCount }],
+    [{ count: gamesCount }],
+    [{ count: devsCount }],
+    [{ count: tagsCount }],
   ] = await Promise.all([
-    turso.select({ gamesCount: count() }).from(games),
-    turso.select({ devsCount: count() }).from(developers),
-    turso.select({ tagsCount: count() }).from(tags),
+    turso.select({ count: count() }).from(games),
+    turso.select({ count: count() }).from(developers),
+    turso.select({ count: count() }).from(tags),
   ]);
 
   stats = {
@@ -26,14 +26,156 @@ try {
 } catch (e) {
   console.error("Failed to query DB stats in support.astro:", e);
 }
+
+const awesomeResources = [
+  {
+    category: "Communities & Discussion",
+    items: [
+      {
+        name: "r/horrorgaming",
+        url: "https://www.reddit.com/r/horrorgaming/",
+        displayUrl: "reddit.com/r/horrorgaming",
+        desc: "Reddit's main community for horror game discussions, hidden gems, and recommendations."
+      },
+      {
+        name: "r/survivalhorror",
+        url: "https://www.reddit.com/r/survivalhorror/",
+        displayUrl: "reddit.com/r/survivalhorror",
+        desc: "Focused on classic and modern survival horror, inventory puzzles, and atmospheric games."
+      },
+      {
+        name: "SurvivalHorrors.com",
+        url: "https://survivalhorrors.com",
+        displayUrl: "survivalhorrors.com",
+        desc: "In-depth retrospectives, reviews, and history of survival horror video games."
+      },
+      {
+        name: "DreadXP",
+        url: "https://www.dreadxp.com",
+        displayUrl: "dreadxp.com",
+        desc: "Indie horror publisher and news blog covering underground and indie horror releases."
+      },
+      {
+        name: "Rely on Horror",
+        url: "https://www.relyonhorror.com",
+        displayUrl: "relyonhorror.com",
+        desc: "Long-running news and review site dedicated purely to horror gaming."
+      }
+    ]
+  },
+  {
+    category: "Indie Platforms & Studios",
+    items: [
+      {
+        name: "itch.io Horror",
+        url: "https://itch.io/games/genre-horror",
+        displayUrl: "itch.io/games/genre-horror",
+        desc: "The largest catalog of free, experimental, and game-jam indie horror games."
+      },
+      {
+        name: "Haunted PS1",
+        url: "https://hauntedps1.itch.io",
+        displayUrl: "hauntedps1.itch.io",
+        desc: "Community creating retro 32-bit PSX-era aesthetics and curated horror demo discs."
+      },
+      {
+        name: "Puppet Combo",
+        url: "https://puppetcombo.com",
+        displayUrl: "puppetcombo.com",
+        desc: "Pioneers of gritty low-poly VHS slasher horror video games."
+      },
+      {
+        name: "Chilla's Art",
+        url: "https://chillasart.com",
+        displayUrl: "chillasart.com",
+        desc: "Japanese indie studio building atmospheric psychological and analog horror games."
+      },
+      {
+        name: "Ludum Dare",
+        url: "https://ldjam.com",
+        displayUrl: "ldjam.com",
+        desc: "Rapid game jam event where many viral horror prototypes first start."
+      }
+    ]
+  },
+  {
+    category: "Databases & Preservation",
+    items: [
+      {
+        name: "IGDB",
+        url: "https://www.igdb.com",
+        displayUrl: "igdb.com",
+        desc: "Video game metadata and release database powered by Twitch."
+      },
+      {
+        name: "ProtonDB",
+        url: "https://www.protondb.com",
+        displayUrl: "protondb.com",
+        desc: "Crowdsourced reports on Linux and Steam Deck game compatibility and launch fixes."
+      },
+      {
+        name: "PCGamingWiki",
+        url: "https://www.pcgamingwiki.com",
+        displayUrl: "pcgamingwiki.com",
+        desc: "Clear PC fixes for bug troubleshooting, widescreen support, and frame rates."
+      },
+      {
+        name: "The Cutting Room Floor",
+        url: "https://tcrf.net",
+        displayUrl: "tcrf.net",
+        desc: "Preservation wiki uncovering cut content, unused sprites, and early prototype builds."
+      },
+      {
+        name: "Backloggd",
+        url: "https://www.backloggd.com",
+        displayUrl: "backloggd.com",
+        desc: "Minimalist tool to log played games, organize your backlog, and read reviews."
+      }
+    ]
+  },
+  {
+    category: "Deals, Guides & Lore",
+    items: [
+      {
+        name: "FreeMediaHeckYeah (FMHY)",
+        url: "https://fmhy.net",
+        displayUrl: "fmhy.net",
+        desc: "Huge curated directory of free tools, media resources, and web guides."
+      },
+      {
+        name: "IsThereAnyDeal",
+        url: "https://isthereanydeal.com",
+        displayUrl: "isthereanydeal.com",
+        desc: "Compare store prices, discounts, and historical low pricing across PC storefronts."
+      },
+      {
+        name: "SteamDB",
+        url: "https://steamdb.info",
+        displayUrl: "steamdb.info",
+        desc: "Live Steam player counts, updates, database history, and price charts."
+      },
+      {
+        name: "SCP Foundation",
+        url: "https://scp-wiki.wikidot.com",
+        displayUrl: "scp-wiki.wikidot.com",
+        desc: "Collaborative wiki archiving thousands of fictional horror anomalies and stories."
+      },
+      {
+        name: "TV Tropes (Horror)",
+        url: "https://tvtropes.org/pmwiki/pmwiki.php/Main/HorrorTropes",
+        displayUrl: "tvtropes.org/pmwiki/.../HorrorTropes",
+        desc: "Guides explaining common horror story elements, mechanics, and tropes."
+      }
+    ]
+  }
+];
 ---
 
 <Layout
-  title="hoGAMEGATA | Support Our Mission"
-  description="Help preserve horror gaming history. Support hoGAMEGATA's mission to keep our horror database free and ad-free."
+  title="Support Our Mission | hoGAMEGATA"
+  description="Help preserve horror gaming history. Support hoGAMEGATA's mission to keep our 107,000+ horror game database free, open, and ad-free."
   statsGames={stats?.games}
   statsDevelopers={stats?.developers}
-  statsScreenshots={stats?.screenshots}
   statsTags={stats?.tags}
 >
   <div class="w-full max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex flex-col items-center justify-center text-center space-y-10 sm:space-y-14">
@@ -190,6 +332,74 @@ try {
             {/* Internet Archive */}
             <img src="/3rd-party/Internet_Archive_logo_and_wordmark.png" alt="Internet Archive" class="h-8 sm:h-10 w-auto object-contain invert mix-blend-screen opacity-75 hover:opacity-100 transition-opacity duration-150 select-none pointer-events-none" />
           </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Awesome Stuff & Curated Horror Resources */}
+    <div class="w-full pt-16 sm:pt-20 space-y-8 text-left">
+      <div class="text-center space-y-2">
+        <h2 class="text-xl sm:text-3xl font-black uppercase tracking-widest text-white font-sans">
+          Awesome Stuff & Useful Links
+        </h2>
+        <p class="text-xs sm:text-sm text-white/60 max-w-xl mx-auto font-normal leading-relaxed">
+          Good websites, communities, databases, and indie platforms we love, use, and recommend.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
+        {awesomeResources.map((group) => (
+          <div class="border border-white/10 bg-[#121216] p-5 sm:p-6 rounded-xl flex flex-col justify-between space-y-5 hover:border-white/20 transition-colors">
+            <div class="border-b border-white/10 pb-3">
+              <h3 class="font-sans text-sm sm:text-base font-bold uppercase tracking-wider text-white">
+                {group.category}
+              </h3>
+            </div>
+
+            <div class="space-y-3">
+              {group.items.map((item) => (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group block p-3 rounded-lg bg-black/30 border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-150"
+                >
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="font-sans font-bold text-xs sm:text-sm text-white group-hover:text-red-400 transition-colors">
+                      {item.name}
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/40 group-hover:text-red-400 transition-colors shrink-0"><path d="M15 3h6v6"/><path d="10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                  </div>
+                  <span class="font-mono text-[10px] text-white/40 block mt-0.5 group-hover:text-white/60 transition-colors">
+                    {item.displayUrl}
+                  </span>
+                  <p class="text-xs text-white/70 leading-relaxed mt-1.5 font-normal">
+                    {item.desc}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Precautions & Disclaimer */}
+    <div class="w-full pt-16 sm:pt-20 text-left">
+      <div class="border border-white/10 bg-[#121216] p-6 sm:p-8 rounded-xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-400 shrink-0"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <h3 class="font-sans text-sm sm:text-base font-bold uppercase tracking-wider text-white">
+            Precautions & Disclaimer
+          </h3>
+        </div>
+        <div class="space-y-3 text-xs sm:text-sm text-white/70 leading-relaxed font-normal">
+          <p>
+            Although all game links, deal discounts, store pages, and third-party resources are gathered from reliable and trusted platforms, hoGAMEGATA operates solely as an open-access aggregator and metadata catalog.
+          </p>
+          <p>
+            hoGAMEGATA, its maintainers, site owners, and aurostron are not responsible or liable for any external transactions, downloads, third-party software, broken links, inaccuracies, or damages. You visit and interact with external storefronts and third-party websites at your own discretion.
+          </p>
         </div>
       </div>
     </div>

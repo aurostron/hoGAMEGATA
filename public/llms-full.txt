@@ -1,0 +1,40 @@
+# hoGAMEGATA (hGG) — Full System & Metadata Specification
+
+## 1. Executive Summary
+- **Site Name**: hoGAMEGATA (also known as hGG or gamegata db)
+- **Domain**: https://gamegata.xyz
+- **Primary Function**: The largest dedicated open metadata registry, preservation catalog, and discovery engine for horror video games.
+- **Current Inventory**:
+  - 107,800+ Horror Game Records
+  - 68,000+ Game Developers and Studios
+  - 5,600+ Publishers
+  - 15,800+ Micro-Genre & Thematic Tags
+  - 430,000+ Screenshots & Media Assets
+  - 95,000+ Live Store Pricing & Discount Snapshots
+- **Monetization / Business Model**: Non-commercial, 100% free, no ads, no trackers, no subscription paywalls.
+
+## 2. Genre Taxonomy & Tag Structure
+hoGAMEGATA categorizes horror games across extensive dimensions:
+- **Survival Horror**: Resource management, inventory puzzles, limited ammunition, fixed/over-the-shoulder perspective (e.g., Silent Hill, Resident Evil, Signalis, Crow Country).
+- **Psychological Horror**: Sanity mechanics, hallucinations, unreliable narrators, atmospheric dread (e.g., Amnesia, Visage, Layers of Fear, Cry of Fear).
+- **Retro / PS1 / Low-Poly Horror**: Nostalgic 90s aesthetic, dithering, tank controls, CRT filters (e.g., Puppet Combo, Chilla's Art, Dread X Collections).
+- **Body & Cosmic Horror**: Visceral mutations, Lovecraftian entities, unknowable dread (e.g., Dead Space, The Thing, Call of Cthulhu, The Shore).
+- **Found Footage / Analog Horror**: VHS distortions, surveillance cameras, bodycam POV (e.g., The Exit 8, Outlast, Welcome to the Game).
+- **Indie & Short-Form Terror**: Itch.io and Game Jolt experiential horrors, Ludum Dare game jam entries.
+
+## 3. Technology Stack & Edge Architecture
+- **Framework**: Astro 5 (Hybrid SSR & Prerendered Static Edge Architecture)
+- **Runtime**: Cloudflare Workers / Cloudflare Pages Edge Runtime
+- **Database**: Turso LibSQL (Distributed globally replicated SQLite) & Better Auth
+- **Search Engine**: In-memory prefix B-Tree indexing with fallback Edge DSL Query engine.
+
+## 4. Key Endpoints & Routing
+- `/` — Homepage featuring curated spotlights, trending horrors, newest releases, top-rated games, and real-time database telemetry.
+- `/games` — Full dynamic catalog browser with filter drawers and responsive grid/list views.
+- `/game/[slug]` — Individual game profiles with high-res screenshots, release timelines, developer links, Linux/Proton compatibility, deal snapshots, and similar recommendations.
+- `/developer/[slug]` — Developer bibliography and release history.
+- `/upcoming` — Calendar of announced horror releases.
+- `/directory` — Alphabetical index of all registered titles.
+- `/api/stats` — Live JSON telemetry providing exact counts of games, developers, publishers, tags, screenshots, and deals.
+- `/api/games?search=[term]` — Instant search API.
+- `/api/search/ai` — AI-powered natural language query parsing.

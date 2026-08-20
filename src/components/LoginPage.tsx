@@ -179,37 +179,37 @@ function LoginForm() {
   const [password, setPassword] = useState("");
 
   return (
-    <div className="w-full max-w-md border border-white/10 bg-neutral-950/60 backdrop-blur-md rounded-2xl p-8 sm:p-10 space-y-6 shadow-2xl">
-      <div className="space-y-2 text-center">
-        <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-widest text-white">
+    <div className="w-full max-w-sm sm:max-w-md border border-white/10 bg-neutral-950/70 backdrop-blur-md rounded-2xl p-5 sm:p-7 space-y-3.5 sm:space-y-4 shadow-2xl">
+      <div className="space-y-1 text-center">
+        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-widest text-white">
           {isRegistering ? "Create Account" : "Sign In"}
         </h2>
-        <p className="text-xs sm:text-sm text-white/50 font-sans uppercase tracking-widest">
+        <p className="text-[10px] sm:text-xs text-white/50 font-sans uppercase tracking-widest">
           {isRegistering ? "Register for a new account" : "Sign in to your account"}
         </p>
       </div>
 
       {isCapped && (
-        <div className="border border-white/15 p-3.5 bg-black font-sans text-xs leading-relaxed uppercase text-white font-bold tracking-wider text-center animate-pulse rounded-xl">
+        <div className="border border-white/15 p-2.5 bg-black font-sans text-[11px] leading-relaxed uppercase text-white font-bold tracking-wider text-center animate-pulse rounded-xl">
           Account registrations are currently closed
-          <span className="block font-normal text-white/60 mt-1">Only existing users can sign in at this time.</span>
+          <span className="block font-normal text-white/60 mt-0.5">Only existing users can sign in at this time.</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="border border-red-500/30 bg-red-950/20 text-red-200 p-3.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
+        <div className="border border-red-500/30 bg-red-950/20 text-red-200 p-2.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
           Error: {errorMsg}
         </div>
       )}
       {successMsg && (
-        <div className="border border-emerald-500/30 bg-emerald-950/20 text-emerald-200 p-3.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
+        <div className="border border-emerald-500/30 bg-emerald-950/20 text-emerald-200 p-2.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
           Success: {successMsg}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5 font-sans text-sm">
-        <div className="space-y-2">
-          <label htmlFor="email" className="font-semibold uppercase tracking-wider text-white/80 text-[11px] sm:text-xs">Email Address</label>
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5 font-sans text-sm">
+        <div className="space-y-1">
+          <label htmlFor="email" className="font-semibold uppercase tracking-wider text-white/80 text-[10px] sm:text-xs">Email Address</label>
           <input
             id="email"
             type="email"
@@ -217,12 +217,12 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="nevergonnagiveyou@up.com"
-            className="block w-full px-4 py-3 bg-neutral-900/30 border border-white/15 rounded-xl focus:outline-none text-white placeholder-white/25 transition-all text-sm sm:text-base font-sans"
+            className="block w-full px-3.5 py-2.5 bg-neutral-900/40 border border-white/15 rounded-xl focus:outline-none focus:border-white/40 text-white placeholder-white/25 transition-all text-xs sm:text-sm font-sans"
           />
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="password" className="font-semibold uppercase tracking-wider text-white/80 text-[11px] sm:text-xs">Password</label>
+        <div className="space-y-1">
+          <label htmlFor="password" className="font-semibold uppercase tracking-wider text-white/80 text-[10px] sm:text-xs">Password</label>
           <input
             id="password"
             type="password"
@@ -230,43 +230,53 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="block w-full px-4 py-3 bg-neutral-900/30 border border-white/15 rounded-xl focus:outline-none text-white placeholder-white/25 transition-all text-sm sm:text-base font-sans"
+            className="block w-full px-3.5 py-2.5 bg-neutral-900/40 border border-white/15 rounded-xl focus:outline-none focus:border-white/40 text-white placeholder-white/25 transition-all text-xs sm:text-sm font-sans"
           />
         </div>
         
         {isRegistering && (
-          <div className="flex items-start gap-3 py-1 font-sans">
+          <div className="flex items-start gap-2.5 py-0.5 font-sans">
             <input
               id="age-terms-agree"
               type="checkbox"
               required
               checked={agreedAge}
               onChange={(e) => setAgreedAge(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded-sm border border-white/20 bg-neutral-900/40 checked:bg-white checked:border-white text-black focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer shrink-0 transition-all duration-150"
+              className="mt-0.5 w-3.5 h-3.5 rounded-sm border border-white/20 bg-neutral-900/40 checked:bg-white checked:border-white text-black focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer shrink-0 transition-all duration-150"
             />
-            <label htmlFor="age-terms-agree" className="text-[10px] sm:text-[11px] text-white/50 leading-relaxed tracking-wide select-none cursor-pointer font-sans hover:text-white/80 transition-colors duration-150">
-              By signing up, you agree that you are at least 16 years of age or older, and agree to our Terms & Conditions.
+            <label htmlFor="age-terms-agree" className="text-[10px] sm:text-[11px] text-white/50 leading-tight tracking-wide select-none cursor-pointer font-sans hover:text-white/80 transition-colors duration-150">
+              By signing up, you agree that you are at least 16 years of age or older, and agree to our{" "}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-white underline decoration-white/30 hover:decoration-white hover:text-red-400 font-semibold transition-colors"
+              >
+                Terms & Conditions
+              </a>
+              .
             </label>
           </div>
         )}
 
         {/* Cloudflare Turnstile Container */}
-        <div className="flex justify-center py-1">
+        <div className="flex justify-center py-0.5">
           <div id="turnstile-container" />
         </div>
 
-        <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-2.5 pt-1">
           <button
             type="submit"
             disabled={authLoading}
-            className="w-full py-3.5 border border-white/15 bg-white text-black hover:bg-white/90 font-bold uppercase tracking-widest transition-all duration-150 disabled:opacity-50 cursor-pointer rounded-xl text-xs sm:text-sm"
+            className="w-full py-2.5 sm:py-3 border border-white/15 bg-white text-black hover:bg-white/90 font-bold uppercase tracking-widest transition-all duration-150 disabled:opacity-50 cursor-pointer rounded-xl text-xs"
           >
             {authLoading ? "Loading..." : isRegistering ? "Create Account" : "Sign In"}
           </button>
 
-          <div className="relative flex py-1.5 items-center">
+          <div className="relative flex py-0.5 items-center">
             <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink mx-4 text-[10px] text-white/40 uppercase tracking-widest font-black">OR</span>
+            <span className="flex-shrink mx-3 text-[9px] text-white/40 uppercase tracking-widest font-black">OR</span>
             <div className="flex-grow border-t border-white/10"></div>
           </div>
 
@@ -274,7 +284,7 @@ function LoginForm() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={authLoading}
-            className="w-full py-3.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold uppercase tracking-widest transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2.5 cursor-pointer rounded-xl text-xs sm:text-sm"
+            className="w-full py-2.5 sm:py-3 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold uppercase tracking-widest transition-all duration-200 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer rounded-xl text-xs"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -288,7 +298,7 @@ function LoginForm() {
       </form>
 
       {!isCapped && (
-        <div className="pt-4 border-t border-white/10 text-center font-sans text-[11px]">
+        <div className="pt-2 border-t border-white/10 text-center font-sans text-[10px] sm:text-[11px]">
           <button
             type="button"
             onClick={() => {
@@ -327,34 +337,32 @@ export default function LoginPage({ screenshots = [] }: { screenshots?: Screensh
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-black text-white font-sans selection:bg-white selection:text-black flex flex-col md:flex-row relative overflow-hidden">
+      <div className="h-screen h-[100dvh] w-full bg-black text-white font-sans selection:bg-white selection:text-black flex flex-col md:flex-row relative overflow-hidden">
         {/* Left Panel: Form & Navigation */}
-        <div className="w-full md:w-[45%] lg:w-[40%] xl:w-[35%] shrink-0 z-20 bg-black/70 md:bg-transparent flex flex-col justify-between relative min-h-screen">
-          {/* Top spacer to push form down when no header is present */}
-          <div className="h-8 md:h-12"></div>
+        <div className="w-full md:w-[460px] lg:w-[480px] xl:w-[500px] shrink-0 z-20 bg-black/80 md:bg-black/45 md:backdrop-blur-sm flex flex-col justify-between p-4 sm:p-6 lg:p-7 h-full relative overflow-y-auto md:overflow-hidden">
+          {/* Header area with Logo */}
+          <div className="shrink-0 flex items-center justify-between">
+            <SciFiLogo withLink={true} />
+          </div>
 
           {/* Form */}
-          <main className="flex-1 flex items-center justify-center px-6 py-12 md:py-8">
+          <main className="my-auto py-2 flex items-center justify-center min-h-0">
             <LoginForm />
           </main>
 
-          {/* Footer Navigation (Replicates site footer) */}
-          <footer className="px-6 py-8 border-t border-white/5 bg-black/80 md:bg-black/40 backdrop-blur-sm select-none">
-            <div className="flex flex-col gap-4 font-sans text-[10px] text-white/50 uppercase tracking-widest font-normal">
-              <div className="pt-3 border-t border-white/10 flex items-center">
-                <a 
-                  href="/" 
-                  className="group flex items-center gap-2 font-mono text-xs text-white/80 hover:text-white bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/20 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] px-5 py-2.5 rounded-full font-bold uppercase tracking-wider active:scale-[0.97] cursor-pointer select-none"
-                >
-                  <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]" />
-                  <span>Back to the main page</span>
-                </a>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span>© 2026 hoGAMEGATA</span>
-              </div>
-            </div>
-          </footer>
+          {/* Bottom Bar: Clean Return Button & Copyright (No box, no duplicate borders) */}
+          <div className="shrink-0 flex items-center justify-between gap-3 pt-2 select-none">
+            <a 
+              href="/" 
+              className="group inline-flex items-center gap-2 font-mono text-xs text-white/80 hover:text-white bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 hover:border-white/20 transition-all duration-200 px-4 py-2 rounded-full font-bold uppercase tracking-wider active:scale-[0.97] cursor-pointer select-none"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
+              <span>Return to Storefront</span>
+            </a>
+            <span className="font-mono text-[9px] sm:text-[10px] text-white/40 uppercase tracking-widest">
+              © 2026 hoGAMEGATA
+            </span>
+          </div>
         </div>
 
         {/* Right Panel: Ken Burns Image Slideshow Background */}
@@ -362,7 +370,7 @@ export default function LoginPage({ screenshots = [] }: { screenshots?: Screensh
           {/* Blur & Contrast Overlay */}
           <div className="absolute inset-0 bg-black/30 md:bg-black/0 backdrop-blur-[1px] z-10" />
           
-          {/* Left-to-Right Fade (Desktop only) - Lighter solid black under left panel (90% at 28%), drops rapidly to 10% by 42% width, then fades to transparent */}
+          {/* Left-to-Right Fade (Desktop only) */}
           <div className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-black via-black/90 via-[28%] via-black/10 via-[42%] to-transparent z-20 hidden md:block" />
           
           {/* Bottom-to-Top Fade (Mobile only) */}
@@ -389,8 +397,8 @@ export default function LoginPage({ screenshots = [] }: { screenshots?: Screensh
 
           {/* Game Info Metadata Display (Bottom Right) */}
           {screenshots.length > 0 && screenshots[currentSlide] && (
-            <div className="absolute bottom-6 right-8 z-30 font-sans text-[10px] sm:text-xs uppercase tracking-widest text-neutral-400 text-right select-none pointer-events-none">
-              {screenshots[currentSlide].gameName} by {screenshots[currentSlide].devName}
+            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 font-mono text-[10px] sm:text-xs uppercase tracking-wider text-white/80 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 select-none pointer-events-none shadow-lg">
+              {screenshots[currentSlide].gameName} <span className="text-white/40 font-sans font-normal lowercase">by</span> {screenshots[currentSlide].devName}
             </div>
           )}
         </div>

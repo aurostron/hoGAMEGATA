@@ -1,11 +1,33 @@
 User-agent: *
 Allow: /
 Allow: /game/
+Allow: /developer/
+Allow: /directory
+Allow: /about
+Allow: /upcoming
+Allow: /blog
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /api/stats
 Disallow: /api/
 Disallow: /search/
 Disallow: /search?*
 Disallow: /login
 Disallow: /dashboard
 
+# Explicitly welcome AI Search Crawlers for fresh discovery
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://gamegata.xyz/sitemap.xml
 Sitemap: https://gamegata.xyz/sitemap-index.xml
+

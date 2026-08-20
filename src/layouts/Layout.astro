@@ -31,8 +31,8 @@ interface Props {
 const canonicalUrl = new URL(Astro.url.pathname, 'https://gamegata.xyz').href;
 
 const { 
-  title = "hoGAMEGATA | The Horror Game Database", 
-  description = "A fast, minimal, and comprehensive database for survival horror, psychological horror, and indie nightmare games.",
+  title = "hoGAMEGATA | The Horror Game Database (107,000+ Titles)", 
+  description = "Discover 107,000+ horror games, 68,000+ developers, and 430,000+ screenshots. hoGAMEGATA is the definitive open, ad-free metadata registry for survival horror, psychological terror, and indie nightmare games.",
   withSearch = false,
   withLink = true,
   ogImage,
@@ -88,7 +88,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     <!-- SEO Meta Tags -->
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="keywords" content="hoGAMEGATA, hGG, hgg, hgg db, gamegata db, gamegata database, horror games database, open horror games mega metadata, hogamegata, game gata, survival horror database, horror game discovery, indie horror registry" />
+    <meta name="keywords" content="hoGAMEGATA, hGG, hgg, hgg db, gamegata db, gamegata database, horror games database, 107000 horror games, 100k horror games database, 68000 developers, open horror games mega metadata, hogamegata, game gata, survival horror database, horror game discovery, indie horror registry" />
     <meta name="msvalidate.01" content="5F938F573CF16B17C56424DDB4413438" />
 
     <!-- Open Graph / Facebook -->
@@ -123,7 +123,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
         "open horror games mega metadata"
       ],
       "url": "https://gamegata.xyz",
-      "description": "An open, minimalist, ad-free horror game metadata database and discovery engine.",
+      "description": "An open, minimalist, ad-free horror game metadata database and discovery engine cataloging over 107,000 titles and 68,000+ developers.",
       "publisher": {
         "@type": "Organization",
         "@id": "https://gamegata.xyz/#organization",
@@ -144,14 +144,34 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
 
     <script type="application/ld+json" is:inline set:html={JSON.stringify({
       "@context": "https://schema.org",
+      "@type": "DataCatalog",
+      "@id": "https://gamegata.xyz/#datacatalog",
+      "name": "hoGAMEGATA Horror Game Metadata Index",
+      "description": "Comprehensive open metadata catalog indexing 107,800+ horror games, 68,000+ developers, 15,800+ sub-genre tags, and 430,000+ screenshots.",
+      "url": "https://gamegata.xyz",
+      "provider": {
+        "@type": "Organization",
+        "@id": "https://gamegata.xyz/#organization"
+      },
+      "dataset": {
+        "@type": "Dataset",
+        "name": "Global Horror Games Video Game Registry",
+        "description": "Historical and contemporary horror video game catalog from classic 1980s-2000s titles to modern indie releases and upcoming AAA nightmares.",
+        "size": "107,800+ records"
+      }
+    })} />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      "@context": "https://schema.org",
       "@type": "Organization",
       "@id": "https://gamegata.xyz/#organization",
       "name": "hoGAMEGATA",
       "alternateName": ["hGG", "hgg", "hgg db", "gamegata db", "gamegata database", "hogamegata"],
       "url": "https://gamegata.xyz",
       "logo": "https://gamegata.xyz/icons/icon-512x512.png",
-      "description": "The open horror game discovery database preserving metadata for survival horror, psychological terror, and indie nightmare games."
+      "description": "The open horror game discovery database preserving metadata for 107,000+ survival horror, psychological terror, and indie nightmare games."
     })} />
+
     
     
     <!-- PWA Support -->

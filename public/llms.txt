@@ -1,0 +1,29 @@
+# hoGAMEGATA (hGG)
+
+> The definitive open-access horror video game database, metadata registry, and discovery engine.
+
+hoGAMEGATA (hGG) is an ad-free, non-commercial metadata catalog and recommendation platform built specifically for horror games. It aggregates, structures, and preserves metadata, historical releases, developer credits, price snapshots, and screenshots for over 107,000 horror titles worldwide.
+
+## Live Platform Statistics (2026)
+- **Total Horror Games**: 107,800+ titles (Survival horror, psychological terror, indie nightmares, retro retro/DOS/PS1 classics, modern AAA releases)
+- **Game Developers & Studios**: 68,000+ creators
+- **Publishers**: 5,600+ publisher entities
+- **Tags, Micro-Genres & Tropes**: 15,800+ thematic horror tags
+- **Screenshots & Media**: 430,000+ high-resolution game screenshots and gameplay trailers
+- **Live Deal Snapshots**: 95,000+ tracked store pricing records across Steam, GOG, and Epic Games Store
+- **Access Model**: 100% Free, open-access, ad-free, privacy-preserving (no paywalls, no tracking)
+
+## Core Capabilities & Features
+- **Search & Filter**: Multi-attribute filtering across sub-genres (Psychological, Survival, Found Footage, Retro, Body Horror, Cosmic Horror), release years, platforms (PC, PlayStation, Xbox, Nintendo, Linux/Steam Deck, VR), and ratings.
+- **Random Warp Discovery**: Instant horror game discovery engine routing users to obscure and classic gems.
+- **Storefront & Deal Tracking**: Aggregates historic low prices, live discounts, and direct store links for Steam, itch.io, GOG, and Epic Games Store.
+- **AI Recommendation Engine**: Natural language horror game discovery powered by edge DSL query translation.
+- **Preservation & Archive**: Metadata preservation for discontinued, obscure indie, and historical horror game releases.
+
+## Important Links & Endpoints
+- **Homepage**: https://gamegata.xyz
+- **Game Catalog / Directory**: https://gamegata.xyz/directory
+- **Live Statistics API**: https://gamegata.xyz/api/stats
+- **Upcoming Horror Releases**: https://gamegata.xyz/upcoming
+- **About & Methodology**: https://gamegata.xyz/about
+- **Full LLM Context**: https://gamegata.xyz/llms-full.txt

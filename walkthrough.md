@@ -1174,6 +1174,158 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
   - Added `Set-Cookie: api_rate_limit_lockout=1; max-age=300; path=/; SameSite=Lax` to API 429 responses.
   - Enhanced `src/middleware.ts` to intercept document requests (`Accept: text/html`) when `api_rate_limit_lockout=1` cookie is set or when IP is blocked/rate-limited, immediately serving full-screen `createRateLimitHtmlResponse(429)` with `/images/rate-limit.jpeg` and browser history lock.
 
+---
+
+## 2026-08-31 — SEO, GEO & AI Metadata Real-Time Catalog Numbers Update
+
+### Summary
+1. **Catalog Scale Update Across Meta & JSON-LD**:
+   - Updated homepage and global layouts from outdated ~16.5k/18k metrics to the real-time verified figures: **107,800+ horror games**, **68,000+ developers**, **15,800+ micro-genre tags**, **430,000+ screenshots**, and **95,000+ live deal snapshots**.
+   - Added structured Schema.org `DataCatalog` and `Dataset` JSON-LD entities in [`src/layouts/Layout.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro) specifying the exact catalog inventory for web crawlers and AI search indexers.
+2. **AI-Native Discovery Standard (`llms.txt` & `llms-full.txt`)**:
+   - Created [`public/llms.txt`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/public/llms.txt) and [`public/llms-full.txt`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/public/llms-full.txt) to provide machine-readable documentation of the database scale, categorization taxonomy, and API endpoints for ChatGPT, Claude, Perplexity, and other AI systems.
+3. **AI Crawler Permissions in `robots.txt`**:
+   - Configured [`public/robots.txt`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/public/robots.txt) to explicitly allow AI search engines (`GPTBot`, `Claude-Web`, `PerplexityBot`, `Google-Extended`) to access `/llms.txt`, `/llms-full.txt`, `/api/stats`, and directory routes for fresh citations.
+4. **Site Copy & FAQ Synchronization**:
+   - Updated [`src/pages/about.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) FAQ content and JSON-LD `FAQPage` schema to reflect the 107,000+ titles.
+   - Updated default copy in [`src/lib/siteContent.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/lib/siteContent.ts) and [`src/pages/index.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/index.astro).
+   - Fixed count destructuring in [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro).
+
+### Files Modified & Created
+| File | Action |
+|------|--------|
+| `public/llms.txt` | Created — High-level AI discovery standard file |
+| `public/llms-full.txt` | Created — Full system and taxonomy AI specification |
+| `public/robots.txt` | Modified — Added explicit AI bot rules and exposed `/llms.txt` and `/api/stats` |
+| `src/layouts/Layout.astro` | Modified — Updated meta descriptions, titles, keywords, and added `DataCatalog` JSON-LD schema |
+| `src/pages/about.astro` | Modified — Updated FAQ text, counts, and `FAQPage` schema |
+| `src/pages/support.astro` | Modified — Fixed count destructuring and updated SEO description |
+| `src/lib/siteContent.ts` | Modified — Updated default copy map values |
+| `src/pages/index.astro` | Modified — Updated title and description fallback props |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Ran full production build (`npm run build`) — compiled with 0 errors.
+- Prerendered static pages reflect updated metadata.
+
+---
+
+## 2026-08-31 — Awesome Stuff & Curated Horror Resources Integration (`/support`)
+
+### Summary
+1. **Added "Awesome Stuff & Useful Links" Section**:
+   - Implemented a curated 3rd-party directory on [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro) directly after the "WE WOULD LIKE TO THANK" sponsor marquee.
+   - Categorized into 4 clean cards with matching dark sci-fi aesthetic, monospace pill badges, external link icons, and subtle hover interactions:
+     - **Communities & Discussion** (`r/horrorgaming`, `r/survivalhorror`, `SurvivalHorrors.com`, `DreadXP`, `Rely on Horror`)
+     - **Indie Platforms & Studios** (`itch.io Horror`, `Haunted PS1`, `Puppet Combo`, `Chilla's Art`, `Ludum Dare`)
+     - **Databases & Preservation** (`IGDB`, `ProtonDB`, `PCGamingWiki`, `The Cutting Room Floor`, `Backloggd`)
+     - **Deals, Guides & Lore** (`FMHY`, `IsThereAnyDeal`, `SteamDB`, `SCP Foundation`, `TV Tropes`)
+2. **Un-slopped, Plain English Copy**:
+   - Stripped all buzzwords and conversational filler, using direct, clean 1-sentence explanations for each service.
+3. **Typography & Styling Alignment**:
+   - Matched site typography (`font-sans font-black` titles, `font-mono` badges and URLs, `bg-[#121216]` panels, `border-white/10`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/support.astro` | Modified — Added curated awesome resources grid & un-slopped descriptions |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+---
+
+## 2026-08-31 — Footer Author Credit & Support Page Badge Cleanup
+
+### Summary
+1. **Footer Author Credit Update**:
+   - Updated global [`src/components/Footer.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/Footer.astro) credit from `"Made with ❤️ by aurostron and team."` to `"Made with ❤️ by aurostron."` across all site pages.
+2. **Support Page Badge Removal**:
+   - Removed the `"Curated Network"` pill badge above the Awesome Stuff heading in [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro).
+   - Removed section-level color tag badges (`FORUMS & HUBS`, `INDIE SCENE`, `METADATA & ARCHIVES`, `USEFUL TOOLS`) for a cleaner, unified minimalist aesthetic.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/Footer.astro` | Modified — Changed credit to "Made with ❤️ by aurostron." |
+| `src/pages/support.astro` | Modified — Removed Curated Network and category tag badges |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+---
+
+## 2026-08-31 — Precautions & Aggregator Liability Disclaimers Integration
+
+### Summary
+1. **Precautions & Disclaimer Section Added to Support Page**:
+   - Added a dedicated card on [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro) with warning/precaution icon clarifying that hoGAMEGATA operates strictly as an open-access aggregator and metadata catalog.
+   - Clarified that although external links/deals are gathered from reliable sources, hoGAMEGATA, site maintainers, owners, and aurostron assume no liability for external storefront transactions, software downloads, third-party content, or damages.
+2. **Updated Terms & Conditions (`src/pages/terms.astro`)**:
+   - Updated sections `// 6. Disclaimer of Warranties & Aggregator Role` and `// 7. Limitation of Liability` to explicitly state aggregator status and zero liability for third-party platforms, external purchases, or software behavior.
+3. **Updated Legal Notice (`src/pages/legal.astro`)**:
+   - Updated section `// 4. Aggregator Role, Warranty & Liability Disclaimer` with direct, simple English disclaiming liability for external links, purchases, downloads, and third-party interactions.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/support.astro` | Modified — Added Precautions & Disclaimer card |
+| `src/pages/terms.astro` | Modified — Enhanced aggregator role and limitation of liability sections |
+| `src/pages/legal.astro` | Modified — Updated warranty & liability disclaimer section |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+---
+
+## 2026-08-31 — Added Terms & Conditions Hyperlink to Registration Form
+
+### Summary
+- Updated the registration checkbox in [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) to turn `"Terms & Conditions"` into a clickable hyperlink (`<a href="/terms" target="_blank" rel="noopener noreferrer">`).
+- Included `onClick={(e) => e.stopPropagation()}` so clicking the link opens the Terms of Service in a new tab without inadvertently toggling the checkbox or interrupting input focus.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/LoginPage.tsx` | Modified — Wrapped "Terms & Conditions" in a clean, accessible link to `/terms` |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+---
+
+## 2026-08-31 — Login Page Viewport Fit & Return Button Cleanup
+
+### Summary
+1. **Removed Black Footer Box & Cleaned Return Button**:
+   - Stripped the heavy dark bordered footer box (`bg-black/80 md:bg-black/40 border-t border-white/5 backdrop-blur-sm`) and inner dividers from [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx).
+   - Replaced it with a minimal, elegant inline bottom bar displaying the clean pill Return button (`Return to Storefront`) alongside the `© 2026 hoGAMEGATA` copyright.
+2. **Fixed Viewport Overflow (No Scroll Required)**:
+   - Configured [`src/pages/login.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/login.astro) and [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) to strictly fit `h-screen h-[100dvh] overflow-hidden`.
+   - Tightened `LoginForm` card padding and vertical element gaps (`p-5 sm:p-7 space-y-3.5`, input `py-2.5 px-3.5`) so the entire form, Turnstile captcha, buttons, and bottom controls remain fully visible without any scrolling.
+3. **Ensured Bottom-Right Screenshot Credits Stay Visible**:
+   - Styled the background screenshot metadata chip with a floating backdrop pill (`bottom-4 right-4 sm:bottom-6 sm:right-6 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10`) ensuring the game name and developer credits are never cut off.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/login.astro` | Modified — Added `overflow-hidden` and `h-full` to html/body |
+| `src/components/LoginPage.tsx` | Modified — Viewport height constraints, tightened form spacing, removed bottom box, cleaned return button and screenshot credits |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+
+
+
+
+
+
 
 
 

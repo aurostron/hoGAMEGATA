@@ -12,7 +12,7 @@ export const DEFAULT_CONTENT = [
   },
   {
     key: "hero_subtitle",
-    value: "A fast, minimal, and premium metadata registry for survival horror, psychological horror, and indie nightmare games.",
+    value: "Discover 107,000+ horror games, 68,000+ developers, and 430,000+ screenshots. A fast, minimal, and premium metadata registry for survival horror, psychological horror, and indie nightmare games.",
     type: "text",
     label: "Hero Subtitle",
     section: "homepage"
@@ -26,7 +26,7 @@ export const DEFAULT_CONTENT = [
   },
   {
     key: "catalogue_desc",
-    value: "There are thousands of horror games waiting for you to discover. Filter by developer, tags, scare intensity, platform, and pricing to pinpoint your next favorite nightmare.",
+    value: "Over 107,000 horror games waiting for you to discover. Filter by 68,000+ developers, 15,800+ tags, scare intensity, platform, and pricing to pinpoint your next favorite nightmare.",
     type: "text",
     label: "Catalogue CTA Description",
     section: "catalog"
