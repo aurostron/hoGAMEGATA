@@ -174,10 +174,10 @@ export default function HeaderSearch() {
             setIsExpanded(true);
             setTimeout(() => inputRef.current?.focus(), 50);
           }}
-          className="flex items-center justify-center text-white hover:bg-white/5 w-11 sm:w-12 h-full transition-colors duration-150 cursor-pointer rounded-xl"
+          className="flex items-center justify-center text-white hover:bg-white/5 w-9 sm:w-11 h-full transition-colors duration-150 cursor-pointer rounded-xl"
           title="Search"
         >
-          <Search className="w-5 h-5" />
+          <Search className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
       ) : (
         /* Expanded Search Input Bar */

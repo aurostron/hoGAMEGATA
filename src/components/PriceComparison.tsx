@@ -37,7 +37,7 @@ const REGIONS = [
 ];
 
 const PROVIDERS = [
-  { code: "direct", label: "hGG Price Checker" },
+  { code: "direct", label: "hGG Price Bot" },
   { code: "aggregated", label: "CheapShark & ITAD" }
 ];
 
@@ -56,10 +56,10 @@ export default function PriceComparison({
   const [provider, setProvider] = useState<string>("direct");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const loadPrices = async (targetRegion: string, targetProvider = provider, force = false) => {
+  const loadPrices = async (targetRegion: string, targetProvider = provider, force = false, silent = false) => {
     if (force) {
       setIsRefreshing(true);
-    } else {
+    } else if (!silent) {
       setLoading(true);
     }
     setError(false);
@@ -78,21 +78,23 @@ export default function PriceComparison({
 
       if (response.ok) {
         const data = await response.json();
-        setDeals(data.deals || []);
+        if (data.deals && data.deals.length > 0) {
+          setDeals(data.deals);
+        }
         
         // If we had country set to 'detect', auto-select the detected country
         if (region === "detect" && data.country) {
           setRegion(data.country);
           localStorage.setItem("gamegata_currency_region", data.country);
         }
-      } else {
+      } else if (!silent) {
         setError(true);
       }
     } catch (err) {
       console.error("Failed to load pricing info:", err);
-      setError(true);
+      if (!silent) setError(true);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
       setIsRefreshing(false);
     }
   };
@@ -109,7 +111,7 @@ export default function PriceComparison({
       targetRegion = "US"; // default fallback for cache check
     }
 
-    // Check if we have matching initialDeals from server cache (only applicable for direct default provider)
+    // 1. Instant Cache Render (0ms UI latency)
     if (provider === "direct" && initialDeals && initialDeals.length > 0) {
       const matchingDeals = initialDeals.filter(d => d.country === targetRegion && (d.provider === "direct" || !d.provider));
       if (matchingDeals.length > 0) {
@@ -124,12 +126,21 @@ export default function PriceComparison({
           currency: d.currency
         })));
         setLoading(false);
+
+        // Check if cache is older than 2 hours for background SWR revalidation
+        const oldestUpdate = Math.min(...matchingDeals.map(d => new Date(d.updatedAt || 0).getTime()));
+        const isStale = isNaN(oldestUpdate) || oldestUpdate === 0 || (Date.now() - oldestUpdate) > 2 * 60 * 60 * 1000;
+        
+        // If stale or incomplete (< 2 stores), silently revalidate in the background
+        if (isStale || matchingDeals.length < 2) {
+          loadPrices(targetRegion, provider, false, true);
+        }
         return;
       }
     }
 
-    // Otherwise, fetch dynamically
-    loadPrices(targetRegion, provider, false);
+    // 2. Otherwise (no cache), fetch dynamically with loading skeleton
+    loadPrices(targetRegion, provider, false, false);
   }, [gameId, region, provider]);
 
   const handleRegionChange = (newRegion: string) => {

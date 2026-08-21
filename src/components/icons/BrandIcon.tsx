@@ -56,7 +56,16 @@ export default function BrandIcon({
     );
   }
 
-  // 6. PlayStation / PSN
+  // 6. Green Man Gaming
+  if (n.includes("greenman") || n.includes("green man") || n.includes("gmg")) {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm1.8 4.2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm2.7 8.1l-1.9 4.8c-.3.7-1 1.1-1.7 1.1-.2 0-.4 0-.6-.1-.9-.3-1.4-1.3-1.1-2.2l1.2-3.1-2.1 1.1c-.3.1-.6.2-.9.2-.6 0-1.1-.3-1.4-.8l-1.8-3.1c-.4-.7-.2-1.6.5-2 .7-.4 1.6-.2 2 .5l1.3 2.2 2.7-1.4c.5-.3 1.1-.3 1.6 0l2.6 1.4c.7.4 1 1.3.6 2z"/>
+      </svg>
+    );
+  }
+
+  // 7. PlayStation / PSN
   if (n.includes("playstation") || n.includes("psn") || n.includes("ps4") || n.includes("ps5") || n.includes("sony")) {
     return (
       <svg className={className} viewBox="0 0 24 24" fill="currentColor">

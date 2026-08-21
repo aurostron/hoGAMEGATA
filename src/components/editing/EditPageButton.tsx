@@ -61,7 +61,7 @@ export const EditPageButton: React.FC<EditPageButtonProps> = ({
           aria-label="Edit this page"
         >
           <Pencil className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span className="font-sans text-xs tracking-tight font-bold">
+          <span className="hidden sm:inline font-sans text-xs tracking-tight font-bold">
             Edit this page
           </span>
         </button>

@@ -50,16 +50,25 @@ const storeMap: Record<string, string> = {
   steam: "Steam",
   gog: "GOG",
   humble: "Humble Store",
+  humblestore: "Humble Store",
+  humblebundle: "Humble Store",
   fanatical: "Fanatical",
   epic: "Epic Games Store",
-  greenman: "GreenManGaming",
+  epicgames: "Epic Games Store",
+  epicgamesstore: "Epic Games Store",
+  greenman: "Green Man Gaming",
+  greenmangaming: "Green Man Gaming",
+  gmg: "Green Man Gaming",
+  microsoft: "Microsoft Store",
+  microsoftstore: "Microsoft Store",
+  xbox: "Microsoft Store",
   gamersgate: "GamersGate",
   gamebillet: "GameBillet",
   voidu: "Voidu",
   itchio: "itch.io",
   itch: "itch.io"
 };
-const matchedStore = storeMap[store.toLowerCase()] || store;
+const matchedStore = storeMap[store.toLowerCase().replace(/[^a-z0-9]/g, "")] || store;
 const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY 
   || (typeof process !== "undefined" && process.env?.PUBLIC_TURNSTILE_SITE_KEY)
   || import.meta.env.PUBLIC_TURNSTILE_SITE_KEY 

@@ -5,7 +5,7 @@ import { eq, and } from "drizzle-orm";
 const CHEAPSHARK_STORE_MAP: Record<string, string> = {
   "1": "Steam",
   "2": "GamersGate",
-  "3": "GreenManGaming",
+  "3": "Green Man Gaming",
   "6": "Direct2Drive",
   "7": "GOG",
   "8": "Origin",
@@ -39,15 +39,73 @@ export function extractSteamAppId(url: string): string | null {
 export function normalizeStoreName(name: string): string {
   const n = name.toLowerCase().trim();
   if (n.includes("steam")) return "Steam";
-  if (n.includes("gog")) return "GOG";
+  if (n.includes("gog") || n.includes("good old games")) return "GOG";
   if (n.includes("humble")) return "Humble Store";
   if (n.includes("fanatical")) return "Fanatical";
   if (n.includes("epic")) return "Epic Games Store";
-  if (n.includes("greenman") || n.includes("green man")) return "GreenManGaming";
+  if (n.includes("greenman") || n.includes("green man") || n.includes("gmg")) return "Green Man Gaming";
+  if (n.includes("microsoft") || n.includes("xbox") || n.includes("ms store")) return "Microsoft Store";
   if (n.includes("gamersgate")) return "GamersGate";
   if (n.includes("gamebillet")) return "GameBillet";
   if (n.includes("voidu")) return "Voidu";
   return name.trim();
+}
+
+export function buildCleanStoreUrl(
+  storeName: string,
+  title: string,
+  steamAppId?: string | null,
+  gogSlugOrUrl?: string | null
+): string {
+  const cleanTitle = title.trim();
+  const kebabSlug = cleanTitle
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/&/g, 'and')
+    .replace(/\+/g, 'plus')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  const normStore = normalizeStoreName(storeName);
+
+  switch (normStore) {
+    case "Steam":
+      if (steamAppId) {
+        return `https://store.steampowered.com/app/${steamAppId}/`;
+      }
+      return `https://store.steampowered.com/search/?term=${encodeURIComponent(cleanTitle)}`;
+
+    case "GOG": {
+      if (gogSlugOrUrl) {
+        let slug = gogSlugOrUrl;
+        const match = gogSlugOrUrl.match(/gog\.com\/(?:[a-z]{2}\/)?game\/([^/?#]+)/i);
+        if (match) slug = match[1];
+        return `https://www.gog.com/en/game/${slug}`;
+      }
+      return `https://www.gog.com/en/game/${kebabSlug}`;
+    }
+
+    case "Fanatical":
+      return `https://www.fanatical.com/en/game/${kebabSlug}`;
+
+    case "Green Man Gaming":
+      return `https://www.greenmangaming.com/games/${kebabSlug}-pc/`;
+
+    case "Humble Store":
+      return `https://www.humblebundle.com/store/${kebabSlug}`;
+
+    case "Microsoft Store":
+      return `https://www.xbox.com/en-us/search?q=${encodeURIComponent(cleanTitle)}`;
+
+    case "Epic Games Store":
+      return `https://store.epicgames.com/en-US/p/${kebabSlug}`;
+
+    case "GamersGate":
+      return `https://www.gamersgate.com/product/${kebabSlug}/`;
+
+    default:
+      return `https://store.steampowered.com/search/?term=${encodeURIComponent(cleanTitle)}`;
+  }
 }
 
 export interface PriceDeal {
@@ -515,24 +573,99 @@ export async function fetchDirectDeals(
   hasSteamLink: boolean = false,
   country: string = "US"
 ): Promise<PriceDeal[]> {
-  const fetchPromises: Promise<PriceDeal[]>[] = [];
+  const upperCountry = (country || "US").toUpperCase();
   
-  // Query Steam Direct (either using App ID or searching title if missing)
-  fetchPromises.push(fetchSteamDirect(steamId, title, gameId, hasSteamLink, country));
-  
-  if (gogUrl) {
-    fetchPromises.push(fetchGogDirect(title, gogUrl, gameId, country));
+  // 1. Concurrently run direct scanners (Steam, GOG) and multi-source deal feeds (ITAD v3, CheapShark)
+  const [directSteamResult, directGogResult, aggregatedResult] = await Promise.allSettled([
+    fetchSteamDirect(steamId, title, gameId, hasSteamLink, upperCountry),
+    gogUrl ? fetchGogDirect(title, gogUrl, gameId, upperCountry) : Promise.resolve([]),
+    fetchAggregatedDeals(steamId, title, upperCountry)
+  ]);
+
+  const directSteamDeals = directSteamResult.status === "fulfilled" ? directSteamResult.value : [];
+  const directGogDeals = directGogResult.status === "fulfilled" ? directGogResult.value : [];
+  const aggregatedDeals = aggregatedResult.status === "fulfilled" ? aggregatedResult.value : [];
+
+  // Extract resolved Steam App ID if available
+  let resolvedSteamId = steamId;
+  if (!resolvedSteamId && directSteamDeals.length > 0) {
+    const linkMatch = directSteamDeals[0].dealUrl.match(/\/app\/(\d+)/);
+    if (linkMatch) resolvedSteamId = linkMatch[1];
   }
-  
-  const results = await Promise.allSettled(fetchPromises);
-  const allDeals: PriceDeal[] = [];
-  
-  for (const result of results) {
-    if (result.status === "fulfilled" && Array.isArray(result.value)) {
-      allDeals.push(...result.value);
+
+  // 2. Map & Deduplicate across major authorized stores
+  const storeDealMap = new Map<string, PriceDeal>();
+
+  // A. Priority 1: Direct official store scans for Steam & GOG (highest accuracy for live regional currency)
+  for (const deal of directSteamDeals) {
+    storeDealMap.set("Steam", {
+      ...deal,
+      dealUrl: buildCleanStoreUrl("Steam", title, resolvedSteamId, gogUrl)
+    });
+  }
+
+  for (const deal of directGogDeals) {
+    storeDealMap.set("GOG", {
+      ...deal,
+      dealUrl: buildCleanStoreUrl("GOG", title, resolvedSteamId, gogUrl)
+    });
+  }
+
+  // B. Priority 2: Ingest other major stores from multi-source deal feeds (Fanatical, GMG, Humble, MS Store, Epic, etc.)
+  const ALLOWED_MAJOR_STORES = new Set([
+    "Steam",
+    "GOG",
+    "Fanatical",
+    "Green Man Gaming",
+    "Humble Store",
+    "Microsoft Store",
+    "Epic Games Store",
+    "GamersGate"
+  ]);
+
+  for (const deal of aggregatedDeals) {
+    const normStore = normalizeStoreName(deal.storeName);
+    
+    // Only accept supported major stores
+    if (!ALLOWED_MAJOR_STORES.has(normStore)) continue;
+
+    const cleanUrl = buildCleanStoreUrl(normStore, title, resolvedSteamId, gogUrl);
+    const existing = storeDealMap.get(normStore);
+
+    if (!existing) {
+      // Store doesn't exist yet, add from deal feed with clean URL
+      storeDealMap.set(normStore, {
+        ...deal,
+        storeName: normStore,
+        dealUrl: cleanUrl
+      });
+    } else {
+      // If store already exists (e.g. from direct scan), only replace if feed has a cheaper valid deal in same currency
+      if (deal.dealPrice > 0 && deal.dealPrice < existing.dealPrice && existing.dealPrice > 0) {
+        if (deal.currency === existing.currency) {
+          storeDealMap.set(normStore, {
+            ...deal,
+            storeName: normStore,
+            dealUrl: cleanUrl
+          });
+        }
+      }
     }
   }
-  return allDeals;
+
+  // 3. Compile all deals into a unified array
+  const compiledDeals = Array.from(storeDealMap.values());
+
+  // 4. Sort by deal price ascending (cheapest deal on top)
+  compiledDeals.sort((a, b) => {
+    if (a.dealPrice !== b.dealPrice) {
+      return a.dealPrice - b.dealPrice;
+    }
+    // Deterministic tie-breaker
+    return a.storeName.localeCompare(b.storeName);
+  });
+
+  return compiledDeals;
 }
 
 // Safe ID generator for PriceSnapshot client-side inserts (as id field is not generated at DB level)
@@ -553,7 +686,7 @@ export async function lazyGetPrices(
   provider: string = "direct"
 ): Promise<PriceDeal[]> {
   const upperCountry = (country || "US").toUpperCase();
-  const CACHE_TTL_MS = provider === "direct" ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 1 week for direct, 24 hrs for aggregators
+  const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours smart cache window
 
   try {
     // A. Check database cache in Turso

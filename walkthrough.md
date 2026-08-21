@@ -1338,7 +1338,42 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 | `walkthrough.md` | Modified — Appended change log |
 
 ### Verification
-- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+---
+
+## 2026-08-31 — Mobile UI Alignment & Horizontal Viewport Overflow Fix
+
+### Summary
+Diagnosed and resolved the root cause of horizontal cutoff, misalignment, and page overflow on mobile devices:
+1. **Header Mobile Overcrowding & Width Fix**:
+   - **Root Cause**: On mobile screens (<640px), [`Header.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/Header.astro) was rendering 8 non-collapsing elements (`Logo`, `Beta badge`, `Edit this page button`, `Search`, `Dice`, `Bell`, `Cart`, `User`) on a single row, pushing minimum header width to ~500px and forcing horizontal overflow/page clipping on narrow phone viewports (360px–390px).
+   - **Fix**:
+     - Hidden `RandomDiceButton` on mobile (`hidden md:flex`) since Random discovery is already permanently present in the mobile floating `BottomNav`.
+     - In [`EditPageButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx), made the text label `hidden sm:inline` so mobile devices show a sleek, compact pencil icon button without consuming horizontal space.
+     - Adjusted header action icons to compact `w-8 h-8 sm:w-10 sm:h-10` with `gap-0.5 sm:gap-2` and `overflow-x-clip`.
+     - In [`HeaderSearch.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/HeaderSearch.tsx), made the collapsed search button responsive (`w-9 sm:w-11`).
+2. **Global Viewport & Overflow-X Protection**:
+   - In [`Layout.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro), updated the viewport meta tag to standard `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` and added `overflow-x-hidden w-full max-w-full relative`.
+   - Increased mobile bottom padding to `pb-28 md:pb-0` so the floating bottom navigation bar never overlaps page content or footer elements.
+   - In [`global.css`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/styles/global.css), enforced strict `box-sizing: border-box`, `max-width: 100vw`, and `overflow-x: hidden` on `html` and `body`.
+3. **Typography & Heading Word-Break Protection**:
+   - Added `break-words` to massive display game titles in [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) to prevent extra-long titles from expanding container boundaries.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/Header.astro` | Modified — Compacted mobile action icons, hid redundant desktop dice button on mobile, optimized container padding |
+| `src/components/editing/EditPageButton.tsx` | Modified — Made text `hidden sm:inline` to show compact icon on mobile |
+| `src/components/HeaderSearch.tsx` | Modified — Responsive button width (`w-9 sm:w-11`) |
+| `src/layouts/Layout.astro` | Modified — Fixed responsive viewport meta tag, added global `overflow-x-hidden`, increased mobile bottom padding (`pb-28`) |
+| `src/styles/global.css` | Modified — Enforced strict `box-sizing: border-box` and `max-width: 100vw` in `@layer base` |
+| `src/pages/game/[slug].astro` | Modified — Added `break-words` to title heading |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Ran full production build (`npm run build`) locally — all 107.8k sitemaps, worker bundles, and server entries compiled cleanly with **0 errors**.
+- Adhered strictly to instruction: **no code pushed to remote, no deployment triggered**.
+
 
 
 

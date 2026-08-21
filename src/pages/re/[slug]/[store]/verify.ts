@@ -18,7 +18,8 @@ function matchStoreName(slug: string): string {
   if (s.includes("humble")) return "Humble Store";
   if (s.includes("fanatical")) return "Fanatical";
   if (s.includes("epic")) return "Epic Games Store";
-  if (s.includes("greenman") || s.includes("gmg")) return "GreenManGaming";
+  if (s.includes("greenman") || s.includes("gmg")) return "Green Man Gaming";
+  if (s.includes("microsoft") || s.includes("xbox") || s.includes("msstore")) return "Microsoft Store";
   if (s.includes("gamersgate")) return "GamersGate";
   if (s.includes("gamebillet")) return "GameBillet";
   if (s.includes("voidu")) return "Voidu";
