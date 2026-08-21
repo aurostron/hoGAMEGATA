@@ -397,8 +397,8 @@ export default function LoginPage({ screenshots = [] }: { screenshots?: Screensh
 
           {/* Game Info Metadata Display (Bottom Right) */}
           {screenshots.length > 0 && screenshots[currentSlide] && (
-            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 font-mono text-[10px] sm:text-xs uppercase tracking-wider text-white/80 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10 select-none pointer-events-none shadow-lg">
-              {screenshots[currentSlide].gameName} <span className="text-white/40 font-sans font-normal lowercase">by</span> {screenshots[currentSlide].devName}
+            <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 z-30 font-sans text-[10px] sm:text-xs uppercase tracking-widest text-neutral-400 text-right select-none pointer-events-none drop-shadow-md">
+              {screenshots[currentSlide].gameName} by {screenshots[currentSlide].devName}
             </div>
           )}
         </div>

@@ -1320,6 +1320,27 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 ### Verification
 - Built full production bundle locally (`npm run build`) — **0 errors**.
 
+---
+
+## 2026-08-31 — Restored Outfit Brand Font & Game Metadata Typography
+
+### Summary
+1. **Outfit & Global Google Fonts in Login Page**:
+   - Updated [`src/pages/login.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/login.astro) `<head>` to import the site's full Google Fonts stylesheet (`Outfit`, `Geist`, `Geist Mono`, `Hanken Grotesk`), ensuring the `hoGAMEGATA` header logo renders in its authentic **Outfit** brand typography.
+2. **Restored Original Game Metadata Typography**:
+   - Reverted the screenshot credit in [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) back to its original clean `font-sans text-[10px] sm:text-xs uppercase tracking-widest text-neutral-400 text-right drop-shadow-md` styling at `bottom-4 right-4 sm:bottom-6 sm:right-8`.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/login.astro` | Modified — Imported Outfit, Geist, and Hanken Grotesk fonts |
+| `src/components/LoginPage.tsx` | Modified — Restored original font-sans game metadata display |
+| `walkthrough.md` | Modified — Appended change log |
+
+### Verification
+- Built full production bundle locally (`npm run build`) — **0 errors**.
+
+
 
 
 
