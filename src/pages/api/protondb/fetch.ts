@@ -6,7 +6,7 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ request, url }) => {
   const clientIp = getClientIp(request);
-  const rl = await rateLimit(`protondb:${clientIp}`, 30, 60);
+  const rl = await rateLimit(`protondb:${clientIp}`, 120, 60);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
 
   const appId = url.searchParams.get('appId');

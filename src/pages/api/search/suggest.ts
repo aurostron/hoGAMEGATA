@@ -9,7 +9,7 @@ export const prerender = false;
 
 export const GET: APIRoute = async ({ request }) => {
   const clientIp = getClientIp(request);
-  const rl = await rateLimit(`search_suggest:${clientIp}`, 30, 60);
+  const rl = await rateLimit(`search_suggest:${clientIp}`, 120, 60);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
   const runtimeEnv = isDev

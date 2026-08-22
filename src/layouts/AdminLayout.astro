@@ -269,26 +269,14 @@ const userEmail = "bapum@example.com";
           }
         } catch (e) {}
 
-        // Intercept window.fetch to track API errors (429 and repeated 500s)
-        let apiErrorCount = 0;
+        // Intercept window.fetch to log API warnings without locking out user viewport
         const originalFetch = window.fetch;
         if (typeof originalFetch === 'function') {
           window.fetch = async function(...args) {
             const response = await originalFetch.apply(this, args);
             try {
-              const url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url ? args[0].url : String(args[0] || ''));
-
               if (response.status === 429) {
-                showFullTabLockout();
-              } else if (url.includes('/api/')) {
-                if (response.status === 500) {
-                  apiErrorCount++;
-                  if (apiErrorCount >= 2) {
-                    showFullTabLockout();
-                  }
-                } else if (response.ok) {
-                  apiErrorCount = Math.max(0, apiErrorCount - 1);
-                }
+                console.warn('[RateLimit] API request rate limited:', args[0]);
               }
             } catch (e) {}
             return response;

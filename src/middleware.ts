@@ -111,9 +111,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return applySecurityHeaders(createRateLimitHtmlResponse(429, 900));
   }
 
-  // Enforce global document request rate limit (60 page views / min per IP)
+  // Enforce global document request rate limit (120 page views / min per IP)
   if (isDocumentRequest) {
-    const docRl = await rateLimit(`doc_nav:${clientIp}`, 60, 60);
+    const docRl = await rateLimit(`doc_nav:${clientIp}`, 120, 60);
     if (!docRl.allowed) {
       return applySecurityHeaders(createRateLimitHtmlResponse(429, docRl.retryAfter));
     }
