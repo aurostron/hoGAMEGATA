@@ -27,10 +27,10 @@ function getAuth(): ReturnType<typeof betterAuth> {
     const defaultBaseURL = isDev ? "http://localhost:4321" : "https://gamegata.xyz";
     const baseURL = (isDev && envBaseURL && envBaseURL.includes("gamegata.xyz")) ? "http://localhost:4321" : (envBaseURL || defaultBaseURL);
 
-    const resendApiKey = getEnvVal("RESEND_API_KEY");
-    const turnstileSecretKey = getEnvVal("TURNSTILE_SECRET_KEY") || "1x0000000000000000000000000000000UNTRUSTED";
-    const googleClientId = getEnvVal("GOOGLE_CLIENT_ID") || "placeholder";
-    const googleClientSecret = getEnvVal("GOOGLE_CLIENT_SECRET") || "placeholder";
+    const resendApiKey = getEnvVal("RESEND_API_KEY") || "";
+    const turnstileSecretKey = getEnvVal("TURNSTILE_SECRET_KEY") || "";
+    const googleClientId = getEnvVal("GOOGLE_CLIENT_ID") || "";
+    const googleClientSecret = getEnvVal("GOOGLE_CLIENT_SECRET") || "";
 
     const trustedOrigins = Array.from(new Set([
       "http://localhost:4321",

@@ -15,31 +15,27 @@ initTursoForRequest(runtimeEnv);
 
 Astro.response.headers.set(
   'Cache-Control',
-  'public, max-age=15, s-maxage=60, stale-while-revalidate=120'
+  'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
 let totalGames: number | null = null;
 let allGenres: any[] = [];
-let allTags: any[] = [];
 let allPlatforms: any[] = [];
 
 try {
-  // Query database counts and lists in parallel
+  // Query database counts and lists in parallel (lightweight only)
   const [
     [{ count: gamesCount }],
     genresList,
-    tagsList,
     platformsList
   ] = await Promise.all([
     turso.select({ count: count() }).from(games),
-    turso.select({ name: genres.name, slug: genres.slug }).from(genres).orderBy(genres.name),
-    turso.select({ name: tags.name, slug: tags.slug }).from(tags).orderBy(tags.name),
-    turso.select({ name: platforms.name, slug: platforms.slug }).from(platforms).orderBy(platforms.name)
+    turso.select({ name: genres.name, slug: genres.slug }).from(genres).orderBy(genres.name).limit(60),
+    turso.select({ name: platforms.name, slug: platforms.slug }).from(platforms).orderBy(platforms.name).limit(100)
   ]);
 
   totalGames = gamesCount;
   allGenres = genresList;
-  allTags = tagsList;
   allPlatforms = platformsList;
 } catch (err) {
   console.error("Failed to query catalog metadata from Turso:", err);
@@ -56,7 +52,7 @@ try {
       client:only="react"
       initialTotalGames={totalGames}
       initialGenres={allGenres}
-      initialTags={allTags}
+      initialTags={[]}
       initialPlatforms={allPlatforms}
     />
   </div>

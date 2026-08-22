@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth, AuthProvider } from "../context/AuthContext";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, RotateCcw, Mail } from "lucide-react";
 import SciFiLogo from "./SciFiLogo";
 import { TurnstileWidget } from "./ui/TurnstileWidget";
+import { authClient } from "../lib/auth-client";
 
 function LoginForm() {
   const { user, login, signUp, loginWithGoogle, isSupabase } = useAuth();
@@ -16,6 +17,21 @@ function LoginForm() {
   
   const [captchaToken, setCaptchaToken] = useState("");
   const [agreedAge, setAgreedAge] = useState(false);
+
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    let timer: any = null;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [resendCooldown]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -61,6 +77,32 @@ function LoginForm() {
     }
   }, [user, redirectUrl]);
 
+  const handleResendVerification = async () => {
+    if (resendCooldown > 0 || isResending) return;
+    if (!email) {
+      setErrorMsg("Please enter your email address to request a new verification email.");
+      return;
+    }
+    setIsResending(true);
+    setErrorMsg("");
+    try {
+      const { error } = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: redirectUrl === "/login" ? "/" : redirectUrl,
+      });
+      if (error) {
+        setErrorMsg(error.message || "Failed to resend verification email.");
+      } else {
+        setSuccessMsg(`Verification email resent to ${email}! Check your inbox.`);
+        setResendCooldown(60);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Failed to send verification email.");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
@@ -101,7 +143,8 @@ function LoginForm() {
         const res = await signUp(email, password, captchaToken);
         clearTimeout(timeoutId);
         if (res.success) {
-          setSuccessMsg("Registration successful! Check your email for confirmation link.");
+          setSuccessMsg(`Registration successful! Check ${email} for confirmation link.`);
+          setResendCooldown(60);
         } else {
           setErrorMsg(res.error || "Failed to register.");
         }
@@ -167,8 +210,27 @@ function LoginForm() {
         </div>
       )}
       {successMsg && (
-        <div className="border border-emerald-500/30 bg-emerald-950/20 text-emerald-200 p-2.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
-          Success: {successMsg}
+        <div className="space-y-2">
+          <div className="border border-emerald-500/30 bg-emerald-950/20 text-emerald-200 p-2.5 text-xs font-sans font-bold uppercase text-center rounded-xl">
+            Success: {successMsg}
+          </div>
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resendCooldown > 0 || isResending}
+              className="text-xs font-sans font-semibold text-white/80 hover:text-white disabled:text-white/30 flex items-center gap-1.5 py-1.5 px-3 rounded-xl border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 transition-all cursor-pointer disabled:cursor-not-allowed shadow-sm"
+            >
+              <RotateCcw className={`w-3.5 h-3.5 ${isResending ? "animate-spin" : ""}`} />
+              <span>
+                {isResending
+                  ? "Sending email..."
+                  : resendCooldown > 0
+                  ? `Resend email in ${resendCooldown}s`
+                  : "Resend verification email"}
+              </span>
+            </button>
+          </div>
         </div>
       )}
 
@@ -267,23 +329,45 @@ function LoginForm() {
         </div>
       </form>
 
-      {!isCapped && (
-        <div className="pt-2 border-t border-white/10 text-center font-sans text-[10px] sm:text-[11px]">
-          <button
-            type="button"
-            onClick={() => {
-              setIsRegistering(!isRegistering);
-              setErrorMsg("");
-              setSuccessMsg("");
-            }}
-            className="text-white/40 hover:text-white hover:underline decoration-white/30 underline-offset-4 tracking-wider font-bold cursor-pointer font-sans uppercase transition-all duration-200"
-          >
-            {isRegistering 
-              ? "Already have an account? Sign in here" 
-              : "Need an account? Register here"}
-          </button>
-        </div>
-      )}
+      <div className="pt-2 border-t border-white/10 text-center font-sans space-y-1.5">
+        {!isCapped && (
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className="text-white/40 hover:text-white hover:underline decoration-white/30 underline-offset-4 tracking-wider font-bold cursor-pointer font-sans uppercase transition-all duration-200 text-[10px] sm:text-[11px]"
+            >
+              {isRegistering 
+                ? "Already have an account? Sign in here" 
+                : "Need an account? Register here"}
+            </button>
+          </div>
+        )}
+
+        {!isRegistering && (
+          <div>
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resendCooldown > 0 || isResending}
+              className="text-white/35 hover:text-white/70 disabled:text-white/20 text-[10px] tracking-wide font-sans cursor-pointer disabled:cursor-not-allowed inline-flex items-center gap-1 transition-colors"
+            >
+              <RotateCcw className={`w-3 h-3 ${isResending ? "animate-spin" : ""}`} />
+              <span>
+                {isResending
+                  ? "Sending..."
+                  : resendCooldown > 0
+                  ? `Resend confirmation in ${resendCooldown}s`
+                  : "Didn't receive verification email? Resend"}
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

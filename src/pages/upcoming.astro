@@ -25,7 +25,8 @@ const rawGames = await turso
   })
   .from(gamesTable)
   .where(or(eq(gamesTable.status, "upcoming"), gt(gamesTable.releaseDate, new Date())))
-  .orderBy(gamesTable.releaseDate);
+  .orderBy(gamesTable.releaseDate)
+  .limit(200);
 
 const games = await enrichGamesWithRelations(rawGames);
 

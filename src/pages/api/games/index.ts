@@ -42,6 +42,23 @@ async function getGameTitles(): Promise<string[]> {
   }
 }
 
+let cachedMaxPrice: { val: number; timestamp: number } | null = null;
+async function getCachedMaxPrice(): Promise<number> {
+  if (cachedMaxPrice && Date.now() - cachedMaxPrice.timestamp < 3600000) {
+    return cachedMaxPrice.val;
+  }
+  try {
+    const [maxPriceRow] = await turso
+      .select({ maxPrice: sql<number>`max(${priceSnapshotsTable.dealPrice})` })
+      .from(priceSnapshotsTable);
+    const val = maxPriceRow?.maxPrice || 60;
+    cachedMaxPrice = { val, timestamp: Date.now() };
+    return val;
+  } catch (err) {
+    return cachedMaxPrice?.val || 60;
+  }
+}
+
 export const GET: APIRoute = async ({ request, locals }) => {
   const clientIp = getClientIp(request);
   const rl = await rateLimit(`games_api:${clientIp}`, 120, 60);
@@ -329,6 +346,14 @@ export const GET: APIRoute = async ({ request, locals }) => {
             gt(gamesTable.releaseDate, todayDate)
           )
         );
+      } else if (sort === "latest") {
+        conds.push(
+          and(
+            or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
+            isNotNull(gamesTable.releaseDate),
+            lte(gamesTable.releaseDate, todayDate)
+          )
+        );
       } else {
         conds.push(
           and(
@@ -436,18 +461,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // Query Max Price in DB (for slider ranges)
-    let maxPrice = 60;
-    try {
-      const [maxPriceRow] = await turso
-        .select({ maxPrice: sql<number>`max(${priceSnapshotsTable.dealPrice})` })
-        .from(priceSnapshotsTable);
-      if (maxPriceRow && maxPriceRow.maxPrice) {
-        maxPrice = maxPriceRow.maxPrice;
-      }
-    } catch (err) {
-      console.warn("Failed to fetch max price snapshot:", err);
-    }
+    // Query Max Price in DB (cached with 1-hour TTL)
+    const maxPrice = await getCachedMaxPrice();
 
     // 7. Query Games List
     let baseQuery;
@@ -542,7 +557,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
       ) as any;
     } else if (sort === "latest") {
       baseQuery = baseQuery.orderBy(
-        sql`CASE WHEN ${gamesTable.releaseDate} IS NOT NULL THEN 0 ELSE 1 END`,
         desc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;
