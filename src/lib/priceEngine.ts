@@ -45,9 +45,17 @@ export function normalizeStoreName(name: string): string {
   if (n.includes("epic")) return "Epic Games Store";
   if (n.includes("greenman") || n.includes("green man") || n.includes("gmg")) return "Green Man Gaming";
   if (n.includes("microsoft") || n.includes("xbox") || n.includes("ms store")) return "Microsoft Store";
-  if (n.includes("gamersgate")) return "GamersGate";
   if (n.includes("gamebillet")) return "GameBillet";
+  if (n.includes("gamesplanet")) return "Gamesplanet";
+  if (n.includes("gamersgate")) return "GamersGate";
+  if (n.includes("indiegala")) return "IndieGala";
   if (n.includes("voidu")) return "Voidu";
+  if (n.includes("2game")) return "2Game";
+  if (n.includes("dlgamer")) return "DLGamer";
+  if (n.includes("wingamestore")) return "WinGameStore";
+  if (n.includes("etail")) return "eTail.Market";
+  if (n.includes("joybuggy")) return "JoyBuggy";
+  if (n.includes("newegg")) return "Newegg";
   return name.trim();
 }
 
@@ -100,8 +108,38 @@ export function buildCleanStoreUrl(
     case "Epic Games Store":
       return `https://store.epicgames.com/en-US/p/${kebabSlug}`;
 
+    case "GameBillet":
+      return `https://www.gamebillet.com/${kebabSlug}`;
+
+    case "Gamesplanet":
+      return `https://us.gamesplanet.com/game/${kebabSlug}`;
+
     case "GamersGate":
       return `https://www.gamersgate.com/product/${kebabSlug}/`;
+
+    case "IndieGala":
+      return `https://www.indiegala.com/store/game/${kebabSlug}`;
+
+    case "Voidu":
+      return `https://www.voidu.com/en/${kebabSlug}`;
+
+    case "2Game":
+      return `https://2game.com/en-us/${kebabSlug}`;
+
+    case "DLGamer":
+      return `https://www.dlgamer.com/us/games/buy-${kebabSlug}`;
+
+    case "WinGameStore":
+      return `https://www.wingamestore.com/product/${kebabSlug}`;
+
+    case "eTail.Market":
+      return `https://etail.market/${kebabSlug}`;
+
+    case "JoyBuggy":
+      return `https://www.joybuggy.com/en/${kebabSlug}`;
+
+    case "Newegg":
+      return `https://www.newegg.com/p/pl?d=${encodeURIComponent(cleanTitle)}`;
 
     default:
       return `https://store.steampowered.com/search/?term=${encodeURIComponent(cleanTitle)}`;
@@ -575,6 +613,8 @@ export async function fetchDirectDeals(
 ): Promise<PriceDeal[]> {
   const upperCountry = (country || "US").toUpperCase();
   
+  console.log(`[fetchDirectDeals] 🔍 Starting for "${title}" | steamId=${steamId} | gogUrl=${gogUrl} | country=${upperCountry}`);
+
   // 1. Concurrently run direct scanners (Steam, GOG) and multi-source deal feeds (ITAD v3, CheapShark)
   const [directSteamResult, directGogResult, aggregatedResult] = await Promise.allSettled([
     fetchSteamDirect(steamId, title, gameId, hasSteamLink, upperCountry),
@@ -585,6 +625,14 @@ export async function fetchDirectDeals(
   const directSteamDeals = directSteamResult.status === "fulfilled" ? directSteamResult.value : [];
   const directGogDeals = directGogResult.status === "fulfilled" ? directGogResult.value : [];
   const aggregatedDeals = aggregatedResult.status === "fulfilled" ? aggregatedResult.value : [];
+
+  console.log(`[fetchDirectDeals] Steam direct: ${directSteamDeals.length} deals | GOG direct: ${directGogDeals.length} deals | Aggregated: ${aggregatedDeals.length} deals`);
+  if (directSteamResult.status === "rejected") console.warn(`[fetchDirectDeals] ❌ Steam direct REJECTED:`, directSteamResult.reason);
+  if (directGogResult.status === "rejected") console.warn(`[fetchDirectDeals] ❌ GOG direct REJECTED:`, directGogResult.reason);
+  if (aggregatedResult.status === "rejected") console.warn(`[fetchDirectDeals] ❌ Aggregated REJECTED:`, aggregatedResult.reason);
+  if (aggregatedDeals.length > 0) {
+    console.log(`[fetchDirectDeals] Aggregated stores:`, aggregatedDeals.map(d => `${d.storeName}: $${d.dealPrice}`).join(', '));
+  }
 
   // Extract resolved Steam App ID if available
   let resolvedSteamId = steamId;
@@ -611,23 +659,10 @@ export async function fetchDirectDeals(
     });
   }
 
-  // B. Priority 2: Ingest other major stores from multi-source deal feeds (Fanatical, GMG, Humble, MS Store, Epic, etc.)
-  const ALLOWED_MAJOR_STORES = new Set([
-    "Steam",
-    "GOG",
-    "Fanatical",
-    "Green Man Gaming",
-    "Humble Store",
-    "Microsoft Store",
-    "Epic Games Store",
-    "GamersGate"
-  ]);
-
+  // B. Priority 2: Ingest other authorized digital stores from multi-source deal feeds (Epic, Fanatical, GMG, Humble, MS Store, GameBillet, etc.)
   for (const deal of aggregatedDeals) {
     const normStore = normalizeStoreName(deal.storeName);
-    
-    // Only accept supported major stores
-    if (!ALLOWED_MAJOR_STORES.has(normStore)) continue;
+    if (!normStore) continue;
 
     const cleanUrl = buildCleanStoreUrl(normStore, title, resolvedSteamId, gogUrl);
     const existing = storeDealMap.get(normStore);
@@ -664,6 +699,8 @@ export async function fetchDirectDeals(
     // Deterministic tie-breaker
     return a.storeName.localeCompare(b.storeName);
   });
+
+  console.log(`[fetchDirectDeals] ✅ Final compiled: ${compiledDeals.length} deals:`, compiledDeals.map(d => `${d.storeName}: $${d.dealPrice}`).join(', '));
 
   return compiledDeals;
 }
@@ -719,7 +756,11 @@ export async function lazyGetPrices(
       const oldestUpdate = Math.min(...cached.map(c => new Date(c.updatedAt).getTime()));
       const isFresh = (Date.now() - oldestUpdate) < CACHE_TTL_MS;
 
-      if (isFresh) {
+      // Check if cache has expanded multi-store deals beyond just Steam/GOG
+      const hasExpandedStores = cached.some(c => c.storeName !== "Steam" && c.storeName !== "GOG");
+
+      // Only reuse cache if it is fresh AND has expanded store coverage (or aggregated feed)
+      if (isFresh && (hasExpandedStores || provider === "aggregated")) {
         return cached.map(c => ({
           storeName: c.storeName,
           dealPrice: c.dealPrice,
@@ -729,6 +770,10 @@ export async function lazyGetPrices(
           currency: c.currency
         }));
       }
+    }
+
+    if (forceRefresh) {
+      console.log(`[Pricing Engine] 🔥 Strict On-Demand Refresh initiated for "${title}" (${provider}) in region ${upperCountry}`);
     }
 
     // B. Cache stale/missing: Find steamId & gogUrl
@@ -746,46 +791,107 @@ export async function lazyGetPrices(
     }
 
     // C. Fetch fresh deals based on provider
-    const freshDeals = provider === "direct"
+    let freshDeals = provider === "direct"
       ? await fetchDirectDeals(steamId, gogUrl, title, gameId, hasSteamLink, upperCountry)
       : await fetchAggregatedDeals(steamId, title, upperCountry);
 
-    if (freshDeals.length > 0) {
-      // D. Update local cached data in Turso (Delete stale, then Insert fresh)
-      try {
-        await turso
-          .delete(priceSnapshotsTable)
-          .where(
-            and(
-              eq(priceSnapshotsTable.gameId, gameId),
-              eq(priceSnapshotsTable.country, upperCountry),
-              eq(priceSnapshotsTable.provider, provider)
-            )
-          );
-      } catch (deleteError) {
-        console.warn("⚠️ Failed to delete stale prices from Turso:", deleteError);
-      }
+    console.log(`[Pricing Engine] ✅ Fetched ${freshDeals.length} deals for "${title}" (${provider}):`, freshDeals.map(d => `${d.storeName}: $${d.dealPrice}`).join(', '));
 
-      try {
-        await turso
-          .insert(priceSnapshotsTable)
-          .values(
-            freshDeals.map(deal => ({
-              id: generatePriceSnapshotId(),
-              gameId,
-              storeName: deal.storeName,
-              dealPrice: deal.dealPrice,
-              retailPrice: deal.retailPrice,
-              discountPercent: deal.discountPercent,
-              dealUrl: deal.dealUrl,
-              currency: deal.currency,
-              country: upperCountry,
-              provider,
-              updatedAt: new Date()
-            }))
-          );
-      } catch (insertError) {
-        console.warn("⚠️ Failed to write fresh prices to Turso:", insertError);
+    // D. Rate-limit resilience: if provider="direct" but we only got Steam/GOG
+    //    (aggregated APIs were rate-limited), supplement with DB-cached aggregated deals
+    if (provider === "direct") {
+      const hasExpandedFresh = freshDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
+      if (!hasExpandedFresh && freshDeals.length > 0) {
+        console.log(`[Pricing Engine] ⚠️ Direct fetch returned only Steam/GOG — checking DB for cached aggregated deals to supplement`);
+        try {
+          const aggregatedCache = await turso
+            .select()
+            .from(priceSnapshotsTable)
+            .where(
+              and(
+                eq(priceSnapshotsTable.gameId, gameId),
+                eq(priceSnapshotsTable.country, upperCountry),
+                eq(priceSnapshotsTable.provider, "aggregated")
+              )
+            )
+            .orderBy(priceSnapshotsTable.dealPrice);
+
+          if (aggregatedCache.length > 0) {
+            console.log(`[Pricing Engine] 🔄 Found ${aggregatedCache.length} cached aggregated deals — merging with clean URLs`);
+            const directDealMap = new Map<string, PriceDeal>();
+            for (const d of freshDeals) {
+              directDealMap.set(d.storeName, d);
+            }
+
+            for (const aggDeal of aggregatedCache) {
+              const normStore = normalizeStoreName(aggDeal.storeName);
+              if (!normStore || directDealMap.has(normStore)) continue;
+
+              const cleanUrl = buildCleanStoreUrl(normStore, title, steamId, gogUrl);
+              directDealMap.set(normStore, {
+                storeName: normStore,
+                dealPrice: aggDeal.dealPrice,
+                retailPrice: aggDeal.retailPrice,
+                discountPercent: aggDeal.discountPercent,
+                dealUrl: cleanUrl,
+                currency: aggDeal.currency
+              });
+            }
+
+            freshDeals = Array.from(directDealMap.values()).sort((a, b) => {
+              if (a.dealPrice !== b.dealPrice) return a.dealPrice - b.dealPrice;
+              return a.storeName.localeCompare(b.storeName);
+            });
+            console.log(`[Pricing Engine] ✅ Merged result: ${freshDeals.length} deals:`, freshDeals.map(d => `${d.storeName}: $${d.dealPrice}`).join(', '));
+          }
+        } catch (mergeErr) {
+          console.warn("[Pricing Engine] ⚠️ Failed to read aggregated cache for merge:", mergeErr);
+        }
+      }
+    }
+
+    if (freshDeals.length > 0) {
+      // E. Update local cached data in Turso (Delete stale, then Insert fresh)
+      // Only write to DB if we have expanded stores (don't overwrite good cache with degraded data)
+      const hasExpandedResult = freshDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
+      if (hasExpandedResult || provider === "aggregated") {
+        try {
+          await turso
+            .delete(priceSnapshotsTable)
+            .where(
+              and(
+                eq(priceSnapshotsTable.gameId, gameId),
+                eq(priceSnapshotsTable.country, upperCountry),
+                eq(priceSnapshotsTable.provider, provider)
+              )
+            );
+        } catch (deleteError) {
+          console.warn("⚠️ Failed to delete stale prices from Turso:", deleteError);
+        }
+
+        try {
+          await turso
+            .insert(priceSnapshotsTable)
+            .values(
+              freshDeals.map(deal => ({
+                id: generatePriceSnapshotId(),
+                gameId,
+                storeName: deal.storeName,
+                dealPrice: deal.dealPrice,
+                retailPrice: deal.retailPrice,
+                discountPercent: deal.discountPercent,
+                dealUrl: deal.dealUrl,
+                currency: deal.currency,
+                country: upperCountry,
+                provider,
+                updatedAt: new Date()
+              }))
+            );
+        } catch (insertError) {
+          console.warn("⚠️ Failed to write fresh prices to Turso:", insertError);
+        }
+      } else {
+        console.log(`[Pricing Engine] ⏭️ Skipping DB write — only Steam/GOG in result, preserving existing cache`);
       }
 
       return freshDeals;

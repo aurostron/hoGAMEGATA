@@ -1446,44 +1446,57 @@ Built and verified the standalone **GameGata Admin Mobile Application** for Andr
   - Unrated Games: 103,511
   - Announcements: 12
   - Direct connection verified over HTTPS with 0 Cloudflare Workers needed.
+- **Android APK Compilation**: Successfully compiled the native Android APK using Tauri v2 mobile toolchain + Gradle:
+  - Output APK: `admin-app/gamegata-admin-debug.apk` (115 MB)
+  - Target architecture: ARM64 (`aarch64-linux-android`)
+  - Target SDK: 34+ (Android 7.0+ up to Android 15/16)
+  - Icon assets generated for all densities (`mipmap-mdpi` through `mipmap-xxxhdpi`).
 
+---
 
+## 2026-09-01 — Account Dropdown Menu Revamp, Login Loading Fix & Redirect Captcha Resilience
 
+### Summary
+1. **User/Settings Dropdown Revamp (`/ui-ux-pro-max`)**:
+   - Upgraded `@base-ui/react/menu` and `src/components/SettingsButton.tsx` to match the dark glassmorphic theme with soft rounded corners (`rounded-2xl`), subtle glow highlights, and high-contrast typography.
+   - Removed cluttered view switches (`Layout Mode: Grid/List`) and legal policy links from the account menu.
+   - Added personalized greeting card:
+     - **Signed-in users**: Displays user avatar or styled initial avatar, `"Hello, {Username}!"`, email address, and role badges (`Admin` / `Collector`).
+     - **Guests / Non-signed in**: Displays `"Hello there! 👋"`, descriptive subtext (*"Sign in to track games, manage your wishlist, and save library ratings"*), and an inline `"Sign In / Register"` CTA button.
+   - Organized options into clean sections: `Personalize` (Preferences & App Install), `Platform` (Wishlist & Tracker, Submit a Game, Support & FAQ, About), `Administration` (Admin Console if admin), and `Session` (Sign Out).
 
+2. **Login Page "Loading..." & Auth Fixes**:
+   - Replaced fragile manual script tag injection in `src/components/LoginPage.tsx` with the standardized `<TurnstileWidget />` component.
+   - Removed blocking `check-limit` fetch on user login (only new signups check the 10,000 user cap), eliminating unnecessary network latency and auth failure points.
+   - Fixed redirect loop guard in `LoginPage.tsx` so `redirect=/login` safely defaults to `/` or `/dashboard`.
+   - Optimized `auth.ts` database hook to use lightweight `count()` query instead of loading the entire user database table into memory on user creation, dramatically decreasing Worker CPU and memory usage.
+   - Updated `src/pages/api/auth/[...all].ts` and `src/lib/serverAuth.ts` to properly initialize Turso auth isolates and Better Auth handlers with runtime worker environment variables.
 
+3. **Store Redirect Captcha Loop Fix**:
+   - In `src/pages/re/[slug]/[store]/verify.ts`, made Turnstile validation resilient with client IP passing (`cf-connecting-ip`), 4s network timeout safeguards, and graceful fail-open fallback for non-critical domain mismatches in edge environments.
+   - In `src/pages/re/[slug]/[store].astro`, added a direct `"Proceed to {Store} →"` manual fallback action and stopped automatic `turnstile.reset()` infinite re-verification loops.
+   - Switched post-verification redirect to `window.location.replace(redirectUrl)` to prevent backward navigation redirect loops in browser history.
 
+### Files Modified
+| File | Action | Details |
+|------|--------|---------|
+| `src/components/SettingsButton.tsx` | Modified | Redesigned account menu with guest/user greeting cards, cleaner sections, and modern dark glass theme |
+| `src/components/ui/dropdown-menu.tsx` | Modified | Updated styles to dark glassmorphic rounded cards, improved hover/focus states, and accessible contrast |
+| `src/components/LoginPage.tsx` | Modified | Integrated `TurnstileWidget`, fixed redirect loops, and added submission timeout guard |
+| `src/context/AuthContext.tsx` | Modified | Removed blocking check-limit on login, added timeout safeguards on signup |
+| `src/lib/auth.ts` | Modified | Replaced full-table user scan with `count()`, added Turnstile timeout and error tolerance |
+| `src/lib/serverAuth.ts` | Modified | Passed runtime isolate env to `getServerUser` and initialized TursoAuth |
+| `src/pages/api/auth/[...all].ts` | Modified | Initialized TursoAuth and BetterAuth with runtime isolate env |
+| `src/pages/re/[slug]/[store].astro` | Modified | Added manual fallback proceed button, eliminated infinite reset loops, used `window.location.replace` |
+| `src/pages/re/[slug]/[store]/verify.ts` | Modified | Added client IP forwarding, timeout safeguard, and fail-open resilience |
+| `src/pages/api/user/check-limit.ts` | Modified | Added runtime isolate environment initialization |
+| `src/pages/api/user/wishlist.ts` | Modified | Added runtime isolate environment initialization for GET, POST, DELETE |
+| `src/pages/api/user/collection.ts` | Modified | Added runtime isolate environment initialization for GET, POST, DELETE |
+| `src/middleware.ts` | Modified | Added `/api/auth` and `/api/user/check-limit` to `PUBLIC_PATHS` |
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Verification Results
+- **TypeScript & Production Build**: `npm run build` completed cleanly with 0 errors.
+- **Cloudflare Deployment**: `wrangler deploy` successfully uploaded assets and deployed worker triggers.
+  - Custom domain: `gamegata.xyz`
+  - Version ID: `8c9e548b-da9d-4c6e-961f-7e8ff98e18fa`
+  - Status: Live in production

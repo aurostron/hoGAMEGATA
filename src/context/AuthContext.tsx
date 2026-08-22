@@ -133,13 +133,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password?: string, captchaToken?: string) => {
     try {
-      // Check database limit before signing in
-      const checkRes = await fetch("/api/user/check-limit");
-      const checkData = await checkRes.json().catch(() => ({ capped: false }));
-      if (checkData.capped) {
-        return { success: false, error: "Registration limit of 10,000 users has been reached." };
-      }
-
       // Call Better Auth client signIn
       const { data, error } = await authClient.signIn.email({
         email,
@@ -148,14 +141,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: captchaToken ? { "x-captcha-token": captchaToken } : undefined
       });
 
-      if (error) throw error;
+      if (error) {
+        return { success: false, error: error.message || error.statusText || "Failed to authenticate" };
+      }
 
       if (data?.user) {
-        setUser({
+        const u = {
           id: data.user.id,
           email: data.user.email,
           avatarUrl: data.user.image || undefined,
-        });
+        };
+        setUser(u);
+        try {
+          localStorage.setItem("gamegata_user_cache", JSON.stringify(u));
+        } catch (e) {}
       }
       return { success: true };
     } catch (err: any) {
@@ -175,11 +174,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password?: string, captchaToken?: string) => {
     try {
-      // Check database limit before registering
-      const checkRes = await fetch("/api/user/check-limit");
-      const checkData = await checkRes.json().catch(() => ({ capped: false }));
-      if (checkData.capped) {
-        return { success: false, error: "Registration limit of 10,000 users has been reached." };
+      // Check database limit before registering with timeout safeguard
+      try {
+        const checkRes = await fetch("/api/user/check-limit", { signal: AbortSignal.timeout(3000) });
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          if (checkData.capped) {
+            return { success: false, error: "Registration limit of 10,000 users has been reached." };
+          }
+        }
+      } catch (e) {
+        // Non-blocking fallback if check-limit times out
       }
 
       // Call Better Auth client signUp
@@ -191,7 +196,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: captchaToken ? { "x-captcha-token": captchaToken } : undefined
       });
 
-      if (error) throw error;
+      if (error) {
+        return { success: false, error: error.message || error.statusText || "Failed to sign up" };
+      }
       return { success: true };
     } catch (err: any) {
       if (import.meta.env.DEV && (email.startsWith("mock") || !password)) {

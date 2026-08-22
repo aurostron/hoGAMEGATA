@@ -1,7 +1,12 @@
-import { auth } from "./auth";
+import { auth, initBetterAuth } from "./auth";
+import { initTursoAuthForRequest } from "./tursoAuth";
 
-export async function getServerUser(request: Request, cookies: any) {
+export async function getServerUser(request: Request, cookies: any, env?: any) {
   try {
+    if (env) {
+      initTursoAuthForRequest(env);
+      initBetterAuth(env);
+    }
     // 1. Try to fetch the session using Better Auth
     const session = await auth.api.getSession({
       headers: request.headers,

@@ -1,16 +1,29 @@
 import type { APIRoute } from 'astro';
 import { getServerUser } from '../../../lib/serverAuth';
-import { tursoAuth } from '../../../lib/tursoAuth';
+import { tursoAuth, initTursoAuthForRequest } from '../../../lib/tursoAuth';
+import { initTursoForRequest } from '../../../lib/turso';
 import { collection as collectionTable } from '../../../db/auth-schema';
 import { eq, desc, and } from 'drizzle-orm';
+import { env as cfEnv } from "cloudflare:workers";
 
 export const prerender = false;
 
 const VALID_STATUSES = ["OWNED", "PLAYING", "COMPLETED", "WANT_TO_PLAY"] as const;
 
-export const GET: APIRoute = async ({ request, cookies }) => {
+export const GET: APIRoute = async (context) => {
+  const { request, cookies } = context;
   try {
-    const user = await getServerUser(request, cookies);
+    const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
+    const env = isDev
+      ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
+      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+    
+    if (env) {
+      initTursoForRequest(env);
+      initTursoAuthForRequest(env);
+    }
+
+    const user = await getServerUser(request, cookies, env);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
@@ -55,9 +68,20 @@ export const GET: APIRoute = async ({ request, cookies }) => {
   }
 };
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies } = context;
   try {
-    const user = await getServerUser(request, cookies);
+    const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
+    const env = isDev
+      ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
+      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+    
+    if (env) {
+      initTursoForRequest(env);
+      initTursoAuthForRequest(env);
+    }
+
+    const user = await getServerUser(request, cookies, env);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
@@ -92,9 +116,20 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 };
 
-export const DELETE: APIRoute = async ({ request, cookies }) => {
+export const DELETE: APIRoute = async (context) => {
+  const { request, cookies } = context;
   try {
-    const user = await getServerUser(request, cookies);
+    const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
+    const env = isDev
+      ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
+      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+    
+    if (env) {
+      initTursoForRequest(env);
+      initTursoAuthForRequest(env);
+    }
+
+    const user = await getServerUser(request, cookies, env);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }

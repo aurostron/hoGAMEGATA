@@ -1,9 +1,8 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { useAuth, AuthProvider } from "../context/AuthContext";
 import { ArrowLeft } from "lucide-react";
 import SciFiLogo from "./SciFiLogo";
+import { TurnstileWidget } from "./ui/TurnstileWidget";
 
 function LoginForm() {
   const { user, login, signUp, loginWithGoogle, isSupabase } = useAuth();
@@ -17,13 +16,12 @@ function LoginForm() {
   
   const [captchaToken, setCaptchaToken] = useState("");
   const [agreedAge, setAgreedAge] = useState(false);
-  const turnstileWidgetId = React.useRef<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const searchParams = new URLSearchParams(window.location.search);
       const rawRedirect = searchParams.get("redirect") || "/";
-      const cleanRedirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
+      const cleanRedirect = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") && !rawRedirect.startsWith("/login") ? rawRedirect : "/";
       setRedirectUrl(cleanRedirect);
 
       const errorParam = searchParams.get("error");
@@ -40,43 +38,9 @@ function LoginForm() {
   }, []);
 
   useEffect(() => {
-    // 1. Setup explicit Turnstile load callback on window
-    (window as any).onloadTurnstileCallback = () => {
-      if ((window as any).turnstile) {
-        const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
-        turnstileWidgetId.current = (window as any).turnstile.render("#turnstile-container", {
-          sitekey: siteKey,
-          theme: "dark",
-          callback: (token: string) => {
-            setCaptchaToken(token);
-          },
-          "expired-callback": () => {
-            setCaptchaToken("");
-          },
-          "error-callback": () => {
-            setCaptchaToken("");
-          }
-        });
-      }
-    };
-
-    // 2. Load script dynamically
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback";
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-      delete (window as any).onloadTurnstileCallback;
-    };
-  }, [isRegistering]); // Re-initialize Turnstile widget if we switch forms
-
-  useEffect(() => {
     async function checkLimit() {
       try {
-        const res = await fetch("/api/user/check-limit");
+        const res = await fetch("/api/user/check-limit", { signal: AbortSignal.timeout(3000) });
         if (res.ok) {
           const data = await res.json();
           if (data.capped) {
@@ -93,20 +57,9 @@ function LoginForm() {
 
   useEffect(() => {
     if (user) {
-      window.location.assign(redirectUrl);
+      window.location.assign(redirectUrl === "/login" ? "/" : redirectUrl);
     }
   }, [user, redirectUrl]);
-
-  const resetTurnstile = () => {
-    if ((window as any).turnstile && turnstileWidgetId.current) {
-      try {
-        (window as any).turnstile.reset(turnstileWidgetId.current);
-      } catch (e) {
-        console.error("Failed to reset Turnstile widget:", e);
-      }
-    }
-    setCaptchaToken("");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,35 +79,47 @@ function LoginForm() {
       return;
     }
 
+    // Safety timeout to guarantee button never gets stuck at Loading
+    const timeoutId = setTimeout(() => {
+      setAuthLoading((current) => {
+        if (current) {
+          setErrorMsg("Authentication request timed out. Please try again.");
+          return false;
+        }
+        return false;
+      });
+    }, 10000);
+
     try {
       if (isRegistering) {
         if (!agreedAge) {
           setErrorMsg("You must confirm you are at least 16 years old and agree to the terms to register.");
           setAuthLoading(false);
+          clearTimeout(timeoutId);
           return;
         }
         const res = await signUp(email, password, captchaToken);
+        clearTimeout(timeoutId);
         if (res.success) {
           setSuccessMsg("Registration successful! Check your email for confirmation link.");
-          resetTurnstile();
         } else {
           setErrorMsg(res.error || "Failed to register.");
-          resetTurnstile();
         }
       } else {
         const res = await login(email, password, captchaToken);
+        clearTimeout(timeoutId);
         if (res.success) {
           setSuccessMsg("Authentication successful! Redirecting...");
-          setTimeout(() => window.location.assign(redirectUrl), 1000);
+          setTimeout(() => window.location.assign(redirectUrl === "/login" ? "/" : redirectUrl), 800);
         } else {
           setErrorMsg(res.error || "Failed to login.");
-          resetTurnstile();
         }
       }
     } catch (err: any) {
-      setErrorMsg("An unexpected error occurred during authorization.");
-      resetTurnstile();
+      clearTimeout(timeoutId);
+      setErrorMsg(err?.message || "An unexpected error occurred during authorization.");
     } finally {
+      clearTimeout(timeoutId);
       setAuthLoading(false);
     }
   };
@@ -261,9 +226,14 @@ function LoginForm() {
         )}
 
         {/* Cloudflare Turnstile Container */}
-        <div className="flex justify-center py-0.5">
-          <div id="turnstile-container" />
-        </div>
+        <TurnstileWidget
+          onVerify={setCaptchaToken}
+          onExpire={() => setCaptchaToken("")}
+          onError={() => setCaptchaToken("")}
+          size="normal"
+          theme="dark"
+          className="flex justify-center py-0.5 min-h-[65px]"
+        />
 
         <div className="flex flex-col gap-2.5 pt-1">
           <button

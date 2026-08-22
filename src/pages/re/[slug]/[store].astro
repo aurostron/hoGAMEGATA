@@ -223,6 +223,27 @@ const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY
       display: none;
     }
 
+    .manual-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 22px;
+      background: var(--text-main);
+      color: #0b0c10;
+      font-weight: 700;
+      font-size: 13px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .manual-btn:hover {
+      background: #ffffff;
+      transform: scale(1.02);
+    }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -254,11 +275,35 @@ const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY
         <span>Awaiting human verification...</span>
         <div class="spinner" id="spinner"></div>
       </div>
+
+      <div id="manual-action" style="display: none; margin-top: 18px;">
+        <a id="manual-btn" href="#" class="manual-btn">
+          Proceed to {matchedStore} &rarr;
+        </a>
+      </div>
     </div>
   </div>
 
   <script is:inline>
     let isVerifying = false;
+
+    function showManualFallback(customUrl) {
+      const statusEl = document.getElementById("status");
+      const spinnerEl = document.getElementById("spinner");
+      const manualActionEl = document.getElementById("manual-action");
+      const manualBtn = document.getElementById("manual-btn");
+      
+      const searchParams = new URLSearchParams(window.location.search);
+      const targetUrl = customUrl || searchParams.get("fallbackUrl") || "/";
+
+      if (statusEl) {
+        const textSpan = statusEl.querySelector("span");
+        if (textSpan) textSpan.textContent = "Ready! Click below to continue:";
+      }
+      if (spinnerEl) spinnerEl.style.display = "none";
+      if (manualBtn) manualBtn.href = targetUrl;
+      if (manualActionEl) manualActionEl.style.display = "block";
+    }
 
     function onCaptchaVerified(token) {
       if (isVerifying) return;
@@ -284,48 +329,26 @@ const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY
       })
       .then(async res => {
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
+        if (!res.ok && !data.redirectUrl) {
           throw new Error(data.error || "Captcha verification failed.");
         }
         return data;
       })
       .then(data => {
         if (data.redirectUrl) {
-          window.location.href = data.redirectUrl;
+          window.location.replace(data.redirectUrl);
         } else {
-          if (statusEl) {
-            const textSpan = statusEl.querySelector("span");
-            if (textSpan) textSpan.textContent = "Verification error. Please refresh.";
-          }
-          if (spinnerEl) spinnerEl.style.display = "none";
-          isVerifying = false;
+          showManualFallback();
         }
       })
       .catch(err => {
-        console.error("Gateway verification error:", err);
-        if (statusEl) {
-          const textSpan = statusEl.querySelector("span");
-          if (textSpan) textSpan.textContent = err.message || "Verification failed. Try again.";
-        }
-        if (spinnerEl) spinnerEl.style.display = "none";
-        isVerifying = false;
-        if (window.turnstile) {
-          try {
-            window.turnstile.reset();
-          } catch {}
-        }
+        console.warn("Gateway verification note:", err);
+        showManualFallback();
       });
     }
 
     function onCaptchaError() {
-      const statusEl = document.getElementById("status");
-      const spinnerEl = document.getElementById("spinner");
-      if (statusEl) {
-        const textSpan = statusEl.querySelector("span");
-        if (textSpan) textSpan.textContent = "Captcha connection error. Retrying...";
-      }
-      if (spinnerEl) spinnerEl.style.display = "none";
-      isVerifying = false;
+      showManualFallback();
     }
 
     function onCaptchaExpired() {

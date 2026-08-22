@@ -1,12 +1,22 @@
 import type { APIRoute } from 'astro';
-import { tursoAuth } from '../../../lib/tursoAuth';
+import { tursoAuth, initTursoAuthForRequest } from '../../../lib/tursoAuth';
 import { count } from 'drizzle-orm';
 import { user } from '../../../db/auth-schema';
+import { env as cfEnv } from "cloudflare:workers";
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (context) => {
   try {
+    const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
+    const env = isDev
+      ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
+      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+    
+    if (env) {
+      initTursoAuthForRequest(env);
+    }
+
     const [{ value }] = await tursoAuth
       .select({ value: count() })
       .from(user);

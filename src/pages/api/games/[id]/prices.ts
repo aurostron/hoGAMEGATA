@@ -58,10 +58,20 @@ export const POST: APIRoute = async ({ params, request }) => {
       }
     }
 
-    const deals = await lazyGetPrices(id, title, purchaseLinks, targetCountry, !!forceRefresh, provider);
+    const isStrictRefresh = Boolean(forceRefresh);
+    const deals = await lazyGetPrices(id, title, purchaseLinks, targetCountry, isStrictRefresh, provider);
+
     return new Response(
       JSON.stringify({ deals, country: targetCountry }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { 
+        status: 200, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        } 
+      }
     );
   } catch (error) {
     console.error(`[Pricing API Error] Failed to fetch prices for game:`, error);

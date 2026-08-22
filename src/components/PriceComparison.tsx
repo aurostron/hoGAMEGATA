@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import BrandIcon from "./icons/BrandIcon";
 
@@ -55,6 +55,7 @@ export default function PriceComparison({
   const [region, setRegion] = useState<string>("detect");
   const [provider, setProvider] = useState<string>("direct");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const sessionCache = useRef<Record<string, PriceDeal[]>>({});
 
   const loadPrices = async (targetRegion: string, targetProvider = provider, force = false, silent = false) => {
     if (force) {
@@ -64,7 +65,7 @@ export default function PriceComparison({
     }
     setError(false);
     try {
-      const response = await fetch(`/api/games/${gameId}/prices`, {
+      const response = await fetch(`/api/games/${gameId}/prices?t=${Date.now()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -78,8 +79,10 @@ export default function PriceComparison({
 
       if (response.ok) {
         const data = await response.json();
-        if (data.deals && data.deals.length > 0) {
-          setDeals(data.deals);
+        const returnedDeals = data.deals || [];
+        if (returnedDeals.length > 0) {
+          sessionCache.current[`${targetProvider}_${targetRegion}`] = returnedDeals;
+          setDeals(returnedDeals);
         }
         
         // If we had country set to 'detect', auto-select the detected country
@@ -99,7 +102,7 @@ export default function PriceComparison({
     }
   };
 
-  // Resolve region and check cache or fetch on mount/region change
+  // Resolve region and check cache or fetch on mount/region/provider change
   useEffect(() => {
     let targetRegion = region;
     if (region === "detect") {
@@ -111,35 +114,41 @@ export default function PriceComparison({
       targetRegion = "US"; // default fallback for cache check
     }
 
-    // 1. Instant Cache Render (0ms UI latency)
+    const cacheKey = `${provider}_${targetRegion}`;
+
+    // 1. Check if we already fetched and cached this provider/region in current user session
+    if (sessionCache.current[cacheKey] && sessionCache.current[cacheKey].length > 0) {
+      setDeals(sessionCache.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Check if we have high-depth initialDeals (with expanded stores) from server SSR
     if (provider === "direct" && initialDeals && initialDeals.length > 0) {
       const matchingDeals = initialDeals.filter(d => d.country === targetRegion && (d.provider === "direct" || !d.provider));
-      if (matchingDeals.length > 0) {
-        // Sort cached deals by price ascending
+      const hasExpandedStores = matchingDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
+
+      if (hasExpandedStores && matchingDeals.length >= 2) {
         const sorted = [...matchingDeals].sort((a, b) => a.dealPrice - b.dealPrice);
-        setDeals(sorted.map(d => ({
+        const mappedDeals = sorted.map(d => ({
           storeName: d.storeName,
           dealPrice: d.dealPrice,
           retailPrice: d.retailPrice,
           discountPercent: d.discountPercent,
           dealUrl: d.dealUrl,
           currency: d.currency
-        })));
+        }));
+        sessionCache.current[cacheKey] = mappedDeals;
+        setDeals(mappedDeals);
         setLoading(false);
 
-        // Check if cache is older than 2 hours for background SWR revalidation
-        const oldestUpdate = Math.min(...matchingDeals.map(d => new Date(d.updatedAt || 0).getTime()));
-        const isStale = isNaN(oldestUpdate) || oldestUpdate === 0 || (Date.now() - oldestUpdate) > 2 * 60 * 60 * 1000;
-        
-        // If stale or incomplete (< 2 stores), silently revalidate in the background
-        if (isStale || matchingDeals.length < 2) {
-          loadPrices(targetRegion, provider, false, true);
-        }
+        // Always trigger silent background SWR revalidation
+        loadPrices(targetRegion, provider, false, true);
         return;
       }
     }
 
-    // 2. Otherwise (no cache), fetch dynamically with loading skeleton
+    // 3. Otherwise (missing or incomplete legacy Steam/GOG cache), fetch fresh multi-store list dynamically
     loadPrices(targetRegion, provider, false, false);
   }, [gameId, region, provider]);
 
@@ -203,7 +212,11 @@ export default function PriceComparison({
           <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/5 border border-white/[0.08] text-[11px] uppercase tracking-[0.18em] font-bold text-white/40">Cheapest Deals</span>
           {deals.length > 0 && (
             <button
-              onClick={() => loadPrices(region === "detect" ? "US" : region, provider, true)}
+              onClick={() => {
+                const targetRegion = region === "detect" ? "US" : region;
+                delete sessionCache.current[`${provider}_${targetRegion}`];
+                loadPrices(targetRegion, provider, true);
+              }}
               disabled={isRefreshing}
               className={`text-[9px] uppercase tracking-wider px-2 py-0.5 border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-all flex items-center gap-1 rounded-md ${
                 isRefreshing ? "cursor-not-allowed opacity-50" : "cursor-pointer"
