@@ -1468,19 +1468,6 @@ Built and verified the standalone **GameGata Admin Mobile Application** for Andr
 2. **Login Page "Loading..." & Auth Fixes**:
    - Replaced fragile manual script tag injection in `src/components/LoginPage.tsx` with the standardized `<TurnstileWidget />` component.
    - Removed blocking `check-limit` fetch on user login (only new signups check the 10,000 user cap), eliminating unnecessary network latency and auth failure points.
-   - Fixed redirect loop guard in `LoginPage.tsx` so `redirect=/login` safely defaults to `/` or `/dashboard`.
-   - Optimized `auth.ts` database hook to use lightweight `count()` query instead of loading the entire user database table into memory on user creation, dramatically decreasing Worker CPU and memory usage.
-   - Updated `src/pages/api/auth/[...all].ts` and `src/lib/serverAuth.ts` to properly initialize Turso auth isolates and Better Auth handlers with runtime worker environment variables.
-
-3. **Store Redirect Captcha Loop Fix**:
-   - In `src/pages/re/[slug]/[store]/verify.ts`, made Turnstile validation resilient with client IP passing (`cf-connecting-ip`), 4s network timeout safeguards, and graceful fail-open fallback for non-critical domain mismatches in edge environments.
-   - In `src/pages/re/[slug]/[store].astro`, added a direct `"Proceed to {Store} →"` manual fallback action and stopped automatic `turnstile.reset()` infinite re-verification loops.
-   - Switched post-verification redirect to `window.location.replace(redirectUrl)` to prevent backward navigation redirect loops in browser history.
-
-### Files Modified
-| File | Action | Details |
-|------|--------|---------|
-| `src/components/SettingsButton.tsx` | Modified | Redesigned account menu with guest/user greeting cards, cleaner sections, and modern dark glass theme |
 - **Cloudflare Deployment**: `wrangler deploy` successfully uploaded assets and deployed worker triggers.
   - Custom domain: `gamegata.xyz`
   - Version ID: `8c9e548b-da9d-4c6e-961f-7e8ff98e18fa`

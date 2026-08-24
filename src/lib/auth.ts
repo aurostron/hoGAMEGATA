@@ -59,6 +59,7 @@ function getAuth(): ReturnType<typeof betterAuth> {
       },
       emailVerification: {
         sendOnSignUp: true,
+        autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url, token }, request) => {
           if (!resendApiKey) {
             console.error("Resend API key is not configured.");
@@ -120,6 +121,14 @@ function getAuth(): ReturnType<typeof betterAuth> {
           clientSecret: googleClientSecret,
         },
       },
+      advanced: {
+        defaultCookieAttributes: {
+          sameSite: "lax",
+          secure: !isDev,
+          httpOnly: true,
+          path: "/",
+        }
+      },
       plugins: [
         {
           id: "turnstile-captcha",
@@ -127,10 +136,17 @@ function getAuth(): ReturnType<typeof betterAuth> {
             before: [
               {
                 matcher: (context: any) =>
-                  context.path.endsWith("/sign-up/email") || context.path.endsWith("/sign-in/email"),
+                  context.path?.endsWith("/sign-up/email"),
                 handler: async (context: any) => {
-                  const request = context.request;
-                  const captchaToken = request.headers.get("x-captcha-token");
+                  const headers = context.request?.headers || context.headers;
+                  let captchaToken: string | null = null;
+                  if (headers) {
+                    if (typeof headers.get === "function") {
+                      captchaToken = headers.get("x-captcha-token");
+                    } else if (typeof headers === "object") {
+                      captchaToken = headers["x-captcha-token"] || headers["X-Captcha-Token"] || null;
+                    }
+                  }
 
                   const nodeEnv = getEnvVal("NODE_ENV") || "development";
                   const isDev = nodeEnv === "development" || import.meta.env?.DEV;
@@ -139,7 +155,7 @@ function getAuth(): ReturnType<typeof betterAuth> {
                   }
 
                   if (!captchaToken) {
-                    throw new APIError("BAD_REQUEST", { message: "CAPTCHA verification is required." });
+                    throw new APIError("BAD_REQUEST", { message: "CAPTCHA verification is required for registration." });
                   }
 
                   if (captchaToken === "XXXX.DUMMY.TOKEN.XXXX" || captchaToken.startsWith("XXXX.")) {
