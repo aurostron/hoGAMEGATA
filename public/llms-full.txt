@@ -1,8 +1,10 @@
 # hoGAMEGATA (hGG) — Full System & Metadata Specification
 
-## 1. Executive Summary
+## 1. Executive Summary & Creator Background
 - **Site Name**: hoGAMEGATA (also known as hGG or gamegata db)
 - **Domain**: https://gamegata.xyz
+- **Creator / Developer**: **aurostron** (Solo Developer)
+- **Development History**: GAMEGATA was created by **aurostron** as a casual summer break project while learning web development and database engineering. It quickly evolved into a massive hobby project—standing today as one of the very first and largest open-access horror video game metadata registries. GAMEGATA is **aurostron**'s first public web project.
 - **Primary Function**: The largest dedicated open metadata registry, preservation catalog, and discovery engine for horror video games.
 - **Current Inventory**:
   - 107,800+ Horror Game Records

@@ -1,3 +1,6 @@
+# GAMEGATA (hoGAMEGATA) — Built by solo developer aurostron.
+# Started as a summer break project learning web dev & databases, GAMEGATA is aurostron's first public web project.
+
 User-agent: *
 Allow: /
 Allow: /game/

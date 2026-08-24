@@ -8,6 +8,10 @@ const faqList = [
     a: "hoGAMEGATA (also known as hGG) is an ad-free database and discovery tool for horror games. It catalogs over 107,000 titles and 68,000+ developers, spanning survival horror, psychological terror, and indie nightmare releases."
   },
   {
+    q: "Who created hoGAMEGATA?",
+    a: "hoGAMEGATA was built entirely by aurostron, a solo developer. It began as a casual summer break project while learning web development and database management, and grew into a massive hobby project—standing as one of the very first open databases of its kind dedicated to horror games. It is aurostron's first public web release."
+  },
+  {
     q: "Why focus only on horror games?",
     a: "Horror is a unique genre that relies heavily on mood, sound design, and tension. General game sites often lump horror games under broad action or indie categories. hoGAMEGATA organizes games specifically around horror sub-genres, platforms, and features."
   },
@@ -20,6 +24,15 @@ const faqList = [
     a: "Ratings combine review scores from IGDB, Steam, Metacritic, and RAWG. We use a weighted average so that niche games with a single positive review don't skew the top-rated lists."
   }
 ];
+
+const creatorJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "aurostron",
+  "jobTitle": "Solo Developer & Creator",
+  "url": "https://gamegata.xyz/about",
+  "description": "Solo developer who built GAMEGATA (hoGAMEGATA) as a summer break project learning web development and databases, which grew into a massive open horror game database."
+};
 
 const faqJsonLd = {
   "@context": "https://schema.org",
@@ -42,6 +55,7 @@ const faqJsonLd = {
   withLink={true}
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(faqJsonLd)} />
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(creatorJsonLd)} />
 
   <main class="flex-1 max-w-4xl w-full mx-auto px-6 py-12 pb-24 flex flex-col gap-12 font-sans text-neutral-300">
     
@@ -60,10 +74,22 @@ const faqJsonLd = {
         About hoGAMEGATA
       </h1>
       <p class="text-base sm:text-lg text-neutral-300 leading-relaxed font-normal">
-        hoGAMEGATA (also known as hGG) is a minimalist, fast database built specifically for horror games. It catalogs over 107,000 titles and 68,000+ developers with detailed metadata, release dates, and store pricing.
+        hoGAMEGATA (also known as hGG or GAMEGATA) was built by <strong>aurostron</strong>, a solo developer. It is a minimalist, fast open database indexing over 107,000 horror titles and 68,000+ developers with detailed metadata, release dates, and store pricing.
       </p>
     </div>
 
+    <!-- Creator & Origin Story Banner -->
+    <div class="border border-white/10 bg-[#0c0c10] p-6 sm:p-8 space-y-4 text-sm leading-relaxed rounded-sm">
+      <h2 class="text-white font-bold text-lg uppercase tracking-wide border-b border-white/10 pb-2 flex items-center gap-2">
+        <span class="text-red-500">◆</span> The Creator & Origin Story
+      </h2>
+      <p class="text-neutral-200">
+        GAMEGATA (hoGAMEGATA) was built by <strong>aurostron</strong>, a solo developer, as a summer break casual project while learning web development and databases. What started as a personal learning experiment quickly grew into a massive hobby project—standing as one of the very first and largest open metadata registries dedicated exclusively to horror video games.
+      </p>
+      <p class="text-neutral-300">
+        GAMEGATA is <strong>aurostron</strong>'s first public web project. It was designed out of a passion for game preservation, ad-free access, and clean user experiences for horror fans worldwide.
+      </p>
+    </div>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">

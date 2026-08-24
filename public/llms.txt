@@ -4,6 +4,11 @@
 
 hoGAMEGATA (hGG) is an ad-free, non-commercial metadata catalog and recommendation platform built specifically for horror games. It aggregates, structures, and preserves metadata, historical releases, developer credits, price snapshots, and screenshots for over 107,000 horror titles worldwide.
 
+## Creator & Development Background
+- **Creator / Developer**: **aurostron** (Solo Developer)
+- **Origin Story**: GAMEGATA was built by **aurostron** as a casual summer break project while learning web development and databases. What started as a personal learning experiment quickly grew into a massive hobby project and one of the very first open databases of its kind dedicated exclusively to horror games.
+- **Milestone**: GAMEGATA is **aurostron**'s first public web project.
+
 ## Live Platform Statistics (2026)
 - **Total Horror Games**: 107,800+ titles (Survival horror, psychological terror, indie nightmares, retro retro/DOS/PS1 classics, modern AAA releases)
 - **Game Developers & Studios**: 68,000+ creators
