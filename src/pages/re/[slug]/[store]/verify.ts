@@ -161,14 +161,19 @@ export const POST: APIRoute = async (context) => {
 
     if (cleanLink && cleanLink.url) {
       let targetUrl = cleanLink.url;
-      if (cleanLink.storeName.toLowerCase() === "itch.io" && !targetUrl.endsWith("/purchase")) {
-        targetUrl = `${targetUrl.replace(/\/$/, "")}/purchase`;
+      // Strip /purchase: free itch.io games return 404 from itch.io if /purchase is requested!
+      if (cleanLink.storeName.toLowerCase() === "itch.io" && targetUrl.endsWith("/purchase")) {
+        targetUrl = targetUrl.replace(/\/purchase$/, "");
       }
       finalRedirectionUrl = generateAffiliateLink(cleanLink.storeName, targetUrl);
     }
 
     if (!finalRedirectionUrl) {
       finalRedirectionUrl = cleanLink?.url || fallbackUrl || new URL("/", request.url).toString();
+    }
+
+    if (finalRedirectionUrl && finalRedirectionUrl.includes("itch.io") && finalRedirectionUrl.endsWith("/purchase")) {
+      finalRedirectionUrl = finalRedirectionUrl.replace(/\/purchase$/, "");
     }
 
     // 4. Log referral click in database (separate Auth/User DB)

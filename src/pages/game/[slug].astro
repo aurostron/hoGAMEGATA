@@ -18,6 +18,7 @@ import {
 } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle, formatPrice, formatEmbedVideoUrl } from '../../lib/utils';
+import { fetchItchGameDetail } from '../../lib/itchParser';
 
 // Import React components
 import PlatformLogos from '../../components/PlatformLogos';
@@ -47,16 +48,29 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 
-// 1. Fetch raw game from Turso
-const [rawGame] = await turso
-  .select()
+// 1. Single Left Join query for Game + PurchaseLinks in ONE round trip (Optimized for Turso Read Quotas)
+const rows = await turso
+  .select({
+    game: gamesTable,
+    link: purchaseLinksTable,
+  })
   .from(gamesTable)
-  .where(eq(gamesTable.slug, slug!))
-  .limit(1);
+  .leftJoin(purchaseLinksTable, eq(purchaseLinksTable.gameId, gamesTable.id))
+  .where(eq(gamesTable.slug, slug!));
 
-if (!rawGame) {
+if (!rows || rows.length === 0 || !rows[0].game) {
   return Astro.redirect('/404');
 }
+
+const rawGame = rows[0].game;
+// Deduplicate purchase links returned from the join
+const linksMap = new Map<string, any>();
+for (const r of rows) {
+  if (r.link && !linksMap.has(r.link.id)) {
+    linksMap.set(r.link.id, r.link);
+  }
+}
+let linksData = Array.from(linksMap.values());
 
 // Track game view in background without blocking SSR page rendering
 const cfCtx = (Astro.locals as any).cfContext;
@@ -66,18 +80,16 @@ if (cfCtx?.waitUntil) {
   trackGameView(rawGame.id, rawGame.title).catch(() => {});
 }
 
-// Fast redirect for standalone itch games pending detail enrichment pass
-if (rawGame.source === 'itch' && !rawGame.trailerUrl && !rawGame.screenshots) {
-  const [itchLink] = await turso
-    .select({ url: purchaseLinksTable.url })
-    .from(purchaseLinksTable)
-    .where(eq(purchaseLinksTable.gameId, rawGame.id))
-    .limit(1);
+const isItchGame = Boolean(rawGame.slug.startsWith("itch-") || (rawGame as any).source === "itch" || (rawGame as any).source === "itchio");
 
-  if (itchLink?.url) {
-    return Astro.redirect(itchLink.url, 307);
-  }
-}
+let devsData: any[] = [];
+let pubsData: any[] = [];
+let genresData: any[] = [];
+let tagsData: any[] = [];
+let platsData: any[] = [];
+let priceSnapshotsData: any[] = [];
+let itchLoadFailed = false;
+let itchDirectUrl = "";
 
 if (rawGame.status === "hidden") {
   const { getServerUser, isAdminUser } = await import('../../lib/serverAuth');
@@ -88,50 +100,159 @@ if (rawGame.status === "hidden") {
   }
 }
 
-// 2. Fetch game relations from Turso in parallel
-const [
-  devsData,
-  pubsData,
-  genresData,
-  tagsData,
-  platsData,
-  linksData,
-  priceSnapshotsData
-] = await Promise.all([
-  turso
-    .select({ id: developersTable.id, name: developersTable.name, slug: developersTable.slug })
-    .from(gamesToDevelopers)
-    .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id))
-    .where(eq(gamesToDevelopers.gameId, rawGame.id)),
-  turso
-    .select({ id: publishersTable.id, name: publishersTable.name, slug: publishersTable.slug })
-    .from(gamesToPublishers)
-    .innerJoin(publishersTable, eq(gamesToPublishers.publisherId, publishersTable.id))
-    .where(eq(gamesToPublishers.gameId, rawGame.id)),
-  turso
-    .select({ id: genresTable.id, name: genresTable.name, slug: genresTable.slug })
-    .from(gamesToGenres)
-    .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
-    .where(eq(gamesToGenres.gameId, rawGame.id)),
-  turso
-    .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
-    .from(gamesToTags)
-    .innerJoin(tagsTable, eq(gamesToTags.tagId, tagsTable.id))
-    .where(eq(gamesToTags.gameId, rawGame.id)),
-  turso
-    .select({ id: platformsTable.id, name: platformsTable.name, slug: platformsTable.slug })
-    .from(gamesToPlatforms)
-    .innerJoin(platformsTable, eq(gamesToPlatforms.platformId, platformsTable.id))
-    .where(eq(gamesToPlatforms.gameId, rawGame.id)),
-  turso
-    .select()
-    .from(purchaseLinksTable)
-    .where(eq(purchaseLinksTable.gameId, rawGame.id)),
-  turso
-    .select()
-    .from(priceSnapshotsTable)
-    .where(eq(priceSnapshotsTable.gameId, rawGame.id))
-]);
+// 2. Fetch game relations (Zero extra queries for itch games!)
+if (isItchGame) {
+  if (!rawGame.rawgEnriched) {
+    // Unenriched itch game: JIT parse on the fly using our 0.49ms ultra-fast engine
+    const itchLink = linksData.find((l: any) => 
+      l && (
+        (l.storeName && l.storeName.toLowerCase().includes("itch")) || 
+        (l.url && l.url.includes("itch.io"))
+      )
+    );
+
+    if (itchLink?.url) {
+      itchDirectUrl = itchLink.url;
+      const scrapeRes = await fetchItchGameDetail(itchLink.url, 3500);
+
+      if (scrapeRes.success && scrapeRes.data) {
+        const d = scrapeRes.data;
+        const parsedScreenshots = d.screenshots.length > 0 
+          ? d.screenshots 
+          : (rawGame.screenshots ? JSON.parse(rawGame.screenshots) : []);
+        const newCover = d.coverUrl || rawGame.coverUrl;
+        const newSummary = d.summary || rawGame.summary;
+        const newRating = d.rating !== undefined ? d.rating : rawGame.rating;
+        const authorName = d.author || rawGame.developerNames || "";
+        const tagNames = (d.tags || []).slice(0, 15).join(", ");
+        const platNames = (d.platforms || []).join(", ");
+
+        // In-memory update for THIS request
+        rawGame.coverUrl = newCover;
+        rawGame.summary = newSummary;
+        rawGame.screenshots = JSON.stringify(parsedScreenshots);
+        if (newRating !== undefined && newRating !== null) {
+          rawGame.rating = newRating;
+        }
+        rawGame.developerNames = authorName;
+        rawGame.genreNames = tagNames;
+        rawGame.platformNames = platNames;
+        rawGame.rawgEnriched = true;
+
+        // Asynchronously update Turso so the enriched data is permanently saved for all future visitors
+        const bgUpdate = turso
+          .update(gamesTable)
+          .set({
+            coverUrl: newCover,
+            summary: newSummary,
+            screenshots: JSON.stringify(parsedScreenshots),
+            rating: newRating,
+            developerNames: authorName,
+            genreNames: tagNames,
+            platformNames: platNames,
+            rawgEnriched: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(gamesTable.id, rawGame.id));
+
+        if (cfCtx?.waitUntil) {
+          cfCtx.waitUntil(bgUpdate);
+        } else {
+          bgUpdate.catch((err: any) => console.error("Failed background Turso enrichment update:", err));
+        }
+
+        // Populate in-memory relations for rendering
+        tagsData = (d.tags || []).map((t: string, idx: number) => ({ id: `itch-tag-${idx}`, name: t, slug: t.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+        platsData = (d.platforms || []).map((p: string, idx: number) => ({ id: `itch-plat-${idx}`, name: p, slug: p.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+        if (authorName) {
+          devsData = [{ id: `itch-dev-0`, name: authorName, slug: authorName.toLowerCase().replace(/[^a-z0-9]+/g, "-") }];
+        }
+
+        // Cache this enriched page at Cloudflare Edge CDN for 30 days
+        Astro.response.headers.set(
+          'Cache-Control',
+          'public, s-maxage=2592000, stale-while-revalidate=31536000'
+        );
+      } else {
+        // Itch scrape timed out, 429'd, or failed: do NOT crash with 500!
+        itchLoadFailed = true;
+        // Short cache (60s) so error doesn't lock for 30 days and users can retry
+        Astro.response.headers.set('Cache-Control', 'public, max-age=60');
+      }
+    }
+  } else {
+    // Already enriched itch game: ALL metadata is already denormalized in rawGame!
+    // ZERO additional database queries needed!
+    if (rawGame.developerNames) {
+      devsData = [{ id: 'itch-dev-0', name: rawGame.developerNames, slug: rawGame.developerNames.toLowerCase().replace(/[^a-z0-9]+/g, "-") }];
+    }
+    if (rawGame.genreNames) {
+      tagsData = rawGame.genreNames.split(",").map((t, idx) => ({ id: `itch-tag-${idx}`, name: t.trim(), slug: t.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+    }
+    if (rawGame.platformNames) {
+      platsData = rawGame.platformNames.split(",").map((p, idx) => ({ id: `itch-plat-${idx}`, name: p.trim(), slug: p.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+    }
+
+    // Cache this rendered page at Cloudflare Edge CDN for 30 days
+    Astro.response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=2592000, stale-while-revalidate=31536000'
+    );
+  }
+} else {
+  // Standard non-itch game: fetch relations in parallel (links already fetched in single query!)
+  const [
+    devsRes,
+    pubsRes,
+    genresRes,
+    tagsRes,
+    platsRes,
+    priceSnapshotsRes
+  ] = await Promise.all([
+    turso
+      .select({ id: developersTable.id, name: developersTable.name, slug: developersTable.slug })
+      .from(gamesToDevelopers)
+      .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id))
+      .where(eq(gamesToDevelopers.gameId, rawGame.id)),
+    turso
+      .select({ id: publishersTable.id, name: publishersTable.name, slug: publishersTable.slug })
+      .from(gamesToPublishers)
+      .innerJoin(publishersTable, eq(gamesToPublishers.publisherId, publishersTable.id))
+      .where(eq(gamesToPublishers.gameId, rawGame.id)),
+    turso
+      .select({ id: genresTable.id, name: genresTable.name, slug: genresTable.slug })
+      .from(gamesToGenres)
+      .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
+      .where(eq(gamesToGenres.gameId, rawGame.id)),
+    turso
+      .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
+      .from(gamesToTags)
+      .innerJoin(tagsTable, eq(gamesToTags.tagId, tagsTable.id))
+      .where(eq(gamesToTags.gameId, rawGame.id)),
+    turso
+      .select({ id: platformsTable.id, name: platformsTable.name, slug: platformsTable.slug })
+      .from(gamesToPlatforms)
+      .innerJoin(platformsTable, eq(gamesToPlatforms.platformId, platformsTable.id))
+      .where(eq(gamesToPlatforms.gameId, rawGame.id)),
+    turso
+      .select()
+      .from(priceSnapshotsTable)
+      .where(eq(priceSnapshotsTable.gameId, rawGame.id))
+  ]);
+
+  devsData = devsRes;
+  pubsData = pubsRes;
+  genresData = genresRes;
+  tagsData = tagsRes;
+  platsData = platsRes;
+  priceSnapshotsData = priceSnapshotsRes;
+
+  // Cache this rendered page at Cloudflare Edge CDN for 30 days
+  Astro.response.headers.set(
+    'Cache-Control',
+    'public, s-maxage=2592000, stale-while-revalidate=31536000'
+  );
+}
 
 // 3. Assemble full game object with parsed json structures matching previous schema
 const game = {
@@ -146,14 +267,6 @@ const game = {
   platforms: platsData,
   purchaseLinks: linksData
 };
-
-const isItchGame = Boolean(game.slug.startsWith("itch-") || (game as any).source === "itch" || (game as any).source === "itchio");
-
-// Cache this rendered page at the Cloudflare edge for 30 days, with 1-year background revalidation.
-Astro.response.headers.set(
-  'Cache-Control',
-  'public, s-maxage=2592000, stale-while-revalidate=31536000'
-);
 
 let purchaseLinks = (game.purchaseLinks as any[]) || [];
 let priceSnapshots = priceSnapshotsData || [];
@@ -174,17 +287,6 @@ if (!isItchGame) {
     snap.storeName.toLowerCase() !== "itch" && 
     snap.provider !== "itch"
   );
-}
-
-// Redirect dry/unenriched itch.io games directly to their itch page (with purchase popup open)
-if (isItchGame && game.slug.startsWith("itch-") && !game.rawgEnriched) {
-  const itchLink = purchaseLinks.find((link: any) => link.storeName.toLowerCase() === "itch.io");
-  if (itchLink && itchLink.url) {
-    const directPurchaseUrl = itchLink.url.endsWith("/purchase")
-      ? itchLink.url
-      : `${itchLink.url.replace(/\/$/, "")}/purchase`;
-    return Astro.redirect(directPurchaseUrl);
-  }
 }
 
 const steamLink = purchaseLinks?.find((link: any) => 
@@ -342,9 +444,10 @@ const editGameData = {
   ogType="video.other"
   withSearch={true}
   editGameData={editGameData}
+  noIndex={isItchGame}
 >
   <script type="application/ld+json" is:inline set:html={schemaJson} />
-  <VibeTracker client:load tags={tags} genres={genres} />
+  <VibeTracker client:idle tags={tags} genres={genres} />
 
   <style is:global>
     /* Let default case rendering apply on the game detail pages */
@@ -354,7 +457,7 @@ const editGameData = {
     }
   </style>
  
-  <EditStoreInit client:load initialData={editGameData.gameData} />
+  <EditStoreInit client:idle initialData={editGameData.gameData} />
     <main class="game-page-override max-w-6xl mx-auto px-4 sm:px-6 mt-6 sm:mt-12 space-y-8 sm:space-y-16">
     <!-- Top Section: RAWG.io-Inspired Minimalist 2-Column Hero Grid (Swapped: Cover Left, Details Right) -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 lg:gap-10 items-start">
@@ -372,6 +475,9 @@ const editGameData = {
                 src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""} 
                 alt={game.title} 
                 class="object-cover w-full h-full border border-white/5 rounded-2xl shadow-2xl"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
               />
             </div>
           ) : (
@@ -385,18 +491,16 @@ const editGameData = {
           if (!isItchGame) return null;
           const itchLink = purchaseLinks?.find((link: any) => link.storeName.toLowerCase() === "itch.io");
           if (itchLink && itchLink.url) {
-            const directPurchaseUrl = itchLink.url.endsWith("/purchase")
-              ? itchLink.url
-              : `${itchLink.url.replace(/\/$/, "")}/purchase`;
+            const cleanItchUrl = itchLink.url.replace(/\/purchase$/, "");
             return (
               <a
-                href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(directPurchaseUrl)}`}
+                href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(cleanItchUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 class="flex items-center justify-center gap-2 px-4 py-3 mt-4 bg-[#fa5c5c] text-black text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-xl border border-[#fa5c5c] shadow-lg"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                <span>Buy / Download on itch.io</span>
+                <span>Play / Get on itch.io</span>
               </a>
             );
           }
@@ -677,6 +781,34 @@ const editGameData = {
     <div id="details-overview-section" class="space-y-12 mt-12 scroll-mt-20">
       {isItchGame ? (
         <>
+          {/* Fallback Banner when live itch scraping could not complete */}
+          {itchLoadFailed && (
+            <div class="p-6 sm:p-8 rounded-2xl border border-amber-500/30 bg-amber-950/20 backdrop-blur-md text-center max-w-2xl mx-auto shadow-2xl">
+              <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 mb-3">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Live Details Temporarily Unavailable</h3>
+              <p class="text-white/70 text-xs sm:text-sm mb-5 max-w-md mx-auto leading-relaxed">
+                Live screenshots and overview could not be loaded from itch.io right now. You can view, play, or purchase this game directly on its official store page.
+              </p>
+              {itchDirectUrl && (
+                <a
+                  href={itchDirectUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#fa5c5c] hover:bg-[#e04e4e] text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-[#fa5c5c]/25 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <span>Check on itch.io directly</span>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              )}
+            </div>
+          )}
+
           <!-- Mood Section -->
           {tags && tags.length > 0 && (
             <div class="pt-6 flex flex-wrap gap-4 items-center">
@@ -695,7 +827,7 @@ const editGameData = {
 
           <!-- Price comparison deals -->
           <PriceComparison
-            client:load
+            client:visible
             gameId={game.id}
             gameSlug={game.slug}
             gameTitle={game.title}
@@ -754,7 +886,7 @@ const editGameData = {
           <div class="pt-6 space-y-4">
             <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Description & Overview</h2>
             <EditableText
-              client:load
+              client:idle
               fieldKey="summary"
               initialValue={game.summary || ''}
               label="Summary"
@@ -766,7 +898,7 @@ const editGameData = {
               <div class="mt-4 pt-4 border-t border-white/5">
                 <span class="text-[10px] text-white/40 uppercase tracking-widest block mb-2 font-semibold">Storyline</span>
                 <EditableText
-                  client:load
+                  client:idle
                   fieldKey="storyline"
                   initialValue={game.storyline || ''}
                   label="Storyline"
@@ -781,7 +913,7 @@ const editGameData = {
           <!-- Scare Profile -->
           <div class="pt-6">
             <ScareMeter 
-              client:load
+              client:visible
               scareRating={game.scareRating} 
               scareProfile={game.scareProfile as any} 
               reviewCount={game.scareReviewCount}
@@ -832,7 +964,7 @@ const editGameData = {
           <!-- Scare Profile -->
           <div class="pt-6">
             <ScareMeter 
-              client:load
+              client:visible
               scareRating={game.scareRating} 
               scareProfile={game.scareProfile as any} 
               reviewCount={game.scareReviewCount}
@@ -841,7 +973,7 @@ const editGameData = {
 
           <!-- Price comparison deals -->
           <PriceComparison
-            client:load
+            client:visible
             gameId={game.id}
             gameSlug={game.slug}
             gameTitle={game.title}
@@ -904,7 +1036,7 @@ const editGameData = {
       <section class="border-t border-white/5 pt-12 space-y-6">
         <h2 class="text-[11px] uppercase tracking-widest font-bold text-white/50">Screenshots</h2>
         <ScreenshotGallery 
-          client:load 
+          client:visible 
           screenshots={game.screenshots.map((url: string) => getCloudinaryFetchUrl(url, game.isTrending) || url)} 
           title={game.title} 
         />
@@ -1007,14 +1139,14 @@ const editGameData = {
     <!-- Creator games recommendations section -->
     {developers.length > 0 ? (
       <CreatorGames 
-        client:load
+        client:visible
         creatorIds={developers.map((d: any) => d.id)}
         creatorNames={developers.map((d: any) => d.name)}
         excludeGameId={game.id}
       />
     ) : publishers.length > 0 ? (
       <CreatorGames 
-        client:load
+        client:visible
         creatorIds={publishers.map((p: any) => p.id)}
         creatorNames={publishers.map((p: any) => p.name)}
         excludeGameId={game.id}

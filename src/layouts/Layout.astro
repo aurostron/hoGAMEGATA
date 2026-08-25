@@ -21,6 +21,7 @@ interface Props {
   statsDevelopers?: number;
   statsDeals?: number;
   statsTags?: number;
+  noIndex?: boolean;
   editGameData?: {
     gameId: string;
     gameTitle: string;
@@ -38,6 +39,7 @@ const {
   ogImage,
   ogType = "website",
   ogUrl = canonicalUrl,
+  noIndex = false,
   statsGames,
   statsDevelopers,
   statsDeals,
@@ -84,6 +86,7 @@ if (isHomepage && (sGames === undefined || sDevs === undefined || sDeals === und
     
     <!-- Canonical URL -->
     <link rel="canonical" href={canonicalUrl} />
+    {noIndex && <meta name="robots" content="noindex, nofollow" />}
     
     <!-- SEO Meta Tags -->
     <title>{title}</title>
