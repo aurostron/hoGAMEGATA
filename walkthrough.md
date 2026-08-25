@@ -1504,6 +1504,23 @@ Built and verified the standalone **GameGata Admin Mobile Application** for Andr
 - Build test: `npm run build:quick` passed with exit code 0.
 - Production Deploy: Commit `657975d` pushed to `origin/main` and deployed live to Cloudflare Workers (`gamegata.xyz`). Version ID: `401ddedf-6b10-4185-bc3c-a06c47cac859`.
 
+## 2026-09-02 — Feature: Edge Caching and Pre-Warming for Scraped Itch.io Game Images
+
+### Summary of changes
+- Modified `src/pages/api/image-proxy.ts` — Upgraded fetch headers for `img.itch.zone` (modern browser Accept, User-Agent, and `Referer: https://itch.io/`) and attached Cloudflare Edge caching directives (`cf: { cacheEverything: true, cacheTtl: 31536000 }`) with 1-year immutable `Cache-Control`.
+- Modified `src/pages/game/[slug].astro` — Integrated background cache pre-warming in `cfCtx.waitUntil`: as soon as an itch game is scraped on-demand, its cover art and top gallery screenshots are immediately fetched through `/api/image-proxy`, storing them directly into Cloudflare's Edge Cache.
+- Modified `src/components/ScreenshotGallery.tsx` — Polished lightbox UI with thumbnail strip and touch swipe support.
+
+### Rationale & Architecture
+- Games on itch.io store heavy PNG/JPEG artwork across `img.itch.zone` CDN nodes. Direct client requests can experience CDN throttling or slow initial loads.
+- Routing all scraped game covers and gallery screenshots through our Cloudflare Workers edge image proxy (`/api/image-proxy`) caches them globally for 1 year.
+- By kicking off asynchronous pre-warming in `cfCtx.waitUntil` right at scrape time, images are already warm in Cloudflare Edge Cache before the visitor finishes reading the page or scrolls to the screenshots gallery.
+
+### Verification
+- Tested live image proxy with an `img.itch.zone` asset: returned HTTP 200 binary image with `Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable`.
+- `npm run build:quick` verified with exit code 0 in 11.94s.
+
+
 
 
 
