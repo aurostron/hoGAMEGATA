@@ -57,7 +57,12 @@ export function getCategoryBadge(category: number | null, title?: string): strin
   return null;
 }
 
-export function getCloudinaryFetchUrl(originalUrl: string | null, _isTrending?: boolean): string | null {
+export function getCloudinaryFetchUrl(
+  originalUrl: string | null,
+  _isTrending?: boolean,
+  slug?: string | null,
+  nameSuffix?: string | null
+): string | null {
   if (!originalUrl) return null;
 
   // If it's already a local path, return it directly
@@ -68,6 +73,27 @@ export function getCloudinaryFetchUrl(originalUrl: string | null, _isTrending?: 
   let formattedUrl = originalUrl;
   if (formattedUrl.startsWith("//")) {
     formattedUrl = "https:" + formattedUrl;
+  }
+
+  if (slug) {
+    const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    const cleanSuffix = nameSuffix ? `-${nameSuffix.toLowerCase().replace(/[^a-z0-9_-]/g, "")}` : "-cover";
+    
+    // Extract original extension or default to webp
+    let ext = "webp";
+    try {
+      const parsedPath = new URL(formattedUrl).pathname;
+      const lastDot = parsedPath.lastIndexOf(".");
+      if (lastDot !== -1 && lastDot > parsedPath.lastIndexOf("/")) {
+        const potentialExt = parsedPath.slice(lastDot + 1).toLowerCase();
+        if (["jpg", "jpeg", "png", "webp", "gif", "avif"].includes(potentialExt)) {
+          ext = potentialExt === "jpeg" ? "jpg" : potentialExt;
+        }
+      }
+    } catch {}
+
+    const filename = `${cleanSlug}${cleanSuffix}.${ext}`;
+    return `/api/image-proxy/${filename}?v=2&url=${encodeURIComponent(formattedUrl)}`;
   }
   
   // Route all remote images through our Cloudflare Edge-cached image proxy

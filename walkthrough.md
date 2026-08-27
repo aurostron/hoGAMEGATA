@@ -1522,6 +1522,43 @@ Built and verified the standalone **GameGata Admin Mobile Application** for Andr
 - Production Deploy: Commit `0903cff` pushed to `origin/main` and deployed live to Cloudflare Workers (`gamegata.xyz`). Version ID: `e3246bfd-7998-4f56-a502-ec37ac36b048`.
 - Live Edge Cache Verified: `https://gamegata.xyz/api/image-proxy?v=2&url=https%3A%2F%2Fimg.itch.zone%2F...` returns HTTP 200 OK with `s-maxage=31536000, immutable`.
 
+## 2026-09-02 — Revamp: Modern Glassmorphic Screenshots Gallery & 24-Hour Cache Policy
+
+### Summary of changes
+- Modified `src/components/ScreenshotGallery.tsx` — Revamped the old brutalist screenshot grid and ASCII lightbox into a modern dark glassmorphic gallery:
+  - Grid: Modern rounded cards (`rounded-2xl border border-white/10 bg-neutral-950/60 shadow-xl overflow-hidden`) with smooth image hover zoom (`group-hover:scale-105 duration-500`) and a quick view overlay badge with `Eye` icon and counter.
+  - Lightbox Modal: Deep dark backdrop with `bg-black/92 backdrop-blur-2xl`, rounded image viewport (`rounded-2xl border border-white/10 shadow-2xl`), floating circular glass navigation arrows with Lucide icons (`ChevronLeft`, `ChevronRight`), clean counter pill (`02 / 08`), full-resolution image link (`ExternalLink`), and circular close button (`X`).
+  - Thumbnail Strip: Added an interactive bottom thumbnail strip with active border highlighting to allow one-click jumping between screenshots.
+  - Mobile Interactions: Implemented touch swipe gestures (`touchStartX`/`touchEndX`) and full keyboard navigation (`ArrowLeft`, `ArrowRight`, `Escape`).
+- Modified `src/pages/game/[slug].astro` —
+  - Screenshots Section Header: Modernized typography with an inline count pill badge.
+  - Cache Policy: Adjusted `Cache-Control` header from `s-maxage=2592000` (30 days) to `public, max-age=60, s-maxage=86400, stale-while-revalidate=604800` (24-hour edge cache with 7-day stale-while-revalidate).
+
+### Rationale & Architecture
+- The old screenshots style had harsh double white borders, monospaced ASCII buttons (`[ 02 / 08 ]`, `[ Close ]`, `&lt;`, `&gt;`), and lacked thumbnails, clashing with the sleek dark glassmorphism of the rest of the site.
+- The 30-day edge cache previously caused UI and pricing updates to remain locked on Cloudflare's edge for a month unless manually purged. With a 500M row read monthly quota, a 24-hour edge cache (`s-maxage=86400`) consumes less than 1% of the database quota while naturally propagating all UI and price updates within 24 hours.
+
+### Verification
+- Ran `npm run build` — TypeScript compilation, Astro server bundling, and manifest validation passed cleanly with exit code 0.
+- Changes kept local; deployment deferred per user request.
+
+## 2026-09-02 — Feature & Optimization: Dynamic Game-Name Image Proxy with Zero-Memory Streaming
+
+### Summary of changes
+- Created `src/lib/imageProxyHandler.ts` — Core image proxy engine with:
+  - **Zero-Memory Streaming**: Passes `response.body` (ReadableStream) directly into `new Response`, buffering 0 bytes in Worker heap memory.
+  - **Dynamic Content-Disposition**: Sets `Content-Disposition: inline; filename="${safeFilename}"` for clean file names on right-click save.
+  - **Aggressive Edge Caching**: Emits `Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable` (1 year) and passes `cf: { cacheEverything: true, cacheTtl: 31536000 }` on remote fetches.
+- Replaced `src/pages/api/image-proxy.ts` with:
+  - `src/pages/api/image-proxy/index.ts` — Handles standard `/api/image-proxy?url=...` requests (100% backwards compatible).
+  - `src/pages/api/image-proxy/[name].ts` — Handles dynamic named URLs like `/api/image-proxy/sigmaape-cover.webp?url=...` and `/api/image-proxy/matilda-screenshot-1.jpg?url=...`.
+- Modified `src/lib/utils.ts` — Extended `getCloudinaryFetchUrl(url, isTrending, slug?, nameSuffix?)` to automatically construct SEO-friendly dynamic filenames derived from the game slug and image type/index.
+- Modified `src/pages/game/[slug].astro` — Updated cover image, screenshots gallery, and background scrape pre-warm tasks to emit and pre-warm the exact dynamic game-named URLs.
+
+### Verification
+- `npm run build:quick` completed with exit code 0 in 10.49s.
+
+
 
 
 

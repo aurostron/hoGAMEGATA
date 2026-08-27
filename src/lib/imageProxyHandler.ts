@@ -1,10 +1,7 @@
-import { rateLimit, getClientIp, tooManyRequests } from '../../lib/rateLimit';
-import type { APIRoute } from 'astro';
-
-export const prerender = false;
+﻿import { rateLimit, getClientIp, tooManyRequests } from './rateLimit';
 
 // Security: Whitelisted hosts permitted to fetch images via our proxy to prevent SSRF
-const ALLOWED_HOSTS = [
+export const ALLOWED_HOSTS = [
   'iili.io',
   'freeimage.host',
   'catbox.moe',
@@ -42,7 +39,7 @@ const ALLOWED_HOSTS = [
   'images.unsplash.com',
 ];
 
-export const GET: APIRoute = async ({ request }) => {
+export async function handleImageProxy(request: Request, customFilename?: string): Promise<Response> {
   const clientIp = getClientIp(request);
   const rl = await rateLimit(`img_proxy:${clientIp}`, 600, 60);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter);
@@ -56,9 +53,9 @@ export const GET: APIRoute = async ({ request }) => {
 
   try {
     const targetUrl = new URL(targetUrlStr);
-    
+
     // Security: Only allow proxying from whitelisted hosts
-    const isAllowed = ALLOWED_HOSTS.some(host => 
+    const isAllowed = ALLOWED_HOSTS.some(host =>
       targetUrl.hostname === host || targetUrl.hostname.endsWith('.' + host)
     );
 
@@ -88,15 +85,37 @@ export const GET: APIRoute = async ({ request }) => {
       return new Response('Failed to fetch remote image', { status: response.status });
     }
 
-    const contentType = response.headers.get('Content-Type');
-    const imageBuffer = await response.arrayBuffer();
+    const contentType = response.headers.get('Content-Type') || 'image/webp';
 
-    return new Response(imageBuffer, {
+    // Derive or sanitize filename for Content-Disposition (e.g. sigmaape-cover.webp)
+    let safeFilename = 'image.webp';
+    if (customFilename) {
+      safeFilename = customFilename.replace(/[^a-zA-Z0-9._-]/g, '');
+    } else {
+      const pathSegment = targetUrl.pathname.split('/').pop();
+      if (pathSegment && pathSegment.length > 2 && pathSegment.includes('.')) {
+        safeFilename = pathSegment.replace(/[^a-zA-Z0-9._-]/g, '');
+      }
+    }
+
+    // Ensure the filename has an extension
+    if (!safeFilename.includes('.')) {
+      const ext = contentType.includes('png') ? 'png'
+        : contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg'
+        : contentType.includes('gif') ? 'gif'
+        : contentType.includes('svg') ? 'svg'
+        : 'webp';
+      safeFilename = `${safeFilename}.${ext}`;
+    }
+
+    // Zero-memory byte streaming: pass response.body (ReadableStream) directly
+    return new Response(response.body, {
       status: 200,
       headers: {
-        'Content-Type': contentType || 'image/webp',
+        'Content-Type': contentType,
         // Instruct Cloudflare Edge CDN and browser client to cache aggressively for 1 year
         'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
+        'Content-Disposition': `inline; filename="${safeFilename}"`,
         'Access-Control-Allow-Origin': '*',
       },
     });
@@ -104,4 +123,4 @@ export const GET: APIRoute = async ({ request }) => {
     console.error('Image proxy failed:', error);
     return new Response('Internal Server Error', { status: 500 });
   }
-};
+}

@@ -165,8 +165,14 @@ if (isItchGame) {
         const imagesToCache = [newCover, ...parsedScreenshots.slice(0, 8)].filter(Boolean) as string[];
         if (imagesToCache.length > 0) {
           const cacheImagesTask = Promise.allSettled(
-            imagesToCache.map(imgUrl => {
-              const proxyUrl = `${Astro.url.origin}/api/image-proxy?v=2&url=${encodeURIComponent(imgUrl)}`;
+            imagesToCache.map((imgUrl, idx) => {
+              const relProxyUrl = getCloudinaryFetchUrl(
+                imgUrl,
+                false,
+                rawGame.slug,
+                idx === 0 ? "cover" : `screenshot-${idx}`
+              );
+              const proxyUrl = `${Astro.url.origin}${relProxyUrl}`;
               return fetch(proxyUrl, {
                 headers: {
                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
@@ -492,7 +498,7 @@ const editGameData = {
           {game.coverUrl ? (
             <div class="relative w-full h-full">
               <img 
-                src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""} 
+                src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending, game.slug, "cover") || ""} 
                 alt={game.title} 
                 class="object-cover w-full h-full border border-white/5 rounded-2xl shadow-2xl"
                 loading="eager"
@@ -1064,7 +1070,7 @@ const editGameData = {
         </div>
         <ScreenshotGallery 
           client:visible 
-          screenshots={game.screenshots.map((url: string) => getCloudinaryFetchUrl(url, game.isTrending) || url)} 
+          screenshots={game.screenshots.map((url: string, idx: number) => getCloudinaryFetchUrl(url, game.isTrending, game.slug, `screenshot-${idx + 1}`) || url)} 
           title={game.title} 
         />
       </section>
