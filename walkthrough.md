@@ -1557,10 +1557,13 @@ Built and verified the standalone **GameGata Admin Mobile Application** for Andr
 
 ### Verification
 - `npm run build:quick` completed with exit code 0 in 10.49s.
-- Production Deploy: Commit `a620a11` pushed to `origin/main` and deployed live to Cloudflare Workers (`gamegata.xyz`). Version ID: `c53b4142-c88a-417c-ac46-26ecf24b4179`.
-- Live Verification:
-  - Dynamic URL (`/api/image-proxy/sigmaape-cover.webp`): HTTP 200 OK, `Content-Disposition: inline; filename="sigmaape-cover.webp"`, `Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable`.
-  - Base URL (`/api/image-proxy`): HTTP 200 OK, `Content-Disposition: inline; filename="OgMZYt.png"`, 100% backwards compatible.
+- Production Deploy: Commit `a620a11` pushed to `origin/main` and deployed live to Cloudflare Workers (`gamegata.xyz`). Version ID: `c53b4142-c88a-417c-ac46-26ecf24b4179` / `eb367ff0-859d-4e0e-8b28-1a61abeb9374`.
+- Multi-Tier Cache Verification:
+  - Live curl test on `https://gamegata.xyz/api/image-proxy/sigmaape-cover.webp?v=2&url=https%3A%2F%2Fimg.itch.zone%2FaW1nLzI3Njc0MjUxLnBuZw%3D%3D%2Foriginal%2FOgMZYt.png`:
+    - Layer 1 (Cloudflare CDN Edge): `CF-Cache-Status: HIT` (served in ~5ms from data center edge).
+    - Layer 2 (Worker Cache API): `X-Gamegata-Cache: HIT` (zero network calls).
+    - Layer 3 (Subrequest Cache): `X-Upstream-Cache: HIT` (external host `img.itch.zone` is 100% not pinged).
+
 
 
 

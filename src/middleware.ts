@@ -151,7 +151,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     try {
       const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
-        return applySecurityHeaders(cachedResponse);
+        const hitRes = new Response(cachedResponse.body, cachedResponse);
+        hitRes.headers.set("X-Gamegata-Cache", "HIT");
+        return applySecurityHeaders(hitRes);
       }
     } catch (e) {
       console.error("[Edge Cache Match Error]", e);

@@ -40,6 +40,27 @@ export const ALLOWED_HOSTS = [
 ];
 
 export async function handleImageProxy(request: Request, customFilename?: string): Promise<Response> {
+  // 1. Direct Cloudflare Edge Cache check (bypasses rate limit and network on HIT)
+  let cache: any = null;
+  let cacheKey: Request | null = null;
+  try {
+    cache = (globalThis as any).caches?.default;
+    if (cache) {
+      cacheKey = new Request(request.url, { method: "GET" });
+      const cached = await cache.match(cacheKey);
+      if (cached) {
+        const hitHeaders = new Headers(cached.headers);
+        hitHeaders.set("X-Gamegata-Cache", "HIT");
+        return new Response(cached.body, {
+          status: 200,
+          headers: hitHeaders,
+        });
+      }
+    }
+  } catch (e) {
+    console.error("[ImageProxy Cache Match Error]", e);
+  }
+
   const clientIp = getClientIp(request);
   const rl = await rateLimit(`img_proxy:${clientIp}`, 600, 60);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter);
@@ -86,6 +107,7 @@ export async function handleImageProxy(request: Request, customFilename?: string
     }
 
     const contentType = response.headers.get('Content-Type') || 'image/webp';
+    const upstreamCfCache = response.headers.get('cf-cache-status') || 'ORIGIN';
 
     // Derive or sanitize filename for Content-Disposition (e.g. sigmaape-cover.webp)
     let safeFilename = 'image.webp';
@@ -108,17 +130,37 @@ export async function handleImageProxy(request: Request, customFilename?: string
       safeFilename = `${safeFilename}.${ext}`;
     }
 
-    // Zero-memory byte streaming: pass response.body (ReadableStream) directly
-    return new Response(response.body, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        // Instruct Cloudflare Edge CDN and browser client to cache aggressively for 1 year
-        'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
-        'Content-Disposition': `inline; filename="${safeFilename}"`,
-        'Access-Control-Allow-Origin': '*',
-      },
+    // Buffer the image data for guaranteed complete write into Cloudflare Edge Cache
+    const imageBuffer = await response.arrayBuffer();
+
+    const responseHeaders = new Headers({
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
+      'Content-Disposition': `inline; filename="${safeFilename}"`,
+      'Access-Control-Allow-Origin': '*',
+      'X-Gamegata-Cache': 'MISS',
+      'X-Upstream-Cache': upstreamCfCache,
     });
+
+    const resToReturn = new Response(imageBuffer, {
+      status: 200,
+      headers: responseHeaders,
+    });
+
+    // Write to Cloudflare Edge Cache
+    if (cache && cacheKey) {
+      try {
+        const resToCache = new Response(imageBuffer.slice(0), {
+          status: 200,
+          headers: responseHeaders,
+        });
+        await cache.put(cacheKey, resToCache);
+      } catch (e) {
+        console.error("[ImageProxy Cache Put Error]", e);
+      }
+    }
+
+    return resToReturn;
   } catch (error) {
     console.error('Image proxy failed:', error);
     return new Response('Internal Server Error', { status: 500 });
