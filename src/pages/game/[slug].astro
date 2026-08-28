@@ -18,7 +18,7 @@ import {
 } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle, formatPrice, formatEmbedVideoUrl } from '../../lib/utils';
-import { fetchItchGameDetail } from '../../lib/itchParser';
+import { fetchItchGameDetail, fetchItchDataJson } from '../../lib/itchParser';
 
 // Import React components
 import PlatformLogos from '../../components/PlatformLogos';
@@ -224,6 +224,52 @@ if (isItchGame) {
       'Cache-Control',
       'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800'
     );
+  }
+
+  // Load price snapshots for this itch game from Turso DB or fetch via data.json
+  try {
+    const itchSnapshots = await turso
+      .select()
+      .from(priceSnapshotsTable)
+      .where(eq(priceSnapshotsTable.gameId, rawGame.id));
+    if (itchSnapshots.length > 0) {
+      priceSnapshotsData = itchSnapshots;
+    } else {
+      const itchLink = linksData.find((l: any) =>
+        l && ((l.storeName && l.storeName.toLowerCase().includes("itch")) || (l.url && l.url.includes("itch.io")))
+      );
+      const targetUrl = itchLink?.url || itchDirectUrl;
+      if (targetUrl) {
+        const itchData = await fetchItchDataJson(targetUrl);
+        if (itchData.success) {
+          const dealP = itchData.price ?? 0;
+          const retP = itchData.originalPrice ?? dealP;
+          const discP = itchData.discountPercent ?? 0;
+          const snapshot = {
+            id: `snap_${rawGame.id}_itchio_US_direct`,
+            gameId: rawGame.id,
+            storeName: "itch.io",
+            dealPrice: dealP,
+            retailPrice: retP,
+            discountPercent: discP,
+            dealUrl: targetUrl.replace(/\/purchase$/, "").replace(/\/+$/, ""),
+            currency: itchData.currency || "USD",
+            country: "US",
+            provider: "direct",
+            updatedAt: new Date(),
+          };
+          priceSnapshotsData = [snapshot];
+          const insertTask = turso.insert(priceSnapshotsTable).values(snapshot);
+          if (cfCtx?.waitUntil) {
+            cfCtx.waitUntil(insertTask);
+          } else {
+            insertTask.catch(() => {});
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[Game Slug] Failed to load itch price snapshots:", e);
   }
 } else {
   // Standard non-itch game: fetch relations in parallel (links already fetched in single query!)
@@ -518,6 +564,19 @@ const editGameData = {
           const itchLink = purchaseLinks?.find((link: any) => link.storeName.toLowerCase() === "itch.io");
           if (itchLink && itchLink.url) {
             const cleanItchUrl = itchLink.url.replace(/\/purchase$/, "");
+            const itchSnapshot = priceSnapshots?.find((s: any) => s.storeName === "itch.io");
+            let btnLabel = "Play / Get on itch.io";
+            if (itchSnapshot) {
+              if (itchSnapshot.dealPrice === 0 && itchSnapshot.retailPrice > 0) {
+                btnLabel = "Free (100% OFF) on itch.io";
+              } else if (itchSnapshot.dealPrice === 0) {
+                btnLabel = "Play Free on itch.io";
+              } else if (itchSnapshot.discountPercent > 0) {
+                btnLabel = `Buy on itch.io — $${itchSnapshot.dealPrice.toFixed(2)} (-${itchSnapshot.discountPercent}%)`;
+              } else if (itchSnapshot.dealPrice > 0) {
+                btnLabel = `Buy on itch.io — $${itchSnapshot.dealPrice.toFixed(2)}`;
+              }
+            }
             return (
               <a
                 href={`/re/${game.slug}/itchio?gameId=${game.id}&fallbackUrl=${encodeURIComponent(cleanItchUrl)}`}
@@ -526,7 +585,7 @@ const editGameData = {
                 class="flex items-center justify-center gap-2 px-4 py-3 mt-4 bg-[#fa5c5c] text-black text-xs uppercase tracking-widest font-black transition-all duration-150 hover:bg-[#ff7676] select-none rounded-xl border border-[#fa5c5c] shadow-lg"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-black"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                <span>Play / Get on itch.io</span>
+                <span>{btnLabel}</span>
               </a>
             );
           }

@@ -23,12 +23,12 @@ function matchStoreName(slug: string): string {
   if (s.includes("gamersgate")) return "GamersGate";
   if (s.includes("gamebillet")) return "GameBillet";
   if (s.includes("voidu")) return "Voidu";
+  if (s.includes("itch")) return "itch.io";
   return slug;
 }
 
 export const POST: APIRoute = async (context) => {
-  const { params, request, locals } = context;
-  const cfWorkerEnv = (locals as any)?.runtime?.env;
+  const { params, request } = context;
   const runtimeEnv = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
     : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));

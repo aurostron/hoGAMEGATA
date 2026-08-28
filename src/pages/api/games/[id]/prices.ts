@@ -76,7 +76,11 @@ export const POST: APIRoute = async ({ params, request }) => {
   } catch (error) {
     console.error(`[Pricing API Error] Failed to fetch prices for game:`, error);
     return new Response(
-      JSON.stringify({ error: "Internal server error while fetching prices" }),
+      JSON.stringify({ 
+        error: "Internal server error while fetching prices",
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }

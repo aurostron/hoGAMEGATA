@@ -9,7 +9,7 @@ export const ALL: APIRoute = async (context) => {
   const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
   const env = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
-    : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+    : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
   
   if (env) {
     initTursoAuthForRequest(env);

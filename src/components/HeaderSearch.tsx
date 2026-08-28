@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { getCloudinaryFetchUrl } from "../lib/utils";
-import { searchNative, initNativeSearch } from "../lib/nativeSearchManager";
+import { initSearchEngine, searchLocal, isSearchReady } from "../lib/clientSearchEngine";
 
 interface GameSearchResult {
   id: string;
@@ -9,12 +9,16 @@ interface GameSearchResult {
   slug: string;
   coverUrl?: string | null;
   developerNames: string | null;
+  priceBadge?: string | null;
+  badgeType?: "free" | "sale" | "paid";
 }
 
 // Client-side in-memory LRU response cache (max 100 entries)
-// Provides 0ms instant responses for backspacing and repeated queries
 const clientSearchCache = new Map<string, GameSearchResult[]>();
 const MAX_CACHE_ENTRIES = 100;
+
+// Session price cache: persists live prices for visible games until page refresh
+const sessionPriceCache = new Map<string, { priceBadge: string; badgeType: "free" | "sale" | "paid" }>();
 
 function getCachedResults(key: string): GameSearchResult[] | undefined {
   return clientSearchCache.get(key.toLowerCase().trim());
@@ -37,70 +41,124 @@ export default function HeaderSearch() {
   const [isExpanded, setIsExpanded] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const priceAbortRef = useRef<AbortController | null>(null);
+  const priceDebounceRef = useRef<any>(null);
 
   const activeQueryRef = useRef(query);
   activeQueryRef.current = query;
 
-  // Pre-warm local search index on component mount
+  // Pre-warm client search engine on idle or first user interaction
   useEffect(() => {
-    initNativeSearch();
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        (window as any).requestIdleCallback(() => initSearchEngine());
+      } else {
+        setTimeout(() => initSearchEngine(), 1500);
+      }
+    }
   }, []);
 
-  // Search logic: Native worker first (0ms, 0 API calls), fallback to Cloud API
+  // Search logic: 100% Client-side IndexedDB engine first (0ms, 0 Turso reads)
   useEffect(() => {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
       setResults([]);
       setIsOpen(false);
       setLoading(false);
+      abortControllerRef.current?.abort();
+      priceAbortRef.current?.abort();
+      clearTimeout(priceDebounceRef.current);
       return;
     }
 
-    // 1. Instant cache check (0ms response, 0 DB reads)
+    // 1. Instant cache check (0ms response, 0 network requests)
     const cached = getCachedResults(trimmedQuery);
     if (cached) {
       setResults(cached);
       setIsOpen(true);
       setLoading(false);
+      abortControllerRef.current?.abort();
       return;
     }
 
-    let isSubscribed = true;
+    // 2. Try Client-side In-Memory / IndexedDB search engine (0 Turso reads)
+    const localMatches = searchLocal(trimmedQuery, 8);
+    if (localMatches.length > 0) {
+      // Map local matches using sessionPriceCache (no fake/assumed badges!)
+      const gamesWithDefaults: GameSearchResult[] = localMatches.map((m) => {
+        const cachedPrice = sessionPriceCache.get(m.id);
+        return {
+          ...m,
+          priceBadge: cachedPrice?.priceBadge || null,
+          badgeType: cachedPrice?.badgeType || "paid",
+          coverUrl: cachedPrice?.coverUrl || m.coverUrl || null,
+        };
+      });
 
-    // 2. Try instant Native Worker/Client Search (All devices)
-    searchNative(trimmedQuery, 8).then((nativeResults) => {
-      if (!isSubscribed) return;
+      setResults(gamesWithDefaults);
+      setIsOpen(true);
+      setLoading(false);
+      setCachedResults(trimmedQuery, gamesWithDefaults);
+      abortControllerRef.current?.abort();
 
-      if (nativeResults !== null) {
-        // Native search succeeded!
-        const mappedGames: GameSearchResult[] = nativeResults.map((r) => ({
-          id: String(r.id),
-          title: r.title,
-          slug: r.slug,
-          coverUrl: r.coverUrl,
-          developerNames: r.developerNames || null,
-        }));
+      // On-demand fetch live prices for visible games missing from session cache
+      const missingIds = gamesWithDefaults
+        .filter((g) => !sessionPriceCache.has(g.id))
+        .map((g) => g.id);
 
-        setCachedResults(trimmedQuery, mappedGames);
+      if (missingIds.length > 0) {
+        priceAbortRef.current?.abort();
+        const priceController = new AbortController();
+        priceAbortRef.current = priceController;
 
-        if (activeQueryRef.current.trim() === trimmedQuery) {
-          setResults(mappedGames);
-          setIsOpen(true);
-          setLoading(false);
-        }
-        return;
+        clearTimeout(priceDebounceRef.current);
+        priceDebounceRef.current = setTimeout(() => {
+          fetch(`/api/prices/quick?ids=${missingIds.join(",")}`, {
+            signal: priceController.signal,
+          })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              if (data && data.prices) {
+                for (const [id, priceInfo] of Object.entries(data.prices as Record<string, any>)) {
+                  sessionPriceCache.set(id, priceInfo);
+                }
+
+                setResults((prev) =>
+                  prev.map((g) => {
+                    const fresh = data.prices[g.id];
+                    if (fresh) {
+                      return {
+                        ...g,
+                        priceBadge: fresh.priceBadge,
+                        badgeType: fresh.badgeType,
+                        coverUrl: fresh.coverUrl || g.coverUrl,
+                      };
+                    }
+                    return g;
+                  })
+                );
+              }
+            })
+            .catch(() => {});
+        }, 200);
       }
+      return;
+    }
 
-      // 3. Fallback to Cloud API if Native search is not active (e.g. mobile or initializing)
-      const controller = new AbortController();
-      setLoading(true);
+    // 3. Fallback to Cloud Edge API if local index is still downloading or no local match
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
+    setLoading(true);
+
+    const debounceTimer = setTimeout(() => {
       fetch(`/api/search/suggest?q=${encodeURIComponent(trimmedQuery)}`, {
         signal: controller.signal,
       })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (!isSubscribed) return;
           if (data && data.games) {
             const fetchedGames: GameSearchResult[] = data.games || [];
             setCachedResults(trimmedQuery, fetchedGames);
@@ -117,14 +175,15 @@ export default function HeaderSearch() {
           }
         })
         .finally(() => {
-          if (isSubscribed && activeQueryRef.current.trim() === trimmedQuery) {
+          if (activeQueryRef.current.trim() === trimmedQuery) {
             setLoading(false);
           }
         });
-    });
+    }, 200);
 
     return () => {
-      isSubscribed = false;
+      clearTimeout(debounceTimer);
+      controller.abort();
     };
   }, [query]);
 
@@ -170,7 +229,10 @@ export default function HeaderSearch() {
       {/* Collapsed Search Button */}
       {!isExpanded ? (
         <button
+          onMouseEnter={() => initSearchEngine()}
+          onFocus={() => initSearchEngine()}
           onClick={() => {
+            initSearchEngine();
             setIsExpanded(true);
             setTimeout(() => inputRef.current?.focus(), 50);
           }}
@@ -226,7 +288,7 @@ export default function HeaderSearch() {
               >
                 {game.coverUrl ? (
                   <img
-                    src={getCloudinaryFetchUrl(game.coverUrl) || game.coverUrl}
+                    src={getCloudinaryFetchUrl(game.coverUrl, false, game.slug, "cover") || game.coverUrl}
                     alt={game.title}
                     className="w-8 h-10 object-cover rounded shadow border border-white/10 shrink-0 group-hover:border-black/20"
                     loading="lazy"
@@ -237,9 +299,24 @@ export default function HeaderSearch() {
                   </div>
                 )}
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="font-sans text-xs font-bold tracking-tight truncate block">
-                    {game.title}
-                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-sans text-xs font-bold tracking-tight truncate block">
+                      {game.title}
+                    </span>
+                    {game.priceBadge && (
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${
+                          game.badgeType === "free"
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 group-hover:border-emerald-600 group-hover:text-emerald-700"
+                            : game.badgeType === "sale"
+                            ? "bg-amber-500/15 text-amber-400 border border-amber-500/25 group-hover:border-amber-600 group-hover:text-amber-700"
+                            : "bg-white/10 text-white/70 border border-white/10 group-hover:border-black/20 group-hover:text-black/70"
+                        }`}
+                      >
+                        {game.priceBadge}
+                      </span>
+                    )}
+                  </div>
                   {game.developerNames && (
                     <span className="font-mono text-[9px] text-white/50 group-hover:text-black/60 truncate block font-medium transition-colors">
                       by {game.developerNames}

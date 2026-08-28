@@ -1,6 +1,7 @@
 import { turso } from "./turso";
-import { priceSnapshots as priceSnapshotsTable, purchaseLinks as purchaseLinksTable } from "../db/schema";
+import { games as gamesTable, priceSnapshots as priceSnapshotsTable, purchaseLinks as purchaseLinksTable } from "../db/schema";
 import { eq, and } from "drizzle-orm";
+import { fetchItchDataJson } from "./itchParser";
 
 const CHEAPSHARK_STORE_MAP: Record<string, string> = {
   "1": "Steam",
@@ -55,7 +56,7 @@ export function normalizeStoreName(name: string): string {
   if (n.includes("wingamestore")) return "WinGameStore";
   if (n.includes("etail")) return "eTail.Market";
   if (n.includes("joybuggy")) return "JoyBuggy";
-  if (n.includes("newegg")) return "Newegg";
+  if (n.includes("itch")) return "itch.io";
   return name.trim();
 }
 
@@ -140,6 +141,9 @@ export function buildCleanStoreUrl(
 
     case "Newegg":
       return `https://www.newegg.com/p/pl?d=${encodeURIComponent(cleanTitle)}`;
+
+    case "itch.io":
+      return `https://itch.io/search?q=${encodeURIComponent(cleanTitle)}`;
 
     default:
       return `https://store.steampowered.com/search/?term=${encodeURIComponent(cleanTitle)}`;
@@ -739,18 +743,6 @@ export async function lazyGetPrices(
       )
       .orderBy(priceSnapshotsTable.dealPrice);
 
-    // Bypass API calls during production pre-render to avoid build limits
-    const isBuildPhase = process.env.NODE_ENV === "production" && typeof window === "undefined" && !process.env.CF_PAGES;
-    if (isBuildPhase) {
-      return cached.map(c => ({
-        storeName: c.storeName,
-        dealPrice: c.dealPrice,
-        retailPrice: c.retailPrice,
-        discountPercent: c.discountPercent,
-        dealUrl: c.dealUrl,
-        currency: c.currency
-      }));
-    }
 
     if (cached.length > 0 && !forceRefresh) {
       const oldestUpdate = Math.min(...cached.map(c => new Date(c.updatedAt).getTime()));
@@ -776,17 +768,21 @@ export async function lazyGetPrices(
       console.log(`[Pricing Engine] 🔥 Strict On-Demand Refresh initiated for "${title}" (${provider}) in region ${upperCountry}`);
     }
 
-    // B. Cache stale/missing: Find steamId & gogUrl
+    // B. Cache stale/missing: Find steamId, gogUrl & itchUrl
     let steamId: string | null = null;
     let hasSteamLink = false;
     let gogUrl: string | null = null;
+    let itchUrl: string | null = null;
     for (const link of purchaseLinks) {
-      if (link.storeName.toLowerCase() === "steam") {
+      const sName = link.storeName?.toLowerCase() || "";
+      if (sName === "steam") {
         hasSteamLink = true;
         const id = extractSteamAppId(link.url);
         if (id) steamId = id;
-      } else if (link.storeName.toLowerCase() === "gog") {
+      } else if (sName === "gog") {
         gogUrl = link.url;
+      } else if (sName.includes("itch") || (link.url && link.url.includes("itch.io"))) {
+        itchUrl = link.url;
       }
     }
 
@@ -794,6 +790,64 @@ export async function lazyGetPrices(
     let freshDeals = provider === "direct"
       ? await fetchDirectDeals(steamId, gogUrl, title, gameId, hasSteamLink, upperCountry)
       : await fetchAggregatedDeals(steamId, title, upperCountry);
+
+    // Fetch itch.io real-time deal via lightweight data.json if itch link exists
+    let itchDeal: PriceDeal | null = null;
+    if (itchUrl) {
+      try {
+        const itchData = await fetchItchDataJson(itchUrl);
+        if (itchData.success) {
+          const dealP = itchData.price ?? 0;
+          const retP = itchData.originalPrice ?? dealP;
+          const discP = itchData.discountPercent ?? 0;
+          const cleanItchUrl = itchUrl.replace(/\/purchase$/, "").replace(/\/+$/, "");
+
+          itchDeal = {
+            storeName: "itch.io",
+            dealPrice: dealP,
+            retailPrice: retP,
+            discountPercent: discP,
+            dealUrl: cleanItchUrl,
+            currency: itchData.currency || "USD"
+          };
+
+          // If coverUrl is provided by data.json and game in Turso is missing a cover, backfill it!
+          if (itchData.coverUrl && gameId) {
+            try {
+              turso
+                .select({ coverUrl: gamesTable.coverUrl })
+                .from(gamesTable)
+                .where(eq(gamesTable.id, gameId))
+                .limit(1)
+                .then((rows) => {
+                  if (rows.length > 0 && !rows[0].coverUrl) {
+                    turso
+                      .update(gamesTable)
+                      .set({ coverUrl: itchData.coverUrl })
+                      .where(eq(gamesTable.id, gameId))
+                      .then(() =>
+                        console.log(
+                          `[Pricing Engine] 🖼️ Backfilled missing coverUrl for game ${gameId} from itch data.json`
+                        )
+                      )
+                      .catch((e) =>
+                        console.error("[Pricing Engine] Failed to backfill cover:", e)
+                      );
+                  }
+                })
+                .catch(() => {});
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.warn(`[Pricing Engine] Failed to fetch itch data.json for "${title}":`, err);
+      }
+    }
+
+    if (itchDeal) {
+      freshDeals = freshDeals.filter(d => d.storeName !== "itch.io");
+      freshDeals.push(itchDeal);
+    }
 
     console.log(`[Pricing Engine] ✅ Fetched ${freshDeals.length} deals for "${title}" (${provider}):`, freshDeals.map(d => `${d.storeName}: $${d.dealPrice}`).join(', '));
 
@@ -854,7 +908,7 @@ export async function lazyGetPrices(
       // E. Update local cached data in Turso (Delete stale, then Insert fresh)
       // Only write to DB if we have expanded stores (don't overwrite good cache with degraded data)
       const hasExpandedResult = freshDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
-      if (hasExpandedResult || provider === "aggregated") {
+      if (hasExpandedResult || provider === "aggregated" || Boolean(itchDeal)) {
         try {
           await turso
             .delete(priceSnapshotsTable)

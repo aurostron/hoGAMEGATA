@@ -294,7 +294,9 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error("❌ Generator error:", err);
-  process.exit(1);
-});
+if (process.argv[1]?.includes("generate-from-sql-dump")) {
+  main().catch(err => {
+    console.error("❌ Generator error:", err);
+    process.exit(1);
+  });
+}

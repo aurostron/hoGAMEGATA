@@ -16,7 +16,7 @@ export const GET: APIRoute = async (context) => {
     const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
     const env = isDev
       ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
-      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+      : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
     
     if (env) {
       initTursoForRequest(env);
@@ -74,7 +74,7 @@ export const POST: APIRoute = async (context) => {
     const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
     const env = isDev
       ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
-      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+      : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
     
     if (env) {
       initTursoForRequest(env);
@@ -122,7 +122,7 @@ export const DELETE: APIRoute = async (context) => {
     const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development");
     const env = isDev
       ? (typeof process !== "undefined" && process.env ? process.env : cfEnv)
-      : (cfEnv || (context.locals as any)?.runtime?.env || (typeof process !== "undefined" ? process.env : {}));
+      : (cfEnv || (typeof process !== "undefined" ? process.env : {}));
     
     if (env) {
       initTursoForRequest(env);

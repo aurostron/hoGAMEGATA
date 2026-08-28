@@ -267,6 +267,7 @@ export default function PriceComparison({
             const storeKey = deal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "");
             const currencyCode = deal.currency || "USD";
             const formatPrice = (amount: number) => {
+              if (amount === 0) return "FREE";
               try {
                 return new Intl.NumberFormat("en-US", {
                   style: "currency",
@@ -281,6 +282,8 @@ export default function PriceComparison({
                 }).format(amount);
               }
             };
+
+            const isFreeDeal = deal.dealPrice === 0;
 
             return (
               <div 
@@ -299,21 +302,29 @@ export default function PriceComparison({
                       Best Value
                     </span>
                   )}
-                  {deal.discountPercent > 0 && (
+                  {isFreeDeal && deal.retailPrice > 0 ? (
+                    <span className="font-mono text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 font-bold uppercase rounded">
+                      100% OFF (FREE)
+                    </span>
+                  ) : isFreeDeal ? (
+                    <span className="font-mono text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 font-bold uppercase rounded">
+                      FREE
+                    </span>
+                  ) : deal.discountPercent > 0 ? (
                     <span className="font-mono text-[9px] bg-white/10 text-white/80 border border-white/10 px-1.5 py-0.5 font-bold uppercase rounded">
                       -{deal.discountPercent}% OFF
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 
                 <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
                   <div className="flex items-baseline gap-2 font-mono">
-                    {deal.discountPercent > 0 && (
+                    {deal.discountPercent > 0 && deal.retailPrice > 0 && (
                       <span className="text-xs text-white/40 line-through">
                         {formatPrice(deal.retailPrice)}
                       </span>
                     )}
-                    <span className={`text-base font-bold ${isCheapest ? "text-emerald-400" : "text-white"}`}>
+                    <span className={`text-base font-bold ${isCheapest || isFreeDeal ? "text-emerald-400" : "text-white"}`}>
                       {formatPrice(deal.dealPrice)}
                     </span>
                   </div>

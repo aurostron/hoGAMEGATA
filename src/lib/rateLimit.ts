@@ -1,5 +1,6 @@
 import { logSecurityEvent } from "./auditLogger";
 import { createRateLimitHtmlResponse } from "./rateLimitHtml";
+import { env as cfEnv } from "cloudflare:workers";
 
 interface RateLimitResult {
   allowed: boolean;
@@ -18,15 +19,13 @@ if (!g.__memoryBlockedIps) {
 const memoryRateLimitStore: Map<string, { count: number; windowStart: number }> = g.__memoryRateLimitStore;
 const memoryBlockedIps: Map<string, number> = g.__memoryBlockedIps;
 
-async function getRateLimitKv(): Promise<KVNamespace | null> {
-  let cfEnv: any = {};
+function getRateLimitKv(): KVNamespace | null {
   try {
-    const cf = await import("cloudflare:workers");
-    cfEnv = cf.env || {};
-  } catch {}
-
-  const runtimeEnv = cfEnv || (typeof process !== "undefined" ? process.env : {});
-  return ((runtimeEnv as any).RATE_LIMIT as KVNamespace) || null;
+    const runtimeEnv = cfEnv || (typeof process !== "undefined" ? process.env : {});
+    return ((runtimeEnv as any)?.RATE_LIMIT as KVNamespace) || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -44,7 +43,7 @@ export async function isIpBlocked(ip: string): Promise<boolean> {
       memoryBlockedIps.delete(ip);
     }
 
-    const kv = await getRateLimitKv();
+    const kv = getRateLimitKv();
     if (!kv) return false;
 
     const blocked = await kv.get(`block:${ip}`);
@@ -64,7 +63,7 @@ export async function blockIp(ip: string, reason: string, durationSecs: number =
   memoryBlockedIps.set(ip, now + durationSecs);
 
   try {
-    const kv = await getRateLimitKv();
+    const kv = getRateLimitKv();
     if (!kv) return;
 
     await kv.put(`block:${ip}`, JSON.stringify({ reason, blockedAt: now }), {
@@ -115,7 +114,7 @@ export async function rateLimit(
       return { allowed: false, remaining: 0, retryAfter: 86400 };
     }
 
-    const kv = await getRateLimitKv();
+    const kv = getRateLimitKv();
 
     // 1. Production Mode: Use Cloudflare KV
     if (kv) {
@@ -200,7 +199,7 @@ export async function rateLimit(
       retryAfter: 0,
     };
   } catch (err) {
-    console.error("[RateLimit] Error in rate limiter:", err);
+    // Graceful fallback: never crash requests or burn Cloudflare event quota if KV is busy
     return { allowed: true, remaining: maxRequests, retryAfter: 0 };
   }
 }

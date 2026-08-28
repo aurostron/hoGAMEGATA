@@ -1,5 +1,23 @@
 ---
+import { getServerUser, isAdminUser } from '../lib/serverAuth';
+import { env as cfWorkerEnv } from "cloudflare:workers";
+
 export const prerender = false;
+
+// 🔒 Private Dev-Only Route Protection (404 for non-dev/non-admin in production)
+const isDev = import.meta.env.DEV || (typeof process !== "undefined" && process.env?.NODE_ENV === "development") || Astro.url.hostname === "localhost" || Astro.url.hostname === "127.0.0.1";
+if (!isDev) {
+  const runtimeEnv = cfWorkerEnv || (typeof process !== "undefined" ? process.env : {});
+  const user = await getServerUser(Astro.request, Astro.cookies, runtimeEnv);
+  const isAdmin = user && isAdminUser(user.email, runtimeEnv);
+  const bypassCookie = Astro.cookies.get("maintenance_bypass")?.value;
+  const secret = (runtimeEnv as any)?.MAINTENANCE_SECRET;
+  const hasBypass = bypassCookie && secret && bypassCookie === secret;
+
+  if (!isAdmin && !hasBypass) {
+    return new Response("Not Found", { status: 404, statusText: "Not Found" });
+  }
+}
 ---
 
 <!DOCTYPE html>
