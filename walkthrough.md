@@ -2256,6 +2256,15 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
    - Tested live endpoint for *Visage* `https://gamegata.xyz/api/prices/quick?ids=cmpwzgvqt00zil8egyx4povfg`:
      Returns `{"priceBadge":"$17.49 (-50%)","badgeType":"sale"}`.
 
+## 2026-09-04 — Multi-Repo CI: Added Itch Sync Workflow to project-hgg.github.io
+
+### Context & Implementation
+- The workflow was initially pushed to `aurostron/gamegata-v1`. Since `project-hgg.github.io` is the public repository hosting the docs mirror and jsDelivr CDN source, added the automated sync workflow directly into `project-hgg.github.io` as well.
+- Created `scripts/sync-new-itch-games.ts` inside `project-hgg.github.io` pointing to `docs/public/search-index.json`.
+- Created `.github/workflows/sync-itch-games.yml` inside `project-hgg.github.io`.
+- Pushed commit `3ee3cd4` to `https://github.com/project-hgg/project-hgg.github.io.git` (`origin/main`).
+- Both repositories (`aurostron/gamegata-v1` and `project-hgg/project-hgg.github.io`) now feature the automated 6-hour cron and manual dispatch action.
+
 
 
 
