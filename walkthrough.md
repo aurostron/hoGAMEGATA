@@ -2237,6 +2237,25 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 - **Build Verification**:
   - `npm run build:quick` completed successfully in 24.92s with exit code 0.
 
+## 2026-09-04 — Deployment: Production Worker & Scheduled Horror Sync
+
+### Production Deployment Details
+1. **Cloudflare Worker Deployment**:
+   - Deployed updated worker with client search engine, connection-bounded quick price endpoint, and cover caching.
+   - Domain: `https://gamegata.xyz` (Version ID: `11a59d93-5955-4614-b174-c3acec8f8e4f`).
+2. **GitHub Actions Workflow Active**:
+   - Pushed `.github/workflows/sync-itch-games.yml` to `aurostron/gamegata-v1` on branch `main`.
+   - Runs every 6 hours (`0 */6 * * *`) and on manual dispatch.
+3. **CDN Search Index Sync**:
+   - Pushed updated `docs/public/search-index.json` to `project-hgg/project-hgg.github.io` on branch `main`.
+   - jsDelivr globally serves 107k games with verified IDs and cover art URLs.
+4. **Live Ingestion Verification**:
+   - Executed live ingestion: discovered *Prescription:LOVE*, verified horror tags, batch-inserted `Game`, `PurchaseLink`, and `PriceSnapshot` rows into TursoDB, and bumped search index to 107,811 games.
+   - Tested live endpoint `https://gamegata.xyz/api/prices/quick?ids=cmq0lztci001ivseg1yfv49ig`:
+     Returns `{"priceBadge":"FREE","badgeType":"free","coverUrl":"https://img.itch.zone/..."}`.
+   - Tested live endpoint for *Visage* `https://gamegata.xyz/api/prices/quick?ids=cmpwzgvqt00zil8egyx4povfg`:
+     Returns `{"priceBadge":"$17.49 (-50%)","badgeType":"sale"}`.
+
 
 
 
