@@ -2273,6 +2273,15 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 - Pushed commit `00725db` to `aurostron/gamegata-v1` (`origin/main`).
 - Working tree in `gamegata-astro` is clean.
 
+## 2026-09-04 — Fix: Synchronized package-lock.json for npm ci in project-hgg.github.io
+
+### Root Cause & Resolution
+- In `project-hgg.github.io`, the `Deploy VitePress site to Pages` workflow runs `npm ci`.
+- Adding dependencies to `package.json` without regenerating `package-lock.json` triggered an `EUSAGE` error during GitHub Actions `npm ci`.
+- Ran `npm install` inside `project-hgg.github.io` to sync `package-lock.json`.
+- Verified `npm ci` runs cleanly in 4s without errors.
+- Pushed commit `ee0f905` to `project-hgg/project-hgg.github.io` (`origin/main`).
+
 
 
 
