@@ -2265,6 +2265,14 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 - Pushed commit `3ee3cd4` to `https://github.com/project-hgg/project-hgg.github.io.git` (`origin/main`).
 - Both repositories (`aurostron/gamegata-v1` and `project-hgg/project-hgg.github.io`) now feature the automated 6-hour cron and manual dispatch action.
 
+## 2026-09-04 — CI Consolidation: Removed Sync Workflow from gamegata-v1
+
+### Rationale & Actions
+- As requested by the user, removed the `.github/workflows/sync-itch-games.yml` workflow from `aurostron/gamegata-v1`.
+- All scheduled itch scraping, TursoDB batch-writing, and search-index updates are now consolidated exclusively in `project-hgg/project-hgg.github.io`.
+- Pushed commit `00725db` to `aurostron/gamegata-v1` (`origin/main`).
+- Working tree in `gamegata-astro` is clean.
+
 
 
 
