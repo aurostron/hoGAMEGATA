@@ -35,7 +35,9 @@
     "index:deploy-only": "tsx scripts/deploy-vitepress.ts --skip-db --skip-build",
     "index:dev": "cd vitepress-index && npm run docs:dev",
     "sync:itch": "tsx scripts/sync-new-itch-games.ts",
-    "sync:itch:dry": "tsx scripts/sync-new-itch-games.ts --dry-run"
+    "sync:itch:dry": "tsx scripts/sync-new-itch-games.ts --dry-run",
+    "sync:igdb": "tsx scripts/sync-new-igdb-dumps.ts",
+    "sync:igdb:dry": "tsx scripts/sync-new-igdb-dumps.ts --dry-run"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.0",

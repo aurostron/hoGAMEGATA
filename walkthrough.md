@@ -2318,8 +2318,36 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
     - *Please Answer Carefully* -> matched `please-answer-carefully`
     - *Last Seen Online* -> matched `last-seen-online--1`
     - *Solipsistic* -> matched `solipsistic`
-  - Validated 27 truly new indie horror games.
 - Pushed updated engine to `project-hgg.github.io` (`b26b715`) and `gamegata-astro`.
+
+## 2026-09-04 — Feature: Weekly IGDB Partner Dumps Ingestion Suite (11-Dump Architecture)
+
+### Context & Design Decisions
+- Adopted the user's requirement to utilize the official IGDB Partner Data Dumps API (`/v4/dumps`) on a weekly schedule instead of REST queries.
+- Ensured all **11 essential dumps** required for hoGAMEGATA's media and taxonomy are included:
+  1. `games`: Core metadata, release dates, aggregate scores, and follows.
+  2. `covers`: Primary cover art (`t_cover_big`).
+  3. `screenshots`: High-resolution gallery arrays (`t_screenshot_huge`) stored as JSON on `Game`.
+  4. `game_videos`: Embedded YouTube trailers (`https://www.youtube.com/embed/...`).
+  5. `involved_companies` & `companies`: Full developer and publisher credit resolution.
+  6. `platforms`: Console, PC, and handheld platform tags.
+  7. `genres`: Subgenre classifications linked to "Horror".
+  8. `websites`: Direct purchase links for Steam, GOG, Epic Games Store, and Itch.io.
+  9. `keywords` & `player_perspectives`: Scare Meter taxonomy mapping.
+
+### Two-Phase Performance Architecture
+1. **Phase 1 (Zero Waste Discovery)**:
+   - Downloads ONLY `games.csv` (~300MB) via streaming pipeline in ~15s.
+   - Filters for Horror (`themes.includes(19)`) and diffs against `search-index.json` in memory.
+   - **If 0 new horror games are present**: immediately halts and cleans up. Zero Turso reads, zero unnecessary bandwidth.
+2. **Phase 2 (Selective Relational Ingestion)**:
+   - Only when new horror games are discovered, downloads the 10 relational dumps and streams matching records for the candidate game IDs.
+   - Commits all games and store purchase links in a single LibSQL atomic batch transaction (`client.batch(..., "write")`).
+   - Appends newly discovered records to `search-index.json` and pushes back to GitHub Pages/CDN.
+
+### CI/CD Deployment
+- Created `.github/workflows/sync-igdb-games.yml` in `project-hgg.github.io` configured for weekly Sunday runs (`0 4 * * 0`) and manual `workflow_dispatch`.
+- Pushed commit `06dc807` to `origin/main` on `project-hgg.github.io`.
 
 
 
