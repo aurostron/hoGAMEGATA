@@ -2282,6 +2282,45 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 - Verified `npm ci` runs cleanly in 4s without errors.
 - Pushed commit `ee0f905` to `project-hgg/project-hgg.github.io` (`origin/main`).
 
+## 2026-09-04 — Feature: Multi-Tiered Intelligent Deduplication Engine (/bug-hunter)
+
+### Audit & Bug Analysis
+1. **Catalog Integrity Audit**:
+   - Analyzed all 107,811 entries in `search-index.json`: confirmed **0 duplicate IDs** and **0 duplicate slugs**.
+2. **The Root Vulnerability in Naive Scraping**:
+   - Itch RSS feeds include raw bracketed tags in titles (e.g. `Take Care Of The Dog [Free] [Windows]`).
+   - A naive title check (`existingTitles.has(feedTitle)`) fails to match the existing canonical game `Take Care Of The Dog`, resulting in unwanted duplicate `itch-...` records.
+   - Without canonical matching, existing games in Gamegata were missing itch.io store links and pricing.
+
+### Deduplication Architecture Implemented
+1. **Canonical URL Normalization (`normalizeItchUrl`)**:
+   - Enforces HTTPS, downcases hostname, strips query parameters (`?ref=...`), `/purchase` routes, and trailing slashes.
+   - Guarantees identical MD5 hash generation across any link variant.
+2. **Aggressive Title Normalization (`normalizeTitle`)**:
+   - Strips all bracket tags (`[Free]`, `[Demo]`, `[Windows]`, `[20% Off]`), diacritics, punctuation, stop-words, and collapse whitespace.
+3. **Canonical Main Game Matching**:
+   - Compares candidate itch games against the 17,978 canonical IGDB/Steam games in memory.
+   - If matched, the engine attaches `PurchaseLink` (`storeName: 'itch.io'`) and `PriceSnapshot` to the **existing canonical game** (`cmp...`), and backfills `coverUrl` if missing.
+   - **Zero duplicate games are added to the database or search index.**
+4. **In-Flight Batch Deduplication**:
+   - Tracks `seenUrls`, `seenSlugs`, and `seenNormTitles` during the loop, preventing duplicates across dual RSS feeds.
+
+### Verification Results
+- Ran `npx tsx scripts/sync-new-itch-games.ts --dry-run`:
+  - Discovered 56 unique horror URLs.
+  - Successfully identified **9 canonical game matches**:
+    - *Therapy with Dr. Albert Krueger* -> matched `therapy-with-dr-albert-krueger`
+    - *Exhibit of Sorrows* -> matched `exhibit-of-sorrows`
+    - *Elevator Hitch* -> matched `elevator-hitch`
+    - *Missed Messages.* -> matched `missed-messages`
+    - *Paranormal Torment* -> matched `paranormal-torment`
+    - *Flesh, Blood, & Concrete* -> matched `flesh-blood-and-concrete`
+    - *Please Answer Carefully* -> matched `please-answer-carefully`
+    - *Last Seen Online* -> matched `last-seen-online--1`
+    - *Solipsistic* -> matched `solipsistic`
+  - Validated 27 truly new indie horror games.
+- Pushed updated engine to `project-hgg.github.io` (`b26b715`) and `gamegata-astro`.
+
 
 
 
