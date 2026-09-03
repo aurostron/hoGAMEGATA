@@ -8,6 +8,8 @@ import { NotificationBell } from './notifications/NotificationBell';
 import { EditPageButton } from './editing/EditPageButton';
 import { BugReportTrigger } from './bugs/BugReportTrigger';
 
+import { getDataVersion } from '../lib/dataVersion';
+
 interface Props {
   withSearch?: boolean;
   withLink?: boolean;
@@ -22,9 +24,8 @@ interface Props {
   };
 }
 
-const { withSearch = false, withLink = true, statsGames, statsDevelopers, statsDeals, statsTags, editGameData } = Astro.props;
-
-const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
+const { withSearch = false, withLink = true, editGameData } = Astro.props;
+const dataVersion = await getDataVersion();
 ---
 <header class="border-b border-white/10 bg-[#0d0d0f]/80 backdrop-blur-md sticky top-0 z-50 w-full max-w-full h-14 sm:h-16 select-none transition-all duration-300 overflow-x-clip">
   <div class="w-full h-full flex items-center justify-between max-w-[1440px] mx-auto px-3 sm:px-6">
@@ -50,30 +51,30 @@ const hasStats = statsGames || statsDevelopers || statsDeals || statsTags;
       )}
     </div>
 
-    <!-- Middle Section: Telemetry Stats (hidden on mobile) -->
-    {hasStats && (
-      <div class="hidden md:flex items-center h-full px-6 gap-6 font-mono text-[12px] tracking-wider text-white/50 select-none">
-        <div class="flex items-center gap-2">
-          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsGames?.toLocaleString() ?? "—"}</strong>
-          <span class="text-white/70 lowercase">games</span>
-        </div>
-        <span class="text-white/15">/</span>
-        <div class="flex items-center gap-2">
-          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsDevelopers?.toLocaleString() ?? "—"}</strong>
-          <span class="text-white/70 lowercase">developers</span>
-        </div>
-        <span class="text-white/15">/</span>
-        <div class="flex items-center gap-2">
-          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsDeals?.toLocaleString() ?? "—"}</strong>
-          <span class="text-white/70 lowercase">deals</span>
-        </div>
-        <span class="text-white/15">/</span>
-        <div class="flex items-center gap-2">
-          <strong class="text-white font-extrabold tabular-nums text-[13px]">{statsTags?.toLocaleString() ?? "—"}</strong>
-          <span class="text-white/70 lowercase">tags</span>
-        </div>
+    <!-- Middle Section: Data Version & Timestamp (Desktop only, stats completely removed) -->
+    <div class="hidden md:flex items-center h-full px-4 select-none">
+      <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-white/70 shadow-sm transition-all hover:border-white/20">
+        <span class="relative flex h-2 w-2 shrink-0">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="text-white/40 uppercase tracking-widest text-[10px] font-bold">DATA</span>
+        <a
+          href={dataVersion.commitUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-white/90 hover:text-white font-bold tracking-tight hover:underline transition-colors"
+          title={`View data release ${dataVersion.commitSha} on GitHub`}
+        >
+          #{dataVersion.commitSha}
+        </a>
+        <span class="text-white/20">•</span>
+        <span class="text-white/50 text-[11px] font-mono tracking-tight">
+          updated {dataVersion.displayDate}
+        </span>
       </div>
-    )}
+    </div>
+
 
     <!-- Right Section: Actions -->
     <div class="flex items-center h-full gap-0.5 sm:gap-2 shrink-0">

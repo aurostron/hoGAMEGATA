@@ -2349,6 +2349,27 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 - Created `.github/workflows/sync-igdb-games.yml` in `project-hgg.github.io` configured for weekly Sunday runs (`0 4 * * 0`) and manual `workflow_dispatch`.
 - Pushed commit `06dc807` to `origin/main` on `project-hgg.github.io`.
 
+## 2026-09-04 — Feature: Header Data Version Pill & Expanded Attribution
+
+### Changes Made
+1. **`src/pages/about.astro`**:
+   - Expanded the Data Sources & Attribution section additively.
+   - Added explicit credits for **itch.io**, **jsDelivr** (global search index distribution), **Turso & libSQL** (database architecture), and **Cloudflare** (edge deployment).
+   - Added closing line: `Proudly powered by Open Source.` matching typography and styling.
+2. **`src/lib/dataVersion.ts`**:
+   - Created server-side helper to resolve the latest GitHub data commit SHA and release timestamp from `project-hgg/project-hgg.github.io` with in-memory caching and fast fallback (`06dc807` / `Sep 3, 19:43 UTC`).
+3. **`src/components/Header.astro`**:
+   - Completely removed middle stats numbers (`games / developers / deals / tags`).
+   - Replaced with a cyber-styled data status pill featuring a pulsing emerald indicator, `DATA` tag, clickable GitHub commit link (`#06dc807`), and last updated timestamp (`updated Sep 3, 19:43 UTC`).
+4. **`src/layouts/Layout.astro`**:
+   - Removed 4 heavy Turso database count queries that previously executed on every homepage render, significantly speeding up homepage generation.
+
+### Verification Results
+- Executed `npm run build:quick`:
+  - Prerendered static routes and bundled server entrypoints with 0 errors in 9.02s.
+- Per explicit user instruction, **no deployment** (`wrangler deploy`) was performed.
+
+
 
 
 
