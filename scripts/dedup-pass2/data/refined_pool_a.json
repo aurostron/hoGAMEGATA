@@ -1,0 +1,2782 @@
+[
+  {
+    "primary": {
+      "id": "cmpwg5qg200hag4eglgxlwpw4",
+      "title": "Higurashi When They Cry Hou: Ch.3 Tatarigoroshi",
+      "slug": "higurashi-when-they-cry-hou-ch-dot-3-tatarigoroshi",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co42gu.jpg",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1466121600,
+      "status": "released",
+      "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.\n\nNevertheless, this is a game, not a novel. As the player, you will be able to unravel the mystery surrounding the events in the game as the scenarios unfold.",
+      "storyline": "The 58th year of Shouwa, early summer.\nIt’s June, and the summer heat has arrived earlier than it does most years.\nBy day there are crickets, and by night there are cicadas.\n\nWe’re in Hinamizawa, a small village in the countryside.\nThere are fewer than two thousand people here. But every year, there is an event.\n\nThis event is a mysterious death.\n\nOn a certain day in June, someone dies, and someone else goes missing.\nThe series of deaths is connected to the upheaval surrounding the dam construction project.\nA murder case that was covered up is being reenacted.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there isn’t.\nSomeone who wasn’t supposed to be there is.\n\nSomeone who was alive last night is dead now.\nAnd someone who is here right now isn’t alive.\n\nSo, there is no way to avert tragedy. There is no choice but to give up.\nBut don’t give up.\n\nOnly you can stand up to this.",
+      "scareRating": 75,
+      "source": null,
+      "platformNames": "Linux, PC (Microsoft Windows), Mac",
+      "links": [
+        {
+          "id": "cmqs9zhrk009im8egilz14hji",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch3_tatarigoroshi",
+          "gameId": "cmpwg5qg200hag4eglgxlwpw4"
+        },
+        {
+          "id": "cmqs9zhrk009jm8egf3vfs2vx",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/472870",
+          "gameId": "cmpwg5qg200hag4eglgxlwpw4"
+        }
+      ],
+      "storeIds": [
+        "gog:higurashi_when_they_cry_hou_ch3_tatarigoroshi",
+        "steam:472870"
+      ],
+      "itchCreators": [],
+      "year": 2016,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsl9l6v00cmqoeg2wr91hof",
+        "title": "Higurashi When They Cry Hou - Ch.3 Tatarigoroshi",
+        "slug": "higurashi-when-they-cry-hou-ch3-tatarigoroshi",
+        "coverUrl": "https://images.gog-statics.com/96329fee1d0eae51b794df42f3612dff459342fdbf4ab0609b9902a645fc1661.png",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1466188200,
+        "status": "released",
+        "summary": "The 58th year of Shouwa, early summer\nIt’s June, and the summer heat has arrived earlier than it does most years.\nBy day there are crickets, and by night there are cicadas.\n\nWe’re in Hinamizawa, a small village in the countryside.\nThere are fewer than two thousand people here. But every year, there is an event.\n \nThis event is a mysterious death.\n(The series has run from 1979 to 1983)\n \nOn a certain day in June, someone dies, and someone else goes missing.\nThe series of deaths is connected to the upheaval surrounding the dam construction project.\nA murder case that was covered up is being reenacted.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n \nSomeone who was supposed to be there isn’t.\nSomeone who wasn’t supposed to be there is.\n \nSomeone who was alive last night is dead now.\nAnd someone who is here right now isn’t alive.\n \nSo, there is no way to avert tragedy. There is no choice but to give up.\nBut don’t give up.\n \nOnly you can stand up to this. \n\nTHE GAME THAT INSPIRED THE MEGA-HIT ANIME SERIES RETURNS WITH BRAND NEW CHARACTER ART! \n\nMulti-language: Switch between English & JapaneseRenewed Art: Switch between original and new character artOriginal BGM/Un-Cut ContentsMulti-OS Support",
+        "storyline": null,
+        "scareRating": 58,
+        "source": "gog",
+        "platformNames": "PC (Windows), Linux, Mac",
+        "links": [
+          {
+            "id": "cda1cdd4-d4ff-448b-ac75-11ac38b9a349",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch3_tatarigoroshi",
+            "gameId": "cmqsl9l6v00cmqoeg2wr91hof"
+          }
+        ],
+        "storeIds": [
+          "gog:higurashi_when_they_cry_hou_ch3_tatarigoroshi"
+        ],
+        "itchCreators": [],
+        "year": 2016,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmqsk2b7g0021osegiwymr49w",
+      "title": "Call of Duty®: Black Ops II",
+      "slug": "call-of-duty-black-ops-ii",
+      "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/202970/library_600x900.jpg",
+      "developerNames": "Treyarch",
+      "releaseDate": 1352658600,
+      "status": "released",
+      "summary": "Pushing the boundaries of what fans have come to expect from the record-setting entertainment franchise, Call of Duty®: Black Ops II propels players into a near future Cold War",
+      "storyline": null,
+      "scareRating": 12,
+      "source": "steam",
+      "platformNames": "PC (Windows)",
+      "links": [
+        {
+          "id": "cmqsk2c4q0022oseg2y8x6y1q",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/202970/",
+          "gameId": "cmqsk2b7g0021osegiwymr49w"
+        }
+      ],
+      "storeIds": [
+        "steam:202970"
+      ],
+      "itchCreators": [],
+      "year": 2012,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwzhhul01e0l8egn4c8cbj9",
+        "title": "Call of Duty: Black Ops II",
+        "slug": "call-of-duty-black-ops-ii--1",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3aud.jpg",
+        "developerNames": "Treyarch",
+        "releaseDate": 1353196800,
+        "status": "released",
+        "summary": "Rooted in near-future fiction, Call of Duty: Black Ops II propels players into a visual landscape in an epic single player campaign highlighted by branching storylines and non-linear missions. The game is a re-imagined multiplayer that introduces players to some of the most cutting-edge weaponry and equipment that 2025 will have to offer, and punctuated with an all-new Zombies experience running in the multiplayer engine.",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Wii U",
+        "links": [
+          {
+            "id": "cmqc3ub2800escgegvnkh68kt",
+            "storeName": "Xbox Store",
+            "url": "https://www.xbox.com/en-us/games/store/call-of-duty-black-ops-ii/C1QJM5XT9SXV",
+            "gameId": "cmpwzhhul01e0l8egn4c8cbj9"
+          }
+        ],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2012,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Treyarch)"
+  },
+  {
+    "primary": {
+      "id": "7e04038b-b708-449d-9393-391e7fa55e31",
+      "title": "The Last Door: Season 2 Collector's Edition",
+      "slug": "last-door-season-2-collectors-edition-the",
+      "coverUrl": "https://images.gog-statics.com/dd777f95f49c825f8e6414f9766405fcd0625380c82c57089c0b54e76be0d256.png",
+      "developerNames": "Game Kitchen",
+      "releaseDate": 1459189800,
+      "status": "released",
+      "summary": "In Season 2 of the award-winning hit The Last Door, delve further into the madness of the Veil as Dr. John Wakefield, psychiatrist to Season 1’s protagonist Jeremiah Devitt. Setting out in search of his client who has mysteriously vanished, Wakefield is soon drawn into the haunting web of forbidden knowledge, madness, and a deeper conspiracy hiding it all. As his search takes him beyond England, will he find his missing client? Or will he merely find that he, too, is about to become lost in the search for the Last Door?\n\nThe Last Door Season 2: Collector’s Edition brings four new episodes and exclusive extras with more mysteries, more locations, more characters, and more chilling otherworldly horrors than the first Season. Journey back to Victorian England, through mental asylums, abandoned manors, opium dens, and beyond in this fascinating conclusion!\n\nSequel to the  award-winning point-and-click Victorian era horror adventure, The Last DoorSearch for and uncover forbidden knowledge that may be driving you madGuide Dr. Wakefield through new locations, characters, scenes, and puzzles in a new compelling mysteryFour episodes and exclusive extras and bonus content in one limited-edition setA brand new haunting, original musical score by Carlos ViolaInspired by the works of H.P. Lovecraft and Edgar Allan Poe",
+      "storyline": null,
+      "scareRating": 70,
+      "source": "gog",
+      "platformNames": "PC (Windows), Linux, Mac",
+      "links": [
+        {
+          "id": "eb4f5604-cab7-45e3-ae27-49ae05bcb244",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/last_door_season_2_collectors_edition_the",
+          "gameId": "7e04038b-b708-449d-9393-391e7fa55e31"
+        }
+      ],
+      "storeIds": [
+        "gog:last_door_season_2_collectors_edition_the"
+      ],
+      "itchCreators": [],
+      "year": 2016,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwzj87f007t9gegshw83i9y",
+        "title": "The Last Door: Season 2 - Collector's Edition",
+        "slug": "the-last-door-season-2-collectors-edition",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2svz.jpg",
+        "developerNames": "The Game Kitchen",
+        "releaseDate": 1459209600,
+        "status": "released",
+        "summary": "In Season 2 of The Last Door, the search for his missing client will bring psychiatrist John Wakefield deeper into a conspiracy of darkness and closer to the heart of madness than ever before.",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Linux, PC (Microsoft Windows), iOS, Mac",
+        "links": [
+          {
+            "id": "cmqqlaq7201ggkoegq4u7lzg7",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/402530",
+            "gameId": "cmpwzj87f007t9gegshw83i9y"
+          },
+          {
+            "id": "cmqqlaq7201ghkoegx1iqt55o",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/game/last_door_season_2_collectors_edition_the",
+            "gameId": "cmpwzj87f007t9gegshw83i9y"
+          }
+        ],
+        "storeIds": [
+          "steam:402530",
+          "gog:last_door_season_2_collectors_edition_the"
+        ],
+        "itchCreators": [],
+        "year": 2016,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Game Kitchen)"
+  },
+  {
+    "primary": {
+      "id": "5c55c1c3-415d-400f-83c8-1fa3d8b5c129",
+      "title": "Higurashi When They Cry Hou - Ch.4 Himatsubushi",
+      "slug": "higurashi-when-they-cry-hou-ch4-himatsubushi",
+      "coverUrl": "https://images.gog-statics.com/469c0807af22d5601410881a7cea0ecb518472117d5021ab6e6f9d05715fb67b.png",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1476383400,
+      "status": "released",
+      "summary": "You can complete the question arcs (Chapters 1-4) at a 75% series discount until July 14, 11 pm GMT.\n\n\n\nThe 58th year of Shouwa, early summer\nIt’s June, and the summer heat has arrived earlier than it does most years.\nBy day there are crickets, and by night there are cicadas.\n\nWe’re in Hinamizawa, a small village in the countryside.\nThere are fewer than two thousand people here. But every year, there is an event.\n \nThis event is a mysterious death.\n(The series has run from 1979 to 1983)\n \nOn a certain day in June, someone dies, and someone else goes missing.\nThe series of deaths is connected to the upheaval surrounding the dam construction project.\nA murder case that was covered up is being reenacted.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n \nSomeone who was supposed to be there isn’t.\nSomeone who wasn’t supposed to be there is.\n \nSomeone who was alive last night is dead now.\nAnd someone who is here right now isn’t alive.\n \nSo, there is no way to avert tragedy. There is no choice but to give up.\nBut don’t give up.\n \nOnly you can stand up to this. \n\nTHE GAME THAT INSPIRED THE MEGA-HIT ANIME SERIES RETURNS WITH BRAND NEW CHARACTER ART! \n\nMulti-language: Switch between English & JapaneseRenewed Art: Switch between original and new character artOriginal BGM/Un-Cut ContentsMulti-OS Support",
+      "storyline": null,
+      "scareRating": 85,
+      "source": "gog",
+      "platformNames": "PC (Windows), Linux, Mac",
+      "links": [
+        {
+          "id": "8b2aab29-82b8-4272-ae26-4b0a8420cbc9",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch4_himatsubushi",
+          "gameId": "5c55c1c3-415d-400f-83c8-1fa3d8b5c129"
+        }
+      ],
+      "storeIds": [
+        "gog:higurashi_when_they_cry_hou_ch4_himatsubushi"
+      ],
+      "itchCreators": [],
+      "year": 2016,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwzja2w008h9gegn1yg8l27",
+        "title": "Higurashi When They Cry Hou: Ch.4 Himatsubushi",
+        "slug": "higurashi-when-they-cry-hou-ch-dot-4-himatsubushi",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6fyp.jpg",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1475798400,
+        "status": "released",
+        "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.\n\nNevertheless, this is a game, not a novel. As the player, you will be able to unravel the mystery surrounding the events in the game as the scenarios unfold.",
+        "storyline": "The 58th year of Shouwa, early summer.\nIt’s June, and the summer heat has arrived earlier than it does most years.\nBy day there are crickets, and by night there are cicadas.\n\nWe’re in Hinamizawa, a small village in the countryside.\nThere are fewer than two thousand people here. But every year, there is an event.\n\nThis event is a mysterious death.\n\nOn a certain day in June, someone dies, and someone else goes missing.\nThe series of deaths is connected to the upheaval surrounding the dam construction project.\nA murder case that was covered up is being reenacted.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there isn’t.\nSomeone who wasn’t supposed to be there is.\n\nSomeone who was alive last night is dead now.\nAnd someone who is here right now isn’t alive.\n\nSo, there is no way to avert tragedy. There is no choice but to give up.\nBut don’t give up.\n\nOnly you can stand up to this.",
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Linux, PC (Microsoft Windows), Mac",
+        "links": [
+          {
+            "id": "cmqc3x8rw00ztcgegle4dkni5",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/526490",
+            "gameId": "cmpwzja2w008h9gegn1yg8l27"
+          },
+          {
+            "id": "cmqc3x8rw00zucgeg21xgs9j7",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch4_himatsubushi",
+            "gameId": "cmpwzja2w008h9gegn1yg8l27"
+          }
+        ],
+        "storeIds": [
+          "steam:526490",
+          "gog:higurashi_when_they_cry_hou_ch4_himatsubushi"
+        ],
+        "itchCreators": [],
+        "year": 2016,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmqsl4qbc009lqoegvcl7f3vy",
+      "title": "Higurashi When They Cry Hou - Ch.2 Watanagashi",
+      "slug": "higurashi-when-they-cry-hou-ch2-watanagashi",
+      "coverUrl": "https://images.gog-statics.com/e97678a06de382cfeaf889d3657458acd7e52864c940582ae924388b6ef662dd.png",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1447439400,
+      "status": "released",
+      "summary": "The 58th year of Shouwa, early summer\nIt’s June, and the summer heat has arrived earlier than it does most years.\nBy day there are crickets, and by night there are cicadas.\n\nWe’re in Hinamizawa, a small village in the countryside.\nThere are fewer than two thousand people here. But every year, there is an event.\n \nThis event is a mysterious death.\n(The series has run from 1979 to 1983)\n \nOn a certain day in June, someone dies, and someone else goes missing.\nThe series of deaths is connected to the upheaval surrounding the dam construction project.\nA murder case that was covered up is being reenacted.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n \nSomeone who was supposed to be there isn’t.\nSomeone who wasn’t supposed to be there is.\n \nSomeone who was alive last night is dead now.\nAnd someone who is here right now isn’t alive.\n \nSo, there is no way to avert tragedy. There is no choice but to give up.\nBut don’t give up.\n \nOnly you can stand up to this. \n\nTHE GAME THAT INSPIRED THE MEGA-HIT ANIME SERIES RETURNS WITH BRAND NEW CHARACTER ART! \n\nMulti-language: Switch between English & JapaneseRenewed Art: Switch between original and new character artOriginal BGM/Un-Cut ContentsMulti-OS Support",
+      "storyline": null,
+      "scareRating": 30,
+      "source": "gog",
+      "platformNames": "PC (Windows), Linux, Mac",
+      "links": [
+        {
+          "id": "41bf79f9-2523-4a5e-9f35-85ef32c9f336",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch2_watanagashi",
+          "gameId": "cmqsl4qbc009lqoegvcl7f3vy"
+        }
+      ],
+      "storeIds": [
+        "gog:higurashi_when_they_cry_hou_ch2_watanagashi"
+      ],
+      "itchCreators": [],
+      "year": 2015,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwzjyxw00ln9gegcohd1pov",
+        "title": "Higurashi When They Cry Hou: Ch.2 Watanagashi",
+        "slug": "higurashi-when-they-cry-hou-ch-dot-2-watanagashi",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co42gv.jpg",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1447372800,
+        "status": "released",
+        "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.\n\nNevertheless, this is a game, not a novel. As the player, you will be able to unravel the mystery surrounding the events in the game as the scenarios unfold.",
+        "storyline": "The 58th year of Shouwa, early summer.\nIt’s June, and the summer heat has arrived earlier than it does most years.\nBy day there are crickets, and by night there are cicadas.\n\nWe’re in Hinamizawa, a small village in the countryside.\nThere are fewer than two thousand people here. But every year, there is an event.\n\nThis event is a mysterious death.\n\nOn a certain day in June, someone dies, and someone else goes missing.\nThe series of deaths is connected to the upheaval surrounding the dam construction project.\nA murder case that was covered up is being reenacted.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there isn’t.\nSomeone who wasn’t supposed to be there is.\n\nSomeone who was alive last night is dead now.\nAnd someone who is here right now isn’t alive.\n\nSo, there is no way to avert tragedy. There is no choice but to give up.\nBut don’t give up.\n\nOnly you can stand up to this.",
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Linux, PC (Microsoft Windows), Mac",
+        "links": [
+          {
+            "id": "cmqqlbfbc01jhkoeg8quun126",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch2_watanagashi",
+            "gameId": "cmpwzjyxw00ln9gegcohd1pov"
+          },
+          {
+            "id": "cmqqlbfbc01jikoegvjnfmoca",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/410890",
+            "gameId": "cmpwzjyxw00ln9gegcohd1pov"
+          }
+        ],
+        "storeIds": [
+          "gog:higurashi_when_they_cry_hou_ch2_watanagashi",
+          "steam:410890"
+        ],
+        "itchCreators": [],
+        "year": 2015,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmpwzjz2x00lr9geg290zfswu",
+      "title": "Painkiller Black Edition",
+      "slug": "painkiller",
+      "coverUrl": "https://images.gog-statics.com/6c72cb00a7e3d5bf03a3f3aa30f4530959818eef01be482c5db450c53caa9eef.png",
+      "developerNames": "People Can Fly",
+      "releaseDate": 1124908200,
+      "status": "released",
+      "summary": "Painkiller Black Edition includes Painkiller and the expansion pack Battle Out of Hell, featuring 10 additional single-player levels and many new villans. \n\nGothic Story, Frantic Gameplay. Painkiller is a first-person horror shooter, designed to satisfy a gamer's hunger for intense, fast-paced action. It's an adrenaline addict's nightmare, where hellish monsters swarm in seemingly endless mobs. \n\nGraphically, Painkiller is unmatched. The proprietary PAIN Engine puts out an unbelievably high polygon count, while adding increased texture quality and the latest lighting and shadowing techniques, including soft shadows, DOT3 bump mapping, water reflections, glass simulation, volumetric light and fog, and more. Plug in the Havok 2.0 physics engine, and you get a realistic environment in a totally fantastical setting. \n\nStranded in a place between Heaven and Hell, your time of judgment is at hand. The Underworld is on the verge of unholy war, and you are but a pawn in the infernal battle. As you fight for your purification, the truths behind the deceptions are revealed.\n\n\n\n \n\nFEATURES\n\tCombo weapons: All weapons come in pairs, with a primary and secondary fire.\n\tMorphing: Your unholy pact gives you the power to morph into a powerful possessed creature with every 66 souls collected.\n\tLasting replay value: Painkiller features a standard single player campaign, with additional modes to encourage replay.\n\tPhysics Engine: Painkiller employs the Havok 2.0 physics engine, allowing for inverse kinematics (\"rag-doll physics\") and deformable, interactive environments.\n\tOver 30 levels of fierce action, dozens of different enemies in completely unique and varied environments.\n\tHigh adrenalin gameplay: non-stop action, hundreds of enemies to be decimated and gigantic bosses.\n\t14 incredible weapons, including the famous stake-gun, and the mythical Painkiller.",
+      "storyline": null,
+      "scareRating": 88,
+      "source": "gog",
+      "platformNames": "PC (Windows)",
+      "links": [
+        {
+          "id": "11ad9b24-9987-4876-a8f4-cb4168695c91",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/painkiller",
+          "gameId": "cmpwzjz2x00lr9geg290zfswu"
+        }
+      ],
+      "storeIds": [
+        "gog:painkiller"
+      ],
+      "itchCreators": [],
+      "year": 2005,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwzm59k01ut9gegdl97aehz",
+        "title": "Painkiller: Black Edition",
+        "slug": "painkiller-black-edition",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1qs1.jpg",
+        "developerNames": "People Can Fly",
+        "releaseDate": 1081728000,
+        "status": "released",
+        "summary": "Painkiller Black Edition includes the expansion pack Battle Out of Hell, featuring 10 additional single-player levels and many new villans.",
+        "storyline": "The game revolves around a young man named Daniel Garner, who is happily married to his wife Catherine. At the start of the game, Daniel is about to take Catherine out for a birthday meal. As they drive towards their destination at high speed, in the pouring rain, Daniel takes his eyes off the road to look at his wife and While his attention is diverted, he ploughs their car into a truck. Both of them are killed instantly in the crash. While Catherine manages to make it to Heaven and lives in harmony, Daniel is trapped in Purgatory. One day meeting an accomplice called Samael, he is told that in order to receive purification, he has to kill four of Lucifer's generals in order to prevent a war between Heaven and Hell. Lucifer has been secretly organizing a massive army that could overwhelm Heaven, taking over Purgatory in the process. Small portions of the army are already beginning the march. With little choice available to him, Daniel accepts the task. With the forces of Hell seizing and corrupting various parts of Purgatory, Daniel goes through different and random phases of history within Purgatory, which range greatly from ancient times to the modern era. These include Medieval Europe, Babylon, the Crusades, 1800s and even a time slice of modern industry.",
+        "scareRating": 100,
+        "source": null,
+        "platformNames": "PC (Microsoft Windows)",
+        "links": [],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2004,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (People Can Fly)"
+  },
+  {
+    "primary": {
+      "id": "cmpwzldlw01f39gegxep40en3",
+      "title": "Fears to Fathom: Home Alone",
+      "slug": "fears-to-fathom-home-alone--1",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6ak9.jpg",
+      "developerNames": "Rayll Studios",
+      "releaseDate": 1625184000,
+      "status": "released",
+      "summary": "In the first episode of Fears to Fathom you play as Miles, a 14 years old kid who is home alone while his parents are out of town for work. He soon finds himself in trouble as the story unfolds, would he make it through the night?",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [
+        {
+          "id": "cmqc41twi0207cgegpo3lnxza",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/1671340/Fears_to_Fathom__Home_Alone",
+          "gameId": "cmpwzldlw01f39gegxep40en3"
+        }
+      ],
+      "storeIds": [
+        "steam:1671340"
+      ],
+      "itchCreators": [],
+      "year": 2021,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqeu3ym3001u10eg237xddxe",
+        "title": "Fears to Fathom - Home Alone",
+        "slug": "itch-fears-to-fathom-home-alone",
+        "coverUrl": "https://img.itch.zone/aW1nLzY0MjQxNDQucG5n/original/MQorLh.png",
+        "developerNames": "Rayll",
+        "releaseDate": 1625250600,
+        "status": "released",
+        "summary": "<p>Fears to Fathom is an episodic psychological horror game where each episode unveils a short story narrated by the ones who survived.<br></p>\n<p>The first episode of Fears to Fathom is free to play, more episodes are coming soon.</p>\n<h4>Fears to Fathom : Home Alone</h4>\n<p>In the first episode of Fears to Fathom you play as Miles, a 14 years old kid who is home alone while his parents are out of town for work. He soon finds himself in trouble as the story unfolds, would he make it through the night?&nbsp;He survived as he&nbsp;<strong>made the right choices</strong>.</p>\n<h5>Key Features</h5>\n<ul><li>Atmospheric environment and photo-realistic graphics.<br>\n</li><li>VHS film aesthetic.<br>\n</li><li>Receive texts from NPCs.<br>\n</li><li>Player voice activity.\n</li></ul>\n<p>Join the community : <a href=\"https://discord.com/invite/V4HdJpAzZP\" target=\"_blank\" referrerpolicy=\"origin\" rel=\"nofollow noopener\">Discord</a><a href=\"https://discord.com/invite/xa3PgpZNr4\" target=\"_blank\" referrerpolicy=\"origin\" rel=\"nofollow noopener\"><br></a></p>\n<p></p>\n<p><a target=\"_blank\" href=\"https://fearstofathom.store/\" referrerpolicy=\"origin\" rel=\"nofollow noopener\">BUY OFFICIAL MECH</a></p>\n<h4>PLAY EPSIDOSE 2 ON <a href=\"https://store.steampowered.com/app/1763050/Fears_to_Fathom__Norwood_Hitchhike/\" referrerpolicy=\"origin\" rel=\"nofollow noopener\">STEAM</a></h4>",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": null,
+        "links": [
+          {
+            "id": "cmqeu3ys7001v10eg4h9wuwu7",
+            "storeName": "itch.io",
+            "url": "https://rayll.itch.io/fears-to-fathom",
+            "gameId": "cmqeu3ym3001u10eg237xddxe"
+          },
+          {
+            "id": "pl_itch_4f271afa0aa77101",
+            "storeName": "itch.io",
+            "url": "https://rayll.itch.io/fears-to-fathom",
+            "gameId": "cmqeu3ym3001u10eg237xddxe"
+          }
+        ],
+        "storeIds": [
+          "itch:rayll.itch.io/fears-to-fathom",
+          "itch:rayll.itch.io/fears-to-fathom"
+        ],
+        "itchCreators": [
+          "rayll",
+          "rayll"
+        ],
+        "year": 2021,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Cross-store verified match (Rayll Studios)"
+  },
+  {
+    "primary": {
+      "id": "cmqskqegc00pqh8egg2yaa92n",
+      "title": "Higurashi When They Cry Hou - Ch.6 Tsumihoroboshi",
+      "slug": "higurashi-when-they-cry-hou-ch6-tsumihoroboshi",
+      "coverUrl": "https://images.gog-statics.com/5bb967fc219905162d5e51b58e212592ee001c89ad8abf9e08f1a1f9348a78ad.jpg",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1528934400,
+      "status": "released",
+      "summary": "June, 1983\n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.\n\n\n\nMulti-language: Switch between English & JapaneseRenewed Art: Switch between original and new character artOriginal BGM/Un-Cut ContentsMulti-OS Support",
+      "storyline": null,
+      "scareRating": 78,
+      "source": "gog",
+      "platformNames": "PC (Windows), Linux, Mac",
+      "links": [
+        {
+          "id": "cmqskqfiq00prh8egjagotkoi",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch6_tsumihoroboshi",
+          "gameId": "cmqskqegc00pqh8egg2yaa92n"
+        }
+      ],
+      "storeIds": [
+        "gog:higurashi_when_they_cry_hou_ch6_tsumihoroboshi"
+      ],
+      "itchCreators": [],
+      "year": 2018,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwzpo2o03v99gegb7h8gog4",
+        "title": "Higurashi When They Cry Hou: Ch.6 Tsumihoroboshi",
+        "slug": "higurashi-when-they-cry-hou-ch-dot-6-tsumihoroboshi",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co295q.jpg",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1528934400,
+        "status": "released",
+        "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.",
+        "storyline": "June, 1983.\n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.",
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Linux, PC (Microsoft Windows), Mac",
+        "links": [
+          {
+            "id": "cmqc4d0k6042ccgegm436k8ih",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/668350",
+            "gameId": "cmpwzpo2o03v99gegb7h8gog4"
+          },
+          {
+            "id": "cmqc4d0k6042dcgegqdatdvd5",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch6_tsumihoroboshi",
+            "gameId": "cmpwzpo2o03v99gegb7h8gog4"
+          }
+        ],
+        "storeIds": [
+          "steam:668350",
+          "gog:higurashi_when_they_cry_hou_ch6_tsumihoroboshi"
+        ],
+        "itchCreators": [],
+        "year": 2018,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmpwzq99g04749geg5t2g5ufq",
+      "title": "Higurashi When They Cry Hou: Ch.5 Meakashi",
+      "slug": "higurashi-when-they-cry-hou-ch-dot-5-meakashi",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co42gs.jpg",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1493337600,
+      "status": "released",
+      "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.\n\nNevertheless, this is a game, not a novel. As the player, you will be able to unravel the mystery surrounding the events in the game as the scenarios unfold.",
+      "storyline": "June, 1983.\n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.",
+      "scareRating": 52,
+      "source": null,
+      "platformNames": "Linux, PC (Microsoft Windows), Mac",
+      "links": [
+        {
+          "id": "cmqc4ejmt04ctcgegbd0q4huc",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/577480",
+          "gameId": "cmpwzq99g04749geg5t2g5ufq"
+        },
+        {
+          "id": "cmqc4ejmt04cucgegayywr0e9",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch5_meakashi",
+          "gameId": "cmpwzq99g04749geg5t2g5ufq"
+        }
+      ],
+      "storeIds": [
+        "steam:577480",
+        "gog:higurashi_when_they_cry_hou_ch5_meakashi"
+      ],
+      "itchCreators": [],
+      "year": 2017,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsl996o00cfqoeglk2mljw9",
+        "title": "Higurashi When They Cry Hou - Ch.5 Meakashi",
+        "slug": "higurashi-when-they-cry-hou-ch5-meakashi",
+        "coverUrl": "https://images.gog-statics.com/f1912df12351c1b1ffaca0a2111302dbb0de68e674ae0cedd9659636596bf1a9.png",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1493404200,
+        "status": "released",
+        "summary": "June, 1983\n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.\n\nTHE GAME THAT INSPIRED THE MEGA-HIT ANIME SERIES RETURNS WITH BRAND NEW CHARACTER ART! \n\nMulti-language: Switch between English & JapaneseRenewed Art: Switch between original and new character artOriginal BGM/Un-Cut ContentsMulti-OS Support",
+        "storyline": null,
+        "scareRating": 76,
+        "source": "gog",
+        "platformNames": "PC (Windows), Linux, Mac",
+        "links": [
+          {
+            "id": "2cb00498-cf18-4eab-8ef0-0847caf87b5e",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch5_meakashi",
+            "gameId": "cmqsl996o00cfqoeglk2mljw9"
+          }
+        ],
+        "storeIds": [
+          "gog:higurashi_when_they_cry_hou_ch5_meakashi"
+        ],
+        "itchCreators": [],
+        "year": 2017,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmpwzr14804ln9gegkn4l88m6",
+      "title": "Hypnagogia",
+      "slug": "hypnagogia",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2veb.jpg",
+      "developerNames": "sodaraptor",
+      "releaseDate": 1605830400,
+      "status": "released",
+      "summary": "Hypnagogia is an exploration in themes involving deep dreams, liminal spaces, sleep paralysis demons, and much more.\nInfluenced by the nostalgia-fueled polygonal games from the mid and late 90's, Hypnagogia takes players on a short but intriguing journey through various worlds inspired by real dreams.",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2020,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqqshniy000wpoegss8eygkl",
+        "title": "Hypnagogia 催眠術",
+        "slug": "itch-hypnagogia-",
+        "coverUrl": "https://img.itch.zone/aW1nLzQ3MTY1MDIucG5n/original/cLzuWV.png",
+        "developerNames": "sodaraptor",
+        "releaseDate": 0,
+        "status": "released",
+        "summary": "<h2 class=\"text-center\"><em>Hypnagogia</em> is an exploration in themes involving deep dreams, liminal spaces, sleep paralysis demons, and much more.</h2>\n<h2 class=\"text-center\">Can you collect all 8 dream crystals and finally wake up?</h2>\n<p><img src=\"https://img.itch.zone/aW1nLzQ2NjY5MjAucG5n/original/slOBJ6.png\" loading=\"lazy\"><br></p>\n<p class=\"text-center\">Influenced by the nostalgia-fueled polygonal games from the mid and late 90's, <em>Hypnagogia </em>takes players on a short but intriguing journey through various worlds inspired by real dreams.&nbsp;</p>\n<p><img src=\"https://img.itch.zone/aW1nLzQ2NjY4NzQucG5n/original/T%2BlM%2Fq.png\" loading=\"lazy\"><br></p>\n<p class=\"text-center\">Hang out with cats in a relaxing garden temple, mingle with sea creatures in an underwater quarry, or find meaning in a city full of strange people. Everyone has something to say, so meet and greet with every denizen you can!</p>\n<p><img src=\"https://img.itch.zone/aW1nLzQ2NjY5MjIucG5n/original/jU7Mj2.png\" loading=\"lazy\"></p>\n<p class=\"text-center\"><em></em>Each hand-crafted and detailed environment has been amalgamated from different dream journal recordings over the years, with entries used by both the dev and some users on the LSD Revamped Discord channel.&nbsp;</p>\n<p><img src=\"https://img.itch.zone/aW1nLzQ2NjY4NzUucG5n/original/vDoxyE.png\" loading=\"lazy\"><br></p>\n<h2 class=\"text-center\"><em>When dreams turn to nightmares, will you overcome the challenge of returning to reality?</em></h2>\n<p><img src=\"https://img.itch.zone/aW1nLzQ2NjY5MjMucG5n/original/qLF1Ly.png\" loading=\"lazy\"><br></p>\n<p class=\"text-center\">If you enjoy this game, check out more from this dev below! There's also a comprehensive commentary file within the game folder if you're interested in knowing the origins of each dream.</p>\n<p class=\"text-center\"><a href=\"https://sodaraptor.itch.io/descension\" target=\"_blank\">Descension - a Quake-inspired procedurally-generated FPS</a></p>\n<p class=\"text-center\"><a href=\"https://sodaraptor.itch.io/infectoid\" target=\"_blank\">Infectoid - a Metroidvania adventure through a computer</a></p>\n<p><em>KNOWN BUGS/ISSUES</em></p>\n<ul><li>Mouse/controller sensitivity does not save between areas.</li><li>There's a possibility any one of the quest givers/npcs may bug out, resulting in not being able to complete the dream. If this happens, leave and reenter through the dream hub.</li><li>There is no way to save progress in the game currently.</li><li>I don't have plans on building for any platform besides Windows currently. My apologies in advance, but I don't have any way to test those builds and would rather ensure a cleaner experience.</li></ul>\n<h2 class=\"text-center\"></h2>\n<p><span></span></p>\n<h2 class=\"text-center\"><button itchio=\"\" aria-label=\"Click to activate iframe embed\" type=\"button\" class=\"embed_preload other_embed\" title=\"https://store.steampowered.com/widget/1665500/\" data-embed_code=\"<iframe src=&quot;https://store.steampowered.com/widget/1665500/&quot; frameborder=&quot;0&quot; width=&quot;646&quot; height=&quot;190&quot;></iframe>\" style=\"height: 168px; width: 300px\"><div class=\"embed_url\">https://store.steampowered.com/widget/1665500/</div></button></h2>",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": null,
+        "links": [
+          {
+            "id": "cmqqshnmx000xpoegztxcene6",
+            "storeName": "itch.io",
+            "url": "https://sodaraptor.itch.io/hypnagogia",
+            "gameId": "cmqqshniy000wpoegss8eygkl"
+          },
+          {
+            "id": "pl_itch_87445962adb9f8af",
+            "storeName": "itch.io",
+            "url": "https://sodaraptor.itch.io/hypnagogia",
+            "gameId": "cmqqshniy000wpoegss8eygkl"
+          },
+          {
+            "id": "pl_itch_ec442c4935133c43",
+            "storeName": "itch.io",
+            "url": "https://ayzi.itch.io/hypnagogia",
+            "gameId": "cmqqshniy000wpoegss8eygkl"
+          },
+          {
+            "id": "pl_itch_38d97d1484abd9c8",
+            "storeName": "itch.io",
+            "url": "https://azeocram.itch.io/hypnagogia",
+            "gameId": "cmqqshniy000wpoegss8eygkl"
+          },
+          {
+            "id": "pl_itch_6b8eee624b9b2493",
+            "storeName": "itch.io",
+            "url": "https://abbeyhyuga.itch.io/hypnagogia",
+            "gameId": "cmqqshniy000wpoegss8eygkl"
+          },
+          {
+            "id": "pl_itch_c6705b1e7b30cf9f",
+            "storeName": "itch.io",
+            "url": "https://the-only-rak.itch.io/hypnagogia",
+            "gameId": "cmqqshniy000wpoegss8eygkl"
+          }
+        ],
+        "storeIds": [
+          "itch:sodaraptor.itch.io/hypnagogia",
+          "itch:sodaraptor.itch.io/hypnagogia",
+          "itch:ayzi.itch.io/hypnagogia",
+          "itch:azeocram.itch.io/hypnagogia",
+          "itch:abbeyhyuga.itch.io/hypnagogia",
+          "itch:the-only-rak.itch.io/hypnagogia"
+        ],
+        "itchCreators": [
+          "sodaraptor",
+          "sodaraptor",
+          "ayzi",
+          "azeocram",
+          "abbeyhyuga",
+          "the-only-rak"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Cross-store verified match (sodaraptor)"
+  },
+  {
+    "primary": {
+      "id": "cmqsjnjo60efbhkeglnz15v1f",
+      "title": "Scooby-Doo 2: Monsters Unleashed",
+      "slug": "scooby-doo-2-monsters-unleashed--1",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co3dcg.jpg",
+      "developerNames": "AWE Games",
+      "releaseDate": 1081987200,
+      "status": "released",
+      "summary": "Scooby Doo, Shaggy, and the whole gang are back in another exciting mystery adventure just right for the 6-9 crowd. Case File #2 features a similar format to the first case file, The Glowing Bug Man, with a few new features that add to the enjoyment.",
+      "storyline": null,
+      "scareRating": 5,
+      "source": null,
+      "platformNames": "Game Boy Advance",
+      "links": [],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2004,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpwztew005xx9gegj474dfl6",
+        "title": "Scooby Doo 2: Monsters Unleashed",
+        "slug": "scooby-doo-2-monsters-unleashed",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2d2v.jpg",
+        "developerNames": "AWE Games",
+        "releaseDate": 1078099200,
+        "status": "released",
+        "summary": "In Scooby-Doo 2: Monsters Unleashed, someone has brought the costumes belonging to Scoobys greatest nemesis to life and now they are threatening all of Coolsville. Join Scooby, Shaggy, Fred and the rest of the Scooby-Doo Gang as they team up to solve the mystery and save Coolsville. During the game you control Scooby, Daphne and the whole Scooby gang as they run, jump and battle their way post scores of frightening creatures. On each level you have specific objectives that you must achieve in addition to collecting Scooby Snacks and other powerups. Scooby-Doo 2 Monsters Unleashed is a single-player action/adventure that utilizes a password feature for marking your progress in the game.",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": "PC (Microsoft Windows)",
+        "links": [],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2004,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (AWE Games)"
+  },
+  {
+    "primary": {
+      "id": "cmpy2wyfo05ra5kegc5kmq3wy",
+      "title": "P.A.M.E.L.A.",
+      "slug": "pamela--1",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co24q5.jpg",
+      "developerNames": "NVYVE Studios",
+      "releaseDate": 1592438400,
+      "status": "released",
+      "summary": "P.A.M.E.L.A. is an open world, sci-fi survival horror FPS with RPG elements in development for Windows PC, release date TBA 2016. With inspirations including Mass Effect, Deus Ex, and Bioshock, P.A.M.E.L.A. investigates the underlying fault in humanity's craving for technological and biological advancement. \n \nPlay as a Sleeper, awoken from cryosleep in Eden, a fallen utopia wrought with death and danger. Meet PAMELA, an omnipresent AI overseer who is left alone watching over the once-vibrant city, now reduced to a silent monolith gliding across the ocean. She will fight by your side as you struggle against Eden’s tortured Citizens. Uncover the tragic events that lead to the downfall of a civilization, and fight for your life as the broken citizens of Eden defend their home against your intrusion. With a personality-driven AI system, no encounter will be the same as the Afflicted react in unpredictable ways, driven by their excruciating pain and disfiguring disease. \n \nInteract with various Factions, including The Afflicted citizens, security Droids, robotic Custodians, and more mysterious denizens hidden within Eden's depths. Each faction exhibits its own unique behaviors and alliances, and will react dynamically to the player’s behavior to become allies, or enemies. Experience tense gameplay in a richly developed sci-fi universe. Each decision is meaningful, and each encounter could be your last. Wield and customize an array of Modular Equipment to defend yourself and explore the environment. Utilize an immersive UI and full body awareness, where the player's involvement is never broken. \n \nManage the power reserves of the city, using energy only when necessary to avoid the dangers of being stranded in the dark. Upgrade your Weaponry, and construct a safe haven to defend against the denizens of Eden. Enhancing your body with Bio-Augments will give you an advantage over your enemies, but at what cost? Every decision has consequences in Eden.",
+      "storyline": null,
+      "scareRating": 42,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [
+        {
+          "id": "cmqc4oh5f06efcgeglqntw36x",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/427880",
+          "gameId": "cmpy2wyfo05ra5kegc5kmq3wy"
+        },
+        {
+          "id": "cmqc4oh5f06egcgeg4ryp2r84",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/pamelar",
+          "gameId": "cmpy2wyfo05ra5kegc5kmq3wy"
+        }
+      ],
+      "storeIds": [
+        "steam:427880",
+        "gog:pamelar"
+      ],
+      "itchCreators": [],
+      "year": 2020,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqskggi300hth8eg1own4xu4",
+        "title": "P.A.M.E.L.A.®",
+        "slug": "pamelar",
+        "coverUrl": "https://images.gog-statics.com/3cc5ab6a568d1b35f906227ab260bb113b030c4419f1bde094d7a2e3a7530434.jpg",
+        "developerNames": "NVYVE® Studios",
+        "releaseDate": 1592438400,
+        "status": "released",
+        "summary": "P.A.M.E.L.A. is an intense open-world survival horror game set in Eden, a fallen Utopian city.\n\n\nPlay as a Sleeper, awoken from cryosleep in Eden, a fallen utopia wrought with death and danger. Utilize a wide range of hi-tech weapons, equipment, and build-able items that can be upgraded to suit your needs. Meet PAMELA, an omnipresent AI overseer who is left alone watching over the once-vibrant city, now reduced to a silent monolith gliding across the ocean.\n\n\nKey FeaturesFriends and FoesSurvive against multiple NPC factions, including the Afflicted citizens, security droids, robotic custodians, and more mysterious denizens hidden within Eden's depths. Each faction exhibits its own unique behaviors and alliances which can be manipulated to turn the tide of combat. \n\n\nScavenge to SurviveExperience tense gameplay in a richly developed sci-fi universe. Each decision is meaningful, and each encounter could be your last. Wield and customize an array of modular equipment to defend yourself and explore the environment. Utilize an immersive UI and full body awareness, which removes all boundaries between the player and the horrors of Eden.\n\n\nEnhance Yourself to ThriveManage the power reserves of the city, using energy only when necessary to avoid the dangers of being stranded in the dark. Upgrade your weaponry, and construct a safe haven to defend against the denizens of Eden. Enhancing your body with Bio-Augments will give you an advantage over your enemies, but at what cost? \n\n\nUncover the TruthUncover the tragic events that lead to the downfall of a civilization, and fight for your life as the broken citizens of Eden defend their home against your intrusion. With a personality-driven AI system, no encounter will be the same as the Afflicted react in unpredictable ways, driven by their excruciating pain and disfiguring disease.",
+        "storyline": null,
+        "scareRating": 85,
+        "source": "gog",
+        "platformNames": "PC (Windows)",
+        "links": [
+          {
+            "id": "cmqskghlr00huh8eg5erw24lp",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/pamelar",
+            "gameId": "cmqskggi300hth8eg1own4xu4"
+          }
+        ],
+        "storeIds": [
+          "gog:pamelar"
+        ],
+        "itchCreators": [],
+        "year": 2020,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (NVYVE Studios)"
+  },
+  {
+    "primary": {
+      "id": "cmqskmdc900mjh8egvpbr9gfo",
+      "title": "Higurashi When They Cry Hou - Ch.7 Minagoroshi",
+      "slug": "higurashi-when-they-cry-hou-ch7-minagoroshi",
+      "coverUrl": "https://images.gog-statics.com/f03798f15f9b64fbcb2ace5fd6f19af3308309e0e8ea07772d9dd8bb5fe9185a.jpg",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1563408000,
+      "status": "released",
+      "summary": "June, 1983. \n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.",
+      "storyline": null,
+      "scareRating": 28,
+      "source": "gog",
+      "platformNames": "PC (Windows), Linux, Mac",
+      "links": [
+        {
+          "id": "cmqslaaav00d4qoeg4r19kzvt",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/1034940/",
+          "gameId": "cmqskmdc900mjh8egvpbr9gfo"
+        },
+        {
+          "id": "cmqskmecs00mkh8egujbme5af",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch7_minagoroshi",
+          "gameId": "cmqskmdc900mjh8egvpbr9gfo"
+        }
+      ],
+      "storeIds": [
+        "steam:1034940",
+        "gog:higurashi_when_they_cry_hou_ch7_minagoroshi"
+      ],
+      "itchCreators": [],
+      "year": 2019,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmpy30ll007ks5keg2lvnzo8v",
+        "title": "Higurashi When They Cry Hou: Ch.7 Minagoroshi",
+        "slug": "higurashi-when-they-cry-hou-ch-dot-7-minagoroshi",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co47hh.jpg",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1563408000,
+        "status": "released",
+        "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.",
+        "storyline": "June, 1983.\n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.",
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Linux, PC (Microsoft Windows), Mac",
+        "links": [
+          {
+            "id": "cmqc4xyoz07uccgeg0zkgv7n9",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch7_minagoroshi",
+            "gameId": "cmpy30ll007ks5keg2lvnzo8v"
+          },
+          {
+            "id": "cmqc4xyoz07udcgegnwimnn2q",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/1034940",
+            "gameId": "cmpy30ll007ks5keg2lvnzo8v"
+          }
+        ],
+        "storeIds": [
+          "gog:higurashi_when_they_cry_hou_ch7_minagoroshi",
+          "steam:1034940"
+        ],
+        "itchCreators": [],
+        "year": 2019,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmqsadp9f05i8rcegsqy1n4iq",
+      "title": "Injection π23 'Tabula Rasa'",
+      "slug": "injection-pi23-tabula-rasa--1",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/coc6m6.jpg",
+      "developerNames": "Abramelin Games",
+      "releaseDate": 1763769600,
+      "status": "released",
+      "summary": "Classic survival horror focused on puzzle solving and strategy.",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "Xbox Series X|S, PlayStation 5",
+      "links": [
+        {
+          "id": "cmqsadqbj05iirceghfb26gfw",
+          "storeName": "Xbox Store",
+          "url": "https://www.xbox.com/en-us/games/store/injection-%CF%8023-tabula-rasa/9mxzhk71bm6r",
+          "gameId": "cmqsadp9f05i8rcegsqy1n4iq"
+        },
+        {
+          "id": "cmqsadqbj05ijrcegqvkfiu0k",
+          "storeName": "PlayStation Store",
+          "url": "https://store.playstation.com/en-us/product/UP6347-PPSA18406_00-INJE23TABULARASA",
+          "gameId": "cmqsadp9f05i8rcegsqy1n4iq"
+        }
+      ],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2025,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsaq85u00f1ewegmxx5w913",
+        "title": "Injection π23: Tabula Rasa",
+        "slug": "injection-pi23-tabula-rasa",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/coc6m7.jpg",
+        "developerNames": "Abramelin Games",
+        "releaseDate": 1766361600,
+        "status": "released",
+        "summary": "Classic survival horror focused on puzzle-solving, exploration, and strategy.",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": "Xbox Series X|S, PlayStation 5, Xbox One",
+        "links": [
+          {
+            "id": "cmqsaq97p00fgewegr3ltqidm",
+            "storeName": "PlayStation Store",
+            "url": "https://store.playstation.com/en-us/concept/10009151",
+            "gameId": "cmqsaq85u00f1ewegmxx5w913"
+          },
+          {
+            "id": "cmqsaq97p00fheweguswswmb8",
+            "storeName": "Xbox Store",
+            "url": "https://www.xbox.com/en-us/games/store/injection-%CF%8023-tabula-rasa/9mxzhk71bm6r",
+            "gameId": "cmqsaq85u00f1ewegmxx5w913"
+          }
+        ],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2025,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Abramelin Games)"
+  },
+  {
+    "primary": {
+      "id": "cmqse7xr1001ikgeg4dnbj97f",
+      "title": "Hunter's Moon: A Sovereign Syndicate Adventure",
+      "slug": "hunters-moon-a-sovereign-syndicate-adventure",
+      "coverUrl": "https://images.gog-statics.com/412bd523929803d2f4b612f2f65ec5ba5f46a97da95bdae76a3fb6ce69c9ee0e.jpg",
+      "developerNames": "Crimson Herring Studios",
+      "releaseDate": 1763942400,
+      "status": "released",
+      "summary": "If you have  Sovereign Syndicate in your library, enjoy a 20% loyalty discount on Hunter's Moon: A Sovereign Syndicate Adventure\n — and on its Digital Deluxe Edition as well!\n\n\n\n\n\n\n\n \n\n\n\nA Victorian Steampunk Fantasy Roguelike: A steampunk fantasy world awaits; filled with all manner of fell beasts and monstrosities. Something isn’t right here, the natural wildlife has been corrupted by a mysterious plague, and it’s up to you to discover the truth and find the cure; but no two runs are the same.\n\n\n\n \n\n\n\n\n\n\n\n \n\n\n\nRich Narrative Adventure: Return to the world of Sovereign Syndicate, before the events of the first game. Explore chilling encounters and complete missions as your agents investigate the Hunter's Moon. Experience new locations, enemies and bosses across 4 chapters.\n\n\n\n \n\n\n\n\n\n\n\n \n\n\n\nFour Unique Classes: How will you meet your challenges? A hulking brute that smashes everything in their path? A cunning soldier with weapons expertise? An alchemist with potions, poisons, and explosives? Choose your agent and build a deck that suits your playstyle.\n\n\n\n \n\n\n\n\n\n\n\n \n\n\n\nDynamic Deck Building: Each agent has a unique set of cards. Craft your deck from hundreds of variations. Upgrade your cards to increase their power.\n\n\n\n \n\n\n\n\n\n\n\n \n\n\n\nTurn-Based Combat: Hack, slash, and shoot your way through dark forests and winding streets. Battle dangerous creatures and formidable bosses. Learn their traits and tactics to best them in turn-based combat.\n\n\n\n \n\n\n\n \n\n\n\n\n\n\n\n \n\n\n\nRoguelite Progression: Succeed at your mission, or retreat in failure. Either way, you'll collect money, cards, items, relics, and salvaged materials. Use them to improve your agents, your airship, and your next run.\n\n\n\n \n\n\n\n\n\n\n\n \n\n\n\nDiscover Enchanting Tarot Cards: Modify your run by unlocking enchanted tarot cards. Combine their effects to improve your odds of success.",
+      "storyline": null,
+      "scareRating": null,
+      "source": "gog",
+      "platformNames": "PC (Windows)",
+      "links": [
+        {
+          "id": "cmqse7yz8001jkgegctuu26hy",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/hunters_moon_a_sovereign_syndicate_adventure",
+          "gameId": "cmqse7xr1001ikgeg4dnbj97f"
+        }
+      ],
+      "storeIds": [
+        "gog:hunters_moon_a_sovereign_syndicate_adventure"
+      ],
+      "itchCreators": [],
+      "year": 2025,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqse83d1001lkgegacek0nsc",
+        "title": "Hunter’s Moon: A Sovereign Syndicate Adventure",
+        "slug": "hunter-s-moon-a-sovereign-syndicate-adventure",
+        "coverUrl": "https://images.gog-statics.com/ae5a957d2fdc04b415b1b6b717360056eee5a31c4ad6c79667dff2a4b212ed14.jpg",
+        "developerNames": "Crimson Herring Studios",
+        "releaseDate": 1763942400,
+        "status": "released",
+        "summary": "If you have  Sovereign Syndicate in your library, enjoy a 20% loyalty discount on Hunter's Moon: A Sovereign Syndicate Adventure\n — and on its Digital Deluxe Edition as well!\n\n\nDigital Deluxe Edition includes:\n\n\n\n\n\n\nHunter’s Moon: A Sovereign Syndicate Adventure\n\n\n\n\n\n\n\nHunter’s Moon: A Sovereign Syndicate Adventure - Soundtrack\n\n\n\n\n\n\n\nHunter’s Moon: A Sovereign Syndicate Adventure - Digital Artbook",
+        "storyline": null,
+        "scareRating": null,
+        "source": "gog",
+        "platformNames": "PC (Windows)",
+        "links": [
+          {
+            "id": "cmqse84dx001mkgegoqwkolzi",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/hunters_moon_a_sovereign_syndicate_adventure_digital_deluxe_edition",
+            "gameId": "cmqse83d1001lkgegacek0nsc"
+          },
+          {
+            "id": "485d106f-2f70-4583-9982-6416353a2d81",
+            "storeName": "GOG (Soundtrack)",
+            "url": "https://www.gog.com/en/game/hunters_moon_a_sovereign_syndicate_adventure_soundtrack",
+            "gameId": "cmqse83d1001lkgegacek0nsc"
+          }
+        ],
+        "storeIds": [
+          "gog:hunters_moon_a_sovereign_syndicate_adventure_digital_deluxe_edition",
+          "gog:hunters_moon_a_sovereign_syndicate_adventure_soundtrack"
+        ],
+        "itchCreators": [],
+        "year": 2025,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Crimson Herring Studios)"
+  },
+  {
+    "primary": {
+      "id": "cmqsiksg301dlhkegbndv04p8",
+      "title": "Baby Blues Nightmares: Toddler Horror Game",
+      "slug": "baby-blues-nightmares-toddler-horror-game",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co8c9e.jpg",
+      "developerNames": "Steelkrill Studio",
+      "releaseDate": 1726444800,
+      "status": "released",
+      "summary": "Baby Blues Nightmare is a survival horror stealth game where you play as a toddler going into a little adventure with your tricycle which you can fix, maintain and customize. Paddle, hide and survive but remember; try not to cry when you are scared.. or the monsters will hear you and get you.",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [
+        {
+          "id": "cmqsikthd01e1hkegvp8h7wy3",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/2836820",
+          "gameId": "cmqsiksg301dlhkegbndv04p8"
+        },
+        {
+          "id": "cmqsikthd01e2hkeg6bh406ry",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/baby_blues_nightmares",
+          "gameId": "cmqsiksg301dlhkegbndv04p8"
+        }
+      ],
+      "storeIds": [
+        "steam:2836820",
+        "gog:baby_blues_nightmares"
+      ],
+      "itchCreators": [],
+      "year": 2024,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqselgmk00bxkgegzbb2c2go",
+        "title": "Baby Blues Nightmares - Toddler Horror Game",
+        "slug": "baby-blues-nightmares",
+        "coverUrl": "https://images.gog-statics.com/d1113b225f1fa3449cfc54beb174fe5bcd5f605291bc97856080e3fed37c1293.jpg",
+        "developerNames": "Steelkrill Studio",
+        "releaseDate": 1726444800,
+        "status": "released",
+        "summary": "",
+        "storyline": null,
+        "scareRating": null,
+        "source": "gog",
+        "platformNames": "PC (Windows)",
+        "links": [
+          {
+            "id": "cmqselhq800bykgegjj5mafh9",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/baby_blues_nightmares",
+            "gameId": "cmqselgmk00bxkgegzbb2c2go"
+          }
+        ],
+        "storeIds": [
+          "gog:baby_blues_nightmares"
+        ],
+        "itchCreators": [],
+        "year": 2024,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Steelkrill Studio)"
+  },
+  {
+    "primary": {
+      "id": "cmqser8dm00vgqwegthqk5m5g",
+      "title": "M. Stain",
+      "slug": "m-stain",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/coa5bs.jpg",
+      "developerNames": "Impostersyndrome",
+      "releaseDate": 1595030400,
+      "status": "released",
+      "summary": "Journey into a nightmarish world of bizzare people and twisted locales as you unravel the mystery of eccentric business tycoon M.Stain's true nature. Can you get the job? Can you even survive?",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2020,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsjb4go0a5mhkeg3lbhujii",
+        "title": "M.Stain",
+        "slug": "mstain",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co305l.jpg",
+        "developerNames": "Impostersyndrome",
+        "releaseDate": 1595030400,
+        "status": "released",
+        "summary": "Always wanted that great job in the big city? Looking for the opportunity of a lifetime? Right this way. M. Stain has a position with your name on it.\n\nJourney into a nightmarish world of bizzare people and twisted locales as you unravel the mystery of eccentric business tycoon M.Stain's true nature. Can you get the job? Can you even survive? There are three unique endings and branching story paths. Make your choices carefully and be careful who you trust.",
+        "storyline": "7:49 in the morning, Monday. Our protagonist has just arrived in the Big City by bus with the intention of getting employed in the Stain Financial company. On his way to the company's office building, he finds a shiny quarter. He gets past the security check and enters the building, where a friendly female secretary greets and urges him to wait for his interview on the couch. There he meets a man dressed as a cowboy and after a brief dialogue, the secretary instructs the protagonist to follow her to M. Stain's room. At the end of the long hallway, she opens the door to his room and leaves the protagonist alone. M. Stain, a millionaire playboy tycoon, politely greets the hero and offers him a seat on one of the two chairs in front of his table. The choice is pointless, as M. Stain's reaction is virtually the same, regardless of which chair we chose. He then asks the protagonist if he's comfortable and whether he replies positively or negatively, M. Stain's answer will be reassuring and understandable. Next, he asks if the protagonist knows what M stands for in his name. According to himself, it actually stands for nothing. After that, M. Stain proceeds to show us his three most prized possessions: a carved ivory fox, an antique newspaper and a well-worn saw, for us to select an item that describes our personality the best. Although his reactions are different with the pick of each item, in the end he still offers us to sign a contract in a very limited amount of time, in order for the protagonist to be unaware of it's questionable contents. If you fail to sign it on time or refuse, M. Stain will get furious and suggest that you \"need some time to think it over\", then presses a button on his table which opens a trap door under the protagonist's chair, sending him into an underground cell. In a cell on the opposite side is the already familiar to us man in the cowboy clothes, who apparently was also imprisoned by M. Stain. In our cell is some kind of a lever with the words \"save yourself\" written in blood above it. When the lever is pushed, the cowboy man shouts in distress and pleads with the hero to switch it off, as the lever has activated the spiked wall which is now coming towards the cowboy man. He's eventually crushed by the wall and we see his angry spirit leaving his body, floating towards the protagonist. Nonetheless, an elevator descends from the hole we have just fallen through and saves him from the spirit. When the hero reaches M. Stain's office, he's already gone and the hallway that we previously came through is completely different from what it used to be, with the red walls, ceiling fans humming ominously and massive fleshy growths ornating the doorway. After going down the hallway to the very end, the hero realizes that he just came back into the same office, however this time one of M. Stain prized items is lying on the floor, which one depends on the protagonist's choice. Upon interacting with it, the whole room suddenly turns black and we are inexplicably teleported to the entirely different location, near the gates of M. Stain's estate. M. Stain himself is standing next to his limousine, inviting the hero to enter the car. Note, that even if we were to sign the contract, this part will be the same, only without the protagonist being dropped into the dungeon and forced to kill the cowboy man to escape.\n\nAfter a short ride, the limousine stops near \"The Final Sacrifice\" bar. Since an invisible force is blocking our way out, the hero is forced to enter the club. The club is filled with indistinguishable people drinking and chatting. On the counter lies someone's forgotten dollar. The protagonist grabs the dollar and comes towards the weird jittery bartender. He offers you a complimentary drink from the bar for free. If you choose to taste it and then ask if the bartender wants a tip, he will refuse and instead ask you to play his favorite song \"Ol' Ramblin' Rattler\". You insert the previously found quarter into the jukebox and the song starts playing. All of a sudden, the bartender says that he wants to be completely bold with you, his head pops off like a hollow mask and a snake shows up in its place, saying that you should \"kill him the first chance you get\", possibly referring to M. Stain, and vanishes. Perturbed by this occurrence, the hero goes into the bathroom, only to find an inexplicably appearing eviscerated goat on the toilet in the second stall and words \"save yourself\" written in blood, just like in M. Stain's dungeon. For whatever reason he grabs the dead goat and finds a key to the room 3A in the toilet. With nothing important left to do in the bar area, he walks the stairs down into the arcade, filled with many locked doors, club music and suggestive moans. Entrance to the VIP area is guarded by the masked bouncer telling the hero that he should get the membership card to get there. Using his key, the protagonist enters the room 3A, where he finds a television set embedded into the wall that requires one dollar. After inserting the dollar and watching one of the three minute-long bizarre erotic films, he hears someone knocking on the wall from the nearby room. A skeletal arm holding a knife slowly sticks out of the wall. The hero arms himself with the mentioned knife and then hears a wall phone near his door ringing. He answers the call and hears only static for about half a minute, but in the end a disembodied voice informs him of someone standing behind him. Indeed, one of the doors behind us is open, with a raven sitting next to the bed with the membership card lying on it. The hero approaches the raven, with the latter suddenly flying right into his face and vanishing like an illusion. Regardless, the protagonist acquires the card and shows it to the masked guard, then enters the VIP area.\n\nIn front of him extends a vast room with ornaments on the walls, stained glass windows, two rows of benches and a pedestal in the far end, behind which is standing M. Stain himself, greeting the protagonist. After he comes closer to the pedestal and an altar beneath it, he notices a group of silent robed children with greenish skin and black holes for eyes. To the right of M. Stain is standing a robed figure with it's face obscured by the hood. M. Stain wishes to initiate the protagonist into his cult, but in order for that to happen he has to make a sacrifice. Having only a dead goat found in the bathroom stall earlier, he places it on the altar. M. Stain is displeased, noting that something greater is required. A robed figure to the right of him volunteers to become the sacrifice, drops the rob and turns out to be a completely naked female secretary from the beginning. M. Stain agrees and she happily lays onto the altar. Here, the hero has to choose whether to stab the woman or M. Stain himself in the back. Here, the hero has to choose whether to stab the woman on the altar or M. Stain himself in the back. Either way, if we stab the girl, the idol that they were making a sacrifice to will deem her spirit to be unclean and strike M. Stain through his back. If M. Stain was killed by the protagonist instead, the idol will incinerate the girl on the altar. Upon perishing through one of these ways, M. Stain's body will start glowing, then will be turn to shreds and the remains of it transform into the flying demonic beast with upper part of M. Stain's head and some of his internal organs. The hero is then forced into the center of the room and encircled by the mysteriously repositioned benches. After stabbing M. Stain several times, he falls to the ground and explodes, with the idol in the background collapsing as well, making the entire building burst into flames. The hero barely manages to escape the building before it goes down in flames. When outside, he hears the taxi signalling him from the nearby road and jumps into it without thinking. Depending on the protagonist's actions, the car's driver is either the female secretary's spirit, if he chose to stab her when she was lying on the altar, the cowboy's spirit, if he refused the contract and was forced to kill him in the dungeon, or a regular taxi driver, in case he harmed no one except M. Stain.",
+        "scareRating": null,
+        "source": null,
+        "platformNames": "PC (Microsoft Windows)",
+        "links": [],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2020,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Impostersyndrome)"
+  },
+  {
+    "primary": {
+      "id": "cmqsewk1a00jukgegiarkgsdz",
+      "title": "Yog-Sothoth’s Yard",
+      "slug": "yogsothoths-yard",
+      "coverUrl": "https://images.gog-statics.com/08970c8cc2735038e2ed0f43a174d05a21632a798ae0ba51e0ec5ea06553cd13.jpg",
+      "developerNames": "Bone Nail",
+      "releaseDate": 1697760000,
+      "status": "released",
+      "summary": "Follow us\n\n \n\n\n\nDiscord：Yog-Sothoth’s Yard\n\n\n\nTwitter-X：@BoneNailStudio\n\n\n\n \n\n\n\nTips: Press Ctrl to accelerate game storyline playback\n\n\n\n\n \nWelcome to the yard! \nIn this game, you inherit an ancient villa burdened with shadowy debts. You’ll manage a hotel and hire diverse staff members including Death, a dragon, a Spirit Hunter, and a bioroid maid. Enigmatic guests will arrive, each bringing their own mysterious events. Build your wealth through various methods like mining, adventuring, alchemy, and restaurant management, while adjusting your strategies based on the predictions of Oracles. \n*Caution: Consulting Oracles may decrease your sanity level! \nThe fate of the world will be shaped by your decisions, and your staff may fall for you based on your choices. This game offers up to 21 different endings. \n\n\n\n\n \n\nThe Hotel\n\nMaking money is great!! Making money is joyful!! \nWhat’s that, lose some sanity for the sake of earning money?\n\n\n\n \n\nThe Building\n\nThis dilapidated villa can be transformed into a luxurious hotel! \nAs a boss who's ruthless to customers but kind to employees, you'll customize rooms specifically for your core staff! \n...Wait, why is Death sleeping in a pit? \n\n\n\n\n \n\nThe Beautiful Yard\n\nPlease ignore the man-eating plant. \nKindly expedite the excavation of the mine and forest. \nPay attention to every guest visiting the courtyard and listen to their Oracles to gain extraordinary powers, but be sure to manage your SAN value to avoid confronting the truth too soon. \nIf you see a giant cat covered in eyes, please ask the front desk for a sick leave note. \n\n\n\n\n \n\nThe Forest\n\nBeyond the hotel lies an expansive forest. \nWith proper development, it can provide a variety of ingredients for your inn's restaurant.\n\n\n\n \n\nFood and Alchemy\n\nPlace some indescribable animals and plants in specific containers. \nChop finely. \nAdd some magical spices from foreign lands. \nIncorporate some special minerals. \nIt is essential to keep the right temperature from the flames. \n\"Are you talking about alchemy or Eastern mystical culinary arts?\" \n\"Both.\"\n\n\n\n \n\nFood\n\nThis game offers multiple strategies. \nManaging food, for instance, helps you swiftly utilize materials and amass wealth. \nAssist the guests in the yard, and in return you’ll receive diverse recipes from around the world. \nThe automatic listing feature simplifies tasks, while the lovely chef assists in preparing meals. However, you'll need to transform into a cat and diligently explore the mountains and forests to supply her with an abundance of ingredients. \n \n\nAlchemy\n\nStay on good terms with Yevna the Red Dragon, and she will faithfully supply you with alchemical products in the alchemy workshop. \nBy enhancing your alchemy skills, you can boost the workshop's production. \nPprioritising collecting alchemical formulas will enabling you to craft exceptional items, \nsuch as the legendary Philosopher's Stone. \n\n\n\n\nRecruit Employees\n\n\nBioroid Maid \n\nOne day, you discovered she was once human (???) \n\nDeath in Tower \n \nAfter confessing, \"I need to repay 9999 ounces of high-purity souls to the Death Tower,\" she brandished her scythe. \nWill you choose to slaughter your guests to repay her debt? \n \n\nThe Dragon Alchemist \n \nDon’t tell her that by the fifth month of your training, your alchemy skills surpassed hers; the proud red dragon will become angry. \n\nThe Spirit Hunter (Chef) \n \nAlthough her swordsmanship is impressive, she prefers being a chef. \n— Regardless, her knife skills are excellent. \n\nIn addition, there is a variety of unique NPCs with a wide range of different races, appearances, and personalities. Every character has their own story to discover. \nA rich game experience and a fantastical dark world await your exploration.",
+      "storyline": null,
+      "scareRating": null,
+      "source": "gog",
+      "platformNames": "PC (Windows)",
+      "links": [
+        {
+          "id": "cmqsewlb400jvkgegtk8fvj6r",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/yogsothoths_yard",
+          "gameId": "cmqsewk1a00jukgegiarkgsdz"
+        }
+      ],
+      "storeIds": [
+        "gog:yogsothoths_yard"
+      ],
+      "itchCreators": [],
+      "year": 2023,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsitftk04a1hkegg1qnolfv",
+        "title": "Yog-Sothoth's Yard",
+        "slug": "yog-sothoths-yard",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6iz6.jpg",
+        "developerNames": null,
+        "releaseDate": 1697760000,
+        "status": "released",
+        "summary": "Manage a hotel and hire employees including Death, a dragon, a Demon-Slayer, and a bioroid maid. Build your wealth through various means and refine your strategies based on the predictions of Oracles. Your choices will determine which employees become enamored with you.",
+        "storyline": "In this land where dragons, elves, and humans coexist, you inherit an abandoned mansion and are in debt to the darkness. You need to recruit staffs, including Death, Dragon, Spirit Hunter, and Bioroid Maid, to provide hotel services for different races, and you can also quickly gather funds through Slaughter and Dream. Furthermore, staffs are all objects that can be conquered. The choice of different staffs to conquer and the degree of Darken of one's means of amassing wealth affect the hotel management Endings.\nThat's right, this game currently has 11 planned Endings, and will continue to increase as the script continues to deepen and the system design continues to increase...",
+        "scareRating": null,
+        "source": null,
+        "platformNames": "PC (Microsoft Windows)",
+        "links": [
+          {
+            "id": "cmqsitgie04aahkegff489b4u",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/yogsothoths_yard",
+            "gameId": "cmqsitftk04a1hkegg1qnolfv"
+          },
+          {
+            "id": "cmqsitgie04abhkegkn6tkxj5",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/2194530/YogSothoths_Yard/",
+            "gameId": "cmqsitftk04a1hkegg1qnolfv"
+          }
+        ],
+        "storeIds": [
+          "gog:yogsothoths_yard",
+          "steam:2194530"
+        ],
+        "itchCreators": [],
+        "year": 2023,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Bone Nail)"
+  },
+  {
+    "primary": {
+      "id": "cmqseyden03diqwegtjrgushu",
+      "title": "Berrywitched!",
+      "slug": "berrywitched--1",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co9cqd.jpg",
+      "developerNames": "SmileStrawbunny",
+      "releaseDate": 1721433600,
+      "status": "released",
+      "summary": "Berrywitched! is a lovely twisted game where you, our protagonist, are lost within a forest that is supposedly cursed. You pass out, only to be awoken by a cute girl claiming to be a Strawberry Witch.",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "Web browser, PC (Microsoft Windows)",
+      "links": [],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2024,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsj2a9q0770hkeg89d4dxlw",
+        "title": "Berrywitched",
+        "slug": "berrywitched",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co4qon.jpg",
+        "developerNames": "SmileStrawbunny",
+        "releaseDate": 1647561600,
+        "status": "released",
+        "summary": "Berrywitched! is a lovely twisted game where you, our protagonist, are lost within a forest that is supposedly cursed. You pass out, only to be awoken by a cute girl claiming to be The Strawberry Witch.",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": "PC (Microsoft Windows)",
+        "links": [],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2022,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (SmileStrawbunny)"
+  },
+  {
+    "primary": {
+      "id": "cmqsf002z03woqwegno6lim24",
+      "title": "Prescription: Love",
+      "slug": "prescription-love",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co94z5.jpg",
+      "developerNames": null,
+      "releaseDate": 1729382400,
+      "status": "released",
+      "summary": "\"You wake up in a hospital with no memory of how you got there. A kind and attentive doctor assures you that you will be under his care, patiently nursing you back to health. No one seems to know what caused your condition. \"\n\nWill you recover your lost memories...? Or has he made sure you never will?",
+      "storyline": null,
+      "scareRating": null,
+      "source": null,
+      "platformNames": "Linux, PC (Microsoft Windows), Mac",
+      "links": [],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2024,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_e84246421db9bfa2",
+        "title": "Prescription:LOVE",
+        "slug": "itch-prescription-love",
+        "coverUrl": "https://img.itch.zone/aW1nLzE4Mjc4NzgyLnBuZw==/315x250%23c/nkA1x6.png",
+        "developerNames": "Livingslime",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_e84246421db9bfa2",
+            "storeName": "itch.io",
+            "url": "https://livingslime.itch.io/prescriptionlove",
+            "gameId": "itch_e84246421db9bfa2"
+          }
+        ],
+        "storeIds": [
+          "itch:livingslime.itch.io/prescriptionlove"
+        ],
+        "itchCreators": [
+          "livingslime"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Cross-store verified match (null)"
+  },
+  {
+    "primary": {
+      "id": "cmqsjf3h70bk7hkeg0hcowwy4",
+      "title": "11:45 A Vivid Life",
+      "slug": "11-45-a-vivid-life",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co27gz.jpg",
+      "developerNames": "Deconstructeam",
+      "releaseDate": 1540425600,
+      "status": "released",
+      "summary": "A short weird tale about a girl who discovered her skeleton isn't hers, stole an xray machine and fled to the country to investigate her own body.",
+      "storyline": "A short weird tale about a girl who discovered her skeleton isn't hers, stole an xray machine and fled to the country to investigate her own body.",
+      "scareRating": 35,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [],
+      "storeIds": [],
+      "itchCreators": [],
+      "year": 2018,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsj75h008n0hkegomel60ii",
+        "title": "11.45 A Vivid Life",
+        "slug": "11-dot-45-a-vivid-life",
+        "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5u6p.jpg",
+        "developerNames": "Deconstructeam",
+        "releaseDate": 1540425600,
+        "status": "released",
+        "summary": "A short weird tale about a girl who discovered her skeleton isn't hers, stole an xray machine and fled to the country to investigate her own body",
+        "storyline": null,
+        "scareRating": null,
+        "source": null,
+        "platformNames": "PC (Microsoft Windows)",
+        "links": [],
+        "storeIds": [],
+        "itchCreators": [],
+        "year": 2018,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Deconstructeam)"
+  },
+  {
+    "primary": {
+      "id": "cmqsjc4yj0ainhkegvq9gnykb",
+      "title": "The Signifier: Director's Cut",
+      "slug": "the-signifier-directors-cut",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2sv7.jpg",
+      "developerNames": "Playmestudio",
+      "releaseDate": 1602720000,
+      "status": "released",
+      "summary": "We've decided to start working on an extended version of the game. And Raw Fury has decided to support us! This edition will have extra content, new endings, improved visuals and animation, and lots of little details that were lost in the struggle of making our first game. It will be our Director's Cut.",
+      "storyline": "Explore the real and surreal worlds, become immersed in fringe psychology, solve puzzles, and find the truth as Frederick Russell, an expert in AI and psychology, and the main researcher behind an experimental deep brain scanner called the Dreamwalker. Its controversial technology allows the exploration of the recorded senses and unconscious realms of the mind. He finds himself thrust into a spiral of intrigue when asked to use his creation after the vice president of the world’s biggest tech company turns up dead in her apartment.",
+      "scareRating": 12,
+      "source": null,
+      "platformNames": "PlayStation 4, PC (Microsoft Windows), Mac, Xbox One",
+      "links": [
+        {
+          "id": "cmqsjc5za0aiwhkeg7j4xd3pv",
+          "storeName": "Epic Games Store",
+          "url": "https://www.epicgames.com/store/en-US/p/the-signifier-directors-cut",
+          "gameId": "cmqsjc4yj0ainhkegvq9gnykb"
+        },
+        {
+          "id": "cmqsjc5za0aixhkegvpl6ghy6",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/1082930/The_Signifier_Directors_Cut",
+          "gameId": "cmqsjc4yj0ainhkegvq9gnykb"
+        },
+        {
+          "id": "cmqsjc5za0aiyhkeg7p8ny6us",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/the_signifier",
+          "gameId": "cmqsjc4yj0ainhkegvq9gnykb"
+        }
+      ],
+      "storeIds": [
+        "steam:1082930",
+        "gog:the_signifier"
+      ],
+      "itchCreators": [],
+      "year": 2020,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqsjf87o0blphkegncpiyw0b",
+        "title": "The Signifier Director's Cut",
+        "slug": "the-signifier",
+        "coverUrl": "https://images.gog-statics.com/5e9f108da5532ba92246c11b66e7d5ef1feedf50bc8b1520e3ba96a4aa1854eb.png",
+        "developerNames": "Playmestudio",
+        "releaseDate": 1602700200,
+        "status": "released",
+        "summary": "Demo version of The Signifier Director’s Cut is available here\n\n\nThe Signifier is a first-person tech-noir mystery adventure that blends investigation, experimental psychology, and artificial intelligence.\n\n\n  \n\nExplore the real and surreal worlds, become immersed in fringe psychology, solve puzzles, and find the truth as Frederick Russell, an expert in AI and psychology, and the main researcher behind an experimental deep brain scanner called the Dreamwalker. Its controversial technology allows the exploration of the recorded senses and unconscious realms of the mind. He finds himself thrust into a spiral of intrigue when asked to use his creation after the vice president of the world’s biggest tech company turns up dead in her apartment.\n\nNow including the Director's Cut update!\nRefinements and enhancements across the board make this the ultimate expression of the Signifier. The free Director's Cut update features new memories, new dialogue, additional endings and improved performance throughout.\n \nWhat's New\n\n\nExpanded narrative content featuring new memories, dialogue and voice-over, three additional story endings, and a new epilogue giving greater insight to key characters and choices.\nImproved performance and experience, including better load times and frame rate, revamped animations and UI, and further optimizations for lower-end PCs.\nBonus gameplay features, including a new difficulty setting for those purely interested in experiencing the game’s story, plus new menu tips, clues, and remappable controls.\nFree upgrade for anyone who owns The Signifier.\n\n\nCore Features\n\n\nThree coexisting dimensions to explore: reality, and the objective memories and subjective dreams in the mindscape.\nMove between realms to solve puzzles, unlock new dialog branches, and unravel the mystery.\nLearn psychological concepts to use powers and tools for navigating the strange and unpredictable unconsciousness.\nEvery challenge is part of the mystery that creates unique moments with no filler.\nA multi-layer narrative that spirals into a complex web of real-world intrigue as surreal suspense\nGet immersed in thought provoking tension, free from jump scares.\nQuestion the implications of AI, intrusion to the consciousness, privacy, and whether we see the world as it is or a subjective creation of our minds.",
+        "storyline": null,
+        "scareRating": 53,
+        "source": "gog",
+        "platformNames": "PC (Windows), Mac",
+        "links": [
+          {
+            "id": "cmqskdbws00fkh8egebkfg2ix",
+            "storeName": "GOG (Deluxe Edition)",
+            "url": "https://www.gog.com/en/game/the_signifier_deluxe_edition",
+            "gameId": "cmqsjf87o0blphkegncpiyw0b"
+          },
+          {
+            "id": "9eff0bda-0ae5-470f-b8c9-b435a989dc56",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/the_signifier",
+            "gameId": "cmqsjf87o0blphkegncpiyw0b"
+          }
+        ],
+        "storeIds": [
+          "gog:the_signifier_deluxe_edition",
+          "gog:the_signifier"
+        ],
+        "itchCreators": [],
+        "year": 2020,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Playmestudio)"
+  },
+  {
+    "primary": {
+      "id": "cmqsjf4wr0bkthkegk78baze6",
+      "title": "Higurashi When They Cry Hou: Ch.8 Matsuribayashi",
+      "slug": "higurashi-when-they-cry-hou-ch-dot-8-matsuribayashi",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2m8s.jpg",
+      "developerNames": "07th Expansion",
+      "releaseDate": 1589414400,
+      "status": "released",
+      "summary": "Higurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.",
+      "storyline": "June, 1983.\n\nThe summer heat has arrived earlier than it does most years.\nBy day there are cicadas, and by night, the higurashi.\n\nHinamizawa, a small village in the Japanese countryside.\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\nFor the past 4 years, someone has died, and someone else has gone missing.\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project.\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year.\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\nSomeone who was supposed to be there... isn't.\nSomeone who wasn't supposed to be there... is.\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\nThere is no way to avert this tragedy. There is no choice but to give up trying.\n\nBut even so... please don't give up.",
+      "scareRating": 15,
+      "source": null,
+      "platformNames": "Linux, PC (Microsoft Windows), Mac",
+      "links": [
+        {
+          "id": "cmqsjf5yv0bl4hkegg342hhi8",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/1243670/",
+          "gameId": "cmqsjf4wr0bkthkegk78baze6"
+        },
+        {
+          "id": "cmqsjf5yv0bl5hkegglxfbv0c",
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/higurashi_when_they_cry_hou_ch8_matsuribayashi",
+          "gameId": "cmqsjf4wr0bkthkegk78baze6"
+        }
+      ],
+      "storeIds": [
+        "steam:1243670",
+        "gog:higurashi_when_they_cry_hou_ch8_matsuribayashi"
+      ],
+      "itchCreators": [],
+      "year": 2020,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqskhjyg00irh8eg7g49j89g",
+        "title": "Higurashi When They Cry Hou - Ch.8 Matsuribayashi",
+        "slug": "higurashi-when-they-cry-hou-ch8-matsuribayashi",
+        "coverUrl": "https://images.gog-statics.com/370eeba4f8a1baf76f1136865e537496787050d92d368f0959622945fb48add7.jpg",
+        "developerNames": "07th Expansion",
+        "releaseDate": 1589414400,
+        "status": "released",
+        "summary": "June, 1983. \n\n\nThe summer heat has arrived earlier than it does most years. \n\nBy day there are cicadas, and by night, the higurashi.\n\n\nHinamizawa, a small village in the Japanese countryside. \n\nWhile there are fewer than two thousand people there, every year, 'something' happens.\n\n\nFor the past 4 years, someone has died, and someone else has gone missing. \n\nThis series of deaths and disappearances is connected to the local resistance against a now-abandoned dam construction project. \n\nA murder during the construction, covered up by the local authorities, is being re-enacted year after year. \n\nIs it a conspiracy? A coincidence? Or perhaps a curse?\n\n\nSomeone who was supposed to be there... isn't. \n\nSomeone who wasn't supposed to be there... is.\n\n\nSomeone who was alive last night is now dead, and someone who is here right now isn't alive.\n\n\nThere is no way to avert this tragedy. There is no choice but to give up trying. \n\n\nBut even so... please don't give up.\nGameplay\nHigurashi When They Cry is a sound novel. The music, backgrounds and characters work together to create a world that is the stage of a novel for the user to read. They laugh and cry and get angry. The user takes the point of view of the protagonist to experience the story.",
+        "storyline": null,
+        "scareRating": 70,
+        "source": "gog",
+        "platformNames": "PC (Windows), Linux, Mac",
+        "links": [
+          {
+            "id": "cmqskhl1y00ish8egya7njddo",
+            "storeName": "GOG",
+            "url": "https://www.gog.com/en/game/higurashi_when_they_cry_hou_ch8_matsuribayashi",
+            "gameId": "cmqskhjyg00irh8eg7g49j89g"
+          }
+        ],
+        "storeIds": [
+          "gog:higurashi_when_they_cry_hou_ch8_matsuribayashi"
+        ],
+        "itchCreators": [],
+        "year": 2020,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (07th Expansion)"
+  },
+  {
+    "primary": {
+      "id": "cmqsjfez70bpwhkegnx33l4g7",
+      "title": "Paranormal HK",
+      "slug": "paranormal-hk",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co201h.jpg",
+      "developerNames": "Ghostpie Studio",
+      "releaseDate": 1578268800,
+      "status": "released",
+      "summary": "Paranormal HK is a first person horror game about Urban legends of Hong Kong, China. The story is about a crew of online supernatural channel“Beyond the Invisible” went to Kowloon Walled City to film a short movie for their latest episode and encountered something out of their expectations.",
+      "storyline": null,
+      "scareRating": 57,
+      "source": null,
+      "platformNames": "PC (Microsoft Windows)",
+      "links": [
+        {
+          "id": "cmqsjfg0r0bq4hkegsj3aq64p",
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/1178490/ParanormalHK/",
+          "gameId": "cmqsjfez70bpwhkegnx33l4g7"
+        }
+      ],
+      "storeIds": [
+        "steam:1178490"
+      ],
+      "itchCreators": [],
+      "year": 2020,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "cmqskxdsq005kqoegonb173f0",
+        "title": "港詭實錄ParanormalHK",
+        "slug": "paranormalhk",
+        "coverUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1178490/library_600x900.jpg",
+        "developerNames": "Ghostpie Studio",
+        "releaseDate": 1578249000,
+        "status": "released",
+        "summary": "Paranormal HK is a first person horror game about Urban legends of Hong Kong, China. The story is about a crew of online supernatural channel“Beyond the Invisible” went to Kowloon Walled City to film a short movie for their latest episode and encountered something out of their expectations.",
+        "storyline": null,
+        "scareRating": 65,
+        "source": "steam",
+        "platformNames": "PC (Windows)",
+        "links": [
+          {
+            "id": "cmqskxemy005lqoegb78c72m8",
+            "storeName": "Steam",
+            "url": "https://store.steampowered.com/app/1178490/",
+            "gameId": "cmqskxdsq005kqoegonb173f0"
+          }
+        ],
+        "storeIds": [
+          "steam:1178490"
+        ],
+        "itchCreators": [],
+        "year": 2020,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Verified deterministic match (Ghostpie Studio)"
+  },
+  {
+    "primary": {
+      "id": "itch_ffc09a8e23b0ec76",
+      "title": "Willows: A Dream of Shadows : Demo",
+      "slug": "itch-willows-a-dream-of-shadows-demo",
+      "coverUrl": null,
+      "developerNames": "GraveyardShiftProductions",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "\"Willows: A Dream of Shadows\" is a psychological gothic horror visual novel puzzle game.",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_ffc09a8e23b0ec76",
+          "storeName": "itch.io",
+          "url": "https://graveyardshiftproductions.itch.io/willows-a-dream-of-shadows",
+          "gameId": "itch_ffc09a8e23b0ec76"
+        }
+      ],
+      "storeIds": [
+        "itch:graveyardshiftproductions.itch.io/willows-a-dream-of-shadows"
+      ],
+      "itchCreators": [
+        "graveyardshiftproductions"
+      ],
+      "year": null,
+      "isDemo": true,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_9abb6dce6a1c3ea9",
+        "title": "Willows: A Dream of Shadows - Demo",
+        "slug": "itch-graveyardshiftproductions-willows-a-dream-of-shadows-demo",
+        "coverUrl": null,
+        "developerNames": "GraveyardShiftProductions",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "\"Willows: A Dream of Shadows\" is a psychological gothic horror visual novel puzzle game.",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_9abb6dce6a1c3ea9",
+            "storeName": "itch.io",
+            "url": "https://graveyardshiftproductions.itch.io/willows-a-dream-of-shadows-demo",
+            "gameId": "itch_9abb6dce6a1c3ea9"
+          }
+        ],
+        "storeIds": [
+          "itch:graveyardshiftproductions.itch.io/willows-a-dream-of-shadows-demo"
+        ],
+        "itchCreators": [
+          "graveyardshiftproductions"
+        ],
+        "year": null,
+        "isDemo": true,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (graveyardshiftproductions)"
+  },
+  {
+    "primary": {
+      "id": "itch_01293803d61f29c9",
+      "title": "Haunted Ice Cream",
+      "slug": "itch-haunted-ice-cream",
+      "coverUrl": null,
+      "developerNames": "DonuttyPd",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "Ice cream shop sim",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_01293803d61f29c9",
+          "storeName": "itch.io",
+          "url": "https://donuttypd.itch.io/haunted-ice-cream-en",
+          "gameId": "itch_01293803d61f29c9"
+        }
+      ],
+      "storeIds": [
+        "itch:donuttypd.itch.io/haunted-ice-cream-en"
+      ],
+      "itchCreators": [
+        "donuttypd"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_cd722ad697419777",
+        "title": "Haunted Ice Cream（日本語ページ）",
+        "slug": "itch-donuttypd-haunted-ice-cream",
+        "coverUrl": null,
+        "developerNames": "DonuttyPd",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "アイスクリーム屋シミュレーション",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_cd722ad697419777",
+            "storeName": "itch.io",
+            "url": "https://donuttypd.itch.io/haunted-ice-cream-jp",
+            "gameId": "itch_cd722ad697419777"
+          }
+        ],
+        "storeIds": [
+          "itch:donuttypd.itch.io/haunted-ice-cream-jp"
+        ],
+        "itchCreators": [
+          "donuttypd"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (donuttypd)"
+  },
+  {
+    "primary": {
+      "id": "itch_ab3a907204b6bdc9",
+      "title": "Jack N'Jerk: Off The Game ∞",
+      "slug": "itch-jack-njerk-off-the-game",
+      "coverUrl": "https://img.itch.zone/aW1nLzc3OTU4NDcucG5n/original/XwueNX.png",
+      "developerNames": "mintyfresh2490",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "Do you have what it takes to play the scariest instalment in the Jack N' Jerk: Off The Game cinematic universe?",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_ab3a907204b6bdc9",
+          "storeName": "itch.io",
+          "url": "https://mintyfresh2490.itch.io/jack-n-jerk-off-the-game-infinity",
+          "gameId": "itch_ab3a907204b6bdc9"
+        }
+      ],
+      "storeIds": [
+        "itch:mintyfresh2490.itch.io/jack-n-jerk-off-the-game-infinity"
+      ],
+      "itchCreators": [
+        "mintyfresh2490"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_db29ae8263034967",
+        "title": "Jack N' Jerk: Off The Game",
+        "slug": "itch-jack-n-jerk-off-the-game",
+        "coverUrl": null,
+        "developerNames": "mintyfresh2490",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "Help Jack and Jerk off their opponents in this CRAZY and SCARY game!!!",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_db29ae8263034967",
+            "storeName": "itch.io",
+            "url": "https://mintyfresh2490.itch.io/jack-n-jerk",
+            "gameId": "itch_db29ae8263034967"
+          }
+        ],
+        "storeIds": [
+          "itch:mintyfresh2490.itch.io/jack-n-jerk"
+        ],
+        "itchCreators": [
+          "mintyfresh2490"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (mintyfresh2490)"
+  },
+  {
+    "primary": {
+      "id": "itch_3417fe477dbe689c",
+      "title": "Club_penguin.exe",
+      "slug": "itch-club_penguinexe",
+      "coverUrl": null,
+      "developerNames": "Fred the fred",
+      "releaseDate": null,
+      "status": "released",
+      "summary": null,
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_3417fe477dbe689c",
+          "storeName": "itch.io",
+          "url": "https://fred-the-fred.itch.io/club-penguinexe",
+          "gameId": "itch_3417fe477dbe689c"
+        }
+      ],
+      "storeIds": [
+        "itch:fred-the-fred.itch.io/club-penguinexe"
+      ],
+      "itchCreators": [
+        "fred-the-fred"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_1eda8f656c6f3813",
+        "title": "ClubPenguin.exe",
+        "slug": "itch-clubpenguinexe",
+        "coverUrl": "https://img.itch.zone/aW1nLzI3MzQ2NjkucG5n/original/BwanhN.png",
+        "developerNames": "Fred the fred",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_1eda8f656c6f3813",
+            "storeName": "itch.io",
+            "url": "https://fred-the-fred.itch.io/clubpenguin-exe",
+            "gameId": "itch_1eda8f656c6f3813"
+          }
+        ],
+        "storeIds": [
+          "itch:fred-the-fred.itch.io/clubpenguin-exe"
+        ],
+        "itchCreators": [
+          "fred-the-fred"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (fred-the-fred)"
+  },
+  {
+    "primary": {
+      "id": "itch_e47f508aeb813c3d",
+      "title": "EvoTyrant The Next Generation Version 1.7 [2024 Edition]]",
+      "slug": "itch-evotyrant-the-next-generation-version-17-2024-edition",
+      "coverUrl": null,
+      "developerNames": "Frostcano Games",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "Save the World from a Technologically Advanced Species of Aliens known as the EvoTyrants.",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_e47f508aeb813c3d",
+          "storeName": "itch.io",
+          "url": "https://frostcanogames.itch.io/evotyrantdemo",
+          "gameId": "itch_e47f508aeb813c3d"
+        }
+      ],
+      "storeIds": [
+        "itch:frostcanogames.itch.io/evotyrantdemo"
+      ],
+      "itchCreators": [
+        "frostcanogames"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_b24ad54d495bd83d",
+        "title": "EvoTyrant The Next Generation Version 1.7 [2024 Edition]",
+        "slug": "itch-frostcano-games-evotyrant-the-next-generation-version-17-2024-edition",
+        "coverUrl": "https://img.itch.zone/aW1nLzE2NDAwMjkyLnBuZw==/original/6xLKbS.png",
+        "developerNames": "Frostcano Games",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "Save the World from a Technologically Advanced Species of Aliens known as the EvoTyrants.",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_b24ad54d495bd83d",
+            "storeName": "itch.io",
+            "url": "https://frostcanogames.itch.io/evotyrant2024",
+            "gameId": "itch_b24ad54d495bd83d"
+          }
+        ],
+        "storeIds": [
+          "itch:frostcanogames.itch.io/evotyrant2024"
+        ],
+        "itchCreators": [
+          "frostcanogames"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (frostcanogames)"
+  },
+  {
+    "primary": {
+      "id": "itch_14324bca049abd37",
+      "title": "emergency！！",
+      "slug": "itch-xlsdst-emergency",
+      "coverUrl": null,
+      "developerNames": "xlsdst",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "中文文字类游戏，含异世界穿越要素，恐怖残酷描写注意",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_14324bca049abd37",
+          "storeName": "itch.io",
+          "url": "https://xlsdst.itch.io/emergency2",
+          "gameId": "itch_14324bca049abd37"
+        }
+      ],
+      "storeIds": [
+        "itch:xlsdst.itch.io/emergency2"
+      ],
+      "itchCreators": [
+        "xlsdst"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_626be4b69065a8a3",
+        "title": "emergency！",
+        "slug": "itch-emergency",
+        "coverUrl": null,
+        "developerNames": "xlsdst",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "中文，轻快活泼，如梦境般的R18G游戏",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_626be4b69065a8a3",
+            "storeName": "itch.io",
+            "url": "https://xlsdst.itch.io/emergency",
+            "gameId": "itch_626be4b69065a8a3"
+          }
+        ],
+        "storeIds": [
+          "itch:xlsdst.itch.io/emergency"
+        ],
+        "itchCreators": [
+          "xlsdst"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (xlsdst)"
+  },
+  {
+    "primary": {
+      "id": "itch_96eb827884a5ae8c",
+      "title": "Horror button",
+      "slug": "itch-horror-button",
+      "coverUrl": null,
+      "developerNames": "Pro2044",
+      "releaseDate": null,
+      "status": "released",
+      "summary": null,
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_96eb827884a5ae8c",
+          "storeName": "itch.io",
+          "url": "https://pro2044.itch.io/horror-button",
+          "gameId": "itch_96eb827884a5ae8c"
+        }
+      ],
+      "storeIds": [
+        "itch:pro2044.itch.io/horror-button"
+      ],
+      "itchCreators": [
+        "pro2044"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_7d086f5b06456e60",
+        "title": "Horror button.....",
+        "slug": "itch-pro2044-horror-button",
+        "coverUrl": "https://img.itch.zone/aW1nLzE3MzU0OTc0LnBuZw==/original/IXBBtC.png",
+        "developerNames": "Pro2044",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_7d086f5b06456e60",
+            "storeName": "itch.io",
+            "url": "https://pro2044.itch.io/horror-button-5",
+            "gameId": "itch_7d086f5b06456e60"
+          }
+        ],
+        "storeIds": [
+          "itch:pro2044.itch.io/horror-button-5"
+        ],
+        "itchCreators": [
+          "pro2044"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (pro2044)"
+  },
+  {
+    "primary": {
+      "id": "itch_85b0d1b72bda3647",
+      "title": "舷奏の霊魔 ~ TouhouShips.鬼",
+      "slug": "itch-touhouships",
+      "coverUrl": null,
+      "developerNames": "aca",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "7th Ship Shrine Maiden",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_85b0d1b72bda3647",
+          "storeName": "itch.io",
+          "url": "https://aca2.itch.io/gensou-no-reima-ki",
+          "gameId": "itch_85b0d1b72bda3647"
+        }
+      ],
+      "storeIds": [
+        "itch:aca2.itch.io/gensou-no-reima-ki"
+      ],
+      "itchCreators": [
+        "aca2"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_12f622404533ab02",
+        "title": "舷奏の霊魔 ~ TouhouShips.虹",
+        "slug": "itch-aca-touhouships",
+        "coverUrl": null,
+        "developerNames": "aca",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "8th Ship Shrine Maiden",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_12f622404533ab02",
+            "storeName": "itch.io",
+            "url": "https://aca2.itch.io/gensou-no-reima-nizi",
+            "gameId": "itch_12f622404533ab02"
+          }
+        ],
+        "storeIds": [
+          "itch:aca2.itch.io/gensou-no-reima-nizi"
+        ],
+        "itchCreators": [
+          "aca2"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      },
+      {
+        "id": "itch_4fabe8d985d8b32a",
+        "title": "舷奏の霊魔 ~ TouhouShips.天",
+        "slug": "itch-touhouships-4fabe8d9",
+        "coverUrl": null,
+        "developerNames": "aca",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "6th Ship Shrine Maiden",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_4fabe8d985d8b32a",
+            "storeName": "itch.io",
+            "url": "https://aca2.itch.io/gensou-no-reima-ten",
+            "gameId": "itch_4fabe8d985d8b32a"
+          }
+        ],
+        "storeIds": [
+          "itch:aca2.itch.io/gensou-no-reima-ten"
+        ],
+        "itchCreators": [
+          "aca2"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      },
+      {
+        "id": "itch_5ddbaea27225f545",
+        "title": "舷奏の霊魔 ~ TouhouShips.神",
+        "slug": "itch-touhouships-5ddbaea2",
+        "coverUrl": null,
+        "developerNames": "aca",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "1st Ship Shrine Witch",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_5ddbaea27225f545",
+            "storeName": "itch.io",
+            "url": "https://aca2.itch.io/gensou-no-reima-shin",
+            "gameId": "itch_5ddbaea27225f545"
+          }
+        ],
+        "storeIds": [
+          "itch:aca2.itch.io/gensou-no-reima-shin"
+        ],
+        "itchCreators": [
+          "aca2"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      },
+      {
+        "id": "itch_35f5a17e15870881",
+        "title": "舷奏の霊魔 ~ TouhouShips.輝",
+        "slug": "itch-touhouships-35f5a17e",
+        "coverUrl": null,
+        "developerNames": "aca",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "2nd Ship Shrine Witch",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_35f5a17e15870881",
+            "storeName": "itch.io",
+            "url": "https://aca2.itch.io/gensoureimaddc",
+            "gameId": "itch_35f5a17e15870881"
+          }
+        ],
+        "storeIds": [
+          "itch:aca2.itch.io/gensoureimaddc"
+        ],
+        "itchCreators": [
+          "aca2"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      },
+      {
+        "id": "itch_79c11bbe32d77817",
+        "title": "舷奏の霊魔 ~ TouhouShips.紺",
+        "slug": "itch-touhouships-79c11bbe",
+        "coverUrl": null,
+        "developerNames": "aca",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "3rd Ship Shrine Witch",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_79c11bbe32d77817",
+            "storeName": "itch.io",
+            "url": "https://aca2.itch.io/gensoureimallk",
+            "gameId": "itch_79c11bbe32d77817"
+          }
+        ],
+        "storeIds": [
+          "itch:aca2.itch.io/gensoureimallk"
+        ],
+        "itchCreators": [
+          "aca2"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (aca2)"
+  },
+  {
+    "primary": {
+      "id": "itch_be1406edf8974e30",
+      "title": "Liminal VR",
+      "slug": "itch-liminal-vr",
+      "coverUrl": null,
+      "developerNames": "Cosmicbrownie8",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "A game i have been working for about 7 or 8 months its a horror game",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_be1406edf8974e30",
+          "storeName": "itch.io",
+          "url": "https://cosmicbrownie8.itch.io/liminal-vr",
+          "gameId": "itch_be1406edf8974e30"
+        }
+      ],
+      "storeIds": [
+        "itch:cosmicbrownie8.itch.io/liminal-vr"
+      ],
+      "itchCreators": [
+        "cosmicbrownie8"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_8ba78013d1a32dc0",
+        "title": "LiminalVR",
+        "slug": "itch-liminalvr",
+        "coverUrl": null,
+        "developerNames": "Cosmicbrownie8",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_8ba78013d1a32dc0",
+            "storeName": "itch.io",
+            "url": "https://cosmicbrownie8.itch.io/liminalvr",
+            "gameId": "itch_8ba78013d1a32dc0"
+          }
+        ],
+        "storeIds": [
+          "itch:cosmicbrownie8.itch.io/liminalvr"
+        ],
+        "itchCreators": [
+          "cosmicbrownie8"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (cosmicbrownie8)"
+  },
+  {
+    "primary": {
+      "id": "itch_5cf17663d339be2d",
+      "title": "(Test-Beta) Home-Lockdown",
+      "slug": "itch-test-beta-home-lockdown",
+      "coverUrl": null,
+      "developerNames": "Cryptic Vision Games",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "A PS1 Retro Style Horror Game about a man following the main character (Bella) home",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_5cf17663d339be2d",
+          "storeName": "itch.io",
+          "url": "https://crypticvisiongames.itch.io/test-beta",
+          "gameId": "itch_5cf17663d339be2d"
+        }
+      ],
+      "storeIds": [
+        "itch:crypticvisiongames.itch.io/test-beta"
+      ],
+      "itchCreators": [
+        "crypticvisiongames"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_dabe8083e830fa81",
+        "title": "Test-Beta Home-Lockdown",
+        "slug": "itch-cryptic-vision-games-test-beta-home-lockdown",
+        "coverUrl": null,
+        "developerNames": "Cryptic Vision Games",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "Horror Ps1 Retro Style Game",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_dabe8083e830fa81",
+            "storeName": "itch.io",
+            "url": "https://crypticvisiongames.itch.io/test-beta-home-lockdown",
+            "gameId": "itch_dabe8083e830fa81"
+          }
+        ],
+        "storeIds": [
+          "itch:crypticvisiongames.itch.io/test-beta-home-lockdown"
+        ],
+        "itchCreators": [
+          "crypticvisiongames"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (crypticvisiongames)"
+  },
+  {
+    "primary": {
+      "id": "itch_f9430ba18965033d",
+      "title": "♡beAt！",
+      "slug": "itch-darc-beat",
+      "coverUrl": null,
+      "developerNames": "d'Arc",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "はあとび～と！みんなでときめく夏のアイドルストーリー！",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_f9430ba18965033d",
+          "storeName": "itch.io",
+          "url": "https://daruku-darc.itch.io/heartbeat",
+          "gameId": "itch_f9430ba18965033d"
+        }
+      ],
+      "storeIds": [
+        "itch:daruku-darc.itch.io/heartbeat"
+      ],
+      "itchCreators": [
+        "daruku-darc"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_ba4df028d2a2830c",
+        "title": "♡beAt！(中文版)",
+        "slug": "itch-beat",
+        "coverUrl": null,
+        "developerNames": "d'Arc",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "與你心跳一夏❣",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_ba4df028d2a2830c",
+            "storeName": "itch.io",
+            "url": "https://daruku-darc.itch.io/heart-beat",
+            "gameId": "itch_ba4df028d2a2830c"
+          }
+        ],
+        "storeIds": [
+          "itch:daruku-darc.itch.io/heart-beat"
+        ],
+        "itchCreators": [
+          "daruku-darc"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (daruku-darc)"
+  },
+  {
+    "primary": {
+      "id": "itch_592452cc72291afd",
+      "title": "Granny0",
+      "slug": "itch-granny0",
+      "coverUrl": "https://img.itch.zone/aW1nLzI3ODYwNzMyLnBuZw==/original/evrwl8.png",
+      "developerNames": "Gjducix",
+      "releaseDate": null,
+      "status": "released",
+      "summary": null,
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_592452cc72291afd",
+          "storeName": "itch.io",
+          "url": "https://gjducix.itch.io/granny064",
+          "gameId": "itch_592452cc72291afd"
+        }
+      ],
+      "storeIds": [
+        "itch:gjducix.itch.io/granny064"
+      ],
+      "itchCreators": [
+        "gjducix"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_7d7827e2cdb0d64d",
+        "title": "Granny 0",
+        "slug": "itch-granny-0",
+        "coverUrl": "https://img.itch.zone/aW1nLzI3ODYwNTUwLnBuZw==/original/3BRwOO.png",
+        "developerNames": "Gjducix",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_7d7827e2cdb0d64d",
+            "storeName": "itch.io",
+            "url": "https://gjducix.itch.io/qhk-0686",
+            "gameId": "itch_7d7827e2cdb0d64d"
+          }
+        ],
+        "storeIds": [
+          "itch:gjducix.itch.io/qhk-0686"
+        ],
+        "itchCreators": [
+          "gjducix"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (gjducix)"
+  },
+  {
+    "primary": {
+      "id": "itch_7bf38ec8036fc4d2",
+      "title": "The-Devils-Mirror",
+      "slug": "itch-the-devils-mirror",
+      "coverUrl": "https://img.itch.zone/aW1nLzE3NDkwMDU0LnBuZw==/original/maqtjp.png",
+      "developerNames": "LZ-INK",
+      "releaseDate": null,
+      "status": "released",
+      "summary": null,
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_7bf38ec8036fc4d2",
+          "storeName": "itch.io",
+          "url": "https://lz-ink.itch.io/the-devi1s-mirror",
+          "gameId": "itch_7bf38ec8036fc4d2"
+        }
+      ],
+      "storeIds": [
+        "itch:lz-ink.itch.io/the-devi1s-mirror"
+      ],
+      "itchCreators": [
+        "lz-ink"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_d704a802e8a21b44",
+        "title": "The_Devils_Mirror",
+        "slug": "itch-the_devils_mirror",
+        "coverUrl": "https://img.itch.zone/aW1nLzE3Mjk5OTI3LnBuZw==/original/EU0PzF.png",
+        "developerNames": "LZ-INK",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_d704a802e8a21b44",
+            "storeName": "itch.io",
+            "url": "https://lz-ink.itch.io/the-devils-mirror",
+            "gameId": "itch_d704a802e8a21b44"
+          }
+        ],
+        "storeIds": [
+          "itch:lz-ink.itch.io/the-devils-mirror"
+        ],
+        "itchCreators": [
+          "lz-ink"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (lz-ink)"
+  },
+  {
+    "primary": {
+      "id": "itch_c13386cfd93c63d0",
+      "title": "Ghostly Girl",
+      "slug": "itch-ghostly-girl",
+      "coverUrl": "https://img.itch.zone/aW1nLzEyNzIxNjM0LnBuZw==/original/U%2FBst4.png",
+      "developerNames": "Independent Creator",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "A family moves into a new city. The town's ghosts are about to get spooked",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_c13386cfd93c63d0",
+          "storeName": "itch.io",
+          "url": "https://madpigeon.itch.io/ghostly-girl",
+          "gameId": "itch_c13386cfd93c63d0"
+        }
+      ],
+      "storeIds": [
+        "itch:madpigeon.itch.io/ghostly-girl"
+      ],
+      "itchCreators": [
+        "madpigeon"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_8c8a9a7709cf3868",
+        "title": "Ghostly Girl русская версия",
+        "slug": "itch-madpigeon-ghostly-girl",
+        "coverUrl": "https://img.itch.zone/aW1nLzEyNzY4ODEzLnBuZw==/original/NjVJMb.png",
+        "developerNames": "MadPigeon",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "A family moves into a new city. The town's ghosts are about to get spooked",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_8c8a9a7709cf3868",
+            "storeName": "itch.io",
+            "url": "https://madpigeon.itch.io/ghostly-girl-ru",
+            "gameId": "itch_8c8a9a7709cf3868"
+          }
+        ],
+        "storeIds": [
+          "itch:madpigeon.itch.io/ghostly-girl-ru"
+        ],
+        "itchCreators": [
+          "madpigeon"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (madpigeon)"
+  },
+  {
+    "primary": {
+      "id": "itch_2af33cd3baad1e0f",
+      "title": "第一週作品 - Escape the room of Roulette",
+      "slug": "itch-escape-the-room-of-roulette",
+      "coverUrl": "https://img.itch.zone/aW1nLzg2MTY0MTgucG5n/original/eVo9fN.png",
+      "developerNames": "shawn_hsieh",
+      "releaseDate": null,
+      "status": "released",
+      "summary": "you need to escape the room, you should pass two level.",
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_2af33cd3baad1e0f",
+          "storeName": "itch.io",
+          "url": "https://shawn-hsieh.itch.io/escape-the-room-of-roulette",
+          "gameId": "itch_2af33cd3baad1e0f"
+        }
+      ],
+      "storeIds": [
+        "itch:shawn-hsieh.itch.io/escape-the-room-of-roulette"
+      ],
+      "itchCreators": [
+        "shawn-hsieh"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_814972e4e046c00a",
+        "title": "第一週作品 - ​Escape the room of Roulette 逃生輪盤",
+        "slug": "itch-shawn_hsieh-escape-the-room-of-roulette",
+        "coverUrl": "https://img.itch.zone/aW1nLzg2MTY4MzIucG5n/original/xC0wMz.png",
+        "developerNames": "shawn_hsieh",
+        "releaseDate": null,
+        "status": "released",
+        "summary": "you need to escape the room, you should pass two level.",
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_814972e4e046c00a",
+            "storeName": "itch.io",
+            "url": "https://shawn-hsieh.itch.io/escapetheroomofroulette-webgl",
+            "gameId": "itch_814972e4e046c00a"
+          }
+        ],
+        "storeIds": [
+          "itch:shawn-hsieh.itch.io/escapetheroomofroulette-webgl"
+        ],
+        "itchCreators": [
+          "shawn-hsieh"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (shawn-hsieh)"
+  },
+  {
+    "primary": {
+      "id": "itch_b9a2598a49f38b54",
+      "title": "caso 54 (beta)",
+      "slug": "itch-caso-54-beta",
+      "coverUrl": "https://img.itch.zone/aW1nLzIzOTk1MTQxLmpwZw==/original/mUAskw.jpg",
+      "developerNames": "S&I Tech Solutions",
+      "releaseDate": null,
+      "status": "released",
+      "summary": null,
+      "storyline": null,
+      "scareRating": null,
+      "source": "itch",
+      "platformNames": "PC",
+      "links": [
+        {
+          "id": "pl_itch_b9a2598a49f38b54",
+          "storeName": "itch.io",
+          "url": "https://si-tech-solutions.itch.io/caso-54-beta",
+          "gameId": "itch_b9a2598a49f38b54"
+        }
+      ],
+      "storeIds": [
+        "itch:si-tech-solutions.itch.io/caso-54-beta"
+      ],
+      "itchCreators": [
+        "si-tech-solutions"
+      ],
+      "year": null,
+      "isDemo": false,
+      "isRemake": false
+    },
+    "secondaries": [
+      {
+        "id": "itch_cd5b4ee2ae4039ba",
+        "title": "caso 54(beta)",
+        "slug": "itch-caso-54beta",
+        "coverUrl": "https://img.itch.zone/aW1nLzIzOTk0NzY1LmpwZw==/original/h8RkTM.jpg",
+        "developerNames": "S&I Tech Solutions",
+        "releaseDate": null,
+        "status": "released",
+        "summary": null,
+        "storyline": null,
+        "scareRating": null,
+        "source": "itch",
+        "platformNames": "PC",
+        "links": [
+          {
+            "id": "pl_itch_cd5b4ee2ae4039ba",
+            "storeName": "itch.io",
+            "url": "https://si-tech-solutions.itch.io/si",
+            "gameId": "itch_cd5b4ee2ae4039ba"
+          }
+        ],
+        "storeIds": [
+          "itch:si-tech-solutions.itch.io/si"
+        ],
+        "itchCreators": [
+          "si-tech-solutions"
+        ],
+        "year": null,
+        "isDemo": false,
+        "isRemake": false
+      }
+    ],
+    "reason": "Duplicate Itch uploads by same creator (si-tech-solutions)"
+  }
+]

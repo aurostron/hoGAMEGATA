@@ -114,7 +114,7 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
   const [wished, setWished] = useState(false);
   const [wishAnim, setWishAnim] = useState(false);
   const finalDeal = findCheapestDeal(game);
-  const hasItchBadge = game.slug.startsWith("itch-");
+  const hasItchBadge = game.slug.startsWith("itch-") || game.purchaseLinks?.some(l => l.storeName.toLowerCase().includes("itch"));
   const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
 
   const { user } = useAuth();
@@ -396,7 +396,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
   };
 
   const finalDeal = resolvedDeal || findCheapestDeal(game);
-  const hasItchBadge = game.slug.startsWith("itch-");
+  const hasItchBadge = game.slug.startsWith("itch-") || game.purchaseLinks?.some(l => l.storeName.toLowerCase().includes("itch"));
   const hasGogBadge = game.purchaseLinks?.some(l => l.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
 
   // In list mode, delegate to the GOG-style ListRow

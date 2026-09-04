@@ -18,6 +18,7 @@ interface TrackControlsProps {
   initialPriceSnapshots?: any[];
   initialLikesCount?: number;
   compactOnly?: boolean;
+  isItchGame?: boolean;
 }
 
 interface JournalItem {
@@ -41,6 +42,7 @@ function TrackControlsInner({
   initialPriceSnapshots = [],
   initialLikesCount = 0,
   compactOnly = false,
+  isItchGame = false,
 }: TrackControlsProps) {
   const { user } = useAuth();
   const { cartItems, addToCart, removeFromCart } = useCart();
@@ -142,7 +144,7 @@ function TrackControlsInner({
         title: gameTitle,
         slug: gameSlug,
         coverUrl,
-        priceSnapshots: initialPriceSnapshots,
+        priceSnapshots: effectiveSnapshots,
       };
       await addToCart(gameMock);
     }
@@ -333,43 +335,52 @@ function TrackControlsInner({
     { label: "Owned", value: "OWNED" },
   ];
 
-  const cheapestDeal = initialPriceSnapshots && initialPriceSnapshots.length > 0
-    ? [...initialPriceSnapshots].sort((a, b) => a.dealPrice - b.dealPrice)[0]
+  const isItch = isItchGame || gameSlug.startsWith("itch-");
+
+  // Strictly isolate itch games to itch.io deals
+  const effectiveSnapshots = isItch
+    ? (initialPriceSnapshots || []).filter((s: any) =>
+        s && (
+          (s.storeName && (s.storeName.toLowerCase() === "itch.io" || s.storeName.toLowerCase() === "itch")) ||
+          s.provider === "itch" ||
+          (s.dealUrl && s.dealUrl.includes("itch.io"))
+        )
+      )
+    : (initialPriceSnapshots || []);
+
+  const cheapestDeal = effectiveSnapshots.length > 0
+    ? [...effectiveSnapshots].sort((a, b) => a.dealPrice - b.dealPrice)[0]
     : null;
 
-  const storeKey = cheapestDeal ? cheapestDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+  const storeKey = cheapestDeal
+    ? cheapestDeal.storeName.toLowerCase().replace(/[^a-z0-9]/g, "")
+    : (isItch ? "itchio" : "steam");
+
   const buyNowUrl = cheapestDeal
     ? `/re/${gameSlug}/${storeKey}?gameId=${gameId}&fallbackUrl=${encodeURIComponent(cheapestDeal.dealUrl)}`
-    : null;
+    : (isItch ? `/re/${gameSlug}/itchio?gameId=${gameId}` : `/re/${gameSlug}/steam`);
 
   if (compactOnly) {
     return (
       <div className="flex flex-wrap items-center gap-2.5 select-none">
         {/* Buy Now Button */}
-        {buyNowUrl ? (
-          <a
-            href={buyNowUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-white/90 font-sans text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:scale-[0.98] border border-white"
-          >
-            <span>Buy Now</span>
-            {cheapestDeal && (
-              <span className="text-[11px] font-semibold text-black/70">
-                ({cheapestDeal.currency === "EUR" ? "€" : cheapestDeal.currency === "GBP" ? "£" : "$"}{cheapestDeal.dealPrice})
-              </span>
-            )}
-          </a>
-        ) : (
-          <a
-            href={`/re/${gameSlug}/steam`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-white/90 font-sans text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:scale-[0.98] border border-white"
-          >
-            <span>Buy Now</span>
-          </a>
-        )}
+        <a
+          href={buyNowUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-white/90 font-sans text-xs font-bold rounded-xl transition-all duration-200 cursor-pointer shadow-md hover:scale-[0.98] border border-white"
+        >
+          <span>
+            {isItch
+              ? (cheapestDeal && cheapestDeal.dealPrice === 0 ? "Play Free" : "Buy Now")
+              : "Buy Now"}
+          </span>
+          {cheapestDeal && cheapestDeal.dealPrice > 0 && (
+            <span className="text-[11px] font-semibold text-black/70">
+              ({cheapestDeal.currency === "EUR" ? "€" : cheapestDeal.currency === "GBP" ? "£" : "$"}{cheapestDeal.dealPrice.toFixed(2)})
+            </span>
+          )}
+        </a>
 
         {/* Add to Cart Button */}
         <button

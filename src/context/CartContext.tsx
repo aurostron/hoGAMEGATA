@@ -48,7 +48,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Helper: Find the cheapest deal for a game in a specific region
   const getCheapestDeal = (game: any, region = "US") => {
-    const snapshots = game.priceSnapshots || [];
+    const isItch = Boolean(
+      game.isItchGame ||
+      game.slug?.startsWith("itch-") ||
+      game.source === "itch" ||
+      game.source === "itchio"
+    );
+
+    let snapshots = game.priceSnapshots || [];
+    if (isItch) {
+      snapshots = snapshots.filter((p: any) =>
+        p && (
+          (p.storeName && (p.storeName.toLowerCase() === "itch.io" || p.storeName.toLowerCase() === "itch")) ||
+          p.provider === "itch" ||
+          (p.dealUrl && p.dealUrl.includes("itch.io"))
+        )
+      );
+    }
+
     let regional = snapshots.filter((p: any) => p.country === region);
     if (regional.length === 0) {
       regional = snapshots.filter((p: any) => p.country === "US");
@@ -64,15 +81,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // Fallback if no price snapshots but has purchase links
     const itchLink = game.purchaseLinks?.find(
-      (l: any) => l.storeName.toLowerCase() === "itch.io" || l.storeName.toLowerCase() === "itch"
+      (l: any) => l.storeName?.toLowerCase() === "itch.io" || l.storeName?.toLowerCase() === "itch" || l.url?.includes("itch.io")
     );
-    if (itchLink) {
+    if (itchLink || isItch) {
       return {
         storeName: "itch.io",
         dealPrice: 0, // Free or unknown, default 0
         retailPrice: 0,
         discountPercent: 0,
-        dealUrl: itchLink.url,
+        dealUrl: itchLink?.url || (game.slug ? `https://itch.io/search?q=${encodeURIComponent(game.title || "")}` : ""),
         currency: "USD",
       };
     }
@@ -292,6 +309,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       deal = getCheapestDeal(game, region);
     }
 
+    const isItch = Boolean(
+      game.isItchGame ||
+      game.slug?.startsWith("itch-") ||
+      game.source === "itch" ||
+      game.source === "itchio"
+    );
+
+    const rawDeals = game.priceSnapshots || game.allDeals || [];
+    const sanitizedDeals = isItch
+      ? rawDeals.filter((d: any) => d && (d.storeName?.toLowerCase().includes("itch") || d.dealUrl?.includes("itch.io") || d.provider === "itch"))
+      : rawDeals;
+
     const newItem: CartItem = {
       gameId: game.id,
       gameTitle: game.title,
@@ -303,7 +332,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       discountPercent: deal.discountPercent,
       dealUrl: deal.dealUrl,
       currency: deal.currency || "USD",
-      allDeals: game.priceSnapshots || game.allDeals || [],
+      allDeals: sanitizedDeals,
     };
 
     // Update Local

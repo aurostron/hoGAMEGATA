@@ -1,0 +1,482 @@
+[
+  {
+    "id": 1,
+    "title": "Resident Evil 2",
+    "candidateSlug": "resident-evil-2--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This is a distinct cancelled tech demo developed by a different studio for the Game Boy Advance, not a full game release or port of the original or remake."
+  },
+  {
+    "id": 2,
+    "title": "Inside",
+    "candidateSlug": "inside--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a different game (first-person horror by '9ine' from 2012) than the peer (2.5D puzzle-platformer by Playdead from 2016)."
+  },
+  {
+    "id": 3,
+    "title": "The Void",
+    "candidateSlug": "the-void--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This listing has an unknown developer and year, making it distinct from the officially released 'The Void' by Ice-Pick Lodge and the other listed separate games."
+  },
+  {
+    "id": 4,
+    "title": "The Void",
+    "candidateSlug": "the-void--4",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This describes a distinct wave-based survival FPS game with a specific thematic inspiration, differentiating it from all other listed 'The Void' titles."
+  },
+  {
+    "id": 5,
+    "title": "Alone in the Dark",
+    "candidateSlug": "alone-in-the-dark--4",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This listing represents a distinct, cancelled remake attempt by Eden Games, separate from their 2008 reboot and other 'Alone in the Dark' releases."
+  },
+  {
+    "id": 6,
+    "title": "Shelter",
+    "candidateSlug": "shelter--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct 'card - zombie game,' which is entirely different from the established survival game about a badger by Might and Delight."
+  },
+  {
+    "id": 7,
+    "title": "Dino Crisis",
+    "candidateSlug": "dino-crisis--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This listing describes a distinct, cancelled Game Boy Color port developed by Fluid Studios, separate from the original game and its modern ports/remasters by Capcom."
+  },
+  {
+    "id": 8,
+    "title": "Shiver",
+    "candidateSlug": "shiver--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct survival horror game with a different premise and gameplay style than the point-and-click horror adventure by Kowai Sugio Studios."
+  },
+  {
+    "id": 9,
+    "title": "Rake",
+    "candidateSlug": "rake--1",
+    "shouldMerge": true,
+    "mergeIntoSlug": "rake",
+    "reason": "The candidate's specific gameplay description, involving hunting 'The Rake' with trail cameras and bear traps, perfectly matches the established game by Konsordo."
+  },
+  {
+    "id": 10,
+    "title": "Hollow",
+    "candidateSlug": "hollow--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate's summary is a distinct collection of keywords suggesting a VR horror experience, completely different from the sci-fi horror game by MMEU."
+  },
+  {
+    "id": 11,
+    "title": "Outbreak",
+    "candidateSlug": "outbreak--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate's generic summary of fighting zombies as security personnel is too vague to definitively link it to either of the more specifically described peer games titled 'Outbreak'."
+  },
+  {
+    "id": 12,
+    "title": "Don't Let It Starve",
+    "candidateSlug": "itch-don-t-let-it-starve",
+    "shouldMerge": true,
+    "mergeIntoSlug": "dont-let-it-starve",
+    "reason": "Despite minor developer name variation and unknown year, the candidate's detailed summary perfectly matches the core concept and gameplay of the established 'Don't Let It Starve' by Eduardo Scarpato."
+  },
+  {
+    "id": 13,
+    "title": "NightMaze",
+    "candidateSlug": "nightmaze--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct game focused on surreal dream exploration, which differs significantly from the urbex-themed nightmare and procedural maze of the peer."
+  },
+  {
+    "id": 14,
+    "title": "Loop",
+    "candidateSlug": "loop--7",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "Despite sharing a 'loop' theme, the candidate describes a distinct game focused on shifting memories, contrasting with the peer's specific deep-sea rig and AI setting."
+  },
+  {
+    "id": 15,
+    "title": "The Box",
+    "candidateSlug": "the-box--2",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This listing details a distinct, cancelled 'Silent Hill' proposal by Silicon Knights, which is entirely different from the other games titled 'The Box'."
+  },
+  {
+    "id": 16,
+    "title": "Grief",
+    "candidateSlug": "grief--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct visual novel about grief, which differs significantly from the psychological horror game set in a Soviet-style apartment."
+  },
+  {
+    "id": 17,
+    "title": "Kodoku",
+    "candidateSlug": "kodoku",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct indie horror game inspired by Japanese mythology for PlayStation, differentiating it from the PC survival horror game focused on gathering souls."
+  },
+  {
+    "id": 18,
+    "title": "Severance",
+    "candidateSlug": "severance--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct, single-player stop-motion survival horror game, which is different from the online co-op paranormal investigation games by Sykes Games."
+  },
+  {
+    "id": 19,
+    "title": "Skinwalker",
+    "candidateSlug": "skinwalker--2",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct 3-6 player online horror game focused on deception and maze exploration, clearly different from the other 'Skinwalker' games."
+  },
+  {
+    "id": 20,
+    "title": "Unseen",
+    "candidateSlug": "unseen",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a distinct sci-fi horror survival game set on a mining ship, which is different from the forensic photographer horror and apartment anomaly game peers."
+  },
+  {
+    "id": 21,
+    "title": "I'm Still Here",
+    "candidateSlug": "im-still-here",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games with different premises, despite sharing a generic title and genre."
+  },
+  {
+    "id": 22,
+    "title": "Corporeal",
+    "candidateSlug": "corporeal",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different studios with different core gameplay concepts."
+  },
+  {
+    "id": 23,
+    "title": "Myosotis",
+    "candidateSlug": "myosotis--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games with different narrative premises and target platforms."
+  },
+  {
+    "id": 24,
+    "title": "Descent",
+    "candidateSlug": "descent--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate game is distinct from its peers due to differing premises and known developers for the peers."
+  },
+  {
+    "id": 25,
+    "title": "Bio Hazard",
+    "candidateSlug": "biohazard",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "The candidate describes a fan-made 'first-person view' reimagining of the original game, distinct from official ports, bootlegs, or ZZT games using the title."
+  },
+  {
+    "id": 26,
+    "title": "Cuffed",
+    "candidateSlug": "cuffed--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different studios with different core gameplay premises."
+  },
+  {
+    "id": 27,
+    "title": "Isolation",
+    "candidateSlug": "isolation--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different studios and have different release years."
+  },
+  {
+    "id": 28,
+    "title": "Dead Air",
+    "candidateSlug": "dead-air",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games with vague but different summary descriptions and known release years for the peer."
+  },
+  {
+    "id": 29,
+    "title": "Ritual",
+    "candidateSlug": "ritual--4",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "This is a distinct Game Boy title, differentiating it from all PC-based peers with different descriptions and developers."
+  },
+  {
+    "id": 30,
+    "title": "Signal Lost",
+    "candidateSlug": "signal-lost--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "All listed 'Signal Lost' games are distinct projects with different developers, premises, and years."
+  },
+  {
+    "id": 31,
+    "title": "Atmosfear: The Third Dimension",
+    "candidateSlug": "atmosfear-the-third-dimension",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "While based on the same board game, these are distinct adaptations developed by different companies for different platforms (SNES vs. PC)."
+  },
+  {
+    "id": 32,
+    "title": "Missing",
+    "candidateSlug": "missing--8",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games with entirely different settings, plots, and gameplay styles."
+  },
+  {
+    "id": 33,
+    "title": "No Way Out",
+    "candidateSlug": "no-way-out--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "All listed 'No Way Out' games are distinct projects with different core premises and scenarios."
+  },
+  {
+    "id": 34,
+    "title": "Oneirophobia",
+    "candidateSlug": "oneirophobia--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different entities with different specific narrative premises."
+  },
+  {
+    "id": 35,
+    "title": "Echoes of Fear",
+    "candidateSlug": "echoes-of-fear--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different entities with different core gameplay loops and settings."
+  },
+  {
+    "id": 36,
+    "title": "Effugium",
+    "candidateSlug": "effugium--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games, differentiated by their specific gameplay structure, world descriptions, and release years."
+  },
+  {
+    "id": 37,
+    "title": "Insomnia",
+    "candidateSlug": "insomnia--4",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different studios with different specific horror premises."
+  },
+  {
+    "id": 38,
+    "title": "Parasomnia",
+    "candidateSlug": "parasomnia--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games developed by different studios with different narrative settings and styles."
+  },
+  {
+    "id": 39,
+    "title": "Roost",
+    "candidateSlug": "roost--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are distinct games, featuring different specific settings within the horror-exploration genre."
+  },
+  {
+    "id": 40,
+    "title": "Backrooms",
+    "candidateSlug": "backrooms--7",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "Given the widespread nature of Backrooms games, distinct developers, release years, and summary specifics indicate separate game releases."
+  },
+  {
+    "id": 41,
+    "title": "Down in the Dungeon",
+    "candidateSlug": "down-in-the-dungeon--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games due to different developers, release years, platforms, and vastly different gameplay summaries."
+  },
+  {
+    "id": 42,
+    "title": "Abandoned",
+    "candidateSlug": "abandoned--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games developed by different studios with distinct gameplay descriptions and target platforms."
+  },
+  {
+    "id": 43,
+    "title": "Winter",
+    "candidateSlug": "winter--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games by different developers, with one being a known cancelled project and the other a released narrative game."
+  },
+  {
+    "id": 44,
+    "title": "Invisible",
+    "candidateSlug": "invisible--5",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games from different developers, featuring distinct premises (VR ninja exorcism vs. puzzle horror escape)."
+  },
+  {
+    "id": 45,
+    "title": "Dawn of Fear",
+    "candidateSlug": "dawn-of-fear--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate survival horror games developed by different studios, with distinct character and plot details in their summaries."
+  },
+  {
+    "id": 46,
+    "title": "No Escape",
+    "candidateSlug": "no-escape--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games with different plot setups and gameplay mechanics, despite both being horror experiences on PC."
+  },
+  {
+    "id": 47,
+    "title": "Sanatorium",
+    "candidateSlug": "sanatorium--3",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games by different developers, with the peer being a much older release (1998) and an unofficial Slender sequel."
+  },
+  {
+    "id": 48,
+    "title": "Evil Spirits",
+    "candidateSlug": "evil-spirits--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games with different developers and completely distinct premises (Slavic folklore visual novel vs. tropical island adventure)."
+  },
+  {
+    "id": 49,
+    "title": "Hunger",
+    "candidateSlug": "hunger--2",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games from different developers with distinct genres and settings (multiplayer RPG in Napoleonic Europe vs. single-player island survival)."
+  },
+  {
+    "id": 50,
+    "title": "Ghosts",
+    "candidateSlug": "ghosts--2",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games developed by different studios, with the peer being a much older (1994) interactive CD-ROM title starring Christopher Lee."
+  },
+  {
+    "id": 51,
+    "title": "Dracula 4+5",
+    "candidateSlug": "dracula-4-plus-5",
+    "shouldMerge": true,
+    "mergeIntoSlug": "dracula-4-5",
+    "reason": "The candidate appears to be an incomplete entry for the same game, 'Dracula 4-5', given the identical title, missing details, and an existing complete peer record."
+  },
+  {
+    "id": 52,
+    "title": "Accursed",
+    "candidateSlug": "accursed--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games with different gameplay descriptions: one is a roguelike horror RPG, and the other is a first-person psychological horror."
+  },
+  {
+    "id": 53,
+    "title": "Accursed",
+    "candidateSlug": "accursed",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games with different gameplay descriptions: one is a first-person psychological horror, and the other is a roguelike horror RPG."
+  },
+  {
+    "id": 54,
+    "title": "Little Red Riding Hood",
+    "candidateSlug": "little-red-riding-hood--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games, with different release years and distinct interpretations of the Little Red Riding Hood fairy tale."
+  },
+  {
+    "id": 55,
+    "title": "The Whistle",
+    "candidateSlug": "the-whistle--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games with entirely different premises: one is a Five Nights at Freddy's fangame, and the other is an original camping horror story."
+  },
+  {
+    "id": 56,
+    "title": "The Whistle",
+    "candidateSlug": "the-whistle",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games with entirely different premises: one is an original camping horror story, and the other is a Five Nights at Freddy's fangame."
+  },
+  {
+    "id": 57,
+    "title": "Faceless",
+    "candidateSlug": "faceless--2",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games from different developers with distinct plots: one involves a girl losing her face, while the other is an upcoming Slender game."
+  },
+  {
+    "id": 58,
+    "title": "Faceless",
+    "candidateSlug": "faceless",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games from different developers with distinct plots: one is an upcoming Slender game, while the other involves a girl losing her face."
+  },
+  {
+    "id": 59,
+    "title": "Retrieval",
+    "candidateSlug": "retrieval--1",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games by different developers with distinct gameplay and narrative premises (looping house psychological horror vs. sci-fi action-adventure)."
+  },
+  {
+    "id": 60,
+    "title": "Retrieval",
+    "candidateSlug": "retrieval",
+    "shouldMerge": false,
+    "mergeIntoSlug": null,
+    "reason": "These are separate games by different developers with distinct gameplay and narrative premises (sci-fi action-adventure vs. looping house psychological horror)."
+  }
+]

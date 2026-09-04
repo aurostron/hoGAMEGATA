@@ -343,7 +343,7 @@ const game = {
 let purchaseLinks = (game.purchaseLinks as any[]) || [];
 let priceSnapshots = priceSnapshotsData || [];
 
-// Strictly isolate non-itch games: never show itch purchase links, itch badges, or $0 itch price snapshots on non-itch titles
+// Strictly isolate non-itch games vs itch games
 if (!isItchGame) {
   purchaseLinks = purchaseLinks.filter((link: any) => 
     link && 
@@ -359,15 +359,31 @@ if (!isItchGame) {
     snap.storeName.toLowerCase() !== "itch" && 
     snap.provider !== "itch"
   );
+} else {
+  // Strictly isolate itch games: ONLY show itch.io purchase links and itch.io price snapshots
+  purchaseLinks = purchaseLinks.filter((link: any) =>
+    link && (
+      (link.storeName && (link.storeName.toLowerCase() === "itch.io" || link.storeName.toLowerCase() === "itch")) ||
+      (link.url && link.url.includes("itch.io"))
+    )
+  );
+  priceSnapshots = priceSnapshots.filter((snap: any) =>
+    snap && (
+      (snap.storeName && (snap.storeName.toLowerCase() === "itch.io" || snap.storeName.toLowerCase() === "itch")) ||
+      snap.provider === "itch" ||
+      (snap.dealUrl && snap.dealUrl.includes("itch.io"))
+    )
+  );
 }
 
-const steamLink = purchaseLinks?.find((link: any) => 
+const steamLink = isItchGame ? null : purchaseLinks?.find((link: any) => 
   link.storeName.toLowerCase() === "steam" || link.url.includes("steampowered.com")
 );
-const steamAppId = steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null;
+const steamAppId = isItchGame ? null : (steamLink?.url.match(/\/app\/(\d+)/)?.[1] || null);
 
 const ratingDisplay = game.rating ? `${(game.rating / 10).toFixed(1)} / 10` : "No rating yet";
-const hasGogBadge = purchaseLinks?.some((link: any) => link.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-");
+const hasGogBadge = isItchGame ? false : (purchaseLinks?.some((link: any) => link.storeName.toLowerCase().includes("gog")) || game.slug.startsWith("gog-"));
+const hasItchBadge = isItchGame || purchaseLinks?.some((link: any) => link.storeName.toLowerCase().includes("itch")) || game.slug.startsWith("itch-");
 
 const tags = (game.tags as any[]) || [];
 
@@ -617,7 +633,7 @@ const editGameData = {
                 </span>
               );
             })()}
-            {game.slug.startsWith("itch-") && (
+            {hasItchBadge && (
               <span class="text-[9px] text-black uppercase tracking-wider border border-[#fa5c5c] px-2 py-0.5 font-extrabold bg-[#fa5c5c] rounded shadow">
                 itch.io
               </span>
@@ -706,7 +722,7 @@ const editGameData = {
           
           <div class="flex flex-col">
             <span class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-0.5">steam</span>
-            {game.steamRating !== null && game.steamRating !== undefined ? (
+            {!isItchGame && game.steamRating !== null && game.steamRating !== undefined ? (
               <span class="text-3xl font-light font-mono text-white leading-none tabular-nums">
                 {game.steamRating.toFixed(1)}<span class="text-neutral-500 text-lg">/10</span>
               </span>
@@ -817,10 +833,11 @@ const editGameData = {
             gameTitle={game.title}
             genres={genres.map((g: any) => g.name)}
             siteRating={game.rating ? game.rating / 10 : null}
-            steamRating={game.steamRating}
+            steamRating={isItchGame ? null : game.steamRating}
             coverUrl={game.coverUrl}
             initialPriceSnapshots={priceSnapshots}
             initialLikesCount={game.likesCount || 0}
+            isItchGame={isItchGame}
           />
         </div>
 
@@ -918,6 +935,7 @@ const editGameData = {
             gameTitle={game.title}
             purchaseLinks={purchaseLinks}
             initialDeals={priceSnapshots}
+            isItchGame={isItchGame}
           />
 
           <!-- Official/Creator Links -->

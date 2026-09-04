@@ -41,6 +41,7 @@ pnpm-debug.log*
 ingest_cursor.json
 gamegata-sync/
 hogamegata/
+backups/
 
 # internal planning documents
 planning/

@@ -7,20 +7,20 @@ export interface DataVersionInfo {
   totalGames?: number;
 }
 
-const FALLBACK_VERSION: DataVersionInfo = {
-  commitSha: "d6858f6",
-  commitUrl: "https://github.com/project-hgg/project-hgg.github.io/commit/d6858f665ed554300e948cf67406a6425f4a60ab",
+export const FALLBACK_VERSION: DataVersionInfo = {
+  commitSha: "242b3a1",
+  commitUrl: "https://github.com/project-hgg/project-hgg.github.io/commit/242b3a1e86a850effae20972aca6d639b0e7073f",
   commitMessage: "chore(catalog): auto-sync new itch horror games",
-  date: "2026-09-04T10:34:37Z",
-  displayDate: "Sep 4, 10:34 UTC",
-  totalGames: 107851,
+  date: "2026-09-05T14:33:36Z",
+  displayDate: "Sep 5, 14:33 UTC",
+  totalGames: 107891,
 };
 
 let cachedVersion: DataVersionInfo | null = null;
 let lastFetchedAt = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5-minute cache for edge speed & zero rate limits
+const CACHE_TTL_MS = 60 * 1000; // 1-minute server-side cache
 
-function formatDisplayDate(isoString: string): string {
+export function formatDisplayDate(isoString: string): string {
   try {
     const date = new Date(isoString);
     if (isNaN(date.getTime())) return "recently";
@@ -43,10 +43,10 @@ export async function getDataVersion(): Promise<DataVersionInfo> {
     return cachedVersion;
   }
 
-  // 1. Primary: Fetch static data-version.json (zero GitHub API rate limits)
+  // 1. Primary: Fetch static data-version.json with cache-busting query
   const endpoints = [
-    "https://raw.githubusercontent.com/project-hgg/project-hgg.github.io/main/docs/public/data-version.json",
-    "https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/data-version.json",
+    `https://raw.githubusercontent.com/project-hgg/project-hgg.github.io/main/docs/public/data-version.json?t=${now}`,
+    `https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/data-version.json?t=${now}`,
   ];
 
   for (const url of endpoints) {
@@ -58,7 +58,7 @@ export async function getDataVersion(): Promise<DataVersionInfo> {
         headers: { "User-Agent": "Gamegata-DataVersion-Checker" },
         signal: controller.signal,
         // @ts-ignore Cloudflare cache option
-        cf: { cacheTtl: 300, cacheEverything: true },
+        cf: { cacheTtl: 60, cacheEverything: true },
       });
 
       clearTimeout(timeoutId);

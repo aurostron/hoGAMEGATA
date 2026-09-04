@@ -1,27 +1,34 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ReturnButton from '../components/ReturnButton';
+import DocsSidebar from '../components/about/DocsSidebar';
+import ScareProfileComparison from '../components/about/ScareProfileComparison';
+import SubFeelingsMatrix from '../components/about/SubFeelingsMatrix';
 
 const faqList = [
   {
     q: "What is hoGAMEGATA?",
-    a: "hoGAMEGATA (also known as hGG) is an ad-free database and discovery tool for horror games. It catalogs over 107,000 titles and 68,000+ developers, spanning survival horror, psychological terror, and indie nightmare releases."
+    a: "hoGAMEGATA (also known as hGG) is an ad-free database and discovery tool for horror games. It catalogs over 107K+ titles and 68,000+ developers, spanning survival horror, psychological terror, and indie releases."
   },
   {
     q: "Who created hoGAMEGATA?",
-    a: "hoGAMEGATA was built entirely by aurostron, a solo developer. It began as a casual summer break project while learning web development and database management, and grew into a massive hobby project—standing as one of the very first open databases of its kind dedicated to horror games. It is aurostron's first public web release."
+    a: "hoGAMEGATA was built entirely by aurostron, a solo developer. It began as a casual summer break project while learning web development and database management, and grew into an open database dedicated to horror games. It is aurostron's first public web release."
   },
   {
     q: "Why focus only on horror games?",
-    a: "Horror is a unique genre that relies heavily on mood, sound design, and tension. General game sites often lump horror games under broad action or indie categories. hoGAMEGATA organizes games specifically around horror sub-genres, platforms, and features."
+    a: "Horror is a distinct genre that relies heavily on sound, lighting, and tension. General game databases often dump horror titles into generic action or indie buckets. hoGAMEGATA organizes games specifically around horror sub-genres, platforms, and scare factors."
   },
   {
     q: "Is hoGAMEGATA free to use?",
-    a: "Yes. hoGAMEGATA is completely free and non-commercial. There are no ads, paywalls, or tracking scripts. You can search and explore the entire catalog without creating an account."
+    a: "Yes. hoGAMEGATA is completely free and non-commercial. There are no ads, paywalls, or tracking scripts. You can search and browse the entire catalog without creating an account."
   },
   {
     q: "How are ratings calculated?",
-    a: "Ratings combine review scores from IGDB, Steam, Metacritic, and RAWG. We use a weighted average so that niche games with a single positive review don't skew the top-rated lists."
+    a: "Ratings combine review scores from IGDB, Steam, Metacritic, and RAWG. We use a weighted Bayesian average so that niche games with a single high review do not unfairly dominate the top lists."
+  },
+  {
+    q: "How do you decide what counts as a horror game?",
+    a: "We evaluate games using a 5-point test: creator intent, gameplay vulnerability, audio-visual design, hazard stakes, and player consensus. Games that pass are classified as Pure Horror or Horror-Adjacent. Irrelevant titles tagged as a joke are soft-hidden."
   }
 ];
 
@@ -31,7 +38,7 @@ const creatorJsonLd = {
   "name": "aurostron",
   "jobTitle": "Solo Developer & Creator",
   "url": "https://gamegata.xyz/about",
-  "description": "Solo developer who built GAMEGATA (hoGAMEGATA) as a summer break project learning web development and databases, which grew into a massive open horror game database."
+  "description": "Solo developer who built hoGAMEGATA as a summer break project learning web development and databases, which grew into a massive open horror game database."
 };
 
 const faqJsonLd = {
@@ -49,15 +56,15 @@ const faqJsonLd = {
 ---
 
 <Layout 
-  title="About | hoGAMEGATA (107,000+ Horror Games)" 
-  description="Learn about hoGAMEGATA (hGG), an ad-free, open horror game database and discovery catalog indexing over 107,000 games and 68,000+ developers." 
+  title="About | hoGAMEGATA (107K+ Horror Games)" 
+  description="Learn about hoGAMEGATA (hGG), an ad-free open horror game database indexing over 107K+ titles and 68,000+ developers with curation rubrics and scare profiles." 
   withSearch={false} 
   withLink={true}
 >
   <script type="application/ld+json" is:inline set:html={JSON.stringify(faqJsonLd)} />
   <script type="application/ld+json" is:inline set:html={JSON.stringify(creatorJsonLd)} />
 
-  <main class="flex-1 max-w-4xl w-full mx-auto px-6 py-12 pb-24 flex flex-col gap-12 font-sans text-neutral-300">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-12 pb-24 flex flex-col gap-10 font-sans text-neutral-300">
     
     <!-- Top Bar -->
     <div class="flex justify-between items-center border-b border-white/10 pb-6">
@@ -68,28 +75,20 @@ const faqJsonLd = {
       <ReturnButton client:only="react" />
     </div>
 
-    <!-- Page Header -->
-    <div class="space-y-4">
-      <h1 class="font-sans font-black text-4xl sm:text-6xl uppercase tracking-tight text-white">
-        About hoGAMEGATA
-      </h1>
-      <p class="text-base sm:text-lg text-neutral-300 leading-relaxed font-normal">
-        hoGAMEGATA (also known as hGG or GAMEGATA) was built by <strong>aurostron</strong>, a solo developer. It is a minimalist, fast open database indexing over 107,000 horror titles and 68,000+ developers with detailed metadata, release dates, and store pricing.
-      </p>
-    </div>
+    <!-- 2-Column Docs Layout with Vertical Stack Sidebar -->
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
+      <DocsSidebar client:load />
 
-    <!-- Creator & Origin Story Banner -->
-    <div class="border border-white/10 bg-[#0c0c10] p-6 sm:p-8 space-y-4 text-sm leading-relaxed rounded-sm">
-      <h2 class="text-white font-bold text-lg uppercase tracking-wide border-b border-white/10 pb-2 flex items-center gap-2">
-        <span class="text-red-500">◆</span> The Creator & Origin Story
-      </h2>
-      <p class="text-neutral-200">
-        GAMEGATA (hoGAMEGATA) was built by <strong>aurostron</strong>, a solo developer, as a summer break casual project while learning web development and databases. What started as a personal learning experiment quickly grew into a massive hobby project—standing as one of the very first and largest open metadata registries dedicated exclusively to horror video games.
-      </p>
-      <p class="text-neutral-300">
-        GAMEGATA is <strong>aurostron</strong>'s first public web project. It was designed out of a passion for game preservation, ad-free access, and clean user experiences for horror fans worldwide.
-      </p>
-    </div>
+      <div class="flex-1 min-w-0 flex flex-col gap-12 w-full">
+        <!-- Page Header (Section 1: Mission) -->
+        <section id="mission" class="space-y-4 scroll-mt-24">
+          <h1 class="font-sans font-black text-4xl sm:text-6xl uppercase tracking-tight text-white">
+            About hoGAMEGATA
+          </h1>
+          <p class="text-base sm:text-lg text-neutral-300 leading-relaxed font-normal">
+            hoGAMEGATA (also known as hGG) was built by <strong>aurostron</strong>, a solo developer. It is a fast, open database indexing over 107K+ horror titles and 68,000+ developers with detailed metadata, release dates, and store pricing.
+          </p>
+        </section>
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed">
@@ -100,7 +99,7 @@ const faqJsonLd = {
           The Philosophy
         </h2>
         <p>
-          Horror is a genre built around tension, atmosphere, and sound design. Standard game databases treat horror as just another filter tag, mixing terrifying games with casual titles.
+          Horror is built around tension, atmosphere, and sound design. Standard game databases treat horror as a generic filter tag, mixing genuinely terrifying games with unrelated titles.
         </p>
         <p>
           hoGAMEGATA focuses entirely on horror. Our catalog organizes games by sub-genres, platforms, scare factors, and developer histories to make finding your next game straightforward.
@@ -113,76 +112,269 @@ const faqJsonLd = {
           Preservation & Privacy
         </h2>
         <p>
-          hoGAMEGATA is completely non-commercial. We don't display ads, sell user data, or hide features behind subscriptions.
+          hoGAMEGATA is non-commercial. We do not display ads, sell user data, or hide features behind subscriptions.
         </p>
         <p>
-          We preserve horror gaming history—from classic DOS titles and PlayStation games to modern indie releases and upcoming AAA titles. No account is required to browse or search.
+          We preserve horror gaming history—from classic DOS titles and retro PlayStation releases to experimental itch.io projects and upcoming releases. No account is required to browse or search.
         </p>
       </div>
 
     </div>
 
-    <!-- Rating System Section -->
+    <!-- Creator & Origin Story -->
     <div class="border border-white/10 bg-[#0a0a0c] p-6 sm:p-8 space-y-4 text-sm leading-relaxed">
       <h2 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
-        Rating System
+        The Creator & Origin Story
       </h2>
-      <p>
-        We combine ratings from multiple platforms (IGDB, Steam, Metacritic, and RAWG) into a single score. To keep smaller, less popular games with a single high review from dominating the top lists, we use a weighted Bayesian rating model that accounts for the total number of reviews.
+      <p class="text-neutral-300">
+        hoGAMEGATA was built by <strong>aurostron</strong>, a solo developer, as a summer break project while learning web development and databases. What started as a personal learning experiment grew into an open metadata registry dedicated exclusively to horror video games.
+      </p>
+      <p class="text-neutral-300">
+        hoGAMEGATA is <strong>aurostron</strong>'s first public web release. It was made out of a passion for game preservation, ad-free access, and clean interfaces for horror fans worldwide.
       </p>
     </div>
 
-    <!-- FAQ Section -->
-    <div class="space-y-6">
-      <h2 class="text-white font-bold text-xl uppercase tracking-tight border-b border-white/10 pb-3">
-        Frequently Asked Questions
-      </h2>
+    <!-- Section 2: Curation Rubric & Flowchart -->
+    <section id="rubric" class="space-y-6 scroll-mt-24">
+      <div class="space-y-2 border-b border-white/10 pb-4">
+        <h2 class="text-white font-bold text-2xl uppercase tracking-tight">
+          How We Curate: The 5-Point Test
+        </h2>
+        <p class="text-sm text-neutral-300 leading-relaxed">
+          Storefront tags often fail. On major storefronts, comedy titles, asset flips, and meme games frequently carry the "horror" tag as a joke. hoGAMEGATA uses a strict 3-tier classification to keep discovery reliable while preserving zero-data-loss integrity.
+        </p>
+      </div>
 
-      <div class="space-y-4">
-        {faqList.map((item) => (
-          <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-2 text-sm">
-            <h3 class="text-white font-bold">
-              {item.q}
-            </h3>
-            <p class="text-neutral-300 leading-relaxed">
-              {item.a}
+      <!-- 3-Tier Classification Flowchart Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm">
+        
+        <!-- Tier 1 -->
+        <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="text-white font-bold uppercase tracking-wider">Tier 1: Pure Horror</span>
+            <span class="text-[10px] font-mono border border-white/20 px-1.5 py-0.5 text-neutral-300">CORE</span>
+          </div>
+          <p class="text-neutral-300 leading-relaxed">
+            Games explicitly designed around fear, dread, revulsion, or survival tension.
+          </p>
+          <div class="text-neutral-400 text-xs pt-1">
+            <span class="text-neutral-500 font-mono uppercase text-[10px] block mb-1">Examples:</span>
+            <span>Silent Hill, Resident Evil, Amnesia, Outlast, Darkwood, Iron Lung</span>
+          </div>
+        </div>
+
+        <!-- Tier 2 -->
+        <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="text-white font-bold uppercase tracking-wider">Tier 2: Adjacent</span>
+            <span class="text-[10px] font-mono border border-white/20 px-1.5 py-0.5 text-neutral-300">DISCOVERY</span>
+          </div>
+          <p class="text-neutral-300 leading-relaxed">
+            Games with dark themes, psychological unease, or liminal dread that aren't strictly survival horror.
+          </p>
+          <div class="text-neutral-400 text-xs pt-1">
+            <span class="text-neutral-500 font-mono uppercase text-[10px] block mb-1">Examples:</span>
+            <span>Subnautica, What Remains of Edith Finch, Inside, Bloodborne, Inscryption</span>
+          </div>
+        </div>
+
+        <!-- Soft-Hidden Noise -->
+        <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span class="text-white font-bold uppercase tracking-wider">Noise (Soft-Hidden)</span>
+            <span class="text-[10px] font-mono border border-white/20 px-1.5 py-0.5 text-neutral-400">FILTERED</span>
+          </div>
+          <p class="text-neutral-300 leading-relaxed">
+            Joke titles, asset flips, and accidental tags. They remain in the database but are hidden from horror search queries.
+          </p>
+          <div class="text-neutral-400 text-xs pt-1">
+            <span class="text-neutral-500 font-mono uppercase text-[10px] block mb-1">Policy:</span>
+            <span>Zero data loss. Records are marked as hidden rather than permanently deleted.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 5-Point Test List -->
+      <div class="border border-white/10 bg-[#0a0a0c] p-6 sm:p-8 space-y-4 text-sm leading-relaxed">
+        <h3 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
+          The 5-Point Curatorial Test
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          <div class="space-y-1">
+            <span class="text-white font-bold text-xs uppercase tracking-wider">1. Intent</span>
+            <p class="text-neutral-300 text-xs">
+              Did the creator intentionally build the experience to provoke fear, paranoia, grief, or dread?
             </p>
           </div>
-        ))}
+          <div class="space-y-1">
+            <span class="text-white font-bold text-xs uppercase tracking-wider">2. Vulnerability</span>
+            <p class="text-neutral-300 text-xs">
+              Does the player face disempowerment, fragile health, scarce tools, or unkillable threats?
+            </p>
+          </div>
+          <div class="space-y-1">
+            <span class="text-white font-bold text-xs uppercase tracking-wider">3. Audio-Visuals</span>
+            <p class="text-neutral-300 text-xs">
+              Do the soundscapes, lighting, and camera perspectives work to limit awareness and build unease?
+            </p>
+          </div>
+          <div class="space-y-1">
+            <span class="text-white font-bold text-xs uppercase tracking-wider">4. Stakes</span>
+            <p class="text-neutral-300 text-xs">
+              Are hazards treated as dangerous threats rather than lighthearted jokes or comedy gags?
+            </p>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-white/5">
+          <span class="text-white font-bold text-xs uppercase tracking-wider">5. Player Consensus</span>
+          <p class="text-neutral-300 text-xs mt-1">
+            Does the playing community genuinely describe the atmosphere as unsettling, eerie, or terrifying?
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Fear Psychology -->
+    <section id="psychology" class="space-y-6 scroll-mt-24">
+      <div class="space-y-2 border-b border-white/10 pb-4">
+        <h2 class="text-white font-bold text-2xl uppercase tracking-tight">
+          The Science of Fear in Games
+        </h2>
+        <p class="text-sm text-neutral-300 leading-relaxed">
+          Why do players pay money to be terrified? In psychology, this is known as recreational fear. Your primitive brain signals danger, while your rational mind knows you are holding a plastic controller on a couch. That safety allows the adrenaline rush to resolve into relief and dopamine.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+        
+        <!-- King's Triad: Terror -->
+        <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-3">
+          <h3 class="text-white font-bold text-sm uppercase tracking-wide border-b border-white/10 pb-2">
+            1. Terror (Anticipation)
+          </h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            The mind at work. The lights cut out and you hear something breathing behind you, but you have not turned around yet. Audio cues and shadows build dread before anything happens.
+          </p>
+        </div>
+
+        <!-- King's Triad: Horror -->
+        <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-3">
+          <h3 class="text-white font-bold text-sm uppercase tracking-wide border-b border-white/10 pb-2">
+            2. Horror (Encounter)
+          </h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            The shock of reality. You turn around and see the threat directly. It defies nature, it shouldn't exist, and you are forced to run, fight, or hide immediately.
+          </p>
+        </div>
+
+        <!-- King's Triad: Revulsion -->
+        <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-3">
+          <h3 class="text-white font-bold text-sm uppercase tracking-wide border-b border-white/10 pb-2">
+            3. Revulsion (Visceral)
+          </h3>
+          <p class="text-xs text-neutral-300 leading-relaxed">
+            The biological gag reflex. Rotten flesh, mutations, parasites, and somatic violations. It triggers ancient survival mechanisms against disease, contamination, and death.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- The Agency Dynamic -->
+      <div class="border border-white/10 bg-[#0a0a0c] p-6 space-y-3 text-sm leading-relaxed">
+        <h3 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
+          Agency & The Dominance Curve
+        </h3>
+        <p class="text-xs sm:text-sm text-neutral-300">
+          In a horror film, closing your eyes lets the story move past you. In a horror game, nothing happens until you push the joystick forward. You are an active participant in your own distress.
+        </p>
+        <p class="text-xs sm:text-sm text-neutral-300">
+          The difference between an action game and a horror game comes down to player dominance. In an action game, you have high mobility and firepower; the enemies fear you. In a horror game, your ammo is almost gone, turning is sluggish, and a single creature blocks the hallway.
+        </p>
+      </div>
+    </section>
+
+    <!-- Section 4: 7D Scare Profile -->
+    <section id="scare-profile" class="space-y-6 scroll-mt-24">
+      <ScareProfileComparison client:visible />
+    </section>
+
+    <!-- Section 5: The 21 Sub-Feelings Encyclopedia -->
+    <section id="sub-feelings" class="space-y-6 scroll-mt-24">
+      <SubFeelingsMatrix client:visible />
+    </section>
+
+    <!-- Section 6: Rating System, Attribution & FAQ -->
+    <section id="faq-sources" class="space-y-10 scroll-mt-24">
+
+      
+      <!-- Rating System Section -->
+      <div class="border border-white/10 bg-[#0a0a0c] p-6 sm:p-8 space-y-4 text-sm leading-relaxed">
+        <h2 class="text-white font-bold text-base uppercase tracking-wide border-b border-white/10 pb-2">
+          Rating System
+        </h2>
+        <p class="text-neutral-300">
+          We combine ratings from multiple platforms (IGDB, Steam, Metacritic, and RAWG) into a single score. To keep smaller, less popular games with a single high review from dominating the top lists, we use a weighted Bayesian rating model that accounts for the total number of reviews.
+        </p>
+      </div>
+
+      <!-- FAQ Section -->
+      <div class="space-y-6">
+        <h2 class="text-white font-bold text-xl uppercase tracking-tight border-b border-white/10 pb-3">
+          Frequently Asked Questions
+        </h2>
+
+        <div class="space-y-4">
+          {faqList.map((item) => (
+            <div class="border border-white/10 bg-[#0a0a0c] p-5 space-y-2 text-sm">
+              <h3 class="text-white font-bold">
+                {item.q}
+              </h3>
+              <p class="text-neutral-300 leading-relaxed text-xs sm:text-sm">
+                {item.a}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Data Provider & Third-Party Credits -->
+      <div class="space-y-6 font-sans text-sm text-neutral-300 leading-relaxed">
+        <div class="border-b border-white/10 pb-3">
+          <h2 class="font-sans font-black text-xl uppercase tracking-tight text-white">Data Sources & Attribution</h2>
+        </div>
+        <p>
+          Data provided by <a href="https://www.igdb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">IGDB</a>.
+        </p>
+        <p>
+          Reviews taken from <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Steam</a>. 
+        </p>
+        <p>
+          Indie game catalog and feeds provided by <a href="https://itch.io" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">itch.io</a>.
+        </p>
+        <p>
+          Linux compatibility data by <a href="https://www.protondb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">ProtonDB</a>.
+        </p>
+        <p>
+          Search index and edge catalog distributed globally via <a href="https://www.jsdelivr.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">jsDelivr</a> CDN.
+        </p>
+        <p>
+          Database architecture powered by <a href="https://turso.tech" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Turso</a> and <a href="https://libsql.org" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">libSQL</a>.
+        </p>
+        <p>
+          This platform is built using <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Astro</a>, <a href="https://react.dev" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">React</a>, <a href="https://orm.drizzle.team" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Drizzle ORM</a>, and deployed on <a href="https://workers.cloudflare.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Cloudflare</a>.
+        </p>
+        <p class="pt-2 text-neutral-400 text-xs">
+          Proudly powered by <span class="text-white font-bold">Open Source</span>.
+        </p>
+      </div>
+
+    </section>
+
       </div>
     </div>
-
-    <!-- Data Provider & Third-Party Credits -->
-    <div class="space-y-6 font-sans text-sm text-gray-300 leading-relaxed">
-      <div class="border-b border-white/10 pb-3">
-        <h2 class="font-sans font-black text-xl uppercase tracking-tight text-white">Data Sources & Attribution</h2>
-      </div>
-      <p>
-        Data provided by <a href="https://www.igdb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">IGDB</a>.
-      </p>
-      <p>
-        Reviews taken from <a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Steam</a>. 
-      </p>
-      <p>
-        Indie game catalog and feeds provided by <a href="https://itch.io" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">itch.io</a>.
-      </p>
-      <p>
-        Linux compatibility data by <a href="https://www.protondb.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">ProtonDB</a>.
-      </p>
-      <p>
-        Search index and edge catalog distributed globally via <a href="https://www.jsdelivr.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">jsDelivr</a> CDN.
-      </p>
-      <p>
-        Database architecture powered by <a href="https://turso.tech" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Turso</a> and <a href="https://libsql.org" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">libSQL</a>.
-      </p>
-      <p>
-        This platform is built using <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Astro</a>, <a href="https://react.dev" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">React</a>, <a href="https://orm.drizzle.team" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Drizzle ORM</a>, and deployed on <a href="https://workers.cloudflare.com" target="_blank" rel="noopener noreferrer" class="text-white hover:underline font-bold">Cloudflare</a>.
-      </p>
-      <p class="pt-2 text-neutral-400">
-        Proudly powered by <span class="text-white font-bold">Open Source</span>.
-      </p>
-    </div>
-
 
   </main>
 </Layout>
+
+

@@ -68,7 +68,8 @@ const storeMap: Record<string, string> = {
   itchio: "itch.io",
   itch: "itch.io"
 };
-const matchedStore = storeMap[store.toLowerCase().replace(/[^a-z0-9]/g, "")] || store;
+const isItchGame = slug.startsWith("itch-");
+const matchedStore = isItchGame ? "itch.io" : (storeMap[store.toLowerCase().replace(/[^a-z0-9]/g, "")] || store);
 const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY 
   || (typeof process !== "undefined" && process.env?.PUBLIC_TURNSTILE_SITE_KEY)
   || import.meta.env.PUBLIC_TURNSTILE_SITE_KEY 
@@ -294,7 +295,11 @@ const siteKey = (runtimeEnv as any)?.PUBLIC_TURNSTILE_SITE_KEY
       const manualBtn = document.getElementById("manual-btn");
       
       const searchParams = new URLSearchParams(window.location.search);
-      const targetUrl = customUrl || searchParams.get("fallbackUrl") || "/";
+      let targetUrl = customUrl || searchParams.get("fallbackUrl") || "/";
+      const isItchRoute = window.location.pathname.includes("/re/itch-");
+      if (isItchRoute && targetUrl && !targetUrl.includes("itch.io") && targetUrl !== "/") {
+        targetUrl = "/";
+      }
 
       if (statusEl) {
         const textSpan = statusEl.querySelector("span");

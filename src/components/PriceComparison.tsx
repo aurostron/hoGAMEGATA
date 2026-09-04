@@ -25,6 +25,7 @@ interface PriceComparisonProps {
   purchaseLinks: PurchaseLink[];
   country?: string;
   initialDeals?: any[];
+  isItchGame?: boolean;
 }
 
 const REGIONS = [
@@ -47,8 +48,10 @@ export default function PriceComparison({
   gameTitle,
   purchaseLinks,
   country = "US",
-  initialDeals = []
+  initialDeals = [],
+  isItchGame = false
 }: PriceComparisonProps) {
+  const isItch = isItchGame || gameSlug.startsWith("itch-");
   const [deals, setDeals] = useState<PriceDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -73,13 +76,18 @@ export default function PriceComparison({
           purchaseLinks: purchaseLinks,
           country: targetRegion,
           forceRefresh: force,
-          provider: targetProvider
+          provider: isItch ? "direct" : targetProvider
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        const returnedDeals = data.deals || [];
+        let returnedDeals = data.deals || [];
+        if (isItch) {
+          returnedDeals = returnedDeals.filter((d: any) =>
+            d.storeName?.toLowerCase().includes("itch") || d.dealUrl?.includes("itch.io")
+          );
+        }
         if (returnedDeals.length > 0) {
           sessionCache.current[`${targetProvider}_${targetRegion}`] = returnedDeals;
           setDeals(returnedDeals);
@@ -124,27 +132,47 @@ export default function PriceComparison({
     }
 
     // 2. Check if we have high-depth initialDeals (with expanded stores) from server SSR
-    if (provider === "direct" && initialDeals && initialDeals.length > 0) {
-      const matchingDeals = initialDeals.filter(d => d.country === targetRegion && (d.provider === "direct" || !d.provider));
-      const hasExpandedStores = matchingDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
+    if (initialDeals && initialDeals.length > 0) {
+      if (isItch) {
+        const itchDeals = initialDeals.filter(d => 
+          d.storeName?.toLowerCase().includes("itch") || d.dealUrl?.includes("itch.io") || d.provider === "itch"
+        );
+        if (itchDeals.length > 0) {
+          const mappedDeals = itchDeals.map(d => ({
+            storeName: "itch.io",
+            dealPrice: d.dealPrice,
+            retailPrice: d.retailPrice,
+            discountPercent: d.discountPercent,
+            dealUrl: d.dealUrl,
+            currency: d.currency
+          }));
+          sessionCache.current[cacheKey] = mappedDeals;
+          setDeals(mappedDeals);
+          setLoading(false);
+          return;
+        }
+      } else if (provider === "direct") {
+        const matchingDeals = initialDeals.filter(d => d.country === targetRegion && (d.provider === "direct" || !d.provider));
+        const hasExpandedStores = matchingDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
 
-      if (hasExpandedStores && matchingDeals.length >= 2) {
-        const sorted = [...matchingDeals].sort((a, b) => a.dealPrice - b.dealPrice);
-        const mappedDeals = sorted.map(d => ({
-          storeName: d.storeName,
-          dealPrice: d.dealPrice,
-          retailPrice: d.retailPrice,
-          discountPercent: d.discountPercent,
-          dealUrl: d.dealUrl,
-          currency: d.currency
-        }));
-        sessionCache.current[cacheKey] = mappedDeals;
-        setDeals(mappedDeals);
-        setLoading(false);
+        if (hasExpandedStores && matchingDeals.length >= 2) {
+          const sorted = [...matchingDeals].sort((a, b) => a.dealPrice - b.dealPrice);
+          const mappedDeals = sorted.map(d => ({
+            storeName: d.storeName,
+            dealPrice: d.dealPrice,
+            retailPrice: d.retailPrice,
+            discountPercent: d.discountPercent,
+            dealUrl: d.dealUrl,
+            currency: d.currency
+          }));
+          sessionCache.current[cacheKey] = mappedDeals;
+          setDeals(mappedDeals);
+          setLoading(false);
 
-        // Always trigger silent background SWR revalidation
-        loadPrices(targetRegion, provider, false, true);
-        return;
+          // Always trigger silent background SWR revalidation
+          loadPrices(targetRegion, provider, false, true);
+          return;
+        }
       }
     }
 
@@ -164,16 +192,22 @@ export default function PriceComparison({
       <div className="pt-10 space-y-8">
         <div className="flex items-center justify-between">
           <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/30 border border-white/[0.08] text-[11px] uppercase tracking-[0.18em] font-bold text-white/100">Cheapest Deals</span>
-          <div className="flex items-center gap-2">
-            <select 
-              disabled
-              value={provider}
-              className="font-sans text-xs border border-white/10 bg-white/5 text-white/40 px-2 py-1 rounded-xl outline-none"
-            >
-              {PROVIDERS.map(p => (
-                <option key={p.code} value={p.code}>{p.label}</option>
-              ))}
-            </select>
+          <div class="flex items-center gap-2">
+            {isItch ? (
+              <span className="font-sans text-xs border border-[#fa5c5c]/30 bg-[#fa5c5c]/10 text-[#fa5c5c]/60 px-2.5 py-1 font-semibold rounded-xl select-none">
+                itch.io Direct
+              </span>
+            ) : (
+              <select 
+                disabled
+                value={provider}
+                className="font-sans text-xs border border-white/10 bg-white/5 text-white/40 px-2 py-1 rounded-xl outline-none"
+              >
+                {PROVIDERS.map(p => (
+                  <option key={p.code} value={p.code}>{p.label}</option>
+                ))}
+              </select>
+            )}
             <select 
               disabled
               value={region === "detect" ? "US" : region}
@@ -229,15 +263,21 @@ export default function PriceComparison({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <select 
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
-            className="font-sans text-xs border border-white/10 bg-white/5 text-white/70 hover:text-white px-2 py-1 cursor-pointer font-semibold outline-none rounded-xl focus:border-white/30 focus:ring-0"
-          >
-            {PROVIDERS.map(p => (
-              <option key={p.code} value={p.code} className="bg-zinc-950 text-white">{p.label}</option>
-            ))}
-          </select>
+          {isItch ? (
+            <span className="font-sans text-xs border border-[#fa5c5c]/30 bg-[#fa5c5c]/10 text-[#fa5c5c] px-2.5 py-1 font-semibold rounded-xl select-none">
+              itch.io Direct
+            </span>
+          ) : (
+            <select 
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+              className="font-sans text-xs border border-white/10 bg-white/5 text-white/70 hover:text-white px-2 py-1 cursor-pointer font-semibold outline-none rounded-xl focus:border-white/30 focus:ring-0"
+            >
+              {PROVIDERS.map(p => (
+                <option key={p.code} value={p.code} className="bg-zinc-950 text-white">{p.label}</option>
+              ))}
+            </select>
+          )}
           <select 
             value={region}
             onChange={(e) => handleRegionChange(e.target.value)}

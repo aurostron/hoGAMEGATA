@@ -1,0 +1,4182 @@
+{
+  "generatedAt": "2026-09-04T17:41:23.628Z",
+  "metrics": {
+    "totalGames": 107567,
+    "coreHorrorProtected": 106975,
+    "aiEvaluated": 595,
+    "aiConfirmedHorror": 389,
+    "aiPureHorror": 276,
+    "aiHorrorAdjacent": 129,
+    "aiConfirmedNonHorror": 206,
+    "totalKept": 107364,
+    "proposedSoftHide": 206
+  },
+  "approvedSoftHides": [
+    {
+      "id": "itch_9ac35e2cf9986fa1",
+      "title": "The Doll - Horror SFX Pack",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a sound effects pack, which falls under non-game utilities and asset packs, regardless of its horror-themed content."
+    },
+    {
+      "id": "itch_f60b17ebb2c12f75",
+      "title": "Resident Evil Game Engine Test",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is clearly identified as an 'Engine Test,' which is a development tool or script rather than a standalone game experience."
+    },
+    {
+      "id": "itch_c8cc2268d8b2f254",
+      "title": "Unity Runtime Fee Calculator",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a calculator utility; the 'Horror' tag is an ironic commentary on real-world development fees, not a genre descriptor for the software itself."
+    },
+    {
+      "id": "itch_412b1abf5bb956ce",
+      "title": "mr beast calculator",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a calculator utility; the 'Horror' tag is clearly comedic or incidental, not indicative of actual horror content within the 'game.'"
+    },
+    {
+      "id": "itch_f9af7afd044cd15a",
+      "title": "『絵話 -kaiwa-』 Soundtrack",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a soundtrack (OST), which is a non-game utility or media asset, not a playable game experience."
+    },
+    {
+      "id": "itch_45017c7a57f2b6f3",
+      "title": "Pseudo-Haunting Soundtrack",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a soundtrack, classified as a non-game utility or media asset, despite its atmospheric and dark horror-themed content."
+    },
+    {
+      "id": "itch_3954a76b90e911ff",
+      "title": "OLD CLOCK Sfx pack",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a sound effects pack, categorized as a non-game utility or asset, even if its sounds could be used to create horror."
+    },
+    {
+      "id": "itch_011b47bfb381642a",
+      "title": "PSYCHOSIS Sfx pack",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a sound effects pack, specifically 'Dark Ambient Loop Sounds,' which falls under non-game utilities despite its horror-adjacent auditory themes."
+    },
+    {
+      "id": "itch_3f089ece10e09452",
+      "title": "Calculator - Smart Scratch Cat",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This appears to be a calculator utility, which, despite being tagged as horror, falls under non-game utilities as per the rules."
+    },
+    {
+      "id": "itch_7470e1db60841c46",
+      "title": "FMOD Horror Soundtrack Demo",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a demo of a soundtrack for music production, not an interactive game experience, and therefore falls under non-game utilities."
+    },
+    {
+      "id": "itch_e821b8eb418cbb66",
+      "title": "(GameBoy ROM) Ghoul Busters Original Soundtrack OST",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This entry is an Original Soundtrack (OST) and not an interactive game, thus it is a non-game utility."
+    },
+    {
+      "id": "itch_88747bf6003e9771",
+      "title": "OST",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite some genre tags, the title 'OST' (Original Soundtrack) strongly suggests this is not an interactive game."
+    },
+    {
+      "id": "itch_4e521f6fee065b27",
+      "title": "BBCR But it's in your wallpaper!! :D (BASE GAME)",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite referencing a horror-adjacent game, this entry explicitly states it is a wallpaper and not an interactive game."
+    },
+    {
+      "id": "itch_f68dfa9aa05892bb",
+      "title": "Calculator 999 (beta)",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is titled as a calculator, which, despite genre tags, is considered a non-game utility under the given rules."
+    },
+    {
+      "id": "cmpwzi1su01ptl8egkmly4bty",
+      "title": "Bear With Me: Episode 2",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While featuring a dark, noir aesthetic and themes of urban decay and mystery, 'Bear With Me' is primarily a melancholic adventure game, not prominently displaying horror elements."
+    },
+    {
+      "id": "cmpwzk15z00mh9gegtoc9ixye",
+      "title": "The Norwood Suite",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While surreal and mysterious, the game's summary focuses on odd characters and secrets rather than explicit themes of fear, dread, or psychological tension that would classify it as horror."
+    },
+    {
+      "id": "cmpwzk7eo00pd9gegklommty4",
+      "title": "Babbdi",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary and tags describe a generic first-person exploration game without any mention of horror elements or sub-feelings like fear or dread."
+    },
+    {
+      "id": "cmpwzmz9m02bc9gegmmdvrn6q",
+      "title": "Alien Quest: Eve",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary focuses on platforming, RPG mechanics, and genre influences (Metroid, Diablo) without any explicit mention of horror themes, fear, or dread."
+    },
+    {
+      "id": "cmpwznql602rm9geg37tfoe90",
+      "title": "Lacey's Wardrobe",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite the 'Liminal & Surreal' tag, the summary explicitly describes a dress-up game, making any horror elements incidental at best or the tag an error."
+    },
+    {
+      "id": "cmpwzpq3803vy9gegk5fr9o00",
+      "title": "Choices: Stories You Play",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "As a platform for diverse narrative choices, 'Choices' itself does not prominently feature horror themes, even if individual story modules within it might."
+    },
+    {
+      "id": "cmpwzq7b7046f9gegzw043klg",
+      "title": "Myth",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While aesthetically dark with its 'world of shadows,' the summary lacks explicit indicators of fear, dread, or psychological tension that would classify it as horror."
+    },
+    {
+      "id": "cmpwzt4yi05u09geg1nutlx3h",
+      "title": "Bear With Me: Episode 1",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While a 'noir adventure' with elements of 'urban decay' can be grim, the summary does not explicitly indicate fear, dread, psychological tension, or other core horror sub-feelings."
+    },
+    {
+      "id": "cmpy2x0l905s45kegzixwn9wa",
+      "title": "The Light Remake",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While featuring an 'abandoned,' 'gloomy,' and 'empty' world, the summary emphasizes beauty and flourishing nature rather than explicit threats, fear, or psychological dread typical of horror."
+    },
+    {
+      "id": "cmpy2yupo06sf5kegi3m0wexu",
+      "title": "XenoShyft",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite mentioning 'horrors' in its summary, the explicit 'Comedy & Parody' tag indicates that the game's primary intent is not to evoke genuine fear or dread, but rather to satirize horror themes."
+    },
+    {
+      "id": "cmqgmmnvd00086ok3reyfgizm",
+      "title": "Human Shaped$1.49-50%",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "With no description, genres, or tags provided, and an ambiguous title, there is insufficient information to determine if this game prominently displays or uses horror elements."
+    },
+    {
+      "id": "cmqqlcl3g008t50egxgylgswl",
+      "title": "Tactical Roulette",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This game is described purely as a strategy roguelite focused on risk and 'deadly tournaments,' which, while challenging, does not inherently evoke horror or its associated sub-feelings beyond typical game difficulty."
+    },
+    {
+      "id": "cmqsacuxt055trcegbiro1goo",
+      "title": "Indian Street Food Simulator",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a 'simple and friendly' cooking and management simulator with a 'chaotic yet warm' experience, containing no elements of horror despite an apparent mis-tag of 'Stealth & Hide'."
+    },
+    {
+      "id": "cmqsaq0zw009ieweg3flve6f4",
+      "title": "Death Standing",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite a title that parodies a well-known game, the summary clearly defines it as a 'meditative endurance challenge game' where the player simply holds still, and the 'Comedy & Parody' tag confirms it is not intended as horror."
+    },
+    {
+      "id": "cmqsarg6v00tdeweg0le9tqs1",
+      "title": "Cijian Appearance",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Lacking any description, genre, or tag indicating horror elements, there is insufficient information to classify this as anything other than a generic visual novel."
+    },
+    {
+      "id": "cmqsarp1300vrewegtp6uv8ww",
+      "title": "Stíny noci",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary only describes basic adventure game mechanics and graphics, with no explicit mention of horror themes, unsettling atmosphere, or fear-inducing elements."
+    },
+    {
+      "id": "cmqsassoj01aleweghcm7wkkw",
+      "title": "Lost Maria: Namonaki Hana",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror‑related description is provided; the entry only notes its RPG Maker origin."
+    },
+    {
+      "id": "cmqsasumd01b0ewegvebas9qm",
+      "title": "Home Town Work",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game focuses on social withdrawal and role‑playing mechanics without explicit horror elements."
+    },
+    {
+      "id": "cmqsauzg6022sewegqr0sqm05",
+      "title": "Cue Room",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A rogue‑like billiards game with chaotic mechanics lacks any horror premise."
+    },
+    {
+      "id": "cmqsavqkn02bwewegjrxntac5",
+      "title": "Lament",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No descriptive information is provided, leaving no indication of horror content."
+    },
+    {
+      "id": "cmqsavxx102dvewegt7ios5a2",
+      "title": "Job Hunting 9000 Dehlux",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game is described as a comedic/parody visual novel with no horror elements."
+    },
+    {
+      "id": "cmqsawkc502luewegbk1g13ae",
+      "title": "A Date With Chester 2",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A nostalgic visual‑novel focused on memory and relationships with no evident horror themes."
+    },
+    {
+      "id": "cmqsawpo302mweweg8lmil9n3",
+      "title": "Trombone Champ: Undertale + Deltarune",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A music‑track DLC pack with no gameplay or horror content."
+    },
+    {
+      "id": "cmqsax4z702scewegt43hxkpv",
+      "title": "Midnight Hoops",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Although set at night, the game is a sports simulator without any horror mechanics or tone."
+    },
+    {
+      "id": "cmqsaxaqu02tvewegpvrej17f",
+      "title": "Kaidou ni Kisu",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A visual novel centered on relational choices without any horror‑type atmosphere."
+    },
+    {
+      "id": "cmqsaxh4102veewegydex9o9a",
+      "title": "Kari ni A-kun to Shiyou",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A standard text‑heavy visual novel with no horror‑oriented content."
+    },
+    {
+      "id": "cmqsaybuf037jewegugu2y7sl",
+      "title": "Night with Timber",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or horror indicators; appears to be a generic visual novel."
+    },
+    {
+      "id": "cmqsaym1g039geweg6vx95mk9",
+      "title": "Omori: Collector's Edition",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The entry describes a physical collector’s set, not the game itself, and contains no horror content."
+    },
+    {
+      "id": "cmqsaz3g803fjeweg00yqq7kb",
+      "title": "It's Always Happy at Chubby's",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While set on a lonely night shift, the description lacks any horror elements beyond simple isolation."
+    },
+    {
+      "id": "cmqsazfjd03ineweg9d3c4z39",
+      "title": "Liar Masks",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "A puzzle adventure that creates psychological tension through deceptive masks but lacks explicit horror elements, making it horror‑adjacent."
+    },
+    {
+      "id": "cmqsazfy003iqewegdn1q4ilc",
+      "title": "Jester Party",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A co‑op card game with no horror themes, therefore non‑horror."
+    },
+    {
+      "id": "cmqsazu2r03o5ewegn4izk8g7",
+      "title": "Operator Unknown",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "Explores liminal, surreal memory themes that evoke unease, classifying it as horror‑adjacent."
+    },
+    {
+      "id": "cmqsb0vlw0430ewegbpg0kaml",
+      "title": "Abulia",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A visual‑novel RPG focusing on self‑discovery without horror motifs, therefore non‑horror."
+    },
+    {
+      "id": "cmqsb111k044oewegs3lw7n0v",
+      "title": "Escape: Mall",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "An isolated mall setting that creates tension but is fundamentally a puzzle adventure, classifying it as horror‑adjacent."
+    },
+    {
+      "id": "cmqsb111v044tewegjlo02m6l",
+      "title": "Hidden Nature",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "A co‑op first‑person game about discovering dark sides of peers, evoking social horror, thus horror‑adjacent."
+    },
+    {
+      "id": "cmqsb12h80458ewegdavt6lx9",
+      "title": "Bert: The Game",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A comedic parody platformer with no horror content, thus non‑horror."
+    },
+    {
+      "id": "cmqsb14ic045oewegdjlarho8",
+      "title": "In The Well",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "An adventure RPG set in a well and snowy lands that hints at horror but remains ambiguous, classifying it as horror‑adjacent."
+    },
+    {
+      "id": "cmqsb1zie04hsewegwg2xhxci",
+      "title": "Twilight",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "An oppressive walking simulator/visual novel that conveys dread through atmosphere, classifying it as horror‑adjacent."
+    },
+    {
+      "id": "cmqscyld40003kcegmwlpn6z8",
+      "title": "Path of Exile 2",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A fantasy action RPG with no horror focus, thus non‑horror."
+    },
+    {
+      "id": "cmqsen56b002h8geg8udjcz9x",
+      "title": "Mamiya: Downfall",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A visual novel continuation without horror elements, therefore non‑horror."
+    },
+    {
+      "id": "cmqsenpux00av8gegiyf949sh",
+      "title": "Lily's Lil Video Shop!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A light‑hearted store‑management simulator with no sinister or unsettling themes."
+    },
+    {
+      "id": "cmqsepfsw007aqwegrwz0j235",
+      "title": "Walk the Plank",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A VR plank‑walking experience focused on height thrill, not on dread or macabre themes."
+    },
+    {
+      "id": "cmqsepk13008nqwegx70szeia",
+      "title": "Pieces to Find",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game emphasizes puzzle solving and cooperative play without explicit horror elements."
+    },
+    {
+      "id": "cmqsepu0000csqwegmlgbtmty",
+      "title": "Flesh and Pressure",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror‑related description is provided and the title alone does not indicate a fear‑based experience."
+    },
+    {
+      "id": "cmqseq6z500haqwegffdn2sg8",
+      "title": "Hana's Light",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A hidden‑object game about loss and Tamagotchis focuses on melancholy rather than fear."
+    },
+    {
+      "id": "cmqseqjoi00m5qweg7qxo411k",
+      "title": "Roads Yet Traveled",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A dramatic, slice-of-life visual novel centered on student life, choices, and philosophical themes without horror elements."
+    },
+    {
+      "id": "cmqseqzid00teqwegpyzvce2j",
+      "title": "Corner Shop: NightShift",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "The game’s core is a mundane shop‑simulator; its isolated atmosphere is unsettling but horror is not the primary focus."
+    },
+    {
+      "id": "cmqser8dn00viqweggkfv6r3b",
+      "title": "The Automaton of Second London",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "Set during a Halloween‑themed Victorian fantasy; the setting is dark but the game’s focus is on adventure rather than sustained horror."
+    },
+    {
+      "id": "cmqserfka00zdqwegwu1kx3v2",
+      "title": "Milk Puzzle",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "Features a neurotic, powerless protagonist and unsettling content, yet it functions primarily as a visual‑novel puzzle rather than a horror experience."
+    },
+    {
+      "id": "cmqsers0i012oqwegfd2te35l",
+      "title": "Secret HavEat",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "A mysterious walking‑simulator with eerie ambience, but the narrative does not centre on fear or horror motifs."
+    },
+    {
+      "id": "cmqses7u2018uqwegbo0ma7dz",
+      "title": "Balloon Party",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "While framed as a party‑room exploration, its unsettling tone and ambiguous joy hint at horror elements without making them central."
+    },
+    {
+      "id": "cmqsesfge01cnqwegwlnqpupp",
+      "title": "Please Come to The Castle",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "Tagged as ‘Unsettling’ and third‑person, the platformer evokes a creepy atmosphere but does not focus on sustained horror gameplay."
+    },
+    {
+      "id": "cmqsesiuv01dlqwege0sd6f4q",
+      "title": "Delivery Pals",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game is a cooperative adventure about delivering food to aliens with no horror themes."
+    },
+    {
+      "id": "cmqsesr3r01g3qweg8qo5cn3k",
+      "title": "Yabai Otoko ni Nanpa Sareru Game",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "It is a light‑hearted visual novel focused on flirtatious conversation, lacking horror content."
+    },
+    {
+      "id": "cmqseu11t01weqweg3vbjdqoa",
+      "title": "Kyokou Eiyuu GinGaia",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror‑related description or tags are provided."
+    },
+    {
+      "id": "cmqseu5rn01z4qwegl249hnh8",
+      "title": "Dimensional: Prophecy of Zohar 2",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The entry lacks any indication of horror elements."
+    },
+    {
+      "id": "cmqseurur026gqwegr60h39ng",
+      "title": "Mukougawa no Reisetsu",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror‑related information is available for this visual novel."
+    },
+    {
+      "id": "cmqsewzq202x7qwegcwacthvo",
+      "title": "Return to Heartbreak Land",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror themes are described; the title and tags suggest a non‑horror indie experience."
+    },
+    {
+      "id": "cmqsex25002y0qwegegnsieh4",
+      "title": "Light Engine",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The description references a malfunctioning light socket, indicating a utility or placeholder rather than horror."
+    },
+    {
+      "id": "cmqsex5j702ysqwegdc06ewxt",
+      "title": "Magenta",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A robot‑love visual novel with dating elements lacks horror content."
+    },
+    {
+      "id": "cmqsexa22030gqweg80iy8jqw",
+      "title": "Knock on the Window",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The setting is an isolated field but the premise lacks horror elements."
+    },
+    {
+      "id": "cmqsexr8g036pqweg9qlce4c8",
+      "title": "Kusarihime: Jamais Vu",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is described as a prequel to another game and includes a trial version and bonus content, with no indication of horror elements in its summary."
+    },
+    {
+      "id": "cmqseyd8103dfqweg2vttunde",
+      "title": "Super Mario: Blue Twilight",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a platformer in the Super Mario series, and while it may have darker aesthetics, its core genre and premise do not indicate it's a horror game."
+    },
+    {
+      "id": "cmqseyh9d03eiqwegwz4p549l",
+      "title": "A Simple Garbage Sorting Game",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite the mention of a 'secret experiment,' the primary described activity is garbage sorting, which does not inherently lend itself to horror."
+    },
+    {
+      "id": "cmqseyx7k03klqweg89pt74qa",
+      "title": "Slay the Alice",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While it involves Alice and a land of talking plants, the description of 'cute animations' and a 'tiny little adventure' points away from horror and towards a more whimsical or lighthearted experience."
+    },
+    {
+      "id": "cmqsez13603ltqwegmqkntdnp",
+      "title": "Memory Girl +",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A tragic love visual novel with no horror elements."
+    },
+    {
+      "id": "cmqsez30003m2qweguwvwecju",
+      "title": "Taking Over Her Heart",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A romance‑focused visual novel without any horror themes."
+    },
+    {
+      "id": "cmqsez30203m3qwegzup3cwu9",
+      "title": "Since November",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A short furry visual novel that lacks any horror content."
+    },
+    {
+      "id": "cmqsez43v03mfqweg99rgy8l7",
+      "title": "A Gracewind Tale: Midnight Shift with Lenny Motts",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Insufficient information suggests a non‑horror narrative rather than a horror premise."
+    },
+    {
+      "id": "cmqsezlm403rjqweg0q1na5s0",
+      "title": "The 4th Wall",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A liminal walking simulator with no clear horror motifs or tone."
+    },
+    {
+      "id": "cmqsezp9403saqweghi5agry5",
+      "title": "Parasocial! Paranoia! Paradise!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A visual novel focused on a new girlfriend, lacking horror themes."
+    },
+    {
+      "id": "cmqsezwnw03vsqwegchctuhn1",
+      "title": "Boku to Iu Mono",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A psychological tale of a wandering conscience without horror elements."
+    },
+    {
+      "id": "cmqsezyrb03wbqwegfo4hipvw",
+      "title": "Mr. Wolf",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game is a simple visual novel with no overt horror elements."
+    },
+    {
+      "id": "cmqsezzvv03wlqweg7cye0wh5",
+      "title": "The Box",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A walking‑sim about breaking boxes has no horror content."
+    },
+    {
+      "id": "cmqsf05tm03xsqwegzi3ernnf",
+      "title": "Night Store Simulator",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A low‑poly night‑store simulation with no horror elements."
+    },
+    {
+      "id": "cmqsf07bm03ydqweghgabmujz",
+      "title": "The Coma 2B: Catacomb - The Survivalist Youngho",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The description suggests a survival adventure rather than a horror premise."
+    },
+    {
+      "id": "cmqsf1dp904beqwegqyg32c01",
+      "title": "Escaping Diddler",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game centers on a comedic stealth‑escape from a party, lacking any horror tone or dread."
+    },
+    {
+      "id": "cmqsf2fmy04o0qwegt36y74ow",
+      "title": "Chica's Party World: Rebaked",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A reboot of a party‑world game focusing on a security robot, with no evident horror elements."
+    },
+    {
+      "id": "cmqsf3qej053bqwege6nxwvmv",
+      "title": "Unicycle Pizza Time!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A rage‑inducing platformer set in an urban environment, with no horror focus."
+    },
+    {
+      "id": "cmqsf3qen053eqweg3lf7xjno",
+      "title": "Individualism In The Dead Internet Age: An Anti Big Tech Asset Flip",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes an interactive essay and walking simulator about technocapitalism, not horror."
+    },
+    {
+      "id": "cmqsf3u34054fqwegqq030aqb",
+      "title": "I Want To Cheat",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The premise of infidelity, while potentially morally dubious, does not inherently constitute horror under the defined scope."
+    },
+    {
+      "id": "cmqsf41uz0589qwegr17304jr",
+      "title": "Cage: Story of Lust",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary focuses on romance and making a world colorful again, which does not align with the criteria for horror."
+    },
+    {
+      "id": "cmqsf502005hqqwegxjz7mj12",
+      "title": "Halloween Hero",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Focuses on a child's nostalgic quest to reclaim Halloween, lacking substantive horror elements."
+    },
+    {
+      "id": "cmqsihcou005ohkegl95z33ev",
+      "title": "100 Hidden Cthulhu Fish 2",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A hidden‑object clicker where Cthulhu fish are merely a visual motif; horror is incidental to the core gameplay."
+    },
+    {
+      "id": "cmqsihcx9005shkegso130mw9",
+      "title": "Apathy Satsujin Club",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No descriptive evidence of horror content despite the murder‑suggestive title."
+    },
+    {
+      "id": "cmqsihi3r007dhkegi3ykp4hu",
+      "title": "Jigoku Seek",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Lacks details indicating a horror focus; the title alone is insufficient to qualify."
+    },
+    {
+      "id": "cmqsihi3s007ehkegapsrs3g4",
+      "title": "Sunky the PC Port",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A comedic parody platformer with no horror themes or atmosphere."
+    },
+    {
+      "id": "cmqsihi3w007ihkeg95ilemdf",
+      "title": "Mischief Castle",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Classic NES‑style platform adventure; liminal and surreal elements do not constitute primary horror content."
+    },
+    {
+      "id": "cmqsihmpn008ohkegdn10pto9",
+      "title": "Twiddlefinger",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This game is described as a music mod based on a YouTube channel and a popular internet meme, fitting the 'comedy & parody' tag and lacking any horror elements."
+    },
+    {
+      "id": "cmqsiigjd00k2hkeg3g9wq7wu",
+      "title": "Purrfect Apawcalypse: Ideal Finale!!!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is identified as a fan-game for a series and, without any horror-related tags or descriptions, is assumed to be within the established genre of its parent series, which is not indicated as horror."
+    },
+    {
+      "id": "cmqsiip1900mhhkeg2439ymlb",
+      "title": "2Ship2Harkinian",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This entry describes itself as a mod for a Nintendo 64 game that adds 'quality of life improvements' and does not contain any elements suggesting a horror genre."
+    },
+    {
+      "id": "cmqsijfx000wkhkegeei6ffxx",
+      "title": "Super 10 VR Bundle",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a bundle of various VR titles with no indication of horror themes."
+    },
+    {
+      "id": "cmqsijkqg00xnhkegcmkguoz1",
+      "title": "Mori no Naku Shunkan he: The End of a Saga",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Described as a 'parody'/'fangame' of 'Higurashi When They Cry' with a 'Comedy & Parody' tag, it leans away from pure horror."
+    },
+    {
+      "id": "cmqsil0es01hhhkeggrm5lhxm",
+      "title": "Exit: Left or Right",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "A death‑oriented choice mechanic hints at tension but lacks a clear horror narrative or atmosphere."
+    },
+    {
+      "id": "cmqsilqky01qmhkegjb3h2rdt",
+      "title": "Reimei no Yu",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The description describes a routine hotel inspection without any horror cues."
+    },
+    {
+      "id": "cmqsilu0y01rmhkegmhq7fgg2",
+      "title": "Is It Wrong To Kiss The Bracken?!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A romance visual‑novel with no horror content, despite a source reference."
+    },
+    {
+      "id": "cmqsimjad01z5hkegemdxejyd",
+      "title": "Tsukiweb",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "An open‑source reimplementation of Tsukihime, which contains dark elements but is not a core horror title."
+    },
+    {
+      "id": "cmqsimrgc023dhkeg2ny3179c",
+      "title": "Pony in Backrooms",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "A My Little Pony fangame set in the liminal Backrooms; the premise is horror‑inspired but the tone is likely playful."
+    },
+    {
+      "id": "cmqsin859029qhkegbs5qd9t2",
+      "title": "Zeno",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Lacking explicit horror themes, the description reads like a chaotic adventure rather than a horror narrative."
+    },
+    {
+      "id": "cmqsinbae02aehkeggi42ih9z",
+      "title": "Minecraft Alpha 0.0.0",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Although marketed as a scarier version of Minecraft, it remains a sandbox with no core horror gameplay or narrative."
+    },
+    {
+      "id": "cmqsinqsy02fwhkeg9b8qqyzc",
+      "title": "FrankenBob's Quest",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A pixel‑art platformer with no horror cues or storyline."
+    },
+    {
+      "id": "cmqsinrxd02gehkegxhj2srhu",
+      "title": "Feed It Souls",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Described as a Metroidvania for the GBC with tags like 'Urban Decay' and 'Side view', there is no indication of prominent horror elements, making it more of a genre exploration."
+    },
+    {
+      "id": "cmqsipnan032hhkegklzhvaq1",
+      "title": "I Commissioned Some Bees 13",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite a 'Spooky' warning, the core gameplay of finding hidden bees in artwork does not inherently evoke horror, making it incidental at best."
+    },
+    {
+      "id": "cmqsiqrqo03gahkegyfqoizku",
+      "title": "Blood Orange",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This game focuses on exploration and discovery in the Amazon for a rare dolphin, with no indication of horror elements."
+    },
+    {
+      "id": "cmqsirg7x03m3hkeg2vl8vsn6",
+      "title": "Omega no Shikai: Miyo Owareru Shimai Towa(●nd)",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No available description or horror‑related tags indicate it does not prominently feature horror."
+    },
+    {
+      "id": "cmqsirg7y03m4hkeg2e4c4cc5",
+      "title": "Omega no Shikai: Aki Kaketa Shiki no Ai",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Lacks any horror‑related information, suggesting it is not a horror title."
+    },
+    {
+      "id": "cmqsirg7z03m8hkeggpgrkohd",
+      "title": "Omega no Shikai 1. Shiki no Hajimari",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No descriptive or tag evidence points to a horror focus."
+    },
+    {
+      "id": "cmqsirg8503mbhkeg6x7f84kl",
+      "title": "Omega no Shikai: Aki Kaketa Shiki no Ai: Zan",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The provided summary does not contain enough information to classify it as horror."
+    },
+    {
+      "id": "cmqsis6p003w6hkegxek5f0aa",
+      "title": "Doki Doki Pink Eyes",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a 'fun and warm love story,' which directly contradicts the affective scope of horror."
+    },
+    {
+      "id": "cmqsisdht03xhhkegp5798y6c",
+      "title": "From the Sun to the Moon",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a romance story leading up to an anniversary, with no indication of horror elements."
+    },
+    {
+      "id": "cmqsiu6ka04ikhkeg3ke83wb2",
+      "title": "Therapist: Mind Manager",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a simulation of a psychotherapist's life without any indication of horror, dread, or psychological tension."
+    },
+    {
+      "id": "cmqsiuqhv04pvhkega9o88p0a",
+      "title": "Zeddas",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The provided genre of 'Adventure, Point-and-click' and the tag 'FMV / Live Action' offer no indicators of horror."
+    },
+    {
+      "id": "cmqsiv5qc04ughkegw43ma4kj",
+      "title": "The House",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary, describing a weekend stay at a friend's house, lacks any elements of horror, dread, or tension."
+    },
+    {
+      "id": "cmqsivbmu04vrhkeg85ifoh8f",
+      "title": "No Way Out",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Its premise focuses on breaking routine and adventure rather than any sustained horror atmosphere."
+    },
+    {
+      "id": "cmqsivd3n04wbhkegorp785kg",
+      "title": "Lucky Paradox",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "An adult harem visual novel focused on romance and cuteness, with no horror‑related themes."
+    },
+    {
+      "id": "cmqsivhgp04yghkeg5lm7luqy",
+      "title": "Victim Doll",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The brief description is vague and lacks any indication of horror, fear, or dread."
+    },
+    {
+      "id": "cmqsivhgt04yjhkegji48r8w9",
+      "title": "This was Once a Place of Honour",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or horror‑related tags are provided, suggesting it is not primarily a horror work."
+    },
+    {
+      "id": "cmqsivktu04z8hkegr4kehh8q",
+      "title": "Hareraiser II",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "It is a treasure‑hunt/alternate‑reality experiment, not centered on horror or fear."
+    },
+    {
+      "id": "cmqsiwmuv05cuhkegwwemf2n8",
+      "title": "Undertale Together",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a co-op mod for Undertale, which is not primarily a horror game, and the mod itself focuses on cooperative play."
+    },
+    {
+      "id": "cmqsixnn405o6hkeg5jp0dqms",
+      "title": "Dead by Daylight: The 80's Suitcase",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "While part of a horror game franchise, this is a cosmetic DLC focused on fashion and does not inherently add horror gameplay or themes."
+    },
+    {
+      "id": "cmqsixxnt05r3hkeghr1vas6h",
+      "title": "The Sun Atop a Column",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a 'KN about belonging, set in a world where there is no sun,' which leans more towards drama or philosophical themes than overt horror."
+    },
+    {
+      "id": "cmqsiylzf05z3hkeg95am77tv",
+      "title": "Miko Monogatari!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The description of a medium-length novel game where you develop your character does not contain any elements suggestive of horror."
+    },
+    {
+      "id": "cmqsiyy4p0636hkegjhno5r51",
+      "title": "Youka no Sono",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Without a description, and only the genre 'Visual Novel' and tag 'Visual Novel', there is no indication that this game prominently features horror."
+    },
+    {
+      "id": "cmqsizj9a069uhkegvomhcc6r",
+      "title": "John Doe",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A surreal visual‑novel dating‑sim premise lacks sustained horror atmosphere or themes."
+    },
+    {
+      "id": "cmqsizxrm06fghkegepgkor2y",
+      "title": "Itchy Scratchy",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game’s premise is comedic and short, with no horror intent."
+    },
+    {
+      "id": "cmqsj08c306hqhkegfgozveya",
+      "title": "Missing",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A short mystery VN about a missing friend, without clear horror elements."
+    },
+    {
+      "id": "cmqsj0e7j06kwhkeg63isjvwt",
+      "title": "Glorp",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A quirky platformer labeled ‘unsettling’ but lacking horror tone or content."
+    },
+    {
+      "id": "cmqsj0kvk06mdhkegeazys1sd",
+      "title": "Apathy Hayarigami",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror‑related description or tags; appears to be a standard visual novel."
+    },
+    {
+      "id": "cmqsj0pns06o0hkeg144xvrxa",
+      "title": "Apathy: Arai Shouji",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Lacks any horror‑related description or tags, indicating a non‑horror visual novel."
+    },
+    {
+      "id": "cmqsj1c8206uwhkeg6xfv6pae",
+      "title": "Movie Quest",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A simulation of watching movies with no horror themes or content."
+    },
+    {
+      "id": "cmqsj1kpc06yqhkegt41tpdkf",
+      "title": "The Ecdysis",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "An episodic adventure/indie title with no indication of horror elements or unsettling themes."
+    },
+    {
+      "id": "cmqsj2oei07b8hkegc0wsc6fr",
+      "title": "An Outcry, Prelude",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The short visual novel focuses on abstract literature and atmospheric texture rather than any horror themes."
+    },
+    {
+      "id": "cmqsj2qr107bqhkegzdz1g08w",
+      "title": "Cat Nips",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite its macabre premise, the game is presented as a light-hearted adventure about a cannibalistic cat and lacks sustained psychological or atmospheric horror."
+    },
+    {
+      "id": "cmqsj2s5v07c6hkegsska3lrp",
+      "title": "Clown Café",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a comedic parody visual novel; horror elements are absent."
+    },
+    {
+      "id": "cmqsj4bvd07s7hkeg4z3iiu2l",
+      "title": "Jolly Laughter",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A cheerful Christmas‑card visual novel with no horror themes."
+    },
+    {
+      "id": "cmqsj4ie507tahkeg6wflrwnr",
+      "title": "Ghastly Goodies",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A light‑hearted Halloween‑themed platformer focused on candy collection."
+    },
+    {
+      "id": "cmqsj4t1107yehkegtjwzpxvs",
+      "title": "Maia",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A short kinetic visual novel about a video call with a cute tone."
+    },
+    {
+      "id": "cmqsj4u4a07yxhkegobfj6hzp",
+      "title": "Chemistry and Physics",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A suspenseful chase narrative that leans toward thriller rather than horror."
+    },
+    {
+      "id": "cmqsj4zwu080ihkeg0640b2d2",
+      "title": "Is This True?! My Cute Kouhai is in Love With Me!",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game is a lighthearted visual novel about romance with no horror elements."
+    },
+    {
+      "id": "cmqsj5ag1084jhkegt2m1gpzi",
+      "title": "What Goes Pumpkin the Night",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A Halloween‑themed visual novel with no horror content beyond the setting."
+    },
+    {
+      "id": "cmqsj5j1j086hhkegaxn3s069",
+      "title": "Noir Detective",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A 2D stealth game set in 1930s Chicago that lacks any horror atmosphere."
+    },
+    {
+      "id": "cmqsj63js08c4hkeghq4cntme",
+      "title": "Nguoi La Part 1",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A cinematic visual novel about a speedrunner in an urban setting with no horror cues."
+    },
+    {
+      "id": "cmqsj74i208mthkeg0zvt3g5x",
+      "title": "Ruff Times",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A comedic idle clicker about dogs with no horror content."
+    },
+    {
+      "id": "cmqsj74i308mwhkegxgzex19m",
+      "title": "Conurbation",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a game about restoring nature, which does not align with horror themes."
+    },
+    {
+      "id": "cmqsj7e2t08r3hkegxs6e09ed",
+      "title": "Symphony of Seven Souls",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary focuses on creative struggles and composing music, lacking any indication of horror elements."
+    },
+    {
+      "id": "cmqsj7fkz08rnhkegfy5rpyz0",
+      "title": "Toilet Flushing Simulator",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The game is explicitly tagged as 'Comedy & Parody' and its premise is nonsensical, disqualifying it as horror."
+    },
+    {
+      "id": "cmqsj7oqa08u2hkegklq28ypk",
+      "title": "Houchou Shoujo Gensoukyoku",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Despite the 'Urban Decay' tag, the description as a Metroidvania-style fangame does not inherently indicate horror themes."
+    },
+    {
+      "id": "cmqsj8asv091chkegauw1ieml",
+      "title": "Iwaihime: Extra Chapter - Musubihime",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The summary describes a character as an advisor and fountain of wisdom, with no elements suggesting horror, despite being a visual novel."
+    },
+    {
+      "id": "cmqsjbpo60acqhkegebqb1h73",
+      "title": "Irmão Grande & Brasileiro",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This game is described as a reality show simulator with a focus on competition and eviction, explicitly labeled as 'Comedy & Parody,' placing it outside the horror spectrum."
+    },
+    {
+      "id": "cmqsjbt7l0adjhkeglbryl5er",
+      "title": "This Box Conveys People",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A visual‑novel about debts and work with no evident horror themes or unsettling atmosphere."
+    },
+    {
+      "id": "cmqsjckgx0aoqhkeg69ok24pv",
+      "title": "The Chameleon",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A retro stealth action game focused on super‑powers and style, lacking horror content."
+    },
+    {
+      "id": "cmqsjcp2s0apyhkeg5h9qvawl",
+      "title": "Schlenderman",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Listed as a comedy/parody Austrian satire, it does not aim to evoke fear or dread."
+    },
+    {
+      "id": "cmqsjcz5c0asphkeg9uqezj78",
+      "title": "Bem Feito: Legacy Edition",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A peaceful life‑simulation game despite an \"Unsettling\" tag, with no horror focus."
+    },
+    {
+      "id": "cmqsjlhaz0dqihkegneywrrkg",
+      "title": "Graphic Adventures",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is a compilation of classic text-based adventures that have been graphically updated, and while some may have darker themes, the core gameplay and genre do not inherently point to prominent horror."
+    },
+    {
+      "id": "cmqsk1gai001boseg2qdtk0gs",
+      "title": "Halo: Campaign Evolved",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Halo is a science fiction action series, and the summary describes a pre-purchase bonus, with no indication of horror elements."
+    },
+    {
+      "id": "cmqsk20qn001tosegjhwymeg0",
+      "title": "Fortune Mill",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This is an incremental simulation game focused on making money to escape, lacking any thematic elements associated with horror."
+    },
+    {
+      "id": "cmqskvcvc0043qoegqm37vtcn",
+      "title": "Job Simulator",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Job Simulator is a lighthearted VR experience where players simulate mundane jobs, with no horror elements present."
+    },
+    {
+      "id": "itch_27e0a002486c365a",
+      "title": "Incredibox - Sprunki MegaSwap [Footlong Nacho's Take]",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The title and description suggest a music creation or rhythm game, with no indication of horror elements."
+    },
+    {
+      "id": "itch_45ed412222c024f4",
+      "title": "FINITE JEST Demo: The Prologue",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Without a description, the title does not inherently suggest horror; 'Finite Jest' is a novel title with no horror connotations."
+    },
+    {
+      "id": "itch_f374546cea8c771c",
+      "title": "Roll or Die Trying",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The title suggests a game of chance or a difficult challenge, but not necessarily horror."
+    },
+    {
+      "id": "itch_e6f0a498b6baa2ea",
+      "title": "Vox's Tale: Echoes of the Stone Sanctum",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The title suggests a fantasy adventure or role-playing game, with no inherent horror elements indicated."
+    },
+    {
+      "id": "itch_31251340d8a51db6",
+      "title": "AI_RPG_Storyteller",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "This appears to be a tool or game for generating RPG stories, with no inherent horror focus."
+    },
+    {
+      "id": "itch_d5bceaed96431791",
+      "title": "Modulo 7 - the void",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No evidence of horror elements is present beyond a vague title."
+    },
+    {
+      "id": "itch_e952a1a9f5f8800d",
+      "title": "Pink Noise",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Without additional context, the title alone does not indicate a horror focus."
+    },
+    {
+      "id": "itch_051444f36b1f8529",
+      "title": "GORRJ [Demo]",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror indicators are provided in the available information."
+    },
+    {
+      "id": "itch_eea45494452ef853",
+      "title": "Savage Sunshine VR",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The title conveys a lighthearted tone rather than horror."
+    },
+    {
+      "id": "itch_48e7e17bb7a91bcc",
+      "title": "QUIRKLON [Prototype]",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "There is insufficient evidence to classify it as horror."
+    },
+    {
+      "id": "itch_d16bd50649c95d50",
+      "title": "Vinny Location",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror elements are indicated by the title or available information."
+    },
+    {
+      "id": "itch_8174bc5ca837d60a",
+      "title": "My Little Pony: The Final Curse",
+      "isHorror": false,
+      "classification": "horror-adjacent",
+      "reason": "While the title mentions a curse, it is likely a fan‑made pony game rather than a full horror experience."
+    },
+    {
+      "id": "itch_28488bdf8151c8c9",
+      "title": "Chalkdude",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror clues are present in the title or known details."
+    },
+    {
+      "id": "itch_191f1bd1a51e3dba",
+      "title": "ONatBBDoCMPFMaWEKwBSUVMaSP",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The title provides no hint of horror content."
+    },
+    {
+      "id": "itch_9314c020155abead",
+      "title": "Nogginknockers for 3DO",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "There is no evidence that this title involves horror themes."
+    },
+    {
+      "id": "itch_c1dd2a7826ab33be",
+      "title": "Fingers of Fate (2024 Re-Uploaded)",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror elements are indicated by the title or available data."
+    },
+    {
+      "id": "itch_295fc71e786e34b6",
+      "title": "Woy: Wait",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No horror‑related keywords or known context indicate a horror focus."
+    },
+    {
+      "id": "itch_a169673c07f6d494",
+      "title": "Emergent Retake",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Title and lack of horror cues suggest a generic or non‑horror experience."
+    },
+    {
+      "id": "itch_929c4c9b7cf5e0d8",
+      "title": "CIRCUS",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Without additional context the title alone does not imply horror content."
+    },
+    {
+      "id": "itch_f6506f0befee7437",
+      "title": "consoul.exe",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The name suggests a console‑style utility rather than a horror experience."
+    },
+    {
+      "id": "itch_bfe4c21dd3126b4c",
+      "title": "Mall Runner",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "Sounds like an endless‑runner set in a mall, with no horror implications."
+    },
+    {
+      "id": "itch_8823df2f38b2b6ab",
+      "title": "Watchfires",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The title is ambiguous but provides no clear indication of horror themes."
+    },
+    {
+      "id": "itch_be0e479add2b9b82",
+      "title": "KittyFrogDash - demo",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_5bca5c75d7955d34",
+      "title": "Low Fuel",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_b7afcda99bd9b00f",
+      "title": "Running Zombies",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_cb3a20af669b6d47",
+      "title": "The Demon Jar",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_0c03f4345269a10c",
+      "title": "Jamm Game (crazycompositionsmatt)",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_8cf63b8525b488c7",
+      "title": "Blow Up Masayoshi Shido: The Video Game",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_35da850bd8145c24",
+      "title": "Prototime: chapter 1",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "itch_eb5a1fc6930e5877",
+      "title": "Durp's Adventure",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "No description or tags indicate horror content."
+    },
+    {
+      "id": "cmqseuxbo027kqwegqp5m8dru",
+      "title": "Stevo Life",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A comedic adventure about a drunk man; no horror themes or tension present."
+    },
+    {
+      "id": "cmqseuykd027vqwegvd1891jf",
+      "title": "Sharks and Minnows",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A survival‑style indie game with no overt horror or unsettling elements."
+    },
+    {
+      "id": "cmqsevdzr02dmqwegihn1b0gx",
+      "title": "Hotel Security",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "The description lacks any significant horror or unsettling content beyond a generic anomaly."
+    },
+    {
+      "id": "cmqsew1qt02l7qwegmvhomzce",
+      "title": "Cartagra",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "An all‑ages visual novel without horror themes or sinister twists."
+    },
+    {
+      "id": "cmqsew2vg02lqqwegijkr904f",
+      "title": "Re:play",
+      "isHorror": false,
+      "classification": "non-horror",
+      "reason": "A time‑loop text adventure with no horror or dread elements."
+    }
+  ],
+  "approvedKeeps": [
+    {
+      "id": "itch_d46fb14a34bc3db7",
+      "title": "The Shape That Waits (Playdate) + OST",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is explicitly described as a 'claustrophobic nightmare' with 'terror hunting you,' fitting the direct definition of a horror game."
+    },
+    {
+      "id": "itch_9936965fdd716292",
+      "title": "The Yellow Wallpaper",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As an adaptation of the classic psychological horror short story, this game leverages themes of dread, psychological tension, and macabre mystery."
+    },
+    {
+      "id": "itch_5161e6f3713d6395",
+      "title": "WALLPAPER",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Described as an 'artgame' and 'Walking simulator' with elements of ghosts, surrealism, and uncovering dark secrets, it uses eerie atmosphere and psychological tension."
+    },
+    {
+      "id": "itch_b3c456381c9999e1",
+      "title": "The Yellow Wallpaper",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This is a text-based interactive fiction game adapting 'The Yellow Wallpaper,' focusing on the psychological decay and creeping dread of the source material."
+    },
+    {
+      "id": "itch_d326eeb775218ff8",
+      "title": "The Yellow Wallpaper",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This is an interactive fiction game directly adapting the 1892 short story, leveraging its themes of psychological horror and confinement."
+    },
+    {
+      "id": "itch_7f397b2cbccd397b",
+      "title": "Wallpaper V1.1",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Despite the title, the game is tagged as an 'Escape Game' featuring 'Monsters' and referencing 'Backrooms,' clearly indicating a horror game experience."
+    },
+    {
+      "id": "itch_895592eeb16e5889",
+      "title": "UNseen, A Horror & Platforming Survival Experience (Asset pack included)",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly described as a 'Horror/Platforming experience' involving running, jumping, and hiding from 'pursuers,' it combines action with direct fear-inducing elements."
+    },
+    {
+      "id": "itch_0a75989ce5ce2404",
+      "title": "The Yellow Wallpaper",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This game's title, genre, and tags (especially referencing Five Nights at Freddy's) indicate it's a horror game, likely drawing from the psychological dread of the source material."
+    },
+    {
+      "id": "itch_4990a5e60c810b1b",
+      "title": "The Yellow Wallpaper",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As an interactive fiction adaptation of Charlotte Gilman's 'The Yellow Wallpaper,' this game directly engages with themes of psychological tension and dread."
+    },
+    {
+      "id": "itch_154db95f453b0d74",
+      "title": "The Yellow Wallpaper",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This 3D interactive fiction/walking simulator adapts 'The Yellow Wallpaper,' delivering an uncanny and psychologically tense experience."
+    },
+    {
+      "id": "itch_251fb8d6e20b2ab6",
+      "title": "The Yellow Wallpaper Ugly Wip",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is a Work-in-Progress game explicitly stated to be an adaptation of 'The Yellow Wallpaper,' incorporating horror and spooky elements."
+    },
+    {
+      "id": "cmpwg3ytk00azg4eguxh5l783",
+      "title": "The House in Fata Morgana: A Requiem for Innocence",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a prequel to 'The House in Fata Morgana,' this visual novel delves deeply into gothic horror, psychological torment, and grim despair."
+    },
+    {
+      "id": "cmpwg7aup00olg4egjz9uvq4l",
+      "title": "Evil",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game's title 'Evil' and its summary detailing a girl experiencing an unseen presence in her home strongly indicate psychological horror and dread."
+    },
+    {
+      "id": "cmpwzgpkh00wul8eg2w05wjz8",
+      "title": "Darkest Dungeon: The Crimson Court",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As an expansion to 'Darkest Dungeon,' this game embodies grimdark fantasy, cosmic insignificance, and psychological dread, making it a definitive horror entry."
+    },
+    {
+      "id": "cmpwzh3og017il8egjy7muysb",
+      "title": "Penko Park",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Exploring an abandoned park with mysterious inhabitants suggests an eerie atmosphere and macabre mystery, qualifying it as horror-adjacent."
+    },
+    {
+      "id": "cmpwzilah0225l8egcfj14vlu",
+      "title": "Major\\Minor",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This visual novel centers on a wave of murders, indicating prominent themes of macabre mystery and psychological tension, aligning with dark visual novel horror."
+    },
+    {
+      "id": "cmpwzj87c007p9gegg1auc5yb",
+      "title": "Close Your Eyes",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of escaping death row, psychological binding, and the tag 'Chaotic Panic' strongly suggest themes of dread and psychological tension central to horror."
+    },
+    {
+      "id": "cmpwzjc6v009a9geglvfbcr1j",
+      "title": "123 Slaughter Me Street",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Despite the 'Comedy & Parody' tag, the title, 'Stealth & Hide' gameplay, and 'Chaotic Panic' tag indicate a core experience driven by fear and evasion, aligning with horror."
+    },
+    {
+      "id": "cmpwzkio200xs9gegkmlnzyar",
+      "title": "The Backrooms: Lost Tape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Based on the known horror concept of 'The Backrooms' and the explicit mention of being trapped with dangerous 'entities,' this game clearly evokes fear and dread."
+    },
+    {
+      "id": "cmpwzkqnc011e9gegg43s9nuj",
+      "title": "Yuppie Psycho",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Yuppie Psycho is renowned for its psychological and corporate horror themes, featuring sinister twists and grotesque elements despite the truncated summary."
+    },
+    {
+      "id": "cmpwzkwqp013m9gegdrnrodqe",
+      "title": "The Walking Dead: A New Frontier - Episode 3: Above the Law",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As part of 'The Walking Dead' series, this episode inherently involves survival horror, grim despair, and psychological tension within a zombie apocalypse setting."
+    },
+    {
+      "id": "cmpwzllog01i79geghvh51r27",
+      "title": "The Walking Dead: A New Frontier - Episode 4: Thicker Than Water",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As part of 'The Walking Dead' series, this episode inherently involves survival horror, grim despair, and psychological tension within a zombie apocalypse setting."
+    },
+    {
+      "id": "cmpwzmhfw01zx9gegve2jjckr",
+      "title": "The Walking Dead: A New Frontier - Episode 5: From the Gallows",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As part of 'The Walking Dead' series, this episode inherently involves survival horror, grim despair, and psychological tension within a zombie apocalypse setting."
+    },
+    {
+      "id": "cmpwzmt7y028x9gegs0rushpx",
+      "title": "Die Young",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of being kidnapped on a mysterious island, the need to escape, and the 'Chaotic Panic' tag firmly establish a survival thriller with significant horror elements."
+    },
+    {
+      "id": "cmpwzoc8c03529geg08j0tw9y",
+      "title": "Darkest Dungeon: The Color of Madness",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a DLC for the acclaimed horror RPG 'Darkest Dungeon,' this expansion directly features cosmic and Lovecraftian horror, grimdark despair, and rural isolation."
+    },
+    {
+      "id": "cmpwzoz6b03i59geg08sdgpdo",
+      "title": "Toilet Chronicles",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game's premise involves a mystical, trapped public toilet scenario with life-or-death stakes and 'Chaotic Panic,' indicating psychological tension and dread."
+    },
+    {
+      "id": "cmpwzpi3q03t89geg7pjpnxbu",
+      "title": "Dead Wishes",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This visual novel's 'thriller-romance' designation implies significant psychological tension, sinister narrative elements, and potentially grim choices, fitting the horror-adjacent criteria."
+    },
+    {
+      "id": "cmpwzpi3q03t99gegqg6r7ebd",
+      "title": "Intruders: Hide and Seek",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Embodying a child in a stealth game during the 'worst night of his life' against intruders inherently generates fear, tension, and a sense of vulnerability, squarely placing it within horror."
+    },
+    {
+      "id": "cmpwzpu4g03xa9gegbxx0n6yb",
+      "title": "Elder Chaos",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Directly based on Lovecraft's Cthulhu mythos and featuring 'eldritch Old Ones,' this game embodies cosmic insignificance and dread, a core pillar of horror."
+    },
+    {
+      "id": "cmpwzqcuw04879gegksjxhmlp",
+      "title": "96 Mill",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The summary's hint of an 'infamous legacy' refusing to be buried in an abandoned, isolated setting suggests an eerie atmosphere and macabre mystery, fitting horror-adjacent themes."
+    },
+    {
+      "id": "cmpwzqkp904at9geg3krkf1nb",
+      "title": "The Crooked Man",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly tagged as 'Jumpscare Heavy' and 'Unsettling,' this game clearly aims to evoke fear and psychological tension through its narrative of odd occurrences and compelling mystery."
+    },
+    {
+      "id": "cmpwzsfng05fu9gegz8ic3nj5",
+      "title": "Simulacra 2",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Investigating a 'dead influencer' and 'mysterious death' through personal digital artifacts creates a strong sense of macabre mystery and psychological tension, fitting horror-adjacent themes."
+    },
+    {
+      "id": "cmpy2wgls05h55kegbxm4nebs",
+      "title": "LeftWay",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Explicitly tagged as 'Unsettling' with 'Liminal & Surreal' elements, this game aims to evoke psychological tension and an eerie atmosphere, classifying it as horror-adjacent."
+    },
+    {
+      "id": "cmpy2wqfe05p15kegfysdj0hp",
+      "title": "Horror of the Deep",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title 'Horror of the Deep' combined with a summary detailing a descent into a place where 'all cries will be silenced' unambiguously indicates fear, dread, and intense psychological tension."
+    },
+    {
+      "id": "cmpy2x0l905s35kegdjxw55ca",
+      "title": "Granny: Chapter Two",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a sequel to a recognized horror game, the premise of escaping 'Granny and Grandpa' combined with the 'Chaotic Panic' tag firmly establishes it as a game of fear, dread, and survival horror."
+    },
+    {
+      "id": "cmpy2ynet06mh5keg73ijs2hi",
+      "title": "The Dark Stone from Mebara",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The presence of an 'eerie black rock with strange properties' and the explicit 'Unsettling' tag indicate macabre mystery and psychological tension, classifying it as horror-adjacent."
+    },
+    {
+      "id": "cmpy2z04a06ts5keg8g103orc",
+      "title": "Call to 10",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game explicitly states a premise inspired by the Saw film series, featuring a kidnapped protagonist, a maniacal antagonist, and a struggle for escape, all indicative of pure survival horror."
+    },
+    {
+      "id": "cmpy302na07a55kegc6ne6cmd",
+      "title": "Darkness Assault",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise involves missing people, human experimentation, and finding oneself mysteriously trapped in a terrible location, all hallmarks of a dark mystery with strong horror undertones."
+    },
+    {
+      "id": "cmpy310ht07q25kegd1puqlnc",
+      "title": "Slashy Souls",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a game explicitly inspired by Dark Souls 3, it inherits the grimdark fantasy, oppressive atmosphere, and challenging themes that place the Soulsborne series firmly within the horror-adjacent catalog."
+    },
+    {
+      "id": "cmq0m07v7002cvseglzt711jj",
+      "title": "Gentle Fall [Demo] [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The 'Thriller' tag in a visual novel context strongly suggests psychological tension, suspense, or sinister twists, fitting the broad definition of horror-adjacent experiences."
+    },
+    {
+      "id": "cmq0m0cdn002uvsegz1w4ab0m",
+      "title": "Cemetery Mary [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The narrative involves a macabre interest in cemeteries, missing parents, and a mysterious text, combining elements of eerie atmosphere and psychological tension suitable for horror-adjacent classification."
+    },
+    {
+      "id": "cmq0m0e6g0032vseg5xzbyt6o",
+      "title": "Like Lovers Do [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The tagline explicitly stating an ending in 'tragedy' and the 'Melancholic' tag evoke a sense of grim despair and inevitable doom, aligning with the inclusive definition of horror's emotional range."
+    },
+    {
+      "id": "cmq0m0fx8003avsegzlihxdiz",
+      "title": "Project: Eden's Garden (Cancelled) [Free] [Visual Novel]",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The explicit 'death game' premise, where only 2 out of 16 participants will survive, immediately establishes high stakes, psychological tension, and fear of death, making it a clear entry for pure horror."
+    },
+    {
+      "id": "cmq0m0hpz003ivsegk6ve6xui",
+      "title": "PIG [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The cryptic summary, 'One's time comes. One's time goes,' combined with the provocative title 'PIG,' suggests a grim exploration of mortality or existential dread, aligning with horror's affective themes."
+    },
+    {
+      "id": "cmq0m0kd3003uvseg67ns0uaj",
+      "title": "(DEMO) There's Something Wrong With My Blind Date! [Free] [Visual Novel] [Windows] [macOS]",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title and summary explicitly convey a sense of dread, entrapment, and a sinister psychological threat during a blind date, firmly placing it within the pure psychological horror genre."
+    },
+    {
+      "id": "cmq0m0l87003yvsegb8s04n3x",
+      "title": "Exiting the White Room [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The imagery of a 'White Room' and the line 'We've lived here for a long, long time' strongly imply themes of psychological entrapment, isolation, and macabre mystery, aligning with horror-adjacent elements."
+    },
+    {
+      "id": "cmq0m0n530047vsegddsok2h8",
+      "title": "Darkness Calls the Raven (Demo) [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title, combined with explicit 'Oppressive' and 'Unsettling' tags, clearly indicates a game aiming for eerie atmosphere and psychological tension, fitting the criteria for pure horror."
+    },
+    {
+      "id": "cmq0m0o0c004bvsegl8kgdq8j",
+      "title": "Night in Delirium [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The inclusion of 'Thriller' in the genre description, even alongside romance, indicates an intentional focus on suspense, psychological tension, or sinister plot developments, qualifying it as horror-adjacent."
+    },
+    {
+      "id": "cmq0m0qlw004nvseg9yg8r8bh",
+      "title": "Everyone is Asleep [Free] [Visual Novel] [Windows] [macOS] [Linux]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The evocative phrase 'I'm disappearing' suggests themes of existential dread, psychological unraveling, or an eerie, unexplainable phenomenon, aligning with horror's broader affective scope."
+    },
+    {
+      "id": "cmq0m0v0j0057vsegibhioazb",
+      "title": "take care of it. [Free] [Visual Novel] [Windows] [macOS]",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The question 'How far are you willing to go for the sake of your best friend?' implies extreme moral dilemmas and potentially grim, psychologically tense choices that can lead to horrific consequences."
+    },
+    {
+      "id": "cmqqlc7s9006m50ego34egi1f",
+      "title": "Drunk Dad Vs Family",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The premise of a family needing to 'put their drunk father to sleep before he loses control' suggests psychological tension and domestic dread, fitting within the inclusive definition of horror sub-feelings."
+    },
+    {
+      "id": "cmqqlceld007x50egfso1gbez",
+      "title": "OneStarHotel",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game's core hook of needing to 'survive the night while hiding the hotel's darkest secret' directly implies macabre mystery, dread, and a sinister twist typical of horror."
+    },
+    {
+      "id": "cmqqlcqx4009t50eg2mqmw2zk",
+      "title": "Late Night Fears",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title 'Late Night Fears' explicitly names a horror emotion, and the summary mentions a 'gloomy little supermarket' and a bus 'packed with ano' (likely 'anomalies'), suggesting an eerie atmosphere and psychological tension."
+    },
+    {
+      "id": "cmqsacp9v053rrcegqhi1t17p",
+      "title": "Public Fears: George's Farm",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title 'Public Fears' combined with 'mysterious forces,' a 'remote farmhouse,' and the protagonist having 'no idea what awaits him' are classic setups for dread, macabre mystery, and psychological horror."
+    },
+    {
+      "id": "cmqsacwb4056crcegbgffvlpt",
+      "title": "Heartbeat at Midnight",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Although the summary is missing, the title 'Heartbeat at Midnight' strongly suggests suspense and tension, and the 'Stealth & Hide' tag points to potential psychological mind-games or an eerie atmosphere within its visual novel format."
+    },
+    {
+      "id": "cmqsad2zp058nrcegw0zarfbc",
+      "title": "Paradise Sea",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The abstract summary's focus on 'deep consciousness,' 'noise that wanders,' and seeking 'peace that lies beyond' evokes themes of psychological mystery, existential dread, and cosmic insignificance, aligning with horror's sub-feelings."
+    },
+    {
+      "id": "cmqsad9hs05b0rceg16q3xij9",
+      "title": "Terreno di Caccia",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Despite a missing summary, the title 'Terreno di Caccia' (Italian for 'Hunting Ground') strongly implies a narrative of pursuit, danger, and survival, which readily translates to themes of fear, dread, and psychological tension."
+    },
+    {
+      "id": "cmqsadcdv05c2rceghqklrnu3",
+      "title": "Still Warm",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The explicit premise of apartment building residents 'slowly realiz[ing] someone is picking them off, one by one' establishes clear dread, macabre mystery, and the threat of violence, placing it squarely in the horror genre."
+    },
+    {
+      "id": "cmqsadopg05htrcegtpu94c2m",
+      "title": "The Queens Gondola",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game's premise of being 'trapped in a mystical loop fueled by dark magic' and watching 'for anomalies' indicates strong elements of psychological horror, eerie atmosphere, and sinister twists."
+    },
+    {
+      "id": "cmqsadqy805imrcego5l8qxje",
+      "title": "Shards Of Solitude",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A 'survival game created by Miyuki, a girl with a split personality,' directly points to psychological mind-games, an unsettling atmosphere, and existential dread inherent in a reality shaped by a fractured psyche."
+    },
+    {
+      "id": "cmqsadrzs05j1rcegoty047j1",
+      "title": "Overtime: Paper Trail",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Working a 'graveyard shift at a rundown copy shop' with 'strangers' and the ominous directive to 'look deeper' to 'find out what they're hiding' before they retaliate creates a palpable sense of macabre mystery, psychological tension, and unsettling atmosphere."
+    },
+    {
+      "id": "cmqsapugm007geweg7ur4p1w3",
+      "title": "Hangover Gallery",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The explicit summary 'A game about throwing individuals down a pit' directly aligns with grotesque body horror and grimdark despair, establishing an unsettling and macabre premise."
+    },
+    {
+      "id": "cmqsar2kb00ofewegt83i3ypa",
+      "title": "Dream Loser",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Its 'unsettling' and 'liminal & surreal' atmosphere, combined with the presence of a mysterious stranger in a desolate 'grey realm,' firmly establishes psychological tension and dread."
+    },
+    {
+      "id": "cmqsar6qh00peewegrwd9o6on",
+      "title": "The Magic Hour",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The narrative focus on 'new tragedies' and the protagonist's struggle to 'survive' for a week suggests a strong element of dread, danger, and psychological tension, fitting the encyclopedia's inclusive scope."
+    },
+    {
+      "id": "cmqsar7we00plewegl6bjm2w4",
+      "title": "Love at the RatbagTrash Cabin!",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The 'unsettling' tag, 'rural isolation' theme, and the overtly ironic summary ending with 'just... lovely.' strongly indicate a psychological horror narrative and sinister twist."
+    },
+    {
+      "id": "cmqsaracj00q2eweg4euxu0fj",
+      "title": "Creepytape Rewind: Not From Here",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title 'Creepytape Rewind' and the summary's explicit mention of 'isolation,' a 'vulnerable mind,' and 'hostility from the locals' clearly establish a psychological and potentially dread-filled horror experience."
+    },
+    {
+      "id": "cmqsarh9700tpewegwiy23343",
+      "title": "Brush Jjaemu",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Despite being described as 'lighthearted' and a 'Comedy & Parody,' the presence of 'Cosmic & Eldritch' themes and 'Jumpscare Heavy' mechanics indicates a deliberate, prominent use of horror tropes, even if for comedic effect."
+    },
+    {
+      "id": "cmqsarhk100ttewegqfc90f5v",
+      "title": "Scattered Wings",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The 'Liminal & Surreal' tag combined with the foreboding summary about a 'mountain on fire' creates an immediate sense of eerie atmosphere, dread, and psychological tension, fitting the broad horror definition."
+    },
+    {
+      "id": "cmqsarjx900u5eweglcr3ms2k",
+      "title": "Mommy Don't Hurt Me Mommy Don't Hurt Me Mommy Don't Hurt Me",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game's title, combined with a summary detailing a child's terror of 'horrific restless nights' spent alone, fearing unseen entities, squarely places it in the realm of psychological and survival horror."
+    },
+    {
+      "id": "cmqsarp1d00vseweggt8qbg8w",
+      "title": "Machine Party",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Its focus on 'violent party games' where 'failure is lethal,' combined with 'high stakes situations' and the unlikelihood of 'survival,' establishes a grim, despairing, and tense experience that aligns with grimdark or macabre horror."
+    },
+    {
+      "id": "cmqsaru8700x9ewegy8hktcfa",
+      "title": "Echograve",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary strongly suggests an insidious threat, requiring the player to 'listen and watch carefully' as something 'seems to have already made its way inside,' indicative of survival and psychological horror."
+    },
+    {
+      "id": "cmqsarvr900xuewege8bdynga",
+      "title": "Give Gifts Give Life",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a demake of a minigame from the Five Nights at Freddy's franchise, it directly draws from a prominent horror series and its lore of grim events, inherently carrying horror themes."
+    },
+    {
+      "id": "cmqsarvs800xveweg4emwy2yi",
+      "title": "Foxy Go Go Go!",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a remake of a 'death minigame' from the horror franchise Five Nights at Freddy's 2, it inherently embodies grim thematic elements and is associated with the series' horror lore."
+    },
+    {
+      "id": "cmqsas1kj011xeweg76gi0c7v",
+      "title": "House of Empty Names",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of being 'kidnapped,' 'missing a kidney,' and desperate to 'escape at any cost,' alongside 'Chaotic Panic' and 'Stealth & Hide' mechanics, perfectly describes a survival and body horror experience."
+    },
+    {
+      "id": "cmqsas3wg012rewegbgsoypy2",
+      "title": "YuleTown",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The 'Unsettling' tag, combined with a 'strange little town' populated by potentially sinister 'Yule legends,' points directly to eerie atmospheric and folkloric horror."
+    },
+    {
+      "id": "cmqsascjx014xewegid7s4av0",
+      "title": "Nailhead",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game’s premise centers on an evil presence discovered during a winter vacation, making horror the core experience."
+    },
+    {
+      "id": "cmqsasooc019tewegi4293t3t",
+      "title": "Family",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A visual‑novel about a boyfriend’s family home that feels “wrong” signals a psychological‑horror narrative."
+    },
+    {
+      "id": "cmqsasumd01azewegifca4y1y",
+      "title": "Hide & Scream",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Based on the Scream franchise, it incorporates horror themes but is framed as a strategy/stealth game."
+    },
+    {
+      "id": "cmqsasw2c01bcewegxrqmhnfu",
+      "title": "Within of Static: Northgate Mall",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A night‑shift security guard confronts a hidden, threatening presence in an abandoned mall, delivering classic dread."
+    },
+    {
+      "id": "cmqsasw8701bfewegd71qfp71",
+      "title": "Vapinupituru",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Tagged as “Unsettling” and submitted for a horror‑themed jam, it likely leans toward eerie atmosphere."
+    },
+    {
+      "id": "cmqsat04x01byewegb2wp3tmo",
+      "title": "What Lies Within the Ice",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A walking simulator that invites players to discover a mysterious, potentially terrifying secret beneath the ice."
+    },
+    {
+      "id": "cmqsatn1t01jqeweg0gepdgp7",
+      "title": "Arcadletra",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Electronics in an arcade come to life through a mysterious hole, creating a surreal, unsettling scenario."
+    },
+    {
+      "id": "cmqsatu9c01n1ewegeybtgp6d",
+      "title": "The Slow Process of Pulling Out My Guts",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A visual novel featuring a parasitic entity inside a girl's head delivers explicit body‑horror content."
+    },
+    {
+      "id": "cmqsatu9q01n2ewegyaan39ob",
+      "title": "Blood Facsimile",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Set in a dark, surreal sci‑fi world, the FPS adventure emphasizes unsettling atmosphere rather than pure terror."
+    },
+    {
+      "id": "cmqsaukxe01w8ewegjtiz2taj",
+      "title": "CoinPit",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The game’s “dimly lit bar” setting and oppressive tone give it a horror‑flavored mood despite its roguelike mechanics."
+    },
+    {
+      "id": "cmqsavaip0252ewegjk7pjcnk",
+      "title": "Noroi no Yakata",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title (“Mansion of Curse”) and “Unsettling” tag indicate a classic horror platformer."
+    },
+    {
+      "id": "cmqsavc2j025mewegksftsruw",
+      "title": "Five Nights at Grasos's",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A parody FNAF fangame retains the series’ horror roots while emphasizing comedy."
+    },
+    {
+      "id": "cmqsavpg702bgewegfezuv1qy",
+      "title": "Kadath",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A Lovecraftian text adventure explicitly explores cosmic and eldritch horror."
+    },
+    {
+      "id": "cmqsavqzx02c3eweg16eyxc7r",
+      "title": "Ancient Maze",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Its survival‑exploration premise, dynamic fear system, and liminal setting make horror its central focus."
+    },
+    {
+      "id": "cmqsavz6w02e0ewegt3jj2f4r",
+      "title": "Ferus: The Dark Abyss",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An oppressive darkness that must be survived creates a classic survival‑horror atmosphere."
+    },
+    {
+      "id": "cmqsaw31h02eyewegyi54se0b",
+      "title": "Last Fisherman",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The bleak, isolated environments and existential dread create an unsettling atmosphere even though the gameplay focuses on fishing simulation."
+    },
+    {
+      "id": "cmqsaweas02koeweghxfdg637",
+      "title": "Burglin' Gnomes",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The \"Cosmic & Eldritch\" tag hints at Lovecraftian horror, but the core loop is a light‑hearted co‑op heist rather than a fear‑driven experience."
+    },
+    {
+      "id": "cmqsawnsm02mbeweg0eaotrl9",
+      "title": "The Remains of Dahlia",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The missing‑person mystery, a haunted house setting, and stealth investigation deliver classic horror tension."
+    },
+    {
+      "id": "cmqsawpo402mxewegzda661vp",
+      "title": "Sukima: The Creeping Gap",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The first‑person escape premise built around the fear of an ever‑expanding gap generates intense panic and dread."
+    },
+    {
+      "id": "cmqsax95x02tdeweglmjdrtdz",
+      "title": "UN:Me",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The unsettling mental labyrinth and harrowing soul‑choice mechanic place it firmly in psychological horror."
+    },
+    {
+      "id": "cmqsaxd9a02uhewegfonkfli7",
+      "title": "Yume Nikki",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Its surreal dream‑scape exploration and pervasive sense of dread have made it a benchmark for psychological horror."
+    },
+    {
+      "id": "cmqsay3040331ewegkzu1d5ek",
+      "title": "Escape from the XX",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A dimly lit setting and chaotic panic tag signal a survival‑horror experience."
+    },
+    {
+      "id": "cmqsaynn8039uewegsrzvuhlg",
+      "title": "Emma's Story",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The disappearance, isolated estate, and unsettling events deliver classic horror narrative beats."
+    },
+    {
+      "id": "cmqsaz29m03fbewegi5vh3o2h",
+      "title": "Yorunomori Bus Stop",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A short walking simulator with an unsettling tone that hints at the uncanny, though the gameplay itself is minimal."
+    },
+    {
+      "id": "cmqsazbxl03hsewegfh26kbvz",
+      "title": "Dingir OS",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Exploring forbidden websites and lethal files creates a digital‑terror atmosphere typical of modern horror."
+    },
+    {
+      "id": "cmqsazc0103hwewegf7rxumy4",
+      "title": "Crimson Devotion",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A yandere‑themed visual novel, which, while short, leans into the obsessive‑terror sub‑genre."
+    },
+    {
+      "id": "cmqsazee803igewegrrvbpjri",
+      "title": "Goodbye Page",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The liminal, unsettling exploration of a vanished father’s house cultivates an eerie, dread‑filled mood."
+    },
+    {
+      "id": "cmqsazu2r03o5ewegn4izk8g7",
+      "title": "Letter From Heart Antique Shop",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A visual novel where screaming heart letters create grotesque, unsettling atmosphere, qualifying as pure‑horror."
+    },
+    {
+      "id": "cmqsb03mu03qkewegnfim8umw",
+      "title": "Chernobots",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A retro roguelite set in a radioactive, desolate exclusion zone that induces dread and survival horror, thus pure‑horror."
+    },
+    {
+      "id": "cmqsb088x03t9eweghz1vspmd",
+      "title": "For God's Sake, Help Him!",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A surreal, cosmic‑eldritch experience that confronts the player with existential dread, making it pure‑horror."
+    },
+    {
+      "id": "cmqsb0c2k03u8ewegkuorzt6h",
+      "title": "Phil in the Mirror",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An eerie first‑person exploration of a haunted mirror and endless corridor, embodying classic psychological horror, thus pure‑horror."
+    },
+    {
+      "id": "cmqsb0h5903w0ewegm1uzpei9",
+      "title": "Coincidences?",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A narrative about a cheap house in the woods where something is seriously wrong, creating a horror atmosphere, thus pure‑horror."
+    },
+    {
+      "id": "cmqsb0kin03x3ewegeqmf2qeg",
+      "title": "Another Day of My Life",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Depicts a young girl's unsettling day with a missing mother and erratic father, delivering psychological horror, thus pure‑horror."
+    },
+    {
+      "id": "cmqsb16fd046eewegrczfjcl6",
+      "title": "Terpenie",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A post‑Soviet survival scenario where a maniac stalks the player, delivering clear horror elements, thus pure‑horror."
+    },
+    {
+      "id": "cmqsb1pm404ezeweg1c8s5ygt",
+      "title": "Five Nights with Floppa: R",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A parody of a horror franchise that retains core horror mechanics (night guard, animatronics), making it pure‑horror."
+    },
+    {
+      "id": "cmqsen5gn002o8gegmdn7285q",
+      "title": "Some Nights at Joe's",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A pizzeria simulator referencing horror mascots and urban decay, clearly horror‑themed, thus pure‑horror."
+    },
+    {
+      "id": "cmqsen7ix00338gegf0984egy",
+      "title": "Jibchag-ui Mangja: Jib-eulobuteoui Talchul",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A visual‑novel premise where a home‑invading villain threatens the protagonist’s life creates a clear dread‑filled scenario."
+    },
+    {
+      "id": "cmqsen7j400378gegxiiojqj2",
+      "title": "Don't Get Your Hopes Up",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The escalating panic of an impossible apartment hunt generates intense anxiety, fitting the broader affective definition of horror."
+    },
+    {
+      "id": "cmqsenw2100d18geg4ftyjnpg",
+      "title": "Phoenyx: Breaking the Cycle",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The mysterious mirror in an isolated cabin hints at supernatural dread, though the focus remains on relational drama."
+    },
+    {
+      "id": "cmqsenx6p00di8geglqy0f7uo",
+      "title": "Depths Unseen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Exploring an abandoned underground lab with survival stakes evokes classic isolation horror."
+    },
+    {
+      "id": "cmqsepcmr0066qwegspstz3w8",
+      "title": "To Put Your Childhood Sweetheart Into A Refrigerator",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The macabre title suggests a dark, possibly grotesque narrative that aligns with horror‑adjacent storytelling."
+    },
+    {
+      "id": "cmqsepdms006gqwegx2qgg6rq",
+      "title": "The Overnight Screening",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A first‑person theater setting where a lurking presence must be survived is a straightforward horror premise."
+    },
+    {
+      "id": "cmqsepw8z00d7qwegwfpb9ihh",
+      "title": "Burning Out",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A dark maze‑escape with fire and chaotic panic creates an unsettling atmosphere that fits the broader horror definition."
+    },
+    {
+      "id": "cmqsepxnn00dvqwegazn0kja0",
+      "title": "Come to an End",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A horror‑themed cosmic labyrinth race with eldritch elements makes dread central to gameplay."
+    },
+    {
+      "id": "cmqseq0hj00f4qwegnd33laer",
+      "title": "Doki Doki A Summer's Requiem",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Part of the Doki Doki series, it employs meta‑psychological horror and disturbing narrative twists."
+    },
+    {
+      "id": "cmqseq0q800f6qwegip7vqweg",
+      "title": "Ash Pines: The Motel",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of an unseen watcher and a need to escape creates classic tension and dread."
+    },
+    {
+      "id": "cmqseq2f100fpqweggdkqy6od",
+      "title": "Slender Man in Sonic Forever",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Featuring the iconic horror entity Slender Man, the game centers on unsettling fear despite the Sonic setting."
+    },
+    {
+      "id": "cmqseq3g600g3qwegkx8lx31t",
+      "title": "Crank It!",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Isolation in a tech‑filled cave with an unknown supervisor introduces a tense, unsettling vibe."
+    },
+    {
+      "id": "cmqseq3vx00gcqwegvbkob934",
+      "title": "Nothing Between Us...",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Although comedic in tone, the inclusion of unsettling and chaotic panic elements pushes it toward horror adjacency."
+    },
+    {
+      "id": "cmqseq5na00gsqwegwmdxweka",
+      "title": "FNaF 3 Retro Edition",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A remake of the iconic Five Nights at Freddy’s game, which is fundamentally a survival‑horror experience."
+    },
+    {
+      "id": "cmqseq6wt00h9qwegpogcmtuq",
+      "title": "Mycopsychosys: Remastered",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Its isolation‑centric narrative, ominous security warnings, and unsettling atmosphere embody psychological horror."
+    },
+    {
+      "id": "cmqsazv8c03ojewegzu2ef4we",
+      "title": "Letter From Heart Antique Shop",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A macabre visual novel centered around eerie letters containing screaming human hearts within a mysterious antique store."
+    },
+    {
+      "id": "cmqseqf1100kuqweggk8016q7",
+      "title": "Run from Bubol Horror",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A first-person stealth horror game where you must evade a terrifying presence drawn directly to your fear."
+    },
+    {
+      "id": "cmqseqggn00lgqweg8faik4fm",
+      "title": "Your Turn To Die: Chapter 2, Part Two",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An instalment of a dark, psychological horror visual novel focused on a lethal majority-vote death game."
+    },
+    {
+      "id": "cmqseqgky00lhqwegf70udjan",
+      "title": "Your Turn To Die: Chapter 2, Part One",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An instalment of a dark, psychological horror visual novel focused on a lethal majority-vote death game."
+    },
+    {
+      "id": "cmqseqglr00liqwegdb477xju",
+      "title": "Your Turn To Die: Chapter 1, Part Two",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An instalment of a dark, psychological horror visual novel focused on a lethal majority-vote death game."
+    },
+    {
+      "id": "cmqseqgqu00ljqweg17k0iirx",
+      "title": "Your Turn To Die: Chapter 1, Part One",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An instalment of a dark, psychological horror visual novel focused on a lethal majority-vote death game."
+    },
+    {
+      "id": "cmqseqimp00lqqweg65hxpceu",
+      "title": "Don't Look Away 2",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An anomaly-monitoring horror game where you must manage tasks to keep invading entities out of your security room."
+    },
+    {
+      "id": "cmqsequk200rmqwegb6p3ck39",
+      "title": "Stranded With Darkness",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "An oppressive survival strategy game about defending against hostile forces in a dark, atmospheric sci-fi setting."
+    },
+    {
+      "id": "cmqsequk300roqwegf02h2jzf",
+      "title": "Clowncore",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A creepy exploration horror game where you search isolated, rural woods for your sister and a mysterious carnival."
+    },
+    {
+      "id": "cmqser1fa00trqwegf08en33t",
+      "title": "A Box Full of Joy",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Described as a grim, surreal adventure that leverages dread and psychological discomfort as central gameplay themes."
+    },
+    {
+      "id": "cmqsers0j012rqwegmexmybou",
+      "title": "My Little Foundation: Containment is Magic",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A fan‑made SCP‑style mod that replaces the setting with a darker, horror‑filled version of the My Little Pony universe."
+    },
+    {
+      "id": "cmqserx2q0150qweg6yfyu4k6",
+      "title": "The Fog Encounters",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "First‑person scenario with a madman, injured captain, and chaotic panic creates a tense, horror‑driven survival experience."
+    },
+    {
+      "id": "cmqsesb17019zqweg98ys17us",
+      "title": "Yume Nikki Online Project",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Based on the notoriously creepy Yume Nikki series, the multiplayer version retains the original’s surreal dread and psychological horror."
+    },
+    {
+      "id": "cmqsesjyp01e3qwegizw0c9iu",
+      "title": "The Anomaly Protocol",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Reality‑bending anomalies and a shifting, unsettling environment place it firmly in psychological horror."
+    },
+    {
+      "id": "cmqsesmkg01evqwegm5xcchgn",
+      "title": "Uncanny Tales: 1992",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A missing‑children mystery set in an isolated town creates a pervasive sense of dread and macabre tension."
+    },
+    {
+      "id": "cmqsessj801gmqwegewbu0vtw",
+      "title": "The Town of Nie Iromusubi",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The ‘Unsettling’ tag and surreal storytelling hint at horror vibes, but the description is ambiguous."
+    },
+    {
+      "id": "cmqseu5s001z9qweglj727slg",
+      "title": "Apathy: Danshikou de Atta Kowai Hanashi",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title mentions ‘Kowai’ (scary) suggesting horror, though no concrete description is given."
+    },
+    {
+      "id": "cmqseukev022uqwegoe39g7q5",
+      "title": "Sonic.Exe 2: The Game",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "It is a direct adaptation of a well‑known horror creepypasta and is tagged as unsettling."
+    },
+    {
+      "id": "cmqsewtrs02uhqweg7r4fcg9k",
+      "title": "The Last Tape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game centers on uncovering dark, violent secrets via found‑footage style tapes, delivering a classic horror atmosphere."
+    },
+    {
+      "id": "cmqsex5j602yqqwegnjgpszd7",
+      "title": "[REC] Desolation",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Exploring an abandoned manor with a dark past and forbidden secrets places the game firmly in horror territory."
+    },
+    {
+      "id": "cmqsex75502zhqwegcclx0bbx",
+      "title": "House of Lost Souls",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The narrative about a haunted family home and terrible truths creates a strong horror premise."
+    },
+    {
+      "id": "cmqsex8r60301qwegnf3r0lh6",
+      "title": "The Night of Escape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Themes of fear, escape, and constant danger drive a tense horror experience."
+    },
+    {
+      "id": "cmqsexa6x030hqweg1yp2jbym",
+      "title": "Death and Ladders",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Cosmic and eldritch motifs give a horror flavor, though the core gameplay is a board‑game style race."
+    },
+    {
+      "id": "cmqsexca60314qwegii3o5fp2",
+      "title": "Escape Observation",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Chaotic panic and analog broadcast hints suggest a tense mood, but the walking‑sim focus is not overtly horror."
+    },
+    {
+      "id": "cmqsexje9033xqwegiyva8u3l",
+      "title": "Kollectomaniac",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary, particularly 'Don't stop collecting. Never miss collection day. Sell to the nine walkers,' suggests a sinister, potentially exploitative, and unsettling collection mechanic that evokes dread and a macabre atmosphere."
+    },
+    {
+      "id": "cmqsexy960389qweg4mnxh7x5",
+      "title": "Holo8",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of escaping a 'looping office' by observing 'anomalies' strongly suggests psychological horror and a sense of disorientation and dread."
+    },
+    {
+      "id": "cmqseyw0903k2qwegmzdqgg9g",
+      "title": "The Paddy Field",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary 'My ordinary daily life was suddenly shattered' immediately after describing a peaceful walk, combined with the potential implications of a paddy field setting, suggests a narrative that takes a dark and unsettling turn, leaning into dread and fear."
+    },
+    {
+      "id": "cmqseyw0i03k7qweg2rs1dy1d",
+      "title": "Innsmouth",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly inspired by H.P. Lovecraft's 'The Shadow over Innsmouth,' this game inherently falls into the cosmic horror and eldritch dread category."
+    },
+    {
+      "id": "cmqseyzn903l2qwegnduoq7kn",
+      "title": "Kamisama no Hitsugi",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary mentions a 'disaster' that ends normal life and a 'strange voice,' indicating a narrative built on unsettling circumstances and a sense of dread."
+    },
+    {
+      "id": "cmqsez12103lrqwegnl8cvir4",
+      "title": "AliveZ",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description of a 'mysterious shrine' emitting 'evil air' and transforming people into 'evil people' clearly establishes a supernatural horror theme with elements of body horror and a grim conflict."
+    },
+    {
+      "id": "cmqsez4ah03mlqwegpi9jfiu5",
+      "title": "Liminal Shift",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An atmospheric, photorealistic walking simulator with explicit unsettling elements."
+    },
+    {
+      "id": "cmqsezjdt03r8qweg041x4kvs",
+      "title": "Mr. Lupin",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Urban decay setting and whispering hints at psychological and eerie horror."
+    },
+    {
+      "id": "cmqsezlm103rhqweg3uk1c1y0",
+      "title": "Slenderman Must Run",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An endless runner built around the iconic Slenderman, a classic horror figure."
+    },
+    {
+      "id": "cmqsezyrc03wcqwegso9jd2o5",
+      "title": "Meat Girl",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Tags such as rural isolation and unsettling suggest a psychological tone, but the description lacks concrete horror mechanics."
+    },
+    {
+      "id": "cmqsezzq903wjqweg40314gl3",
+      "title": "Oni Magatsu Toki",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Surreal, unsettling atmosphere and a lone human survivor hint at horror, though it is not explicitly described as such."
+    },
+    {
+      "id": "cmqsf03zy03xhqwegz47kenil",
+      "title": "Lost Room: Escape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "First‑person escape with oppressive, chaotic panic cues a strong psychological horror experience."
+    },
+    {
+      "id": "cmqsf09k503z7qweg2ezs8qaw",
+      "title": "Expedition to the Backrooms",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "High tension, liminal walking simulation built around the Backrooms horror mythos."
+    },
+    {
+      "id": "cmqsf0urj044hqwegh4ti7l02",
+      "title": "Whispering Hills",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A Silent Hill‑style mod that recreates a classic horror atmosphere."
+    },
+    {
+      "id": "cmqsf0urw044kqweg06es86um",
+      "title": "The Black Maple Anomaly",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Anomaly‑based motel setting suggests horror potential, but details are too sparse to confirm a full horror theme."
+    },
+    {
+      "id": "cmqsf18nf04a0qweg2kgrxbod",
+      "title": "Kaidan of Rules: Shengya Community",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title and FMV/live‑action tags suggest ghost‑story themes, but without a description the horror focus cannot be confirmed as primary."
+    },
+    {
+      "id": "cmqsf19w604afqweg8fzreqi3",
+      "title": "Terrors Of North: Finnish Cabin",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of a cursed cabin and survival against an unseen threat creates a prominent horror atmosphere."
+    },
+    {
+      "id": "cmqsf1dyq04biqwegfk9xgrrr",
+      "title": "Higurashi no Naku Koro ni: Kuradashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Based on the notoriously terrifying Higurashi series, it delivers psychological horror and sinister twists."
+    },
+    {
+      "id": "cmqsf1ech04boqwegootfcsnk",
+      "title": "Monoyellow Madness",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A backrooms‑style walking simulator that leverages liminal, surreal environments to generate dread and fear."
+    },
+    {
+      "id": "cmqsf1g2n04c0qweghhjc9xjs",
+      "title": "Slender: New Hope",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Directly builds on the Slender mythos, a classic source of tension, isolation, and terror."
+    },
+    {
+      "id": "cmqsf2mfb04puqwegalo1ausp",
+      "title": "Under Your Moon",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The visual‑novel’s isolated, unsettling encounter hints at psychological tension but does not centre on overt horror."
+    },
+    {
+      "id": "cmqsf2mt504pzqweghd3ftan3",
+      "title": "TransMemory",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A dark basement setting with amnesia and escape mechanics creates a strong sense of fear and claustrophobic dread."
+    },
+    {
+      "id": "cmqsf3rfn053lqweg59ejzd5u",
+      "title": "Houmatsu Tunnel",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of meeting a dead person in a tunnel at 2 am and a subsequent implied negative outcome strongly suggests supernatural horror and dread."
+    },
+    {
+      "id": "cmqsf3rz10540qwegg9dwj5y6",
+      "title": "Saikoro Saiko: Promises",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "While the summary doesn't explicitly state horror, the developer CHARON is known for horror visual novels, and the themes of shattered dreams hint at dark subject matter."
+    },
+    {
+      "id": "cmqsf3s0r0541qwegaq2dc5fx",
+      "title": "Saikoro Saiko: Memento Mori",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The mention of a 'fearsome yandere' and the context of death within the 'Saikoro Saiko' series firmly place this in the psychological and yandere horror subgenres."
+    },
+    {
+      "id": "cmqsf3s470543qwegq5j673qt",
+      "title": "Overnight Tea",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The tagline 'Evening tea carries the scent of death' and the gradual unsettling nature of a supposed girlfriend with amnesia strongly indicate psychological horror and unease."
+    },
+    {
+      "id": "cmqsf3s540544qwegjpd45j6k",
+      "title": "Kimi to Boku to Hitorigoto",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The summary's focus on revealing 'the truth that was never revealed' about a mysterious boy suggests potential for sinister revelations and psychological tension, common in CHARON's works."
+    },
+    {
+      "id": "cmqsf3u2y0547qwegknjzkiq4",
+      "title": "Haitoku Shirene: Anata no Shiranai Naraku no Soko",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The warning 'You must not set foot in this story with a pure and loving heart' and the pursuit of a 'forbidden secret' leading to hell clearly mark this as a horror visual novel."
+    },
+    {
+      "id": "cmqsf3vgy054nqweg161drvpf",
+      "title": "Aether Diving",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The tags 'Oppressive' and 'Unsettling', combined with a program aiming to 'get rid of imperfections' which implies a potentially disturbing or forced process, suggest an element of psychological horror or dread."
+    },
+    {
+      "id": "cmqsf447d058gqweg4vxc3m4x",
+      "title": "The Devil Within",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Reimagines the infamous Sonic.EXE creepypasta with unsettling platform gameplay, making horror its core focus."
+    },
+    {
+      "id": "cmqsf4h5205baqweg9irgaw3u",
+      "title": "Zone 13",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game revolves around escaping a looping, anomalous zone and uncovering dark secrets, delivering constant dread and panic."
+    },
+    {
+      "id": "cmqsf4h7w05bdqweggg9hphbv",
+      "title": "Layered",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Features cosmic/eldritch themes and an eerie atmosphere, but plays more like a surreal adventure than a dedicated horror title."
+    },
+    {
+      "id": "cmqsf4wkj05h4qweg2u9ydqcx",
+      "title": "Monochrome Pixels",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A visual novel with unsettling tone, yet its primary narrative goal is restorative rather than horror‑centric."
+    },
+    {
+      "id": "cmqsihz1q00dfhkegdrfwxxwd",
+      "title": "The Overseer",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game involves watching camera feeds for anomalies that can lead to 'severe distortions in reality and result in death,' clearly indicating a horror experience centered on tension and potential demise."
+    },
+    {
+      "id": "cmqsii47s00ephkegf3cfsuqs",
+      "title": "Slender: The 8 Pages",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is a demake of 'Slender: The Eight Pages,' a game explicitly known for its intense psychological horror and chase mechanics, which are inherent to the Slender Man mythos."
+    },
+    {
+      "id": "cmqsii6jq00fchkeg23vye1ep",
+      "title": "See Thru: Need a Friend?",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The 'Unsettling' tag and the title 'Need a Friend?' in the context of a visual novel strongly suggest themes of psychological unease and potentially sinister interactions."
+    },
+    {
+      "id": "cmqsiic7v00ighkegqhdefraz",
+      "title": "One Night With Kawaii",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary 'Run and hide! Find a way out before she catches you' directly implies a chase and evasion scenario, a common trope in survival horror games."
+    },
+    {
+      "id": "cmqsiidtf00j7hkegxhfhyv04",
+      "title": "Below Level",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game involves navigating a dangerous environment with 'abnormals that are sent to intercept you' while armed only with a phone, clearly establishing a survival horror premise."
+    },
+    {
+      "id": "cmqsiiinm00kihkegtoag0qaf",
+      "title": "Pyrphoros",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description of landing on a 'strange moon' for a rescue mission with survivors missing inherently creates an atmosphere of mystery and potential danger, fitting the 'Unsettling' tag."
+    },
+    {
+      "id": "cmqsiiinu00kphkegknls4x03",
+      "title": "The Rule of She",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game involves a soul entering a 'world of strange tales filled with rules' that is 'fraught with danger,' combined with the 'Unsettling' tag, points to a dark and potentially terrifying narrative experience."
+    },
+    {
+      "id": "cmqsiiz2a00qfhkegkhxnqv5a",
+      "title": "Rosetta and the Well",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary hints at a dark mystery and unsettling atmosphere surrounding a black-water filled well, fitting the criteria for psychological horror."
+    },
+    {
+      "id": "cmqsiiz6o00qjhkegm29qh1ol",
+      "title": "100 Hidden Cthulhu Fish",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "While a hidden object game, the explicit mention of 'Cthulhu Fish' and its cosmic/eldritch tags introduce elements of cosmic horror."
+    },
+    {
+      "id": "cmqsij99u00t4hkegl5ncdljr",
+      "title": "Oneirophobia",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of a cheap apartment with rumors of missing people and the title itself ('Oneirophobia' relating to nightmares) strongly suggests psychological horror and dread."
+    },
+    {
+      "id": "cmqsijlxe00xyhkegkxn97yok",
+      "title": "L'Abbaye des Morts",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "While tagged as 'Melancholic' and 'Stealth & Hide,' the title 'Abbey of the Dead' implies a grim and potentially horrifying setting."
+    },
+    {
+      "id": "cmqsijnzm00yghkeg5yhi4rod",
+      "title": "Psychic Shadows",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary mentions 'unpleasant dreams' and the tags 'Liminal & Surreal' and 'Urban Decay' strongly indicate a psychological horror experience."
+    },
+    {
+      "id": "cmqsik7l5015nhkegqg1sbj8r",
+      "title": "Halloween Experience 3: GGen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "While described as 'almost a parody,' the title and 'spooky game' description with 'surprises' indicate it falls within the horror genre, possibly lighthearted horror or horror comedy."
+    },
+    {
+      "id": "cmqsikotl01chhkegfb6ehdfq",
+      "title": "Outside the Door",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description of a 'mystic visual novel' where the player has no memory and encounters visitors suggests a psychological thriller or mystery with horror elements."
+    },
+    {
+      "id": "cmqsikou501cihkegflqbiqvm",
+      "title": "Necroking",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of a 'Master of Necromancy' raising undead to defeat settlements desecrated by life directly aligns with grimdark and macabre themes, fitting the horror criteria."
+    },
+    {
+      "id": "cmqsile9601lrhkegil3cy2qi",
+      "title": "Vended",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Isolation, sensory distortion and a sense of looming danger create a psychological horror experience."
+    },
+    {
+      "id": "cmqsilomh01q8hkegq758d51o",
+      "title": "Hayarigami DS: Toshi Densetsu Kaii Jiken",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Murder, suicide, and a cold investigative tone fit dark visual‑novel horror."
+    },
+    {
+      "id": "cmqsilu0p01rhhkegdebctgn5",
+      "title": "Silent Hill 2: 20th Anniversary Demake",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A faithful demake of the iconic psychological‑horror classic."
+    },
+    {
+      "id": "cmqsimhvb01ymhkeg1kftcjw0",
+      "title": "Slendytubbies: Worlds",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A spinoff of the unsettling Slendytubbies series featuring horror themes."
+    },
+    {
+      "id": "cmqsimjdn01z9hkegg2hsr5vf",
+      "title": "Slendytubbies 2D",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Pixelated remake of the Slendytubbies horror series."
+    },
+    {
+      "id": "cmqsimrgc023ehkegoykh9cy2",
+      "title": "Umineko Project",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Umineko is a dark visual novel full of supernatural mystery and psychological terror."
+    },
+    {
+      "id": "cmqsimszc023xhkeg1sdbuhfn",
+      "title": "Goodbye, New World",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The game is tagged ‘Unsettling’ and described as an adventure that may contain eerie elements, but no definitive horror content is provided."
+    },
+    {
+      "id": "cmqsimxue0253hkegbo53fl78",
+      "title": "Mr Bucket Told Me To",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary describes a surreal, terrifying survival adventure with haunting elements."
+    },
+    {
+      "id": "cmqsindpm02awhkegyx96qhd3",
+      "title": "Loopers Plus",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The expanded visual‑novel format hints at horror elements, but the summary is insufficient to confirm a pure horror classification."
+    },
+    {
+      "id": "cmqsinh2902bqhkeg8kdebmo5",
+      "title": "Doki-doki Literature Club! GB Version",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Doki‑doki is a well‑known psychological horror visual novel that subverts expectations."
+    },
+    {
+      "id": "cmqsink5002cohkeg5aoznaqi",
+      "title": "Tails Doll",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title and “Unsettling” tag point to a creepy, horror‑oriented fan game."
+    },
+    {
+      "id": "cmqsinqsw02fvhkegsyxa8e9v",
+      "title": "Urban Legend Hunters 2: Double",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Investigating urban legends in a modern city suggests eerie themes, but the game is primarily a point‑and‑click adventure."
+    },
+    {
+      "id": "cmqsinrt602g9hkegf239rtxr",
+      "title": "Thief: The Black Parade",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "While primarily a stealth simulator, the emphasis on shadows, silence, and urban decay, combined with the 'lonely/isolated' tag, strongly suggests an atmosphere of dread and tension consistent with horror."
+    },
+    {
+      "id": "cmqsio4ha02jqhkegn14b967w",
+      "title": "360 Five Nights at Freddy's",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is a VR remake of Five Nights at Freddy's, a series renowned for its jump scares, tension, and survival horror mechanics."
+    },
+    {
+      "id": "cmqsioarh02mphkeg6nmfupeu",
+      "title": "Le Sanglot des Cigales: Tomes 1 et 2",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is a French release of Higurashi When They Cry, a visual novel series famous for its psychological horror, graphic violence, and descent into madness."
+    },
+    {
+      "id": "cmqsioarh02mrhkegwhp9bm8j",
+      "title": "Le Sanglot des Cigales R: Tomes 5 et 6",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is a French release of Higurashi When They Cry Kai, which continues the psychological horror and disturbing themes of the original series."
+    },
+    {
+      "id": "cmqsioc2f02n4hkegqd8gx659",
+      "title": "Doppelgänger",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The focus on 'light, darkness, and sound' in a 'dark, quiet place' with the tag 'Oppressive' strongly indicates a psychological horror experience."
+    },
+    {
+      "id": "cmqsioc7e02n8hkegqfgsldxu",
+      "title": "Darkest Dungeon II: The Binding Blade",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Darkest Dungeon is known for its grimdark fantasy setting, psychological stress mechanics, and themes of despair, which align with horror, even with its turn-based strategy gameplay."
+    },
+    {
+      "id": "cmqsioe0m02nqhkegrl428nrd",
+      "title": "Shigatsu Youka",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary explicitly mentions a 'crimson red dead body' discovered in a 'horrific state,' indicating a clear intent towards horror and mystery within its visual novel format."
+    },
+    {
+      "id": "cmqsiokp002pdhkeg745wr97m",
+      "title": "Tenohira de Higurashi ga Naku",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This program allows playing Higurashi no Naku Koro ni Question Arcs, which are part of a visual novel series renowned for its pervasive psychological horror and graphic content."
+    },
+    {
+      "id": "cmqsip0gw02uzhkegnar7gip0",
+      "title": "Higurashi When They Cry Hou+: Kamikashimashi Chapter",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a chapter from Higurashi When They Cry, this game is part of a series known for its intense psychological horror, disturbing narratives, and graphic violence."
+    },
+    {
+      "id": "cmqsip8v202xbhkegl5jglix3",
+      "title": "Umineko no Naku Koro ni: Episode 3 - Banquet of the Golden Witch",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Umineko is a visual novel series known for its intricate murder mysteries and psychological horror elements, which fit the macabre mystery and psychological tension criteria."
+    },
+    {
+      "id": "cmqsipwp3036ihkeg4l2vsodo",
+      "title": "Higurashi no Naku Koro ni Chuu",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a remake of the original sound novels, this entry in the Higurashi series carries its established themes of extreme violence, psychological torment, and a pervasive sense of dread."
+    },
+    {
+      "id": "cmqsiq1n4037thkeg291kupe5",
+      "title": "The Scourge",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game's focus on urban legends, past sins, and being trapped in a decaying urban environment strongly suggests elements of psychological horror and grim atmosphere."
+    },
+    {
+      "id": "cmqsiqhqw03dzhkegk7o3krmq",
+      "title": "3D Monster Maze",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title and genre 'Arcade' with tags like 'Liminal & Surreal' and 'First person' combined with the implication of being hunted by monsters in a maze points to a core horror experience."
+    },
+    {
+      "id": "cmqsiqkyl03exhkegofvr6pgi",
+      "title": "Higurashi no Naku Koro ni: Miotsukushi-hen Ura",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This is an additional arc for the Higurashi series, which is known for its intense horror, making it relevant to the catalog."
+    },
+    {
+      "id": "cmqsiqkzo03eyhkeg88sl4ngo",
+      "title": "Higurashi no Naku Koro ni: Miotsukushi-hen Omote",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As an alternative ending arc of Higurashi, it is expected to contain the series' signature elements of psychological horror and mystery."
+    },
+    {
+      "id": "cmqsiql1l03ezhkegusmyq6wn",
+      "title": "Higurashi no Naku Koro ni: Kotohogushi-hen",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This prequel arc to the Higurashi series will likely explore the grim and disturbing themes that define the franchise's horror."
+    },
+    {
+      "id": "cmqsiql1o03f0hkegg27ff980",
+      "title": "Higurashi no Naku Koro ni: Tokihogushi-hen",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This advanced story arc involving a murder investigation within the Higurashi universe maintains the series' commitment to psychological horror and macabre themes."
+    },
+    {
+      "id": "cmqsiqn2c03f6hkeg7muxkxr3",
+      "title": "Higurashi no Naku Koro ni: Matsuribayashi-hen",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This is the remade final arc of Higurashi When They Cry Kai, which is inherently a horror narrative filled with despair and violence."
+    },
+    {
+      "id": "cmqsiqn2f03f9hkegig8jxzjg",
+      "title": "Higurashi no Naku Koro ni: Minagoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Higurashi no Naku Koro ni is a well-known visual novel series that delves into extreme psychological horror, gore, and disturbing narrative arcs, fitting the definition of pure horror."
+    },
+    {
+      "id": "cmqsiqn2f03fahkegw6hf33iq",
+      "title": "Higurashi no Naku Koro ni: Taraimawashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc within the Higurashi series, known for its descent into madness and violence, is firmly within the realm of psychological and violent horror."
+    },
+    {
+      "id": "cmqsiqn2i03fchkegri0j3auq",
+      "title": "Higurashi no Naku Koro ni: Saikoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As an epilogue to a story steeped in psychological torment and violent events, this arc maintains the series' horror pedigree."
+    },
+    {
+      "id": "cmqsiqn2j03fdhkegdksgy254",
+      "title": "Five Nights at Freddy's: Security Breach - Chaos Mod",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "While a mod, the 'Chaos Mod' for Five Nights at Freddy's inherently amplifies the game's core mechanics of jump scares and intense pursuit, maintaining its horror classification."
+    },
+    {
+      "id": "cmqsiqn2l03fehkeg29b9shfl",
+      "title": "Higurashi no Naku Koro ni: Tsukiotoshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc, even with its collaborative elements, is part of the Higurashi universe, which is fundamentally built on psychological horror and disturbing scenarios."
+    },
+    {
+      "id": "cmqsiqob203fihkegabsrxmzx",
+      "title": "Higurashi no Naku Koro ni: Tsumihoroboshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc of Higurashi deals with themes of guilt, paranoia, and violent consequences, solidifying its place as pure horror."
+    },
+    {
+      "id": "cmqsiqocc03fjhkegjnjxpkr8",
+      "title": "Higurashi no Naku Koro ni: Meakashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc of Higurashi explores dark secrets and psychological manipulation, fitting the definition of psychological horror."
+    },
+    {
+      "id": "cmqsiqodk03fkhkeghds5w5dl",
+      "title": "Higurashi no Naku Koro ni: Himatsubushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a prelude to the events of Higurashi, this arc still carries the series' signature tone of impending dread and unsettling mysteries."
+    },
+    {
+      "id": "cmqsiqodr03flhkegp3y2ks61",
+      "title": "Higurashi no Naku Koro ni: Tatarigoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc within the Higurashi series is notorious for its graphic violence and psychological unraveling, clearly classifying it as pure horror."
+    },
+    {
+      "id": "cmqsiqoe103fmhkegwqlshg5e",
+      "title": "Higurashi no Naku Koro ni: Watanagashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc of Higurashi delves into themes of suspicion, murder, and psychological torment, aligning with the definition of pure horror."
+    },
+    {
+      "id": "cmqsiqoff03fnhkegxl1hjk0u",
+      "title": "Higurashi no Naku Koro ni: Onikakushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This visual novel is a foundational entry in the Higurashi series, renowned for its intense psychological horror, disturbing violence, and unfolding mysteries."
+    },
+    {
+      "id": "cmqsiqs2w03gfhkegiezjxrpe",
+      "title": "Higurashi no Naku Koro ni Kizuna: Kotohogushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a prequel to the entire Higurashi series, this visual novel is expected to delve into the dark and disturbing events that define the franchise."
+    },
+    {
+      "id": "cmqsiqtzz03gphkeg861fhzhp",
+      "title": "Higurashi no Naku Koro on Ni Kizuna: Matsuribayashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc is a remake of the final arc of Higurashi When They Cry Kai, which is known for its intense horror, gore, and psychological distress."
+    },
+    {
+      "id": "cmqsiqtzz03gqhkegiq5n4t8t",
+      "title": "Higurashi no Naku Koro ni Kizuna: Miotsukushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This expanded arc of the Higurashi series is part of a narrative known for its deeply unsettling themes, violence, and psychological torment."
+    },
+    {
+      "id": "cmqsiqu0603gshkeg06wi5i6a",
+      "title": "Higurashi no Naku Koro ni Kizuna: Saikoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This epilogue to the main Higurashi story continues the series' tradition of psychological horror, mystery, and potentially disturbing revelations."
+    },
+    {
+      "id": "cmqsiqvb103gwhkegazjjmdck",
+      "title": "Higurashi no Naku Koro ni Kizuna: Tokihogushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc of the Higurashi series involves a murder investigation with ties to a character known for being involved in the franchise's pervasive horror elements."
+    },
+    {
+      "id": "cmqsiqvbo03gyhkegt4p13aoj",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is a port of a remade arc from Higurashi When They Cry Kai, a series heavily focused on gruesome violence and intense psychological horror."
+    },
+    {
+      "id": "cmqsiqvdk03gzhkegmwv2ngff",
+      "title": "Higurashi no Naku Koro ni Kizuna: Tsumihoroboshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This arc is a port of a remade chapter from Higurashi When They Cry Kai, a visual novel series renowned for its graphic violence and psychological dread."
+    },
+    {
+      "id": "cmqsir1q703ixhkegklc2y21z",
+      "title": "Higurashi no Naku Koro ni Kizuna: Watanagashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This visual novel arc is part of the Higurashi series, which is characterized by extreme violence, psychological terror, and disturbing mysteries."
+    },
+    {
+      "id": "cmqsir1q803izhkeg6lquzogs",
+      "title": "Higurashi no Naku Koro ni Kizuna: Onikakushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As the first chapter of Higurashi When They Cry, it is foundational to the series' reputation for intense psychological horror, gore, and disturbing mysteries."
+    },
+    {
+      "id": "cmqsir1q803j0hkegyzgr9kzc",
+      "title": "Higurashi no Naku Koro ni Kizuna: Himatsubushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This chapter explores a different perspective within the same terrifying world, contributing to the overarching themes of dread and paranoia inherent in the Higurashi series."
+    },
+    {
+      "id": "cmqsir1q903j2hkeg851ewp4o",
+      "title": "Higurashi no Naku Koro ni Kizuna: Tatarigoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This chapter delves into the psychological trauma and dark family secrets that are hallmarks of the Higurashi series' horror narrative."
+    },
+    {
+      "id": "cmqsir1qc03j3hkegzsxika3s",
+      "title": "Higurashi no Naku Koro ni Kizuna: Meakashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a key arc in the Higurashi saga, it continues to explore the disturbing events and psychological torment that define the series' horror."
+    },
+    {
+      "id": "cmqsir35m03jjhkeg9eeytyik",
+      "title": "Higurashi no Naku Koro ni Matsuri: Kakera Asobi",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This expansion includes content from the Matsuribayashi arc, which is deeply rooted in the series' core elements of mystery, suspense, and psychological horror."
+    },
+    {
+      "id": "cmqsir4vp03johkegyvjpttwy",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.0 Himatsubushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This chapter contributes to the intricate web of unsettling events and character fates that are central to the Higurashi franchise's horror."
+    },
+    {
+      "id": "cmqsir4vr03jphkeggajrik13",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.3 Watanagashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This chapter is an integral part of the Higurashi narrative, featuring the escalating dread and disturbing occurrences that define its horror."
+    },
+    {
+      "id": "cmqsir4vs03jrhkegvn2jfnrp",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.6 Tsukiotoshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This chapter offers an alternate perspective on the series' grim events, highlighting the pervasive sense of danger and despair."
+    },
+    {
+      "id": "cmqsir4vt03jshkegy6tw6lmd",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.7 Tsumihoroboshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a remake of a key arc from Higurashi Kai, this chapter continues the series' exploration of brutal violence, psychological manipulation, and existential dread."
+    },
+    {
+      "id": "cmqsir4vx03jthkegry6lg2bd",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.4 Tatarigoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This chapter is a direct continuation of the disturbing narrative, employing themes of family abuse and psychological torment characteristic of the Higurashi horror."
+    },
+    {
+      "id": "cmqsir4vy03juhkegaqzzo44p",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.8 Minagoroshi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A core arc of the Higurashi series, featuring graphic violence, psychological dread, and supernatural mystery."
+    },
+    {
+      "id": "cmqsir4vy03jvhkeg40ai5sul",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.2 Onikakushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The original first chapter establishes the series' signature blend of paranoia, gore, and unsettling folklore."
+    },
+    {
+      "id": "cmqsir4vz03jwhkegn4cpbyld",
+      "title": "Higurashi no Naku Koro ni Matsuri: Final Chapter - Miotsukushi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An alternate ending that continues the series' dark, horror‑driven narrative and brutal revelations."
+    },
+    {
+      "id": "cmqsir4vz03jxhkeg2lujk5yu",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.5 Meakashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A remake of the first Higurashi arc, retaining its intense psychological terror and gruesome mysteries."
+    },
+    {
+      "id": "cmqsir65c03jyhkegmr0g13pc",
+      "title": "Higurashi no Naku Koro ni Matsuri: Ch.1 Taraimawashi-hen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An extra console arc that delivers a bleak bad ending, emphasizing the series' horror themes."
+    },
+    {
+      "id": "cmqsireci03lqhkeg81q3ln4r",
+      "title": "On the Island of Falling Stars: Chapter 1",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The game’s unsettling atmosphere and apocalyptic rumors create dread, but horror is not its sole focus."
+    },
+    {
+      "id": "cmqsirg7y03m5hkeg9zr2qtg3",
+      "title": "Kurai Nichiyoubi: Sombre Dimanche",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The setting of endless rain, bizarre murders, and unsettling tone places it squarely in horror."
+    },
+    {
+      "id": "cmqsirh5p03mchkeguuq0dd77",
+      "title": "Rain & Chamomile Tea",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary explicitly mentions a 'nightmarish sort of mania,' an atmosphere of 'fog and the smell of rot,' and the feeling of 'something is hiding from her,' all strong indicators of horror."
+    },
+    {
+      "id": "cmqsirlvg03pchkegxb3b0any",
+      "title": "Swollen to Bursting Until I am Disappearing on Purpose",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description 'something is very wrong' combined with the surreal premise of a UFO crash and mundane post office work creates a strong sense of unease and psychological dread, fitting the horror genre."
+    },
+    {
+      "id": "cmqsirvgd03rshkeg3u2nqzrm",
+      "title": "Joker Show: Horror Escape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title 'Horror Escape' and the premise of a frightening outcome from summoning a 'Jester' clearly indicate a horror experience, even with comedic elements."
+    },
+    {
+      "id": "cmqsirxcn03s8hkeggwjc4jjd",
+      "title": "Shadow Corridor 2: Ame no Yohira",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description 'Lost forever in the pitch black!' and the mention of 'frightening Apparitions' establish a clear atmosphere of terror and the need to run or hide, fulfilling the criteria for horror."
+    },
+    {
+      "id": "cmqsirxct03sdhkeg4ixf6ap9",
+      "title": "Idolize",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The premise of a booming 'celebrity bio-material' industry and implied sinister research with the phrase 'however, one celebr' suggests a dark and potentially body horror or psychological horror theme, even if not explicitly stated as terrifying."
+    },
+    {
+      "id": "cmqsiryx703sxhkegt0wzgiyr",
+      "title": "Elshe no Shounen",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary 'A short story about a boy who has been held captive by his \"older sister\" Elshe' immediately evokes themes of imprisonment, psychological distress, and potential abuse, which are core to many horror narratives."
+    },
+    {
+      "id": "cmqsis0sg03tchkegjrineoim",
+      "title": "Hayarigami: Keishichou Kaii Jiken File",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description detailing 'chain mails that leads to murder, mysterious suicides and missing children' and the need to 'discover the truth' points to a mystery with dark and potentially supernatural or disturbing elements, fitting the horror genre."
+    },
+    {
+      "id": "cmqsis6oy03w3hkegnxa05dh4",
+      "title": "Down the Eye of the Tiger",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The tags 'Cosmic & Eldritch,' 'Liminal & Surreal,' and 'Urban Decay,' combined with the theme of a burnt-out waitress seeking 'self care' after an incident, strongly suggest a descent into existential dread and surreal horror."
+    },
+    {
+      "id": "cmqsis7yc03wghkegoo81n5h5",
+      "title": "Shitataru Nikki",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary explicitly states it's an exploration of 'the most deplorable and sickening human being possible,' suggesting psychological horror and disturbing themes."
+    },
+    {
+      "id": "cmqsisa6g03wqhkegvtv9rbli",
+      "title": "Dedz0ne",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a fangame based on a character's backstory and hinting at spoilers from a game with horror elements (Octo Expansion), it likely incorporates horror themes or atmosphere."
+    },
+    {
+      "id": "cmqsisgt203yehkeg6sa09oq2",
+      "title": "Hero's Fever Dream",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Tackling the 'aftermath of the truth from OMORI,' a game known for its psychological horror, suggests this mod will also explore dark and potentially disturbing themes."
+    },
+    {
+      "id": "cmqsishqv03yihkeg8u2lvwee",
+      "title": "Yume no Office",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "While a romance visual novel, the description 'until something starts to feel wrong' strongly implies a descent into psychological horror or unsettling events."
+    },
+    {
+      "id": "cmqsishr503yjhkegvcuppjsl",
+      "title": "Station.exe",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The tags 'Liminal & Surreal' and 'Unsettling,' combined with the description of 'large bulbous heads following the player,' clearly indicate a horror experience."
+    },
+    {
+      "id": "cmqsisx3i043ihkegfc3jisbs",
+      "title": "Endless Days II",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A detective investigating mysterious disappearances on an isolated island strongly suggests an atmosphere of suspense, mystery, and potential horror."
+    },
+    {
+      "id": "cmqsit41c045hhkega8t4nugb",
+      "title": "Higurashi no Naku Koro ni Hou + Origin",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Higurashi no Naku Koro ni is a well-established visual novel series renowned for its extreme psychological horror, gore, and disturbing narratives."
+    },
+    {
+      "id": "cmqsit41m045qhkegqbqfez0f",
+      "title": "Higurashi no Naku Koro ni Hou",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "This is an expanded port of a visual novel series famous for its intense psychological horror, brutal violence, and mystery."
+    },
+    {
+      "id": "cmqsitcem0499hkegmb3ugbk2",
+      "title": "Popgoes: Lost Dreams",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary describing someone trapped in an abandoned pizzeria with the goal of survival, coupled with the 'Jumpscare Heavy' tag, clearly places this in the horror genre."
+    },
+    {
+      "id": "cmqsitynd04grhkegxfeliueq",
+      "title": "Paper Angel",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This visual novel, described as 'Liminal & Surreal' and featuring an 'RPG Maker' engine, suggests an unsettling and potentially psychological horror experience, even without explicit horror themes in the summary."
+    },
+    {
+      "id": "cmqsiulpd04odhkeg8lorf6kv",
+      "title": "Siren Head SCP 6789",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game features 'Siren Head,' a known horror entity, and the tag 'Chaotic Panic' directly indicates a horror experience."
+    },
+    {
+      "id": "cmqsiu_muj04oshkeg2cyku6g9",
+      "title": "Journey Into Darkness",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary emphasizes themes of darkness, a dwindling sense of security due to declining battery life, and the need to escape, creating an atmosphere of dread and peril."
+    },
+    {
+      "id": "cmqsiun3104owhkeghpirn2sm",
+      "title": "Noclip VR",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a 'backrooms' game featuring 'many unique levels and entities,' it strongly implies an experience rooted in liminality, the uncanny, and potential existential dread."
+    },
+    {
+      "id": "cmqsiutrc04qihkegc7yzhr1n",
+      "title": "Angry Neighbor: The Temporary Neighbor",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of breaking into a neighbor's house to solve mysteries, combined with the 'Unsettling' tag, points towards suspenseful and potentially horrifying discoveries."
+    },
+    {
+      "id": "cmqsiv19p04tchkegekvo6osx",
+      "title": "Calm Falls",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly described as 'Silent Hill inspired' with an 'Unsettling' tag, this game clearly falls into the psychological horror category."
+    },
+    {
+      "id": "cmqsiv19x04thhkegt708ofvf",
+      "title": "Calm Falls 2",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a sequel to a 'Silent Hill inspired' game and featuring 'Lonely / Isolated' and 'Unsettling' tags, it continues the established horror themes."
+    },
+    {
+      "id": "cmqsiv6i904uqhkegpzjkogr3",
+      "title": "Project Horror Tales",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The game centers on darkness, lurking threats, and oppressive isolation, directly invoking fear and dread."
+    },
+    {
+      "id": "cmqsivbmx04vshkegmvcltfpu",
+      "title": "Kyofu Hyakumonogatari",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title translates to “100 Tales of Fear” and it is a visual novel built around frightening stories."
+    },
+    {
+      "id": "cmqsivktz04zdhkegtafglndw",
+      "title": "Shin Seizonritsu 0%! Chikatetsu Kara no Dasshutsu",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The game’s suspense, urban decay, and chaotic panic create a tense, horror‑like mood without being outright horror."
+    },
+    {
+      "id": "cmqsivm1w04zthkegs37hr0w6",
+      "title": "Owlman",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Found‑footage style tapes about missing people evoke a strong sense of dread and supernatural mystery."
+    },
+    {
+      "id": "cmqsivq2z050vhkeg499bu6ir",
+      "title": "After",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A liminal dream world with a grim secret blends psychological tension and eerie atmosphere, fitting horror."
+    },
+    {
+      "id": "cmqsivwp8052rhkegaqvbgkqo",
+      "title": "Lair of Anubis",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The premise of uncovering ancient truths in a hidden pyramid suggests a potential for mystery and unsettling discoveries, fitting within the broader scope of horror."
+    },
+    {
+      "id": "cmqsiwd7z058xhkegr78it1p1",
+      "title": "Bat of Dead",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title and genre tags imply an unsettling adventure that likely incorporates elements of fear or dread."
+    },
+    {
+      "id": "cmqsiwld105cehkegd8nuhg9g",
+      "title": "Friday Night Trepidation",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Rap battling through creepypastas directly incorporates established horror tropes and themes, making it a clear example of horror."
+    },
+    {
+      "id": "cmqsiwtdy05enhkegkhvoolcc",
+      "title": "Koroshi no Dress",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise involving murder, investigation, and disappearance of a girlfriend points to a dark mystery and thriller, fitting the horror classification."
+    },
+    {
+      "id": "cmqsiwwfv05fahkeg4flibrb0",
+      "title": "Symbol",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The tags 'Liminal & Surreal' and 'Unsettling' strongly indicate a game designed to evoke feelings of unease and psychological horror."
+    },
+    {
+      "id": "cmqsiwzlk05fthkegag648ys2",
+      "title": "Deteriation Game",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Exploring dreams and surreal recreations of memory, with an emphasis on identity and potentially distorted reality, aligns with psychological horror."
+    },
+    {
+      "id": "cmqsix45k05irhkegwpb4ov0y",
+      "title": "Alien Flowers",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a Yume Nikki fangame with 'Surreal world full of artstyle clashing and moods, with a tragic story,' it leans into psychological and surreal horror elements."
+    },
+    {
+      "id": "cmqsix5gy05j5hkegd38vkveq",
+      "title": "Veins",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The description of meeting a strange boy and walking through 'all the worlds behind all of the drips' while seeking one's past suggests an unsettling, surreal, and potentially frightening journey."
+    },
+    {
+      "id": "cmqsixfo005l8hkeg4qrti0dl",
+      "title": "Slenderman: Lost Children",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly described as a scary mobile game based on the Slenderman mythos, it directly engages with fear and the uncanny."
+    },
+    {
+      "id": "cmqsixhje05lchkegmrnnjsh0",
+      "title": "Mongol",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The tags 'Unsettling' and summary 'Just a weird game' strongly suggest it falls under psychological horror or contains disturbing elements."
+    },
+    {
+      "id": "cmqsixr4i05plhkege40i1ag2",
+      "title": "Delivery Man",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary explicitly mentions a 'terrifying secret' and the tags 'Unsettling' and 'Chaotic Panic' point to a horror experience."
+    },
+    {
+      "id": "cmqsixvyd05qqhkegfpq7hypb",
+      "title": "Late Night Talks",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The premise of a late-night conversation with an exorcist, especially when they are also the boss, strongly implies a supernatural or unsettling narrative common in horror."
+    },
+    {
+      "id": "cmqsiy8l705vkhkeg83idwzdv",
+      "title": "Shanubis",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Being trapped in a pyramid and hunted by an Egyptian God with tags like 'Lonely / Isolated' and 'Chaotic Panic' clearly indicates a survival horror experience."
+    },
+    {
+      "id": "cmqsiyca105wrhkegwez30k7f",
+      "title": "Not Alone",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description of a housekeeper called for a late-night cleanup where 'strange things happen' and the 'Unsettling' tag point to a supernatural or psychological horror scenario."
+    },
+    {
+      "id": "cmqsixfhk05xhhkegloy61l93",
+      "title": "Doki Doki Literature Club: Return to the Portrait",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a mod for 'Doki Doki Literature Club,' which is known for its psychological horror and dark twists, this entry is categorized as horror."
+    },
+    {
+      "id": "cmqsiz1od063thkeg0qsfl3li",
+      "title": "Within the Backrooms",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The Backrooms setting is built around claustrophobic dread and surreal terror, making horror its core focus."
+    },
+    {
+      "id": "cmqsizxrm06fhhkegz843v30k",
+      "title": "Gayandere",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The unsettling chalet setting hints at psychological horror, though it isn’t the sole focus."
+    },
+    {
+      "id": "cmqsj0haa06lkhkegh15l8dtk",
+      "title": "Survivers",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Multiplayer Slender‑like gameplay centers on fear and dread, making it a clear horror title."
+    },
+    {
+      "id": "cmqsj0p9s06nthkegcbpkppr5",
+      "title": "Escape: Site-13",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Oppressive, unsettling atmosphere and chaotic panic convey a strong horror experience."
+    },
+    {
+      "id": "cmqsj0pol06o1hkegil5s98gj",
+      "title": "Apathy: Gakkou de Atta Kowai Hanashi - Shinsei",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A text‑based visual novel from the Gakkou de Atta Kowai Hanashi horror anthology series, known for its chilling school‑based stories."
+    },
+    {
+      "id": "cmqsj0pqt06o2hkeg5o3e3w0w",
+      "title": "Danshikou de Atta Kowai Hanashi",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Part of the same horror‑focused Gakkou de Atta Kowai Hanashi franchise, presenting dark, unsettling narratives."
+    },
+    {
+      "id": "cmqsj0px306o3hkegnfd7murx",
+      "title": "Apathy: Midnight Collection - Vol. 2",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A visual novel collection that continues the horror storytelling of the Apathy series, featuring eerie school settings."
+    },
+    {
+      "id": "cmqsj0yy506rlhkeg8p12p7ja",
+      "title": "The Joy of Creation",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An FNaF fan‑game that directly references the fourth installment’s creepy atmosphere and is marketed as a horror experience."
+    },
+    {
+      "id": "cmqsj216u074ohkeggs2n3h8j",
+      "title": "Uotamuosu",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A Yume Nikki fangame that explores cosmic/eldritch themes, a hallmark of psychological horror."
+    },
+    {
+      "id": "cmqsj2a9j076uhkegyx2bp1oq",
+      "title": "The Call of Krul'ar",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A card‑based strategy game that centers on surviving unknown horrors, featuring oppressive and dark themes."
+    },
+    {
+      "id": "cmqsj2bty077jhkeg2jlkgyqu",
+      "title": "Friday Night Funkin': Vs. Sonic.Exe",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A music rhythm mod with an unsettling tone and horror‑style naming, but lacking core gameplay that is horror."
+    },
+    {
+      "id": "cmqsj2ne607b0hkegjooxsie0",
+      "title": "Friday Night Funkin' Lullaby",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "A music mod built around Pokémon creepypastas and urban legends, presenting horror themes in a rhythm‑based format."
+    },
+    {
+      "id": "cmqsj3kxm07kyhkeggboiz37z",
+      "title": "Conan Room",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The narrative hints at a terrifying incident in a decaying apartment, suggesting psychological tension without fully committing to a pure horror genre."
+    },
+    {
+      "id": "cmqsj3xyh07onhkeg678cd7nb",
+      "title": "Fallen London: Homecoming",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Set in a gothic, oppressive urban world, this text adventure explores dark themes typical of Fallen London but is not a traditional horror title."
+    },
+    {
+      "id": "cmqsj443a07qzhkegdlihxk33",
+      "title": "Fallen London: The Stag and the Shark",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Like other Fallen London stories, it deals with urban decay and surreal dread rather than explicit gore."
+    },
+    {
+      "id": "cmqsj45jo07rbhkegjdefvlfw",
+      "title": "Fallen London: The Bones of London",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "This text add‑on continues the grim, unsettling atmosphere of Fallen London’s urban setting."
+    },
+    {
+      "id": "cmqsj47iz07rghkeg4vbh3xeo",
+      "title": "Fallen London: The Attendants",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The stealth‑based narrative in a dark London environment aligns with the series’ psychological horror tone."
+    },
+    {
+      "id": "cmqsj47iz07rjhkeg9ndbhmqi",
+      "title": "Fallen London: The Murgatroyd Formula",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The rural isolation and eerie setting support the series’ overarching horror themes."
+    },
+    {
+      "id": "cmqsj49du07rphkeg081omah5",
+      "title": "SCP: Vacation",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "As a board/card party game set in the SCP Foundation, it leans heavily on horror lore but is primarily a social/arcade experience."
+    },
+    {
+      "id": "cmqsj4f6s07sphkegu7tgso94",
+      "title": "Fallen London: Cut With Moonlight",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "An addon to the dark, Lovecraftian world of Fallen London, but its story focus is not explicitly horror."
+    },
+    {
+      "id": "cmqsj4gge07t0hkeg9iie5jc3",
+      "title": "Higurashi no Naku Koro ni Hou+",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A remaster of the classic psychological horror visual novel series Higurashi."
+    },
+    {
+      "id": "cmqsj4js307trhkeg65inedqz",
+      "title": "Basilisk",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Features cosmic & eldritch tags and a knight’s descent into a nightmarish realm."
+    },
+    {
+      "id": "cmqsj4ujf07z6hkegfgdln0br",
+      "title": "Cirro Investigates: The Chilling Truth Behind Deck 13!!",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title and analog‑broadcast aesthetic suggest a horror‑flavoured mystery, though the core gameplay isn’t overtly horror."
+    },
+    {
+      "id": "cmqsj4xz00800hkeg1w2z8x5y",
+      "title": "Athanasy",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Set in a bleak, underground refuge with stealth and urban decay themes, giving it a grimdark, horror‑adjacent feel."
+    },
+    {
+      "id": "cmqsj4zwt080fhkegu32d6w8m",
+      "title": "It follows you",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly describes a dark, frightening environment where something relentlessly pursues the player."
+    },
+    {
+      "id": "cmqsj518w0813hkegimu4no2h",
+      "title": "Kurayami",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A claustrophobic, oppressive visual novel set in a broken elevator that evokes psychological dread."
+    },
+    {
+      "id": "cmqsj536i081ghkeg08ph609g",
+      "title": "Lips Like Velum",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Pixel‑art adventure labeled as unsettling, indicating a horror tone."
+    },
+    {
+      "id": "cmqsj5tje089qhkegvwu4kha8",
+      "title": "Welcome Home",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A spooky visual novel revolving around a man's past, fitting the horror genre."
+    },
+    {
+      "id": "cmqsj62ee08bphkegc7cd3zpk",
+      "title": "ARD: Anomalous Research Department",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A low‑poly walking simulator set in a basement with ominous research, evoking horror."
+    },
+    {
+      "id": "cmqsj6vz508l5hkeg6uknacm1",
+      "title": "Candy Scabs",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "An eldritch visual novel with cosmic horror themes, fitting the horror canon."
+    },
+    {
+      "id": "cmqsj7e2t08r2hkegemy0c4yb",
+      "title": "Trap: Welcome to Beryl",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The 'Unsettling' tag and side-view perspective, combined with the mysterious premise, suggest a potential for psychological horror or dread."
+    },
+    {
+      "id": "cmqsj82fp08z5hkege2fg3trv",
+      "title": "Lake Haven: Chrysalis",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of a detective investigating a case that becomes 'sewn into the fabric of his existence' strongly implies a descent into psychological horror and existential dread."
+    },
+    {
+      "id": "cmqsj8k4n096fhkeglmrck6vx",
+      "title": "Shoujo Gidan",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Waking up in a strange prison and attempting to escape with another person, along with the 'Unsettling' and 'Chaotic Panic' tags, suggests a strong element of psychological horror and dread."
+    },
+    {
+      "id": "cmqsj94rz09dvhkeg4ygtvpsn",
+      "title": "Uprk.cz",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The tags 'Liminal & Surreal,' 'Chaotic Panic,' and the goal of surviving one's own death suggest a surreal and potentially horrifying experience."
+    },
+    {
+      "id": "cmqsj9im109iahkegvqthbyzn",
+      "title": "Maze Banquet",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The 'Liminal & Surreal' and 'Oppressive' tags, combined with the premise of appointing a 'Maze King' in a mysterious banquet, evoke a strong sense of cosmic insignificance and psychological dread."
+    },
+    {
+      "id": "cmqsjag8g09wrhkeg0z9pb9ry",
+      "title": "Aka no Sekai",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description implies a disturbing shift in reality with strange animals and a reddish hue, suggesting psychological horror and unsettling atmosphere."
+    },
+    {
+      "id": "cmqsjaoin09z0hkegv00ilzk4",
+      "title": "Hitori Kakurenbo",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title translates to 'Hide and Seek Alone,' a known urban legend associated with paranormal rituals, strongly indicating a horror theme."
+    },
+    {
+      "id": "cmqsjaon709z5hkeg9f2fbzq7",
+      "title": "Eyes of the Killer",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The premise of people disappearing after attending a play and the ominous title strongly suggest themes of mystery, dread, and potential violence."
+    },
+    {
+      "id": "cmqsjatsc0a2ehkegqbn76irz",
+      "title": "Cartagra: Tsuki Kurui no Yamai - Rebirth FHD Size Edition",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The subtitle 'Tsuki Kurui no Yamai' translates to 'Moon Madness Disease,' and the original 'Cartagra: Affliction of the Soul' implies a dark and potentially psychological horror narrative."
+    },
+    {
+      "id": "cmqsjb0uq0a4qhkeg3nium38e",
+      "title": "Depths of Dagon",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The explicit mention of 'Lovecraftian themed dungeon crawler' directly places it within the realm of cosmic and eldritch horror."
+    },
+    {
+      "id": "cmqsjb5xi0a65hkegclmc32ik",
+      "title": "Umineko no Naku Koro ni Saku",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "While a visual novel collection, 'Umineko' is known for its intricate murder mystery plots, psychological torment, and elements of supernatural horror."
+    },
+    {
+      "id": "cmqsjbg9d0aaghkegsf2gbi62",
+      "title": "Tender Offer",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The unsettling premise of a machine talking to the player, combined with the low-poly aesthetic reminiscent of PS1 horror, creates an atmosphere of psychological unease."
+    },
+    {
+      "id": "cmqsjbk3u0abihkegxl9f8vzt",
+      "title": "Yume Graffiti",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a 'Yume Nikki' fangame, it inherits the surreal, dreamlike, and often disturbing exploration of a character's psyche, fitting the psychological horror genre."
+    },
+    {
+      "id": "cmqsjbm130abzhkego59crsac",
+      "title": "Yume Nisshi",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Being a 'Yume Nikki' fangame, this title likely involves exploring unsettling dreamscapes and dealing with psychological themes, consistent with horror."
+    },
+    {
+      "id": "cmqsjbzw50ah6hkegkctill04",
+      "title": "Inconsistencies",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The investigative plot centered on a generational double‑suicide in a haunted house creates a core horror experience."
+    },
+    {
+      "id": "cmqsjc72w0aj5hkegt3kc2k6x",
+      "title": "Soundless Mountain II",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly described as heavily inspired by Silent Hill, it aims to deliver classic psychological horror."
+    },
+    {
+      "id": "cmqsjc8ni0ajthkegxkahswei",
+      "title": "Saints and Sinners",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "Although focused on medieval execution gameplay, its grim, violent tone borders on horror without being the primary focus."
+    },
+    {
+      "id": "cmqsjce3m0al2hkeg0pmxs7oc",
+      "title": "The Sinking City: Worshippers of the Necronomicon",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A DLC for a Lovecraftian horror game that adds unspeakable spells and occult investigations."
+    },
+    {
+      "id": "cmqsjcw880arxhkeg35dsxwqa",
+      "title": "J'ai Trouvé! Le Manoir Hanté",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title and setting (“Haunted Manor”) indicate a classic haunted‑house horror adventure."
+    },
+    {
+      "id": "cmqsjd6co0awjhkeg4pq78bd8",
+      "title": "Umineko no Naku Koro ni Saku: Nekobako to Musou no Koukyoukyoku",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The Umineko series is renowned for its macabre mystery, psychological tension, and supernatural horror."
+    },
+    {
+      "id": "cmqsjdc3k0ay9hkegd9ny12jt",
+      "title": "SCP: Escape Together",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary explicitly states the objective is to 'make it out alive' in the context of SCP, a universe known for its dangerous and terrifying anomalies."
+    },
+    {
+      "id": "cmqsjddov0aywhkegkdwremck",
+      "title": "Black Baby",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The description mentions playing to 'escape the catacombs while avoiding the hulking behemoths,' indicating a survival horror experience with grotesque threats."
+    },
+    {
+      "id": "cmqsjdswl0b3zhkegvu0fgm4b",
+      "title": "Ignite",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a Yume Nikki fan game and a walking simulator set in a dream world, it is likely to evoke surreal, unsettling, and potentially frightening experiences characteristic of psychological horror."
+    },
+    {
+      "id": "cmqsjin0w0ctmhkeg4tj5mr4i",
+      "title": "Nightruth: Futatsu Dake no Shinjitsu",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The 'Nightruth' series and its focus on dark mysteries strongly suggest psychological horror and sinister twists, especially given its visual novel genre."
+    },
+    {
+      "id": "cmqsjip9a0cu3hkeg5u5hlyjv",
+      "title": "Shin Hayarigami: Blindman",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Shin Hayarigami is a well-known horror visual novel series focused on supernatural mysteries and terrifying events, making this entry inherently horror."
+    },
+    {
+      "id": "cmqsjk1y80dc0hkeggevibfq2",
+      "title": "Little Blue Men",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "While described as a joke and satire, its inspiration from works like 'Fear and Loathing in Las Vegas' and Vaclav Havel suggests themes of existential dread and dark absurdity that can overlap with horror."
+    },
+    {
+      "id": "itch_3f9659b0a6db8861",
+      "title": "Hallow Pines",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The summary explicitly describes a horror scenario of awakening in a decaying cabin, with unseen threats stalking in a dark forest."
+    },
+    {
+      "id": "itch_f0e470eb089cfc55",
+      "title": "gold terror sp0ooky",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title explicitly contains 'terror' and 'sp0ooky,' indicating a clear intention to evoke horror."
+    },
+    {
+      "id": "itch_b64fdb46433ec812",
+      "title": "Antipsycatics",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title, a play on 'antipsychotics,' suggests themes of mental distress, altered reality, or psychological horror."
+    },
+    {
+      "id": "itch_5fb9c8e1b41fcf10",
+      "title": "LCrandom stalkers",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title directly implies a game where the player is pursued by 'stalkers,' a common trope in horror games."
+    },
+    {
+      "id": "itch_0a4f183029f3f2d3",
+      "title": "State of Fear (Unity Project)",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title explicitly includes 'Fear,' suggesting the game's core theme is horror."
+    },
+    {
+      "id": "itch_2688e1c2b5bc43a3",
+      "title": "Evil Mansion",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title explicitly references a haunted location, a classic horror trope."
+    },
+    {
+      "id": "itch_21877954a9514abd",
+      "title": "Super Mario The Room Of Doom.exe (Reupload)",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The game appears to remix a familiar franchise into a horror setting, indicating a strong horror influence but not a standalone horror title."
+    },
+    {
+      "id": "itch_c73f54e7945259c0",
+      "title": "Project LOST (Game)",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title suggests a missing or abandoned scenario typical of horror narratives, though details are sparse."
+    },
+    {
+      "id": "itch_8bb3be3f9cd5989b",
+      "title": "Los Backrooms Pe",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "References the Backrooms urban legend, a well‑known horror concept."
+    },
+    {
+      "id": "itch_594a8e2e18e83dd1",
+      "title": "❥ Comfort in Solitude",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The emphasis on solitude aligns with psychological horror themes."
+    },
+    {
+      "id": "itch_175ab13eeb5a7e9f",
+      "title": "The Little Hams LABORATORY ESCAPE",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The title evokes a classic horror escape from a laboratory, a trope common in psychological and body-horror games."
+    },
+    {
+      "id": "itch_f0b1d770e4b51ec4",
+      "title": "Those Nights In The Bakery",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A nighttime bakery setting implies an eerie, psychological horror atmosphere."
+    },
+    {
+      "id": "itch_b4c6a14b19a0629a",
+      "title": "Cryptid Trailer Park",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The presence of cryptids in a trailer park immediately signals a classic horror premise."
+    },
+    {
+      "id": "itch_59a4349f26b552a6",
+      "title": "The Day I Became a Werewolf [Demo]",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A werewolf transformation directly ties to classic horror tropes."
+    },
+    {
+      "id": "itch_20fb52e91c5a2b9a",
+      "title": "Little Blue Riding Hood",
+      "isHorror": true,
+      "classification": "horror-adjacent",
+      "reason": "The title suggests a twisted fairy‑tale premise that likely leans toward dark or unsettling themes."
+    },
+    {
+      "id": "itch_79e121f899775d99",
+      "title": "O Vazio de Popee the Performer 2D",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "References the creepy clown character Popee, which is commonly used for horror content."
+    },
+    {
+      "id": "itch_803e490cbdb6ab26",
+      "title": "SCP-3008: Ikee",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The SCP Foundation is a horror franchise; SCP‑3008 is a known SCP with unsettling, claustrophobic horror."
+    },
+    {
+      "id": "itch_c2bcc3482374acbb",
+      "title": "Evil Clown 1 - Horror Escape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Explicitly labels itself as a horror escape game featuring an evil clown."
+    },
+    {
+      "id": "cmqsev22g028nqwegks0kiw7t",
+      "title": "Scary Bingo",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A horror‑themed card game with cosmic/eldritch mechanics, meeting the catalog’s criteria."
+    },
+    {
+      "id": "cmqsevbzi02d1qweglyn7plxm",
+      "title": "Dyping Escape",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A typing‑based escape where words become reality creates a psychological horror atmosphere."
+    },
+    {
+      "id": "cmqsew6jt02msqwegqc9bav5h",
+      "title": "Anomaly Hunter: Observation Duty",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "Found‑footage, camera‑based gameplay with eerie movements qualifies it as a horror title."
+    },
+    {
+      "id": "cmqsewabm02nrqwegdag3671m",
+      "title": "The Haunting Of Stabbey Road",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "First‑person VHS/analog horror exploring a haunted recording studio."
+    },
+    {
+      "id": "cmqsewlri02s1qwegm2k4peua",
+      "title": "Haunted Property",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "A slow‑burn narrative with unsettling neighbors and nightly occurrences."
+    },
+    {
+      "id": "cmqsiumuj04oshkeg2cyku6g9",
+      "title": "Journey Into Darkness",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "The gameplay centers on survival in a dark, battery‑draining environment that creates constant dread and fear, making horror its primary focus."
+    },
+    {
+      "id": "cmqsiyfhk05xhhkegloy61l93",
+      "title": "Doki Doki Literature Club: Return to the Portrait",
+      "isHorror": true,
+      "classification": "pure-horror",
+      "reason": "As a direct continuation of DDLC, the mod deepens the psychological horror and unsettling narrative twists that define the original visual novel."
+    }
+  ]
+}

@@ -153,11 +153,27 @@ export const POST: APIRoute = async (context) => {
     // 3. Resolve store name and find clean purchase link
     const targetStoreName = matchStoreName(store);
     const purchaseLinks = game.purchaseLinks as any[];
-    const cleanLink = purchaseLinks?.find(
-      (link: any) => link.storeName.toLowerCase().replace(/[^a-z0-9]/g, "") === targetStoreName.toLowerCase().replace(/[^a-z0-9]/g, "")
+    const isItchGame = Boolean(game.slug?.startsWith("itch-"));
+
+    let cleanLink = purchaseLinks?.find(
+      (link: any) => {
+        const s = (link.storeName || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const t = targetStoreName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        return s === t || (t.includes("itch") && s.includes("itch"));
+      }
     );
 
+    // If this is an itch game, strictly ensure we redirect to itch.io and NEVER to Steam or other stores
+    if (isItchGame && (!cleanLink || !cleanLink.url?.includes("itch.io"))) {
+      cleanLink = purchaseLinks?.find((link: any) =>
+        link.storeName?.toLowerCase().includes("itch") || link.url?.includes("itch.io")
+      );
+    }
+
     let finalRedirectionUrl = fallbackUrl;
+    if (isItchGame && fallbackUrl && !fallbackUrl.includes("itch.io")) {
+      finalRedirectionUrl = "";
+    }
 
     if (cleanLink && cleanLink.url) {
       let targetUrl = cleanLink.url;
@@ -169,7 +185,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     if (!finalRedirectionUrl) {
-      finalRedirectionUrl = cleanLink?.url || fallbackUrl || new URL("/", request.url).toString();
+      finalRedirectionUrl = cleanLink?.url || (isItchGame ? "" : fallbackUrl) || new URL("/", request.url).toString();
     }
 
     if (finalRedirectionUrl && finalRedirectionUrl.includes("itch.io") && finalRedirectionUrl.endsWith("/purchase")) {

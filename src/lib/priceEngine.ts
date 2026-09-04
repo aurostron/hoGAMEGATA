@@ -449,35 +449,20 @@ export async function fetchSteamDirect(
         const retailPrice = priceInfo.initial / 100;
         const discountPercent = priceInfo.discount_percent;
 
-        // 3. Asynchronously cache the resolved Steam App ID in the PurchaseLink table
-        if (resolvedFromSearch) {
+        // 3. Asynchronously cache the resolved Steam App ID in the PurchaseLink table ONLY if Steam link already exists
+        if (resolvedFromSearch && hasSteamLink) {
           const steamUrl = `https://store.steampowered.com/app/${resolvedAppId}/`;
-          
-          if (hasSteamLink) {
-            turso
-              .update(purchaseLinksTable)
-              .set({ url: steamUrl })
-              .where(
-                and(
-                  eq(purchaseLinksTable.gameId, gameId),
-                  eq(purchaseLinksTable.storeName, "Steam")
-                )
+          turso
+            .update(purchaseLinksTable)
+            .set({ url: steamUrl })
+            .where(
+              and(
+                eq(purchaseLinksTable.gameId, gameId),
+                eq(purchaseLinksTable.storeName, "Steam")
               )
-              .then(() => console.log(`✓ Updated Steam link in DB for game ${gameId} with AppID ${resolvedAppId}`))
-              .catch((err) => console.warn(`⚠️ Failed to update Steam link in DB:`, err));
-          } else {
-            const generateId = () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-            turso
-              .insert(purchaseLinksTable)
-              .values({
-                id: generateId(),
-                gameId,
-                storeName: "Steam",
-                url: steamUrl
-              })
-              .then(() => console.log(`✓ Auto-enriched missing Steam link for game ${gameId} with AppID ${resolvedAppId}`))
-              .catch((err) => console.warn(`⚠️ Failed to auto-enrich Steam link in DB:`, err));
-          }
+            )
+            .then(() => console.log(`✓ Updated Steam link in DB for game ${gameId} with AppID ${resolvedAppId}`))
+            .catch((err) => console.warn(`⚠️ Failed to update Steam link in DB:`, err));
         }
 
         return [{
@@ -730,6 +715,28 @@ export async function lazyGetPrices(
   const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours smart cache window
 
   try {
+    // Detect if this is strictly an itch.io game
+    const hasItchStore = purchaseLinks.some(l => 
+      l.storeName?.toLowerCase().includes("itch") || l.url?.includes("itch.io")
+    );
+    const hasNonItchStore = purchaseLinks.some(l => 
+      !l.storeName?.toLowerCase().includes("itch") && !l.url?.includes("itch.io")
+    );
+    
+    let isItchGame = hasItchStore && !hasNonItchStore;
+    if (!isItchGame && gameId) {
+      try {
+        const [gRow] = await turso
+          .select({ slug: gamesTable.slug })
+          .from(gamesTable)
+          .where(eq(gamesTable.id, gameId))
+          .limit(1);
+        if (gRow?.slug?.startsWith("itch-")) {
+          isItchGame = true;
+        }
+      } catch {}
+    }
+
     // A. Check database cache in Turso
     const cached = await turso
       .select()
@@ -743,6 +750,105 @@ export async function lazyGetPrices(
       )
       .orderBy(priceSnapshotsTable.dealPrice);
 
+    // Strict itch.io game isolation: ONLY itch.io pricing, ZERO Steam/GOG/Aggregator calls
+    if (isItchGame) {
+      const itchLink = purchaseLinks.find(l => 
+        l.storeName?.toLowerCase().includes("itch") || l.url?.includes("itch.io")
+      );
+      const targetItchUrl = itchLink?.url || null;
+
+      const cachedItch = cached.filter(c => 
+        c.storeName?.toLowerCase().includes("itch") || c.dealUrl?.includes("itch.io") || c.provider === "itch"
+      );
+
+      if (cachedItch.length > 0 && !forceRefresh) {
+        const oldestUpdate = Math.min(...cachedItch.map(c => new Date(c.updatedAt).getTime()));
+        const isFresh = (Date.now() - oldestUpdate) < CACHE_TTL_MS;
+        if (isFresh) {
+          return cachedItch.map(c => ({
+            storeName: "itch.io",
+            dealPrice: c.dealPrice,
+            retailPrice: c.retailPrice,
+            discountPercent: c.discountPercent,
+            dealUrl: c.dealUrl,
+            currency: c.currency
+          }));
+        }
+      }
+
+      if (targetItchUrl) {
+        try {
+          const itchData = await fetchItchDataJson(targetItchUrl);
+          if (itchData.success) {
+            const dealP = itchData.price ?? 0;
+            const retP = itchData.originalPrice ?? dealP;
+            const discP = itchData.discountPercent ?? 0;
+            const cleanItchUrl = targetItchUrl.replace(/\/purchase$/, "").replace(/\/+$/, "");
+
+            const finalItchDeal: PriceDeal = {
+              storeName: "itch.io",
+              dealPrice: dealP,
+              retailPrice: retP,
+              discountPercent: discP,
+              dealUrl: cleanItchUrl,
+              currency: itchData.currency || "USD"
+            };
+
+            // Wipe any rogue non-itch snapshots and write clean itch snapshot
+            try {
+              await turso
+                .delete(priceSnapshotsTable)
+                .where(eq(priceSnapshotsTable.gameId, gameId));
+              await turso
+                .insert(priceSnapshotsTable)
+                .values({
+                  id: generatePriceSnapshotId(),
+                  gameId,
+                  storeName: "itch.io",
+                  dealPrice: dealP,
+                  retailPrice: retP,
+                  discountPercent: discP,
+                  dealUrl: cleanItchUrl,
+                  currency: itchData.currency || "USD",
+                  country: upperCountry,
+                  provider: "direct",
+                  updatedAt: new Date()
+                });
+            } catch (dbErr) {
+              console.warn("⚠️ Failed to write itch price snapshot to Turso:", dbErr);
+            }
+
+            return [finalItchDeal];
+          }
+        } catch (err) {
+          console.warn(`[Pricing Engine] Failed to fetch live itch deal for "${title}":`, err);
+        }
+      }
+
+      if (cachedItch.length > 0) {
+        return cachedItch.map(c => ({
+          storeName: "itch.io",
+          dealPrice: c.dealPrice,
+          retailPrice: c.retailPrice,
+          discountPercent: c.discountPercent,
+          dealUrl: c.dealUrl,
+          currency: c.currency
+        }));
+      }
+
+      if (targetItchUrl) {
+        return [{
+          storeName: "itch.io",
+          dealPrice: 0,
+          retailPrice: 0,
+          discountPercent: 0,
+          dealUrl: targetItchUrl.replace(/\/purchase$/, "").replace(/\/+$/, ""),
+          currency: "USD"
+        }];
+      }
+
+      return [];
+    }
 
     if (cached.length > 0 && !forceRefresh) {
       const oldestUpdate = Math.min(...cached.map(c => new Date(c.updatedAt).getTime()));
