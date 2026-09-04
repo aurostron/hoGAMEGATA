@@ -2384,7 +2384,21 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 ### Verification Results
 - Executed `npm run build:quick`:
   - Compiled server entrypoints and prerendered static routes with exit code 0.
-- Preserved strict **"Do not deploy"** rule (no Cloudflare Workers deployment triggered).
+- Preserved strict **"Do not deploy"** rule until explicit user confirmation.
+
+## 2026-09-04 — Feature: Header GitHub Logo & Production Deployment
+
+### Changes Made
+1. **`src/components/Header.astro`**:
+   - Added an official GitHub SVG logo adjacent to the Data version indicator.
+   - Sized to standard header icon proportions (`w-5 h-5` / 20px) with `p-1 rounded-md hover:bg-white/10 hover:scale-110 transition-all text-white/60 hover:text-white`.
+   - Links directly to the open-source repository at `https://github.com/project-hgg/project-hgg.github.io` in a new tab.
+
+### Deployment & Verification
+- Executed `npm run build:quick`: bundled cleanly with exit code 0.
+- Executed `npx wrangler deploy` to Cloudflare Workers (Version: `0b12e408-98b1-4587-bb1e-f15749747c1e`).
+- Verified live response via `curl https://gamegata.xyz`: GitHub logo, clean sans typography, commit link (`06dc807`), and last updated timestamp are live on production.
+
 
 
 
