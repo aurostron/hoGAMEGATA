@@ -1,25 +1,29 @@
 export interface DataVersionInfo {
   commitSha: string;
   commitUrl: string;
+  commitMessage?: string;
   date: string;
   displayDate: string;
+  totalGames?: number;
 }
 
 const FALLBACK_VERSION: DataVersionInfo = {
-  commitSha: "06dc807",
-  commitUrl: "https://github.com/project-hgg/project-hgg.github.io/commit/06dc807",
-  date: "2026-09-03T19:43:00Z",
-  displayDate: "Sep 3, 19:43 UTC",
+  commitSha: "d6858f6",
+  commitUrl: "https://github.com/project-hgg/project-hgg.github.io/commit/d6858f665ed554300e948cf67406a6425f4a60ab",
+  commitMessage: "chore(catalog): auto-sync new itch horror games",
+  date: "2026-09-04T10:34:37Z",
+  displayDate: "Sep 4, 10:34 UTC",
+  totalGames: 107851,
 };
 
 let cachedVersion: DataVersionInfo | null = null;
 let lastFetchedAt = 0;
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes in-memory cache
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5-minute cache for edge speed & zero rate limits
 
 function formatDisplayDate(isoString: string): string {
   try {
     const date = new Date(isoString);
-    if (isNaN(date.getTime())) return "Sep 3, 19:43 UTC";
+    if (isNaN(date.getTime())) return "recently";
 
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const month = months[date.getUTCMonth()];
@@ -39,36 +43,46 @@ export async function getDataVersion(): Promise<DataVersionInfo> {
     return cachedVersion;
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s quick timeout
+  // 1. Primary: Fetch static data-version.json (zero GitHub API rate limits)
+  const endpoints = [
+    "https://raw.githubusercontent.com/project-hgg/project-hgg.github.io/main/docs/public/data-version.json",
+    "https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/data-version.json",
+  ];
 
-    const res = await fetch("https://api.github.com/repos/project-hgg/project-hgg.github.io/commits/main", {
-      headers: {
-        "User-Agent": "Gamegata-DataVersion-Checker",
-        Accept: "application/vnd.github.v3+json",
-      },
-      signal: controller.signal,
-    });
+  for (const url of endpoints) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-    clearTimeout(timeoutId);
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Gamegata-DataVersion-Checker" },
+        signal: controller.signal,
+        // @ts-ignore Cloudflare cache option
+        cf: { cacheTtl: 300, cacheEverything: true },
+      });
 
-    if (res.ok) {
-      const data = (await res.json()) as any;
-      const sha = (data.sha || "").slice(0, 7) || FALLBACK_VERSION.commitSha;
-      const date = data.commit?.committer?.date || data.commit?.author?.date || FALLBACK_VERSION.date;
+      clearTimeout(timeoutId);
 
-      cachedVersion = {
-        commitSha: sha,
-        commitUrl: `https://github.com/project-hgg/project-hgg.github.io/commit/${data.sha || sha}`,
-        date,
-        displayDate: formatDisplayDate(date),
-      };
-      lastFetchedAt = now;
-      return cachedVersion;
-    }
-  } catch (err) {
-    // Fail silently to fallback on timeout or network error
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        if (data && data.commitSha) {
+          const sha = data.commitSha;
+          const fullSha = data.fullSha || sha;
+          const date = data.timestamp || FALLBACK_VERSION.date;
+
+          cachedVersion = {
+            commitSha: sha,
+            commitUrl: `https://github.com/project-hgg/project-hgg.github.io/commit/${fullSha}`,
+            commitMessage: data.commitMessage || "Catalog update",
+            date,
+            displayDate: formatDisplayDate(date),
+            totalGames: data.totalGames || FALLBACK_VERSION.totalGames,
+          };
+          lastFetchedAt = now;
+          return cachedVersion;
+        }
+      }
+    } catch {}
   }
 
   return cachedVersion || FALLBACK_VERSION;

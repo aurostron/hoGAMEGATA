@@ -3,7 +3,7 @@ import { turso } from '../../lib/turso';
 import { tursoAuth } from '../../lib/tursoAuth';
 import { games, developers, publishers, tags } from '../../db/schema';
 import { waitlist } from '../../db/auth-schema';
-import { count } from 'drizzle-orm';
+import { count, or, isNull, ne } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -16,7 +16,7 @@ export const GET: APIRoute = async () => {
       [{ totalTags }],
       [{ totalWaitlist }],
     ] = await Promise.all([
-      turso.select({ totalGames: count() }).from(games),
+      turso.select({ totalGames: count() }).from(games).where(or(isNull(games.status), ne(games.status, "hidden"))),
       turso.select({ totalDevs: count() }).from(developers),
       turso.select({ totalPublishers: count() }).from(publishers),
       turso.select({ totalTags: count() }).from(tags),

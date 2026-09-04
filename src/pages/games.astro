@@ -3,8 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import GataCatalogClient from '../components/GataCatalogClient';
 import { turso, initTursoForRequest } from '../lib/turso';
 import { games, genres, tags, platforms } from '../db/schema';
-import { count } from 'drizzle-orm';
+import { count, or, isNull, ne } from 'drizzle-orm';
 import { env as cfWorkerEnv } from "cloudflare:workers";
+import { getDataVersion } from '../lib/dataVersion';
 
 const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
 const runtimeEnv = isDev
@@ -18,23 +19,24 @@ Astro.response.headers.set(
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
-let totalGames: number | null = null;
+const dataVersion = await getDataVersion();
+let totalGames: number = dataVersion.totalGames || 107851;
 let allGenres: any[] = [];
 let allPlatforms: any[] = [];
 
 try {
-  // Query database counts and lists in parallel (lightweight only)
+  // Query database counts and lists in parallel (lightweight only, visible non-hidden games)
   const [
     [{ count: gamesCount }],
     genresList,
     platformsList
   ] = await Promise.all([
-    turso.select({ count: count() }).from(games),
+    turso.select({ count: count() }).from(games).where(or(isNull(games.status), ne(games.status, "hidden"))),
     turso.select({ name: genres.name, slug: genres.slug }).from(genres).orderBy(genres.name).limit(60),
     turso.select({ name: platforms.name, slug: platforms.slug }).from(platforms).orderBy(platforms.name).limit(100)
   ]);
 
-  totalGames = gamesCount;
+  totalGames = dataVersion.totalGames || gamesCount || 107851;
   allGenres = genresList;
   allPlatforms = platformsList;
 } catch (err) {

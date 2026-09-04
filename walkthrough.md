@@ -2399,6 +2399,39 @@ To eliminate Turso database read quota exhaustion and protect Cloudflare Workers
 - Executed `npx wrangler deploy` to Cloudflare Workers (Version: `0b12e408-98b1-4587-bb1e-f15749747c1e`).
 - Verified live response via `curl https://gamegata.xyz`: GitHub logo, clean sans typography, commit link (`06dc807`), and last updated timestamp are live on production.
 
+## 2026-09-04 — Fix: Live Data-Change Commit Tracking, Caching & Search Count Alignment
+
+### Context & Root Cause Analysis
+1. **Stale Commit in Header (`06dc807` vs `d6858f6`)**:
+   - The unauthenticated GitHub Commits API has a strict 60 req/hr IP limit. On Cloudflare Workers where outbound IPs are shared by many workers, GitHub API was returning `403 Rate Limit Exceeded`, causing the worker to silently fall back to the initial hardcoded commit `06dc807`.
+   - In addition, generic repo commit endpoints like `/commits/main` include documentation/chore commits (such as `Update README.md`) rather than only data changes.
+2. **Count Discrepancy (`107855` vs `107851`)**:
+   - Turso's `Game` table has 107,855 total records, of which 4 games have `status: 'hidden'` (`Resident Evil` GOG duplicate, `Matilda`, `Call of Duty: Legends of War`, and `Don't Blink`).
+   - `search-index.json` correctly excludes hidden games (107,851 active games).
+   - However, `/games` was querying `turso.select({ count: count() }).from(games)` without the `status != 'hidden'` filter, creating a 4-game difference between the header banner and the search index.
+
+### Changes Made
+1. **Automated Data Version Pipeline (`project-hgg.github.io`)**:
+   - Created `docs/public/data-version.json` tracking `commitSha`, `fullSha`, `commitMessage`, `timestamp`, and `totalGames`.
+   - Updated GitHub Actions workflows (`sync-itch-games.yml` and `sync-igdb-games.yml`) to automatically update and commit `docs/public/data-version.json` whenever `search-index.json` changes.
+   - Pushed commit `bbd1fd6` to `project-hgg.github.io`.
+2. **Edge Cache & Rate-Limit Immune Data Version Fetcher (`src/lib/dataVersion.ts`)**:
+   - Replaced fragile unauthenticated GitHub REST API calls with raw static endpoints (`raw.githubusercontent.com` and `cdn.jsdelivr.net`) which have zero rate limits.
+   - Implemented a 5-minute in-memory and Cloudflare edge cache (`cacheTtl: 300`) with quick 2.5s abort timeout.
+   - Added `totalGames` and `commitMessage` to `DataVersionInfo`.
+   - Tooltip now displays the exact data commit message on hover.
+3. **Database & Search Index Alignment (`src/pages/games.astro`, `src/pages/support.astro`, `src/pages/api/stats.ts`)**:
+   - Updated `games.astro` to bind `totalGames` to `dataVersion.totalGames` with database fallback filtering `where(or(isNull(games.status), ne(games.status, 'hidden')))`.
+   - Updated `support.astro` and `api/stats.ts` to exclude hidden games consistently.
+
+### Verification & Deployment
+- Ran `npm run build:quick`: passed cleanly with exit code 0.
+- Deployed to Cloudflare Workers (`Current Version ID: 2984be88-5c19-4aee-8807-a741f6f5f0ec`).
+- **Live Production Verification**:
+  - Header: Verified live on `https://gamegata.xyz` showing `Data d6858f6 / Updated Sep 4, 10:34 UTC` linking to commit `d6858f6` (ignoring the recent `Update README.md` commits `74f6486` / `42fc3c8`). Hovering displays `Commit d6858f6: chore(catalog): auto-sync new itch horror games [skip ci]`.
+  - Catalog count: Verified live on `https://gamegata.xyz/games` rendering `initialTotalGames: 107851`, matching `search-index.json` (107,851 games) 1:1.
+
+
 
 
 

@@ -72,7 +72,7 @@ const dataVersion = await getDataVersion();
           target="_blank"
           rel="noopener noreferrer"
           class="text-white/80 hover:text-white font-medium hover:underline transition-colors"
-          title={`View data release commit ${dataVersion.commitSha} on GitHub`}
+          title={dataVersion.commitMessage ? `Commit ${dataVersion.commitSha}: ${dataVersion.commitMessage}` : `View data release commit ${dataVersion.commitSha} on GitHub`}
         >
           {dataVersion.commitSha}
         </a>
