@@ -3120,6 +3120,26 @@ Fixed the issue where the `/about` sidebar scrolled off the screen rather than s
 - Verified sidebar remains permanently pinned on screen across all scroll positions.
 - Kept strictly local (zero deployments).
 
+---
+
+## 2026-09-05 — Production Deployment: hoGAMEGATA About Page Taxonomy & Persistent Docs Sidebar
+
+### Summary
+Committed, pushed, and deployed the complete `/about` page taxonomy suite and persistent API docs sidebar to Cloudflare Workers production.
+
+### Git & Deployment Details
+- **Commit**: [`bc4016f`](https://github.com/aurostron/gamegata-v1/commit/bc4016f) — *"feat: integrate 4-volume horror taxonomy into /about with persistent API docs sidebar and live data version badge"*
+- **Pushed To**: `https://github.com/aurostron/gamegata-v1.git` (`main`)
+- **Cloudflare Deployment**:
+  - Build command: `npm run deploy:quick` (`astro build && node scripts/fix-manifest-urls.mjs && wrangler deploy`)
+  - Target: `gamegata.xyz`
+  - Version ID: `ea6d76da-1c74-407c-bf53-b4b46c6dd06a`
+
+### Verification Results
+- Verified live HTTP response from `https://gamegata.xyz/about` (HTTP 200 OK).
+- Confirmed brand consistency (`hoGAMEGATA`), persistent sidebar layout, 7D Scare Profile Archetypes, and 21 Sub-Feelings Matrix are active on production.
+
+
 
 
 
