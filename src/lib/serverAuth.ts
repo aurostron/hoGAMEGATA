@@ -44,18 +44,12 @@ export function isAdminUser(email: string, env?: any): boolean {
   if (!email) return false;
 
   const adminEmailsStr = env?.ADMIN_EMAILS || (typeof process !== "undefined" && process.env?.ADMIN_EMAILS) || "";
-  const adminEmails = adminEmailsStr.split(",").map((e: string) => e.trim().toLowerCase());
+  const adminEmails = adminEmailsStr.split(",").map((e: string) => e.trim().toLowerCase()).filter(Boolean);
 
   const emailLower = email.toLowerCase();
 
   return (
     adminEmails.includes(emailLower) ||
-    emailLower === "bapum@example.com" ||
-    emailLower === "aurostronyee1@gmail.com" ||
-    emailLower === "aurostron13@gmail.com" ||
-    emailLower === "aurosmitmahanta@gmail.com" ||
-    emailLower.endsWith("@gamegata.xyz") ||
-    import.meta.env?.DEV ||
-    (typeof process !== "undefined" && process.env?.NODE_ENV === "development")
+    (Boolean(import.meta.env?.DEV) && emailLower.endsWith("@localhost"))
   );
 }

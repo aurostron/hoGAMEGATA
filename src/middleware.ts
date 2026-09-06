@@ -217,62 +217,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return applySecurityHeaders(await next());
   }
 
-  // 5. Admin Panel & Admin API Gating — init auth clients only when needed
+  // 5. Block /admin & /api/admin in open-core release
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    initTursoAuthForRequest(runtimeEnv);
-    initBetterAuth(runtimeEnv);
-    const user = await getServerUser(context.request, context.cookies);
-    const isAdmin = user && isAdminUser(user.email, runtimeEnv);
-
-    if (!isAdmin) {
-      if (context.cookies.has("admin_2fa_session")) {
-        context.cookies.delete("admin_2fa_session", { path: "/" });
-      }
-      if (pathname.startsWith("/admin/api/") || pathname.startsWith("/api/admin/")) {
-        return applySecurityHeaders(new Response(
-          JSON.stringify({ error: "Forbidden. Admin access required." }),
-          { status: 403, headers: { "Content-Type": "application/json" } }
-        ));
-      }
-      return applySecurityHeaders(redirect("/login?error=unauthorized"));
-    }
-
-    // Enforce 2FA verification check for admin pages & APIs
-    const is2FaPage = pathname === "/admin/verify-2fa";
-    if (!is2FaPage) {
-      const sessionToken = context.cookies.get("admin_2fa_session")?.value;
-      let isVerified = false;
-
-      if (sessionToken) {
-        try {
-          const { tursoAuth } = await import("./lib/tursoAuth");
-          const { systemConfig } = await import("./db/auth-schema");
-          const { eq } = await import("drizzle-orm");
-
-          const [configRow] = await tursoAuth
-            .select()
-            .from(systemConfig)
-            .where(eq(systemConfig.key, `admin_2fa_session:${user.email}`))
-            .limit(1);
-
-          if (configRow && configRow.value === sessionToken) {
-            isVerified = true;
-          }
-        } catch (err) {
-          console.error("[2FA Middleware Error] Failed to check session:", err);
-        }
-      }
-
-      if (!isVerified) {
-        if (pathname.startsWith("/admin/api/") || pathname.startsWith("/api/admin/")) {
-          return applySecurityHeaders(new Response(
-            JSON.stringify({ error: "Forbidden. 2FA verification required." }),
-            { status: 403, headers: { "Content-Type": "application/json" } }
-          ));
-        }
-        return applySecurityHeaders(redirect("/admin/verify-2fa"));
-      }
-    }
+    return applySecurityHeaders(new Response("Not Found", { status: 404 }));
   }
 
   const response = await next();

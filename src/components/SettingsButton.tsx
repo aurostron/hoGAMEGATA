@@ -10,7 +10,6 @@ import {
   Bookmark, 
   LifeBuoy, 
   Info, 
-  ShieldCheck, 
   PlusCircle 
 } from "lucide-react";
 import { 
@@ -69,12 +68,6 @@ function SettingsButtonInner() {
 
   const displayName = user?.email ? user.email.split("@")[0] : "";
   const initial = (displayName.charAt(0) || "U").toUpperCase();
-  const isAdmin = Boolean(
-    user?.email && (
-      user.email.toLowerCase().endsWith("@gamegata.xyz") ||
-      ["bapum@example.com", "aurostronyee1@gmail.com", "aurostron13@gmail.com", "aurosmitmahanta@gmail.com"].includes(user.email.toLowerCase())
-    )
-  );
 
   return (
     <DropdownMenu>
@@ -200,19 +193,6 @@ function SettingsButtonInner() {
           </a>
         </DropdownMenuItem>
 
-        {/* 4. Admin Portal (if Admin) */}
-        {isAdmin && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Administration</DropdownMenuLabel>
-            <DropdownMenuItem className="p-0">
-              <a href="/admin" className="flex items-center gap-2.5 w-full h-full px-3 py-2 text-emerald-400 hover:text-emerald-300 decoration-none font-semibold">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span className="flex-1">Admin Console</span>
-              </a>
-            </DropdownMenuItem>
-          </>
-        )}
 
         {/* 5. Account Actions */}
         {user && (

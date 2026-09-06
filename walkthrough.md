@@ -3580,6 +3580,52 @@ Standardized the project version to `v0.9.5` for the initial public open-core re
 - Verified `package.json` reflects `"version": "0.9.5"`.
 - Verified `package-lock.json` reflects `"version": "0.9.5"`.
 
+---
+
+## 2026-09-06 — Proprietary Admin Portal & Scripts Removal & Wrangler Sanitization
+
+### Summary & Actions Executed
+Enforced the strict open-core perimeter by purging all custom proprietary admin tooling, crawling pipelines, hardcoded emails, and deployment variables from the public release:
+
+1. **`wrangler.jsonc` Variable Sanitization**:
+   - Emptied `"vars": {}` completely — no Cloudinary cloud names, Sanity project IDs, Turnstile site keys, or URLs are hardcoded in public configs.
+   - Removed production routes (`gamegata.xyz`) and replaced production KV namespace IDs with clean placeholders.
+2. **Proprietary Admin & Dev Portal Exclusion**:
+   - Untracked `src/pages/admin/` and `src/pages/api/admin/` from the public repository.
+   - Removed `src/layouts/AdminLayout.astro`, `src/components/admin/`, and admin moderation queues from public tracking.
+   - Removed dev login bypass (`src/pages/api/auth/dev-bypass.ts`).
+   - Cleaned `src/components/SettingsButton.tsx` to remove the Admin Console link.
+   - Replaced `/admin` and `/api/admin` middleware with a standard 404 handler for the open-core build.
+3. **Proprietary Scraping, Ingestion & Ingest Pipeline Exclusion**:
+   - Untracked all 107 custom backend scraping, deduplication, sync, and audit scripts from `scripts/`.
+   - Retained only the open-core developer scripts: `scripts/seed-mock-db.ts` (mock database seeder) and `scripts/fix-manifest-urls.mjs` (Astro build helper).
+   - Cleaned `package.json` scripts to remove proprietary commands (`console`, `dev-gui`, `sync:*`, `search:deepseek`, etc.).
+4. **Hardcoded Email & Personal Identity Sanitization**:
+   - Removed hardcoded personal email lists from `src/components/SettingsButton.tsx` and `src/lib/serverAuth.ts`. `isAdminUser` now relies strictly on the `ADMIN_EMAILS` environment variable.
+5. **Disk Preservation**:
+   - Added all untracked proprietary paths to `.gitignore` so they remain safely on the local developer disk and on `private-history` without ever being pushed to GitHub.
+
+### Files Created / Modified
+| File | Action | Description |
+|---|---|---|
+| `wrangler.jsonc` | Modified | Emptied vars, removed production routes, added placeholder KVs |
+| `src/components/SettingsButton.tsx` | Modified | Removed admin link and hardcoded personal emails |
+| `src/lib/serverAuth.ts` | Modified | Removed hardcoded personal emails; reads strictly from env |
+| `src/middleware.ts` | Modified | Replaced admin gating with 404 response |
+| `package.json` | Modified | Removed proprietary script commands |
+| `.gitignore` | Modified | Added proprietary admin portal and scripts paths |
+| `src/pages/admin/` | Untracked | Removed from git tracking |
+| `src/pages/api/admin/` | Untracked | Removed from git tracking |
+| `src/layouts/AdminLayout.astro` | Untracked | Removed from git tracking |
+| `src/components/admin/` | Untracked | Removed from git tracking |
+| `scripts/` (107 scripts) | Untracked | Removed from git tracking |
+| `walkthrough.md` | Modified | Appended this entry |
+
+### Verification Results
+- Executed `npm run build:quick`: Server built and prerendered in 13.57s with **0 errors**.
+- Verified all proprietary files remain safely on local disk and on `private-history`.
+
+
 
 
 

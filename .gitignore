@@ -58,6 +58,20 @@ scripts/igdb-dumps/
 
 # Local db profiles
 .env.db-profiles.json
+
+# Proprietary Admin Portal & Moderation Suite
+src/pages/admin/
+src/pages/api/admin/
+src/layouts/AdminLayout.astro
+src/components/admin/
+src/components/bugs/BugManagementQueue.tsx
+src/components/editing/ModerationQueue.tsx
+src/pages/api/auth/dev-bypass.ts
+
+# Proprietary Ingestion, Scraping & Migration Scripts
+scripts/*
+!scripts/seed-mock-db.ts
+!scripts/fix-manifest-urls.mjs
 pending-search-cache.json
 
 # Local large database dumps
