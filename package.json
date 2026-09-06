@@ -24,7 +24,7 @@
     "@google/genai": "^2.10.0",
     "@libsql/client": "^0.17.4",
     "@nanostores/react": "^1.1.0",
-    "@sanity/astro": "^3.4.1",
+    "@sanity/astro": "^3.5.1",
     "@sanity/image-url": "^2.1.1",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
@@ -45,8 +45,8 @@
     "nanostores": "^1.4.2",
     "openai": "^6.45.0",
     "otpauth": "^9.5.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "shadcn": "^4.11.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.1",
@@ -63,6 +63,6 @@
     "pg": "^8.22.0",
     "prisma": "^7.8.0",
     "tsx": "^4.22.4",
-    "typescript": "^7.0.2"
+    "typescript": "^5.8.2"
   }
 }

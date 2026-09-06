@@ -3715,6 +3715,33 @@ Completed a rigorous, five-pass security, privacy, and integrity audit across th
 - Verified GET `http://localhost:4321/` responds with `STATUS 200` and renders full HTML with 0 errors.
 - Verified `npm run build:quick` completes in 12.77s with **0 errors**.
 
+---
+
+## 2026-09-06 — Dependency Resolution & Clean Install Verification (hoGAMEGATA Open Core)
+
+### Summary
+Resolved multiple package manager peer dependency resolution errors (`npm error code ERESOLVE`) encountered during clean `npm install` on cloned/downloaded releases without pre-existing `node_modules`:
+1. **TypeScript Peer Dependency**: Downgraded root `typescript` from `^7.0.2` to `^5.8.2` in `package.json` to satisfy `@astrojs/check@^0.9.9` (requires `typescript: ^5.0.0 || ^6.0.0`) while retaining full compatibility with `@prisma/client` and Better Auth.
+2. **Sanity Astro Peer Dependency**: Upgraded `@sanity/astro` from `^3.4.1` to `^3.5.1` in `package.json` to satisfy `astro@^7.0.0` peer requirement.
+3. **React 19 Sibling Lock**: Aligned `react` and `react-dom` to `19.2.8` to prevent Miniflare/workerd prerender version mismatch exception.
+4. **Regenerated `package-lock.json`**: Generated fresh lockfile with clean dependency trees.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `package.json` | Modified — Set `typescript: ^5.8.2`, `@sanity/astro: ^3.5.1`, `react: 19.2.8`, `react-dom: 19.2.8` |
+| `package-lock.json` | Modified — Regenerated dependency lockfile resolving all peer conflicts |
+| `walkthrough.md` | Modified — Appended change record |
+
+### Verification Results
+- Executed `npm install` from a completely empty/clean directory (`C:\Users\bapum\Downloads\photos\hoGAMEGATA-main`):
+  - Added 1,653 packages with **0 ERESOLVE errors** (Exit code 0).
+- Executed `npm run setup:mock` in `hoGAMEGATA-main`:
+  - Successfully seeded 10 horror games into `local.db` with 0 errors.
+- Executed `npm run build:quick` in primary project:
+  - Prerendered routes and generated Cloudflare bundle cleanly in 11.63s with **0 errors**.
+
+
 
 
 
