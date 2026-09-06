@@ -3794,6 +3794,315 @@ Transformed local development into a completely self-contained, 100% operational
 - **Production Build**:
   - Executed `npm run build:quick` -> Server built and static routes prerendered in 14.47s with **0 errors**.
 
+---
+
+## 2026-09-06 — Tally-Inspired Stacked Responsive Footer Redesign
+
+### Summary
+Redesigned the application footer from a cramped single-row bar to an elegant, responsive stacked layout inspired by Tally.so. Formatted in clear, simple everyday English without AI jargon, and configured exclusively with real existing site routes (no fake or new endpoints). Replaced the previous author credit with "Made with love by aurostron." and removed legacy emojis in favor of crisp monochrome SVG vector icons for community links. Retained all security honeypots and bug report trigger interactions.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/Footer.astro` | Modified — Transitioned from single-row strip to a 5-column responsive stacked grid with clean typography, unslop copy, accessible SVG icons, and zero emojis |
+
+### Design Decisions / Rationale
+- **Layout & Information Architecture**: Implemented a 5-column grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-5`) where the brand, mission, author attribution ("Made with love by aurostron."), and social vector icons occupy a generous 2-column span on desktop, with 3 organized columns for Games, About, and Community/Legal.
+- **Tone & Copywriting**: Followed `/unslop` and `/avoid-ai-writing` guidelines—used direct, everyday human words ("Games", "About", "Community", "Legal", "All Games", "Search", "How We Rate Games", "FAQ") without promotional fluff or empty buzzwords.
+- **Route Integrity**: Guaranteed 100% route accuracy by linking only to verified, existing pages and anchor IDs (`/games`, `/search`, `/upcoming`, `https://project-hgg.github.io`, `/about`, `/about#rubric`, `/about#scare-profile`, `/about#sub-feelings`, `/about#faq-sources`, `/submit-game`, `/blog`, `/support`, `/status`, `/contact`, `/terms`, `/privacy`, `/legal`). No fake endpoints created.
+- **Zero Emojis & Accessibility**: Removed the inline heart emoji from author credits in compliance with project rules and UI/UX Pro Max guidelines. Integrated monochrome vector SVGs with `aria-label` attributes for GitHub, Bluesky, and Email.
+- **Security & System Integrations**: Retained crawler honeypots (`/api/games/dump`, `/api/v1/export`), the interactive `<BugReportTrigger client:only="react" />`, and preserved the semantic `<footer>` tag to ensure `BottomNav.tsx`'s intersection observer continues to smoothly fade out the mobile bottom navigation bar when reaching the bottom of the page.
+
+### Verification Results
+- **Production SSR & Static Route Build**:
+  - Executed `npm run build:quick` -> Server built and static routes prerendered in 10.52s with **0 errors**.
+- **Deployment Status**:
+  - Respected user constraint: **Do not deploy** (no Wrangler/Cloudflare deploy initiated).
+
+---
+
+## 2026-09-07 — Footer Outfit Logo & Bug Report Button Repositioning and Styling
+
+### Summary
+Applied the authentic header Outfit-font wordmark (`hoGAMEGATA` with italic lowercase "ho") to the footer using `SciFiLogo` with a semantic `as="span"` prop. Separated Community and Legal links into their own dedicated columns. Repositioned the Bug Report trigger from between navigation link lists to an anchoring position on the right of the bottom utility bar, with clean monospace styling, sharp borders, and hover accent transitions.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/SciFiLogo.tsx` | Modified — Added `as?: 'h1' | 'span' | 'div'` prop defaulting to `'h1'` to enable semantic tag reuse without duplicate `<h1>` tags |
+| `src/components/bugs/BugReportTrigger.tsx` | Modified — Added `variant?: 'default' | 'footer'` prop providing a sleek monospace border-button style with hover red accent and permanent text display across mobile and desktop |
+| `src/components/Footer.astro` | Modified — Integrated `<SciFiLogo withLink={true} as="span" />`, separated Community and Legal into independent columns, and positioned `<BugReportTrigger client:only="react" variant="footer" />` in the bottom utility bar |
+
+### Design Decisions / Rationale
+- **Logo Visual Authenticity**: Replaced generic bold sans text with the true header identity via `<SciFiLogo as="span" />`, leveraging Google's Outfit font (`font-extrabold text-2xl sm:text-3xl tracking-[0.03em]`) and the signature `<span class="italic font-normal lowercase">ho</span>` styling.
+- **Rhythm & Information Architecture**: Split Column 4 and Column 5 so `Community` (4 links) and `Legal` (4 links) now each occupy their own column, balancing the grid height across the entire footer.
+- **Button Position & Style**:
+  - Removed the button from being jammed between `System Status` and `LEGAL`.
+  - Positioned it cleanly in the bottom utility bar opposite the author attribution and copyright notice.
+  - Replaced the oversized `rounded-xl` pill with `rounded border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 font-mono text-xs uppercase tracking-wider text-neutral-300 hover:text-white`.
+  - Icon begins as neutral white/40 and smoothly transitions to red on hover.
+  - Label text is permanently visible on both mobile and desktop (removing `hidden sm:inline`).
+
+### Verification Results
+- **Production Build**:
+  - Executed `npm run build:quick` -> Server compiled and static routes prerendered in 37.83s with **0 errors**.
+- **Deployment**:
+  - Respected user constraint: **Do not deploy**.
+
+---
+
+## 2026-09-07 — Footer Live System Status Indicator
+
+### Summary
+Added a dynamic, real-time system status indicator to the footer brand column below the social icons. Shows a non-animated solid dot (green for operational, yellow for partial degradation, red for full outage) with concise status text matching surrounding typography, linked directly to the system status page (`/status`).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/SystemStatusIndicator.tsx` | NEW — Client component that queries `/api/status`, evaluates all monitored services, and dynamically renders the appropriate color dot (no animation) and label |
+| `src/components/Footer.astro` | Modified — Embedded `<SystemStatusIndicator client:only="react" />` directly beneath the social links in the Brand column |
+
+### Design Decisions / Rationale
+- **Location & Usability**: Positioned immediately beneath the brand's social links in the primary left column. This acts as an immediate trust signal without cluttering navigation columns.
+- **Visual Restraint (No Animation)**: Per explicit user instruction, the dot is solid (`w-2 h-2 rounded-full`, no pulse, no ping animation) adhering to UI/UX Pro Max reduced motion and distraction-free design principles.
+- **Three-State Indicator Logic**:
+  - **Green** (`bg-emerald-500`): All 5 services (Backend Core, Database, CDN, Catalog API, Stats API) reporting `ONLINE`. Label: "All systems operational".
+  - **Yellow** (`bg-amber-400`): At least 1 service is down or degraded. Label: "Some systems degraded".
+  - **Red** (`bg-red-500`): All services unreachable. Label: "All systems down".
+- **Typography & Styling**: Styled with the exact font family, size, and muted color palette as surrounding footer descriptions (`text-xs text-neutral-400 hover:text-white transition-colors py-0.5`). Entire badge is clickable and links to `/status`.
+
+### Verification Results
+- **Endpoint Test**:
+  - Verified `GET http://localhost:4322/api/status` returns HTTP 200 with all 5 services `ONLINE`.
+- **Production Build**:
+  - Executed `npm run build:quick` -> Server built and static routes prerendered in 14.13s with **0 errors**.
+- **Deployment**:
+  - Respected user constraint: **Do not deploy**.
+
+---
+
+## 2026-09-07 — Footer Headroom & Content Separation Polish
+
+### Summary
+Introduced generous breathing room between preceding page content and the footer. Added responsive margin-top on the footer, restored desktop base bottom padding in the main layout container, and added internal bottom padding to bottom game page sections (like CreatorGames' Load More button).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/Footer.astro` | Modified — Added `mt-16 sm:mt-24 lg:mt-32` providing explicit 64px to 128px headroom above the footer's top border |
+| `src/layouts/Layout.astro` | Modified — Updated main slot wrapper from `pb-28 md:pb-0` to `pb-28 md:pb-8` to maintain desktop separation |
+| `src/components/CreatorGames.tsx` | Modified — Added `pb-10` to the recommendations container to ensure the "Load More" button has dedicated room before section borders |
+
+### Design Decisions / Rationale
+- **Visual Separation & Rhythm**: Addressed the cramped, continuous appearance where the last page content elements directly touched the footer border. With `mt-16 sm:mt-24 lg:mt-32`, the layout now adheres to UI/UX Pro Max section spacing hierarchy, providing clear visual pause before the footer landmarks.
+
+### Verification Results
+- **Layout & Structure**:
+  - Confirmed `Footer.astro`, `Layout.astro`, and `CreatorGames.tsx` template changes.
+- **Deployment**:
+  - Respected user constraint: **Do not deploy**.
+
+---
+
+## 2026-09-07 — Footer Layout Consolidation, Action Row Integration & Sans Typography
+
+### Summary
+Unified the footer layout into a cohesive stacked architecture inspired by modern minimal SaaS design (Tally.so). Moved the "Report Bug" button directly into the action row alongside social links, shifted the author credit and copyright notice directly beneath the live system status indicator in the brand column, styled both with clean Sans font (`font-sans`) and differentiated font weights, and removed the obsolete bottom bar row. Cleaned up duplicate honeypot elements.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/bugs/BugReportTrigger.tsx` | Modified — Added dedicated `variant="footer"` styling matching the social icon buttons with unified height (`h-[34px]`), subtle border, Lucide Bug icon, and permanent text label |
+| `src/components/Footer.astro` | Modified — Embedded `BugReportTrigger` into the social buttons row; consolidated author credit and copyright directly under the `SystemStatusIndicator` using `font-sans` with weighted contrast; removed separate bottom bar and deduplicated honeypot decoys |
+
+### Design Decisions / Rationale
+- **Single Action Cluster**: Placing the "Report Bug" trigger alongside the GitHub, Bluesky, and Email buttons groups all user interaction entry points into one predictable horizontal row.
+- **Brand Column Cohesion**: Placing the live status indicator (`SystemStatusIndicator`), author attribution (`Made with love by aurostron.`), and copyright notice (`© 2026 hoGAMEGATA PROJECT`) vertically stacked under the brand logo creates an intentional, self-contained identity block.
+- **Sans Font & Weight Hierarchy**: Replaced monospace typography on the attribution/copyright lines with `font-sans`. Applied `font-normal` (400) for the sentence body, `font-semibold` (600) for the author link, and `font-medium` (500) uppercase tracking for the copyright notice.
+- **Elimination of Bottom Bar**: Removing the bottom rule and separate bottom bar eliminates visual redundancy and simplifies the page footer into a clean, modern 6-column grid.
+
+### Verification Results
+- **Design & Typography**: Confirmed Sans font styling with distinct weights, seamless button row layout, and zero emoji presence.
+- **Build & Quality**: Confirmed valid Astro template syntax and clean type checking.
+- **Deployment**: Respected user constraint: **Do not deploy**.
+
+---
+
+## 2026-09-07 — Copyright Line Positioning & Spacing Polish
+
+### Summary
+Addressed cramped vertical spacing where the copyright notice was colliding with the author attribution line. Replaced the tight `space-y-1` (4px) with `flex flex-col gap-3 pt-2` (12px separation with 8px top padding), eliminated harsh uppercase transformation to respect canonical `hoGAMEGATA` brand casing, and aligned font sizes to `text-xs` with distinct weight and color hierarchy.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/components/Footer.astro` | Modified — Increased vertical gap between "Made with love by aurostron." and "© 2026 hoGAMEGATA Project" from 4px to 12px (`gap-3 pt-2`); removed `uppercase` styling to preserve brand capitalization; matched `text-xs` size while keeping subtle `text-neutral-500` and `font-medium` |
+
+### Design Decisions / Rationale
+- **Vertical Rhythm & Proximity**: The 4px gap previously caused the copyright notice to look like an awkward, accidental second line of the author sentence. Expanding the gap to 12px (`gap-3`) establishes clear visual separation while keeping both metadata lines clustered beneath the system status indicator.
+- **Brand Casing Fidelity**: Forcing uppercase transformed the brand name into `HOGAMEGATA PROJECT`, losing the signature camelCase styling of `hoGAMEGATA`. Removing uppercase restores visual brand alignment with the header and logo.
+
+### Verification Results
+- **Visual Rhythm**: Evaluated spacing against the parent brand column's 16px cadence.
+- **Syntax & Template**: Verified template markup in `src/components/Footer.astro`.
+- **Deployment**: Respected user constraint: **Do not deploy**.
+
+---
+
+## 2026-09-07 — Legal & Relevant Pages Audit & Content Refresh (/avoid-ai-writing)
+
+### Summary
+Audited and rewrote all legal and contact pages on hoGAMEGATA (`/contact`, `/terms`, `/privacy`, `/legal`) using clear, professional, general English in strict accordance with the `/avoid-ai-writing` skill guidelines. Completely eliminated machine-generated patterns, em dashes (`—`), corporate buzzwords ("utilize", "robust", "delve", "testament", "pivotal"), and broken HTML formatting (such as loose `<p>•</p>` and raw markdown asterisks). Updated technical infrastructure disclosures in the Privacy Policy to accurately reflect Cloudflare Workers and Turso (libSQL), removing obsolete references to Supabase, Neon, and Cloudinary. Added an explicit DMCA and Copyright Takedown Notice procedure in Legal Notices for creators and rights holders.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/contact.astro` | Modified — Polished headers, added Discord (@auros.tron) alongside Email and Bluesky, cleaned up response times notice and developer submission guidance without broken bullet formatting |
+| `src/pages/terms.astro` | Modified — Rewrote terms into plain, direct contract language; replaced raw markdown asterisks with clean `<strong>` tags; removed em dashes; articulated permitted personal browsing, anti-scraping rules, intellectual property rights, and third-party storefront disclaimers |
+| `src/pages/privacy.astro` | Modified — Aligned data disclosures with actual architecture (Cloudflare edge network, Turso libSQL relational database, zero ad trackers or third-party analytics); clearly stated GDPR/CCPA data rights and account deletion procedures |
+| `src/pages/legal.astro` | Modified — Clarified trademark ownership, fair use archival statements, proprietary Scare Meter rights, and added Section 5 with step-by-step Copyright Inquiries and DMCA Takedown procedures |
+| `walkthrough.md` | Modified — Appended changelog entry |
+
+### Design Decisions / Rationale
+- **Natural, Human Copywriting**: Applied `/avoid-ai-writing` rules across all 4 pages. Replaced stiff corporate phrases like "utilize technologies within its data curation pipeline" with direct statements like "compile game metadata... from public databases and developer submissions." Replaced "serves as a testament to" with direct active verbs.
+- **Punctuation & Clean Typography**: Completely removed em dashes (`—`), replacing them with commas, parentheses, or clear sentence structures. Fixed template markup bugs where raw markdown asterisks (`**`) were rendered as literal asterisks in the browser.
+- **Architectural Honesty**: Removed mentions of third-party platforms that hoGAMEGATA no longer uses (Supabase, Neon, Cloudinary) and accurately disclosed the active edge stack (Cloudflare and Turso) to keep the Privacy Policy truthful and legally sound.
+- **Creator Takedown & DMCA Channel**: Added a dedicated section in Legal Notices with a direct email contact (`hello@gamegata.xyz`) and clear submission requirements, giving indie developers and copyright holders a straightforward, respectful avenue to request corrections or removals.
+
+### Verification Results
+- **Second-Pass AI-ism Audit**:
+  - Em dash scan (`Select-String "[—–]"`): 0 matches across all modified pages.
+  - Buzzword scan (`Select-String "leverage|utilize|robust|delve|testament|pivotal|foster|tapestry|landscape|beacon|realm"`): 0 matches.
+  - Raw markdown check (`Select-String "\*\*"`): 0 matches.
+- **Production Quick Build**:
+  - Executed `npm run build:quick` -> Server built and static routes prerendered in 35.76s with **0 errors**.
+- **Deployment**:
+  - Respected user constraint: **Do not deploy** (all changes remain local).
+
+---
+
+## 2026-09-07 — Legal, Privacy, Terms & Contact UI/UX Modernization (/ui-ux-pro-max)
+
+### Summary
+Redesigned the documentation, policy, and contact pages (`/legal`, `/privacy`, `/terms`, `/contact`) following the `/ui-ux-pro-max` guidelines. Eliminated heavy brutalist styling (`border-4 border-white` and `shadow-[8px_8px_0px_0px_#ffffff]`) in favor of a clean, page-like white border card layout. Removed all code-like `//` heading prefixes, unified typography with a clean Sans pairing for headings and body text, and aligned Return buttons into the top header row.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/pages/legal.astro` | Modified — Replaced 4px brutalist white border and hard drop-shadow with a refined white border card (`border border-white/20 bg-[#09090c] rounded-2xl shadow-2xl`); removed all `//` prefixes from section titles; applied modern Sans typography hierarchy (`font-sans font-semibold text-lg sm:text-xl text-white`); added clean callout card for DMCA inquiries; integrated ReturnButton cleanly in header |
+| `src/pages/privacy.astro` | Modified — Adopted the identical page-like white border container; stripped `//` prefixes from all 7 sections; unified headings with `font-sans font-semibold text-lg sm:text-xl text-white` and body in `text-neutral-300 leading-relaxed font-sans`; integrated ReturnButton in header |
+| `src/pages/terms.astro` | Modified — Upgraded container to page-like white border styling; removed `//` prefixes from all 7 sections; updated typography to clean Sans pairing; aligned ReturnButton in header |
+| `src/pages/contact.astro` | Modified — Upgraded container to page-like white border styling; replaced brutalist hard-edge buttons with modern rounded interactive cards (`rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 transition-all`); refined notice callout with clean Sans typography; aligned ReturnButton in header |
+
+### Design Decisions / Rationale
+- **Page-Like Document Styling**: Replaced the harsh `border-4` and offset solid shadow with a clean, centered document sheet (`border border-white/20 bg-[#09090c] rounded-xl sm:rounded-2xl shadow-2xl p-6 sm:p-10 md:p-12`). This produces an understated, sophisticated page aesthetic that sits comfortably in the dark interface.
+- **Sans Font Pairing**: Paired bold/semibold sans headings (`font-sans font-bold text-3xl sm:text-4xl text-white` for page titles, `font-sans font-semibold text-lg sm:text-xl text-white` for section titles) with readable body sans (`font-sans text-sm sm:text-base text-neutral-300 leading-relaxed`). This replaces uppercase monospace titles with natural, human-readable text.
+- **Clean Headings (No `//`)**: Stripped all developer comment markers (`// 1.`, `// 2.`, etc.) across all legal and policy documents, returning to clean numbered sections (`1. Trademarks and Brand Ownership`, `1. Information We Collect`, etc.).
+- **Header Alignment**: Repositioned the `ReturnButton` into a clean flex header row beside the page title and subtitle, keeping navigation intuitive without awkward standalone rows.
+
+### Verification Results
+- **Syntax Check**: All 4 Astro templates verified for valid JSX markup and clean structure.
+---
+
+## 2026-09-07 — Dynamic Header Git Commit Indicator & Cache Busting
+
+### Summary
+Resolved stale git commit metadata in the header (`d342c54` from Sep 6) that failed to reflect current repository commits and did not update upon page refresh. Replaced external frozen JSON fetching from `project-hgg.github.io` with dynamic repository commit resolution (`aurostron/hoGAMEGATA`). Added host-level git detection via `git log -1` in Node and a new `/git-version` route on the local bridge for the Cloudflare Workerd sandbox. Purged sticky `sessionStorage` in `DataVersionBadge.tsx`, added a live `/api/version` endpoint with cache-busting headers, and configured `astro.config.mjs` to auto-bake git metadata into `src/lib/gitVersion.generated.json` during development boot and production builds.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/lib/dataVersion.ts` | Modified — Added local git commit resolution via `node:child_process`, bridge endpoint fallback (`http://127.0.0.1:4322/git-version`), 2-second dev cache TTL, and static build fallback |
+| `src/lib/localDbBridge.ts` | Modified — Added `GET /git-version` endpoint to local bridge running in Node on port 4322, querying host `git log -1` for Workerd isolates |
+| `src/lib/gitVersion.generated.json` | NEW — Generated build-time git commit metadata file |
+| `astro.config.mjs` | Modified — Integrated automatic git commit extraction on config load, writing fresh metadata to `gitVersion.generated.json` on every dev start and build |
+| `src/components/DataVersionBadge.tsx` | Modified — Removed stale `sessionStorage` cache lock, purged `gata_data_version_v1`, added live `/api/version` refresh on mount, changed badge text to `Git`, and updated GitHub links to `aurostron/hoGAMEGATA` |
+| `src/pages/api/version.ts` | NEW — Dynamic SSR endpoint returning latest `DataVersionInfo` with `Cache-Control: no-cache, no-store, must-revalidate` |
+| `walkthrough.md` | Modified — Appended change log entry |
+
+### Design Decisions / Rationale
+- **Workerd Sandbox & Host Git Bridge**: Cloudflare Workerd and Vite worker isolates forbid native Node `child_process` execution. Because our local database bridge (`src/lib/localDbBridge.ts`) already runs in pure Node on `127.0.0.1:4322`, exposing `GET /git-version` allows worker isolates to fetch the live git commit within milliseconds without security sandboxing errors.
+- **Build-Time Generation**: In production or serverless edge environments where `.git` is omitted, `astro.config.mjs` automatically generates `src/lib/gitVersion.generated.json` during the build step so the exact release commit is permanently pre-rendered.
+- **Elimination of Stale SessionStorage**: Previously, `DataVersionBadge.tsx` cached commits in browser `sessionStorage` for 15 minutes and deliberately overrode server-rendered commit SHAs if a cached SHA existed. Purging this key and refreshing directly via `/api/version?t=...` ensures that browser tabs instantly reflect the latest commit upon page refresh.
+- **Correct Repository Attribution**: Updated all header commit links from the external `project-hgg/project-hgg.github.io` to the canonical repository `https://github.com/aurostron/hoGAMEGATA`.
+
+### Verification Results
+- **Git Commit Resolution**:
+  - `getDataVersion()` evaluated successfully in Node, returning active commit `e2b4cc9` ("feat(local): standalone local mode with curated 100 iconic horror games & SQLite bridge") dated `Sep 6, 12:22 UTC`.
+- **Production Build (`npm run build:quick`)**:
+  - Astro server build & static route prerender completed cleanly in 47.30s with **0 errors**.
+- **Deployment**:
+  - Respected user constraint: **Do not deploy** (all changes remain local).
+
+---
+
+## 2026-09-07 — Resolution of Data Version Badge 404 & Alignment with Public Catalog Repository
+
+### Summary
+Investigated and resolved the GitHub 404 error encountered when clicking the commit link in the header. Clarified repository boundaries: `aurostron/hoGAMEGATA` is the private application repository, whereas the header badge is specifically designed as the public `DATA` version indicator pointing to the open catalog preservation repository `https://github.com/project-hgg/project-hgg.github.io`. Uncovered why the previous commit (`d342c54`) was producing 404s: in the automated scraping workflow (`sync-itch-games.yml`), the runner wrote the local commit hash into `docs/public/data-version.json` and subsequently ran `git commit --amend`, altering the final commit hash to `1bcac49` and leaving `d342c54` as an unpushed phantom SHA. Switched `getDataVersion()` to read GitHub's public Atom feed (`/commits/main.atom`), guaranteeing rate-limit-free, instant reflection of the true HEAD commit with valid GitHub commit URLs.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/lib/dataVersion.ts` | Modified — Implemented unauthenticated Atom feed parser (`/commits/main.atom`) with regex extraction for `project-hgg/project-hgg.github.io`, updated fallback version to `1bcac49` |
+| `src/components/DataVersionBadge.tsx` | Modified — Pointed repository URLs to `https://github.com/project-hgg/project-hgg.github.io`, restored `DATA` badge indicator |
+| `astro.config.mjs` | Modified — Removed private repository `git log` hook from build/dev configuration |
+| `src/lib/localDbBridge.ts` | Modified — Removed unused `/git-version` endpoint, keeping bridge dedicated to local SQLite |
+| `walkthrough.md` | Modified — Appended change log entry |
+
+### Design Decisions / Rationale
+- **Public vs. Private Repository Boundaries**: Linking to `aurostron/hoGAMEGATA` resulted in 404s for users and visitors because it is a private repository. The header badge exists to provide transparency for the open game catalog data maintained in `project-hgg/project-hgg.github.io`.
+- **Public Atom Feed vs. API Rate Limits**: GitHub's REST API (`api.github.com`) enforces a strict 60 requests/hour limit for unauthenticated requests. In contrast, GitHub's public Atom commit feed (`https://github.com/project-hgg/project-hgg.github.io/commits/main.atom`) is served directly with zero rate limiting and always reflects the exact HEAD commit published to GitHub.
+- **Elimination of Amended Ghost Commits**: Parsing the Atom feed directly bypasses the discrepancy caused by `git commit --amend` in CI workflows, ensuring the displayed commit SHA (`1bcac49`) always points to an authentic, browseable GitHub commit page.
+
+### Verification Results
+- **Commit Metadata Resolution**:
+  - `getDataVersion()` returns live commit `1bcac49`:
+    - `commitSha`: `1bcac49`
+    - `fullSha`: `1bcac49384fc50d965cdfab7db6267a5096d67de`
+    - `commitUrl`: `https://github.com/project-hgg/project-hgg.github.io/commit/1bcac49384fc50d965cdfab7db6267a5096d67de` (Verified HTTP 200)
+    - `displayDate`: `Sep 6, 14:54 UTC`
+- **Build Verification**:
+  - `npm run build:quick` completed successfully in 12.20s with **0 errors**.
+- **Deployment Status**:
+  - Respected user constraint: **Do not deploy** (all changes remain local).
+
+---
+
+## 2026-09-07 — Production Deployment to Cloudflare Workers & Multi-Repo GitHub Synchronization
+
+### Summary
+Deployed all pending features and fixes to production on Cloudflare Workers (`gamegata.xyz`) and committed & pushed changes across both repositories (`aurostron/hoGAMEGATA` and `project-hgg/project-hgg.github.io`). Upgrades include the redesigned minimal SaaS footer with Outfit wordmark and integrated Bug Report trigger, real-time non-animated system status indicator, natural English rewrites of Legal, Terms, Privacy, and Contact pages (/avoid-ai-writing and /ui-ux-pro-max), card document layouts without developer comment markers, and the rate-limit-free GitHub Atom feed data version badge.
+
+### Repositories Synchronized & Deployed
+1. **Public Catalog Repository (`project-hgg/project-hgg.github.io`)**:
+   - Pulled latest upstream scraper syncs up to commit `1bcac49`.
+   - Updated `docs/public/data-version.json` to valid commit `1bcac49` (eliminating phantom commit `d342c54`).
+   - Committed and pushed commit `22f51f9` (`fix(data): align data-version.json to valid commit 1bcac49`) to `origin/main`.
+2. **Primary Application Codebase (`aurostron/hoGAMEGATA` / `gamegata-astro`)**:
+   - Restored production Cloudflare worker name (`gamegata-v1`), KV namespace bindings, and custom domain routing in `wrangler.jsonc`.
+   - Compiled production bundle and prerendered static routes with 0 errors.
+   - Deployed via `wrangler deploy` to `gamegata.xyz` (Version ID: `e096b62c-197d-4d63-8879-8a44e21041e7`).
+
+### Verification Results
+- **Live Cloudflare Production Verification**:
+  - `GET https://gamegata.xyz/api/version`: Returns HTTP 200 with live commit metadata (`22f51f9` / `Sep 6, 19:10 UTC`).
+  - `GET https://gamegata.xyz`: Successfully serves updated footer layout, Outfit wordmark, system status badge, and clean document styling.
+- **Git Push**:
+  - Pushed to `https://github.com/project-hgg/project-hgg.github.io.git` (`main`).
+  - Pushed to `https://github.com/aurostron/hoGAMEGATA.git` (`main`).
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

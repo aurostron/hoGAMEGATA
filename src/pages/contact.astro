@@ -9,77 +9,84 @@ import ReturnButton from '../components/ReturnButton';
   withSearch={false} 
   withLink={true}
 >
-  <main class="flex-1 flex items-center justify-center p-6 my-12 pb-24">
-    <div class="max-w-xl w-full border-4 border-white bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-8 relative overflow-hidden">
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 my-8 sm:my-12 pb-24 font-sans">
+    <div class="max-w-xl w-full border border-white/20 bg-[#09090c] p-6 sm:p-10 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col gap-8 relative">
       
-      <!-- Top nav inside card -->
-      <div class="flex justify-between items-center border-b border-white/10 pb-4">
-        <div class="flex flex-col">
-          <span class="font-mono text-[9px] text-[#ff2a2a] uppercase tracking-widest font-black">Support</span>
-          <span class="font-mono text-[8px] text-white/50 uppercase tracking-widest">Get In Touch</span>
+      <!-- Top header with Title & Return Button -->
+      <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-6">
+        <div class="flex flex-col gap-1.5">
+          <h1 class="font-sans font-bold text-3xl sm:text-4xl text-white tracking-tight leading-tight">
+            Contact Us
+          </h1>
+          <p class="font-sans text-xs sm:text-sm text-neutral-400 font-normal">
+            General questions, suggestions, or bug reports
+          </p>
         </div>
         <ReturnButton client:only="react" />
       </div>
 
-      <!-- Header Title -->
-      <div class="flex flex-col gap-2">
-        <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
-          CONTACT
-        </h1>
-        <span class="font-mono text-xs text-white/50 uppercase tracking-widest">
-          Wanna say hello or report a bug?
-        </span>
-      </div>
-
       <!-- Contact details list -->
-      <div class="space-y-6">
+      <div class="space-y-3.5">
         <!-- Email Link -->
         <a
           href="mailto:hello@gamegata.xyz"
-          class="group flex items-center gap-4 p-4 border border-white/15 bg-black/40 hover:bg-white hover:text-black hover:border-white transition-all duration-150 rounded-none"
+          class="group flex items-center gap-4 p-4 border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 transition-all rounded-xl cursor-pointer"
         >
-          <div class="p-3 border border-white/20 group-hover:border-black/20 group-hover:bg-black/5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-[#ff2a2a] group-hover:text-black transition-colors"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <div class="p-2.5 rounded-lg border border-white/10 bg-white/5 group-hover:border-white/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-[#ff2a2a]"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
           </div>
           <div class="flex-grow flex flex-col">
-            <span class="font-mono text-[10px] text-white/40 uppercase tracking-wider font-bold group-hover:text-black/60 transition-colors">Say Hello / Inquiries</span>
-            <span class="font-sans font-black text-base tracking-tight transition-colors">hello@gamegata.xyz</span>
+            <span class="font-sans text-xs text-neutral-400 font-medium">Email Us</span>
+            <span class="font-sans font-semibold text-sm sm:text-base text-white tracking-tight">hello@gamegata.xyz</span>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
         </a>
+
+        <!-- Discord Handle / Link -->
+        <div class="flex items-center gap-4 p-4 border border-white/10 bg-white/[0.03] rounded-xl">
+          <div class="p-2.5 rounded-lg border border-white/10 bg-white/5">
+            <svg class="w-5 h-5 text-[#ff2a2a]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            </svg>
+          </div>
+          <div class="flex-grow flex flex-col">
+            <span class="font-sans text-xs text-neutral-400 font-medium">Discord</span>
+            <span class="font-sans font-semibold text-sm sm:text-base text-white tracking-tight">@auros.tron</span>
+          </div>
+          <span class="text-xs font-sans text-neutral-400">Direct Message</span>
+        </div>
 
         <!-- Bluesky Link -->
         <a
           href="https://bsky.app/profile/gamegata.xyz"
           target="_blank"
           rel="noopener noreferrer"
-          class="group flex items-center gap-4 p-4 border border-white/15 bg-black/40 hover:bg-white hover:text-black hover:border-white transition-all duration-150 rounded-none"
+          class="group flex items-center gap-4 p-4 border border-white/10 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/20 transition-all rounded-xl cursor-pointer"
         >
-          <div class="p-3 border border-white/20 group-hover:border-black/20 group-hover:bg-black/5">
-            <svg class="w-5 h-5 text-[#ff2a2a] group-hover:text-black transition-colors" viewBox="0 0 568 501" fill="currentColor">
+          <div class="p-2.5 rounded-lg border border-white/10 bg-white/5 group-hover:border-white/20 transition-colors">
+            <svg class="w-5 h-5 text-[#ff2a2a]" viewBox="0 0 568 501" fill="currentColor">
               <path d="M123.121 33.664C188.241 82.553 258.281 181.68 284 234.873c25.719-53.192 95.759-152.32 160.879-201.209C491.866-1.611 568-28.906 568 57.094c0 17.164-9.845 144.354-15.632 165.01-20.25 72.26-94.025 90.72-159.273 79.664 114.077 19.344 143.25 87.89 80.373 152.361-119.555 122.585-177.01-30.73-188.751-68.804-1.229-3.985-1.617-5.244-1.717-5.571-.1.327-.488 1.586-1.717 5.571-11.74 38.074-69.196 191.389-188.751 68.804-62.877-64.471-33.704-133.017 80.373-152.361-65.248 11.056-139.023-7.404-159.273-79.664C9.845 198.548 0 74.258 0 57.094 0-28.906 76.134-1.611 123.121 33.664Z"/>
             </svg>
           </div>
           <div class="flex-grow flex flex-col">
-            <span class="font-mono text-[10px] text-white/40 uppercase tracking-wider font-bold group-hover:text-black/60 transition-colors">Follow on Bluesky</span>
-            <span class="font-sans font-black text-base tracking-tight transition-colors">@gamegata.xyz</span>
+            <span class="font-sans text-xs text-neutral-400 font-medium">Bluesky</span>
+            <span class="font-sans font-semibold text-sm sm:text-base text-white tracking-tight">@gamegata.xyz</span>
           </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
         </a>
       </div>
 
-      <!-- Info warning box -->
-      <div class="border border-white/10 p-4 bg-[#0d0d0f] flex gap-3">
-        <div class="space-y-1 font-sans text-xs text-gray-400 leading-relaxed">
-          <span class="text-white font-bold uppercase block font-mono text-[12px] tracking-wide">Notice</span>
-          <p>We try to review all emails and bug reports within 48 hours. If you need urgent contact, please DM @auros.tron on Discord for a faster reply.</p>
-          <p>
-          <p>•</p>
-            If you are a game developer and you need to make corrections OR if your
-            game is missing, you can contribute directly at the IGDB website. </p>
-            <p>•</p>
-            <p>Changes that are done there are automatically synced to hoGAMEGATA.</p>
-        </div>
+      <!-- Notice box -->
+      <div class="border border-white/10 p-5 bg-white/[0.02] rounded-xl flex flex-col gap-2.5 font-sans text-xs sm:text-sm text-neutral-300 leading-relaxed">
+        <span class="text-white font-semibold block text-sm">
+          Response Times & Developer Submissions
+        </span>
+        <p>
+          We aim to review and reply to messages within 48 hours. If you have an urgent inquiry or spot an immediate issue, reaching out on Discord usually gets the quickest response.
+        </p>
+        <p>
+          Are you a game developer looking to submit a project, request a correction, or update your store links? You can submit your details directly through our <a href="/submit-game" class="text-white underline hover:text-neutral-100 font-medium">Developer Portal</a> or update your game on IGDB. Catalog entries are regularly refreshed against upstream sources.
+        </p>
       </div>
     </div>
   </main>

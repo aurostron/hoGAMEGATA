@@ -5,106 +5,54 @@ interface DataVersionBadgeProps {
   initialVersion: DataVersionInfo;
 }
 
-const STORAGE_KEY = 'gata_data_version_v1';
-const CACHE_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
-
-function formatDisplayDate(isoString: string): string {
-  try {
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return 'recently';
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const month = months[date.getUTCMonth()];
-    const day = date.getUTCDate();
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-
-    return `${month} ${day}, ${hours}:${minutes} UTC`;
-  } catch {
-    return 'recently';
-  }
-}
-
 export default function DataVersionBadge({ initialVersion }: DataVersionBadgeProps) {
   const [version, setVersion] = useState<DataVersionInfo>(initialVersion);
 
   useEffect(() => {
-    let isMounted = true;
-
-    // 1. Check sessionStorage cache first (0 network hits)
+    // Purge any stale legacy sessionStorage entries that froze old commit SHAs
     try {
-      const cachedRaw = sessionStorage.getItem(STORAGE_KEY);
-      if (cachedRaw) {
-        const { version: cachedVer, timestamp } = JSON.parse(cachedRaw);
-        if (cachedVer && timestamp && Date.now() - timestamp < CACHE_MAX_AGE_MS) {
-          if (cachedVer.commitSha !== initialVersion.commitSha) {
-            setVersion(cachedVer);
-          }
-          return;
-        }
-      }
+      sessionStorage.removeItem('gata_data_version_v1');
     } catch {}
 
-    // 2. Direct client fetch to GitHub CDN (CORS-enabled, 0 Cloudflare Worker hits)
-    const fetchLiveVersion = async () => {
-      const endpoints = [
-        `https://raw.githubusercontent.com/project-hgg/project-hgg.github.io/main/docs/public/data-version.json?t=${Date.now()}`,
-        `https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/data-version.json?t=${Date.now()}`,
-      ];
+    setVersion(initialVersion);
+  }, [initialVersion]);
 
-      for (const url of endpoints) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000);
+  useEffect(() => {
+    let isMounted = true;
 
-          const res = await fetch(url, { signal: controller.signal });
-          clearTimeout(timeoutId);
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.commitSha && isMounted) {
-              const fullSha = data.fullSha || data.commitSha;
-              const date = data.timestamp || initialVersion.date;
-              const liveVersion: DataVersionInfo = {
-                commitSha: data.commitSha,
-                fullSha,
-                commitUrl: `https://github.com/project-hgg/project-hgg.github.io/commit/${fullSha}`,
-                commitMessage: data.commitMessage || 'Catalog update',
-                date,
-                displayDate: formatDisplayDate(date),
-                totalGames: data.totalGames || initialVersion.totalGames,
-              };
-
-              setVersion(liveVersion);
-
-              try {
-                sessionStorage.setItem(
-                  STORAGE_KEY,
-                  JSON.stringify({ version: liveVersion, timestamp: Date.now() })
-                );
-              } catch {}
-              return;
-            }
+    // Fetch fresh version on mount / page refresh from local /api/version
+    const refreshLiveVersion = async () => {
+      try {
+        const res = await fetch(`/api/version?t=${Date.now()}`, {
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.commitSha && isMounted) {
+            setVersion(data);
           }
-        } catch {}
-      }
+        }
+      } catch {}
     };
 
-    fetchLiveVersion();
+    refreshLiveVersion();
 
     return () => {
       isMounted = false;
     };
-  }, [initialVersion]);
+  }, []);
+
+  const repoUrl = "https://github.com/project-hgg/project-hgg.github.io";
+  const commitUrl = version.commitUrl || `${repoUrl}/commit/${version.fullSha || version.commitSha}`;
 
   return (
     <div className="flex items-center gap-2.5">
       <a
-        href="https://github.com/project-hgg/project-hgg.github.io"
+        href={repoUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="text-white/60 hover:text-white transition-all hover:scale-110 flex items-center justify-center p-1 rounded-md hover:bg-white/10 shrink-0"
-        title="View project-hgg GitHub Repository"
+        title="View open catalog on GitHub"
         aria-label="GitHub Repository"
       >
         <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -115,16 +63,16 @@ export default function DataVersionBadge({ initialVersion }: DataVersionBadgePro
           />
         </svg>
       </a>
-      <span className="text-white/40 uppercase text-[10.5px] font-semibold tracking-wider">Data</span>
+      <span className="text-white/40 uppercase text-[10.5px] font-semibold tracking-wider">DATA</span>
       <a
-        href={version.commitUrl}
+        href={commitUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="text-white/80 hover:text-white font-medium hover:underline transition-colors"
         title={
           version.commitMessage
             ? `Commit ${version.commitSha}: ${version.commitMessage}`
-            : `View data release commit ${version.commitSha} on GitHub`
+            : `View commit ${version.commitSha} on GitHub`
         }
       >
         {version.commitSha}

@@ -4,76 +4,95 @@ import ReturnButton from '../components/ReturnButton';
 ---
 
 <Layout 
-  title="Legal Notice | hoGAMEGATA" 
-  description="Legal notice, intellectual property disclaimers, and fair use guidelines for the hoGAMEGATA horror game database." 
+  title="Legal Notices | hoGAMEGATA" 
+  description="Legal notices, intellectual property disclaimers, copyright policies, and fair use statements for the hoGAMEGATA horror game database." 
   withSearch={false} 
   withLink={true}
 >
   <!-- Content -->
-  <main class="flex-1 flex items-center justify-center p-6 my-12 pb-24">
-    <div class="max-w-3xl w-full border-4 border-white bg-[#08080a] p-8 md:p-12 shadow-[8px_8px_0px_0px_#ffffff] flex flex-col gap-8 relative overflow-hidden">
+  <main class="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 my-8 sm:my-12 pb-24 font-sans">
+    <div class="max-w-3xl w-full border border-white/20 bg-[#09090c] p-6 sm:p-10 md:p-12 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col gap-8 relative">
       
-      <!-- Back button at top of card -->
-      <div class="flex justify-end">
+      <!-- Top header with Title & Return Button -->
+      <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-6">
+        <div class="flex flex-col gap-1.5">
+          <h1 class="font-sans font-bold text-3xl sm:text-4xl text-white tracking-tight leading-tight">
+            Legal Notices
+          </h1>
+          <p class="font-sans text-xs sm:text-sm text-neutral-400 font-normal">
+            Intellectual Property, Fair Use, and Disclaimers
+          </p>
+        </div>
         <ReturnButton client:only="react" />
       </div>
 
-      <div class="flex flex-col gap-2 pb-4 border-b border-white/10">
-        <h1 class="font-sans font-black text-4xl sm:text-5xl uppercase tracking-tighter leading-none text-[#f3f4f6]">
-          LEGAL NOTICE
-        </h1>
-        <span class="font-mono text-xs text-white/50 uppercase tracking-widest">
-          Intellectual Property & Disclaimers
-        </span>
-      </div>
-
-      <div class="space-y-6 text-sm text-gray-300 leading-relaxed font-sans">
-        <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 1. Third-Party Trademarks & Brands</h2>
+      <div class="space-y-8 text-sm sm:text-base text-neutral-300 leading-relaxed font-sans font-normal">
+        <section class="space-y-3">
+          <h2 class="font-sans font-semibold text-lg sm:text-xl text-white tracking-tight">1. Trademarks and Brand Ownership</h2>
           <p>
-            All third-party game names, titles, publisher and developer brand names, company logos, platform brands (such as Steam, itch.io, Game Jolt, GOG, Epic Games, PlayStation, Xbox, Nintendo, Windows, Linux, macOS), and associated artwork are the registered and unregistered trademarks of their respective legal copyright owners.
+            All third-party video game titles, publisher and developer names, character names, logos, platform marks (such as Steam, Valve, itch.io, GOG, Epic Games, Sony PlayStation, Microsoft Xbox, and Nintendo), and related promotional materials are trademarks or registered trademarks of their respective owners.
           </p>
           <p>
-            hoGAMEGATA is an independent, non-commercial metadata directory and community archive. It is not affiliated, associated, authorized, endorsed by, or in any way officially connected with any game creators, publishers, distributors, or distribution platforms listed.
+            hoGAMEGATA is an independent reference catalog and discovery archive. It is not affiliated with, authorized by, sponsored by, or officially connected with any game developer, publisher, or digital storefront listed on this website.
           </p>
         </section>
 
-        <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 2. Game Media & Cover Art (Fair Use Disclaimer)</h2>
+        <section class="space-y-3">
+          <h2 class="font-sans font-semibold text-lg sm:text-xl text-white tracking-tight">2. Fair Use and Archival Media</h2>
           <p>
-            All visual assets, including game cover images, logos, and screenshots displayed across the hoGAMEGATA catalog are hosted and displayed strictly for descriptive, archival, and search indexing purposes.
+            Game cover art, screenshots, banner graphics, and trailers featured in our directory are displayed strictly for descriptive, educational, and archival purposes.
           </p>
           <p>
-            The use of these graphic elements is protected under the Fair Use provisions of copyright law (17 U.S.C. § 107) as a non-commercial reference registry designed to catalog, review, and evaluate creative horror gaming history.
-          </p>
-        </section>
-
-        <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 3. hoGAMEGATA Proprietary Content</h2>
-          <p>
-            hoGAMEGATA retains full ownership, proprietary rights, and copyrights over our custom-built metadata schema, search structures, vibe categorization taxonomies, multi-dimensional score calculations, and editorial ratings—including the **Custom Scare Meter Ratings** (scare scores, rating reviews, confidence metrics, and taxonomy mappings).
-          </p>
-          <p>
-            You may not scrape, copy, or redistribute our proprietary scoring systems or databases for commercial registry platforms without prior consent.
+            We use these assets in accordance with the Fair Use principles of United States copyright law (17 U.S.C. § 107) and international fair dealing provisions. They serve as visual reference points to help horror game enthusiasts and researchers identify, study, and discover creative titles across gaming history.
           </p>
         </section>
 
-        <section class="space-y-2">
-          <h2 class="text-white font-mono text-xs uppercase tracking-wider font-bold">// 4. Aggregator Role, Warranty & Liability Disclaimer</h2>
+        <section class="space-y-3">
+          <h2 class="font-sans font-semibold text-lg sm:text-xl text-white tracking-tight">3. Proprietary Methodologies and Database Structure</h2>
           <p>
-            Game details, specs, store links, deal discounts, and pricing snapshots are provided on an "as-is" basis for general informational discovery. hoGAMEGATA operates solely as an independent metadata aggregator and index.
+            hoGAMEGATA owns all rights to its custom code, database designs, interface layouts, and editorial scoring systems. This includes our multi-factor Scare Meter ratings, fear intensity classifications, taxonomy scoring algorithms, and curated fear tags.
           </p>
           <p>
-            Although all external links and store references are aggregated from reliable and verified sources, hoGAMEGATA, its maintainers, site owners, and aurostron assume no responsibility or liability for any third-party content, external transactions, downloads, software issues, damages, or liabilities. Users access external storefronts and services entirely at their own risk.
+            You may not scrape or replicate our scoring models or compile bulk database extracts for commercial resale or competing directories without written permission.
+          </p>
+        </section>
+
+        <section class="space-y-3">
+          <h2 class="font-sans font-semibold text-lg sm:text-xl text-white tracking-tight">4. External Storefronts and Disclaimer of Liability</h2>
+          <p>
+            Catalog records, hardware requirements, pricing histories, and outbound store links are compiled as an informational convenience. hoGAMEGATA operates strictly as an independent directory.
+          </p>
+          <p>
+            We do not sell games, process customer payments, or deliver game files. Following external links to platforms such as Steam, itch.io, GOG, or the Epic Games Store places you under the policies and agreements of those third-party providers. We accept no responsibility or liability for transactions, software downloads, account actions, or product availability on third-party sites.
+          </p>
+        </section>
+
+        <section class="space-y-3">
+          <h2 class="font-sans font-semibold text-lg sm:text-xl text-white tracking-tight">5. Copyright Inquiries and Takedown Requests (DMCA)</h2>
+          <p>
+            We respect the intellectual property of developers and artists. If you are a copyright holder or authorized representative and believe that material on hoGAMEGATA infringes your copyright, or if you would like your game removed from the directory, please email our team directly:
+          </p>
+          <div class="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-sm font-sans space-y-1 text-neutral-200">
+            <p><strong class="text-white">Email:</strong> <a href="mailto:hello@gamegata.xyz" class="text-white underline hover:text-neutral-300">hello@gamegata.xyz</a></p>
+            <p><strong class="text-white">Subject:</strong> Copyright Notice / Takedown Request</p>
+          </div>
+          <p>Please include the following information in your request:</p>
+          <ul class="list-disc pl-5 space-y-1.5 text-neutral-400">
+            <li>The URL of the specific game page or asset on hoGAMEGATA.</li>
+            <li>Proof of your ownership or authorization to act on behalf of the copyright owner.</li>
+            <li>A brief statement identifying the material to be updated or removed.</li>
+            <li>Your contact information so we can confirm resolution.</li>
+          </ul>
+          <p>
+            We handle valid requests promptly, typically within 48 to 72 hours. You can also submit updates or requests through our <a href="/submit-game" class="text-white underline hover:text-neutral-100">Developer Portal</a>.
           </p>
         </section>
       </div>
 
       <!-- Footer inside card -->
-      <div class="border-t border-white/10 pt-4 font-mono text-[9px] text-gray-500 uppercase tracking-widest flex justify-between items-center w-full">
-        <span>© hoGAMEGATA</span>
-        <span>•</span>
-        <span>Indexing since 2026</span>
+      <div class="border-t border-white/10 pt-6 font-sans text-xs text-neutral-500 flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
+        <span>© 2026 hoGAMEGATA Project</span>
+        <span>Effective Date: September 2026</span>
       </div>
     </div>
   </main>

@@ -5,24 +5,39 @@
 		"global_fetch_strictly_public",
 		"nodejs_compat"
 	],
-	"name": "hogamegata",
+	"name": "gamegata-v1",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
-	"vars": {},
+	"vars": {
+		"NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "ddcng6qh3",
+		"PUBLIC_SANITY_PROJECT_ID": "b85krrfu",
+		"PUBLIC_SANITY_DATASET": "production",
+		"BETTER_AUTH_URL": "https://gamegata.xyz",
+		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAADxZWPj99fIewEFh"
+	},
 	"kv_namespaces": [
 		{
 			"binding": "MAINTENANCE",
-			"id": "placeholder-maintenance-kv"
+			"id": "42729c340d254d219a9c183752811d5e"
 		},
 		{
 			"binding": "RATE_LIMIT",
-			"id": "placeholder-rate-limit-kv"
+			"id": "b4f797e76c9545d6aa41ea80be9ddb5a"
 		}
 	],
 	"observability": {
 		"enabled": true
-	}
+	},
+	"routes": [
+		{
+			"pattern": "gamegata.xyz",
+			"zone_name": "gamegata.xyz",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		}
+	]
 }

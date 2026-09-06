@@ -133,7 +133,7 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
   }
 
   return (
-    <section className="border-t border-white/5 pt-12 space-y-6">
+    <section className="border-t border-white/5 pt-12 pb-10 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
