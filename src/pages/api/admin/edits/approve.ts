@@ -12,6 +12,7 @@ export const prerender = false;
 // Allowed fields that can be edited via community proposals
 const ALLOWED_GAME_FIELDS: Record<string, string> = {
   developerNames: "developerNames",
+  publisherNames: "publisherNames",
   summary: "summary",
   storyline: "storyline",
   trailerUrl: "trailerUrl",
@@ -26,6 +27,12 @@ const ALLOWED_GAME_FIELDS: Record<string, string> = {
   protonDbTier: "protonDbTier",
   websiteUrl: "websiteUrl",
   redditUrl: "redditUrl",
+  releaseDate: "releaseDate",
+  multiplayer: "multiplayer",
+  controllerSupport: "controllerSupport",
+  vrSupport: "vrSupport",
+  playerWarnings: "scareProfile",
+  purchaseLink: "purchaseLink",
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -91,14 +98,137 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Update target field on game record
-    await turso
-      .update(games)
-      .set({
-        [targetColumn]: suggestion.newValue,
-        updatedAt: new Date(),
-      })
-      .where(eq(games.id, suggestion.gameId));
+    // Specialized Field Handlers
+    if (suggestion.field === "purchaseLink") {
+      try {
+        const { purchaseLinks } = await import('../../../../db/schema');
+        const { and } = await import('drizzle-orm');
+        let parsed: any = null;
+        try {
+          parsed = JSON.parse(suggestion.newValue);
+        } catch {
+          parsed = { url: suggestion.newValue };
+        }
+
+        const storeName = parsed.storeName || "Store";
+        const targetUrl = parsed.url;
+
+        if (targetUrl) {
+          const [existingLink] = await turso
+            .select()
+            .from(purchaseLinks)
+            .where(and(eq(purchaseLinks.gameId, suggestion.gameId), eq(purchaseLinks.storeName, storeName)))
+            .limit(1);
+
+          if (existingLink) {
+            await turso
+              .update(purchaseLinks)
+              .set({ url: targetUrl })
+              .where(eq(purchaseLinks.id, existingLink.id));
+          } else {
+            const newLinkId = `link_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+            await turso.insert(purchaseLinks).values({
+              id: newLinkId,
+              gameId: suggestion.gameId,
+              storeName: storeName,
+              url: targetUrl,
+            });
+          }
+        }
+      } catch (linkErr) {
+        console.warn('⚠️ Warning: PurchaseLink approval update error:', linkErr);
+      }
+    } else if (suggestion.field === "playerWarnings") {
+      try {
+        const [targetGame] = await turso
+          .select({ scareProfile: games.scareProfile })
+          .from(games)
+          .where(eq(games.id, suggestion.gameId))
+          .limit(1);
+
+        let profileObj: any = {};
+        if (targetGame?.scareProfile) {
+          try { profileObj = JSON.parse(targetGame.scareProfile); } catch {}
+        }
+        const warningList = suggestion.newValue
+          .split(',')
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+        profileObj.playerWarnings = warningList;
+
+        await turso
+          .update(games)
+          .set({
+            scareProfile: JSON.stringify(profileObj),
+            updatedAt: new Date(),
+          })
+          .where(eq(games.id, suggestion.gameId));
+      } catch (warnErr) {
+        console.warn('⚠️ Warning: playerWarnings update error:', warnErr);
+      }
+    } else if (suggestion.field === "releaseDate") {
+      let dateVal: Date | null = null;
+      if (suggestion.newValue.trim().toUpperCase() !== "TBD") {
+        const d = new Date(suggestion.newValue.trim());
+        if (!isNaN(d.getTime())) {
+          dateVal = d;
+        }
+      }
+      await turso
+        .update(games)
+        .set({
+          releaseDate: dateVal,
+          updatedAt: new Date(),
+        })
+        .where(eq(games.id, suggestion.gameId));
+    } else {
+      // Standard direct field update
+      await turso
+        .update(games)
+        .set({
+          [targetColumn]: suggestion.newValue,
+          updatedAt: new Date(),
+        })
+        .where(eq(games.id, suggestion.gameId));
+    }
+
+    // Relational Sync: If publisherNames field is edited, auto-create Publisher entities & links
+    if (suggestion.field === "publisherNames" && suggestion.newValue) {
+      try {
+        const { publishers, gamesToPublishers } = await import('../../../../db/schema');
+        const pubNames = suggestion.newValue.split(',').map((s: string) => s.trim()).filter(Boolean);
+
+        for (const pubName of pubNames) {
+          const pubSlug = pubName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          if (!pubSlug) continue;
+
+          let [existingPub] = await turso
+            .select()
+            .from(publishers)
+            .where(eq(publishers.slug, pubSlug))
+            .limit(1);
+
+          let pubId = existingPub?.id;
+          if (!existingPub) {
+            pubId = `pub_${pubSlug}`;
+            await turso.insert(publishers).values({
+              id: pubId,
+              name: pubName,
+              slug: pubSlug,
+            }).onConflictDoNothing();
+          }
+
+          if (pubId) {
+            await turso.insert(gamesToPublishers).values({
+              publisherId: pubId,
+              gameId: suggestion.gameId,
+            }).onConflictDoNothing();
+          }
+        }
+      } catch (pubSyncErr) {
+        console.warn('⚠️ Warning: Publisher entity relational sync error:', pubSyncErr);
+      }
+    }
 
     // Relational Sync: If developerNames field is edited, auto-create Developer entities & links
     if (suggestion.field === "developerNames" && suggestion.newValue) {

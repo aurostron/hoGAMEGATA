@@ -1,10 +1,10 @@
-# Gamegata Horror Taxonomy & Catalog Curation
+# hoGAMEGATA Horror Taxonomy & Catalog Curation
 
-> The definitive guide to how Gamegata evaluates, classifies, and curates video games across the entire spectrum of human fear.
+> The definitive guide to how hoGAMEGATA evaluates, classifies, and curates video games across the entire spectrum of human fear.
 
 ---
 
-## Why Gamegata Exists
+## Why hoGAMEGATA Exists
 
 Most game storefronts treat "Horror" as a blunt marketing tag. A game either gets the tag or it does not.
 
@@ -13,8 +13,8 @@ That binary tag fails players completely:
 - It leaves out dark masterpieces like *Bloodborne*, *Castlevania*, or *The Last of Us* simply because they have deep combat systems.
 - It allows meme uploads, joke calculators, sound asset packs, and standard sports titles to pollute discovery just because an uploader checked `#horror` on itch.io or Steam.
 
-**Gamegata runs on an expansive affective philosophy:**
-> *Every game that prominently displays, explores, or evokes horror—and its thousands of psychological sub-feelings—belongs in Gamegata.*
+**hoGAMEGATA runs on an expansive affective philosophy:**
+> *Every game that prominently displays, explores, or evokes horror—and its thousands of psychological sub-feelings—belongs in hoGAMEGATA.*
 
 Horror is not just a monster jumping out of a closet. Horror is an emotional spectrum: creeping dread, isolation, uncanny familiarity, bodily vulnerability, cosmic insignificance, paranoia, and moral disgust. 
 
@@ -24,7 +24,7 @@ This documentation suite defines how our catalog works, how we distinguish pure 
 
 ## The Three Catalog Classes
 
-Every game audited in Gamegata falls into one of three distinct categories:
+Every game audited in hoGAMEGATA falls into one of three distinct categories:
 
 ```
                                   Game Candidate
@@ -74,8 +74,10 @@ This guide is organized into four deep-dive sections:
 ---
 
 ## The 7-Dimensional Scare Profile
-
-In the Gamegata user interface, every verified horror and horror-adjacent game displays an interactive **Scare Profile** powered by seven core emotional dimensions:
+ 
+> **Note:** Horror is subjective. These scores are editorial estimates based on the game's design and commonly observed player experiences. Different players may reasonably rate the same game differently.
+ 
+In the hoGAMEGATA user interface, every verified horror and horror-adjacent game displays an interactive **Scare Profile** powered by seven core emotional dimensions:
 
 ```
   ┌──────────────────────────────────────────────────────────────┐

@@ -8,6 +8,13 @@ export const LOW_RISK_FIELDS = new Set([
   'redditUrl',
   'esrbRating',
   'pegiRating',
+  'purchaseLink',
+  'releaseDate',
+  'publisherNames',
+  'multiplayer',
+  'controllerSupport',
+  'vrSupport',
+  'playerWarnings',
 ]);
 
 export interface ReputationInfo {

@@ -406,6 +406,20 @@ export default function PriceComparison({
           </button>
         </div>
       )}
+
+      {/* Quick Report Footer */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono text-neutral-500 px-1 pt-1 gap-1">
+        <span>Prices updated via live storefront scrapers & APIs</span>
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('gg-open-edit-modal', { detail: { fieldKey: 'purchaseLink' } }));
+          }}
+          className="hover:text-amber-400 text-neutral-400 transition-colors inline-flex items-center gap-1 cursor-pointer underline decoration-dotted self-start sm:self-auto"
+        >
+          <span>Wrong or broken purchase link?</span>
+        </button>
+      </div>
     </div>
   );
 }

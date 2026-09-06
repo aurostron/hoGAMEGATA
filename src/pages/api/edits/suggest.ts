@@ -160,13 +160,48 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         const { games, gameRevisions } = await import('../../../db/schema');
         const { eq } = await import('drizzle-orm');
 
-        await turso
-          .update(games)
-          .set({
-            [field.trim()]: newValue.trim(),
-            updatedAt: new Date(),
-          })
-          .where(eq(games.id, gameId.trim()));
+        if (field.trim() === 'purchaseLink') {
+          const { purchaseLinks } = await import('../../../db/schema');
+          const { and } = await import('drizzle-orm');
+          let parsed: any = null;
+          try { parsed = JSON.parse(newValue.trim()); } catch { parsed = { url: newValue.trim() }; }
+          const storeName = parsed.storeName || "Store";
+          const targetUrl = parsed.url;
+          if (targetUrl) {
+            const [existingLink] = await turso
+              .select()
+              .from(purchaseLinks)
+              .where(and(eq(purchaseLinks.gameId, resolvedGameId), eq(purchaseLinks.storeName, storeName)))
+              .limit(1);
+            if (existingLink) {
+              await turso.update(purchaseLinks).set({ url: targetUrl }).where(eq(purchaseLinks.id, existingLink.id));
+            } else {
+              const newId = `link_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+              await turso.insert(purchaseLinks).values({ id: newId, gameId: resolvedGameId, storeName, url: targetUrl });
+            }
+          }
+        } else if (field.trim() === 'playerWarnings') {
+          const [targetG] = await turso.select({ scareProfile: games.scareProfile }).from(games).where(eq(games.id, resolvedGameId)).limit(1);
+          let pObj: any = {};
+          if (targetG?.scareProfile) { try { pObj = JSON.parse(targetG.scareProfile); } catch {} }
+          pObj.playerWarnings = newValue.trim().split(',').map((s: string) => s.trim()).filter(Boolean);
+          await turso.update(games).set({ scareProfile: JSON.stringify(pObj), updatedAt: new Date() }).where(eq(games.id, resolvedGameId));
+        } else if (field.trim() === 'releaseDate') {
+          let dVal: Date | null = null;
+          if (newValue.trim().toUpperCase() !== 'TBD') {
+            const parsedD = new Date(newValue.trim());
+            if (!isNaN(parsedD.getTime())) dVal = parsedD;
+          }
+          await turso.update(games).set({ releaseDate: dVal, updatedAt: new Date() }).where(eq(games.id, resolvedGameId));
+        } else {
+          await turso
+            .update(games)
+            .set({
+              [field.trim()]: newValue.trim(),
+              updatedAt: new Date(),
+            })
+            .where(eq(games.id, resolvedGameId));
+        }
 
         const revId = `rev_auto_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
         await turso.insert(gameRevisions).values({

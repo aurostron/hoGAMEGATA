@@ -20,6 +20,14 @@ interface EditPageButtonProps {
     platformNames?: string;
     protonDbTier?: string;
     steamAppId?: string | number | null;
+    purchaseLinks?: Array<{ id?: string; storeName: string; url: string }>;
+    publisherNames?: string;
+    genreNames?: string;
+    releaseDate?: string;
+    multiplayer?: string;
+    controllerSupport?: string;
+    vrSupport?: string;
+    playerWarnings?: string;
   };
   className?: string;
 }

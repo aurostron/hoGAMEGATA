@@ -105,13 +105,16 @@ export default function ScareProfileComparison() {
       <div className="space-y-2 border-b border-white/10 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-white font-bold text-lg uppercase tracking-wide">
-            7D Scare Profile in Practice
+            7D Scare Profile
           </h3>
           <span className="text-xs uppercase tracking-widest text-neutral-400 font-mono">
             Interactive Archetype Matrix
           </span>
         </div>
-        <p className="text-sm text-neutral-300">
+        <p className="text-xs text-neutral-400 leading-relaxed">
+          <span className="text-neutral-300 font-medium">Note:</span> Horror is subjective. These scores are editorial estimates based on the game's design and commonly observed player experiences. Different players may reasonably rate the same game differently.
+        </p>
+        <p className="text-sm text-neutral-300 pt-1">
           Different games build fear in completely different ways. Select a title below to see how its scare profile is measured across hoGAMEGATA's seven dimensions.
         </p>
       </div>

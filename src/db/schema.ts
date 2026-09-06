@@ -61,8 +61,12 @@ export const games = sqliteTable(
     recRequirements: text("recRequirements"),
     popularity: real("popularity"),
     developerNames: text("developerNames"),
+    publisherNames: text("publisherNames"),
     genreNames: text("genreNames"),
     platformNames: text("platformNames"),
+    multiplayer: text("multiplayer"),
+    controllerSupport: text("controllerSupport"),
+    vrSupport: text("vrSupport"),
     source: text("source"),
     taxonomyScores: text("taxonomyScores"), // JSON object string
   },

@@ -3139,6 +3139,95 @@ Committed, pushed, and deployed the complete `/about` page taxonomy suite and pe
 - Verified live HTTP response from `https://gamegata.xyz/about` (HTTP 200 OK).
 - Confirmed brand consistency (`hoGAMEGATA`), persistent sidebar layout, 7D Scare Profile Archetypes, and 21 Sub-Feelings Matrix are active on production.
 
+---
+
+## 2026-09-06 — 7D Scare Profile Subjective Calibration Disclaimer & Brand Standardization
+
+### Summary
+Added a subjective editorial calibration disclaimer directly beneath the "7D Scare Profile" heading in [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) and updated [`docs/horror-taxonomy/README.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/README.md) and [`docs/horror-taxonomy/curation-rubric.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/curation-rubric.md) to standardize branding on `hoGAMEGATA`.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) | Modified — Placed the subjective disclaimer note directly beneath the 7D Scare Profile heading in muted `text-xs text-neutral-400` styling |
+| [`docs/horror-taxonomy/README.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/README.md) | Modified — Added subjective editorial note under 7D Scare Profile section and standardized on `hoGAMEGATA` |
+| [`docs/horror-taxonomy/curation-rubric.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/curation-rubric.md) | Modified — Replaced all legacy `Gamegata` occurrences with `hoGAMEGATA` |
+| `walkthrough.md` | Modified — Appended change documentation |
+
+### Design Decisions / Rationale
+- **Editorial vs Objective Claim**: Transparently states that scores represent standardized editorial estimates based on game design and commonly observed player experiences rather than claiming absolute objective measurement or unmeasured consensus.
+- **Visual Polish**: Positioned directly under the section header in `text-xs text-neutral-400 leading-relaxed` with a slightly brighter `text-neutral-300 font-medium` tag prefix for readability without distraction.
+
+### Verification Results
+- Ran `npm run build:quick` — compiled cleanly in 11.36s with 0 errors.
+
+---
+
+## 2026-09-06 — Edit Toolbox Upgrade: Wrong Purchase Link Tool & Quick Reporter
+
+### Summary
+Added a dedicated **"Wrong Purchase Link"** reporting and fixing tool into the community metadata edit toolbox ([`src/components/editing/EditPageModal.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx)). Connected existing game purchase links from [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) into the edit flow, allowing players to select existing store links or report missing/broken storefront links across Steam, itch.io, GOG, Epic Games, PlayStation, Xbox, and Nintendo. Also added a direct trigger in [`src/components/PriceComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/PriceComparison.tsx).
+
+### Files Modified
+| File | Action |
+|------|--------|
+| [`src/components/editing/EditPageModal.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx) | Modified — Added `purchaseLink` field with interactive storefront selector (`STORE_OPTIONS`), issue type pills (`LINK_ISSUE_TYPES`), existing listed links quick-select cards, and formatted proposal builder |
+| [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) | Modified — Passed `purchaseLinks` into `editGameData.gameData` for real-time modal context |
+| [`src/components/editing/EditPageButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
+| [`src/components/editing/HelpMenuDropdown.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/HelpMenuDropdown.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
+| [`src/components/editing/GameActionsMenu.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/GameActionsMenu.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
+| [`src/components/PriceComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/PriceComparison.tsx) | Modified — Added quick "Wrong or broken purchase link?" action that opens `EditPageModal` directly to `purchaseLink` |
+| [`src/lib/userReputation.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/lib/userReputation.ts) | Modified — Added `'purchaseLink'` to `LOW_RISK_FIELDS` for trusted contributor auto-approval |
+| `walkthrough.md` | Modified — Appended change documentation |
+
+### Verification Results
+- Ran `npm run build:quick` — compiled cleanly in 28.49s with 0 errors.
+
+---
+
+## 2026-09-06 — Edit Toolbox Expansion, Database Schema Upgrade & UI/UX Pro Max Vector Icons
+
+### Summary
+Expanded the hoGAMEGATA community edit toolbox modal with 7 new essential game metadata fields, upgraded the Turso SQLite database schema with dedicated specification columns, and updated the edit suggestion and moderation pipeline. Designed with `/ui-ux-pro-max` standards: strictly **zero emojis**, fully accessible Lucide SVG icons matching the surrounding monochrome/dark palette, touch-friendly pill targets (>= 44px), and clear, everyday English labels.
+
+### Fields Added & Upgraded
+1. **Release Date**: Date picker, quick buttons (`TBD (In Development)`, `Set to Today`, `Clear`), and human-friendly release formatting.
+2. **Publisher Name(s)**: Text input with popular publisher suggestion pills (`Puppet Combo`, `DreadXP`, `Konami`, `Capcom`, `Feardemic`, `Raw Fury`, `Devolver Digital`, `Bloober Team`, `Red Barrels`, `Team17`, `Self-Published`).
+3. **Horror Sub-genres & Tags**: Multi-select toggle chips for popular horror sub-genres (`Psychological Horror`, `Survival Horror`, `Found Footage`, `Analog Horror`, `Body Horror`, `Cosmic Horror`, `Retro / PS1 Style`, `Haunted House`, `Paranormal`, `Action Horror`, `Atmospheric`, `Narrative / Story Rich`, `Sci-Fi Horror`, `Folk Horror`) + comma-separated input.
+4. **Game Modes (Solo / Co-Op)**: Single-select chips (`Single-Player Only`, `Online Co-Op`, `Local / Split-Screen`, `Multiplayer PvP`, `Cross-Platform Multiplayer`) + custom description input.
+5. **Controller Support**: Single-select chips (`Full Controller Support`, `Partial Controller Support`, `Keyboard & Mouse Only`) + custom notes input.
+6. **VR Support**: Single-select chips (`Standard Screen (No VR)`, `VR Supported`, `VR Only`) + custom notes input.
+7. **Content & Safety Warnings**: Multi-select toggle chips (`Flashing Lights / Strobe`, `Spiders (Arachnophobia)`, `Extreme Blood & Gore`, `Self-Harm Themes`, `Sudden Loud Scares`, `Claustrophobia (Tight Spaces)`, `Disturbing Audio / Screaming`, `Needles / Medical Horror`) + custom input.
+8. **Wrong Purchase Link**: Existing listed store link selector, store selector pills, issue type selector, and live proposal payload preview.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| [`src/db/schema.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/db/schema.ts) | Modified — Added `publisherNames`, `multiplayer`, `controllerSupport`, and `vrSupport` columns to `games` table in Drizzle schema |
+| `scripts/migrate-game-specs.ts` | Created & Executed — Ran `ALTER TABLE Game ADD COLUMN ...` on Turso SQLite for all 4 columns |
+| [`src/pages/api/admin/edits/approve.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/admin/edits/approve.ts) | Modified — Expanded `ALLOWED_GAME_FIELDS` and added custom handlers for `releaseDate`, `publisherNames` (with relational entity & join table sync), `playerWarnings` (merging into `scareProfile` JSON), and `purchaseLink` (upserting `PurchaseLink` table) |
+| [`src/pages/api/edits/suggest.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/edits/suggest.ts) | Modified — Enhanced trusted contributor auto-publishing to support `purchaseLink`, `playerWarnings`, and `releaseDate` |
+| [`src/lib/userReputation.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/lib/userReputation.ts) | Modified — Added `'releaseDate'`, `'publisherNames'`, `'multiplayer'`, `'controllerSupport'`, `'vrSupport'`, and `'playerWarnings'` to `LOW_RISK_FIELDS` |
+| [`src/components/editing/EditPageModal.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx) | Modified — Complete UI overhaul with 6 categorized tabs, SVG icons for every tab and field, interactive presets for all 7 new fields, zero emojis, and plain English descriptions |
+| [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) | Modified — Passed all new fields in `editGameData.gameData` and `HelpMenuDropdown`; added publisher subheader credit and features badges (Game Modes, Controller, VR) with crisp SVG icons |
+| [`src/components/editing/EditPageButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx) | Modified — Expanded `EditPageButtonProps` gameData type definitions |
+| [`src/components/editing/HelpMenuDropdown.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/HelpMenuDropdown.tsx) | Modified — Expanded `HelpMenuDropdownProps` gameData type definitions |
+| [`src/components/editing/GameActionsMenu.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/GameActionsMenu.tsx) | Modified — Expanded `GameActionsMenuProps` gameData type definitions |
+
+### Design Decisions / Rationale
+- **Zero Emojis**: Followed strict user instruction and `/ui-ux-pro-max` guideline `no-emoji-icons`. Replaced all potential emojis with dedicated vector SVG icons from `lucide-react` (`FileText`, `Building2`, `Gamepad2`, `ShieldAlert`, `Terminal`, `Link2`, `Calendar`, `Tag`, `Users`, `Glasses`, `Clock`, `Info`).
+- **Everyday English Words**: Kept all labels simple ("Game Modes", "Controller Support", "VR Support", "Safety Warnings", "Release Date", "Publisher") without technical jargon.
+- **Turso Backward-Compatibility**: Database columns were added as nullable `TEXT` in Turso SQLite, ensuring existing records remain 100% intact with zero disruption.
+- **Relational Integrity**: Approving a `publisherNames` proposal automatically links or creates corresponding entities in the `Publisher` and `_GameToPublisher` tables.
+
+### Verification Results
+- Database schema verified with `PRAGMA table_info(Game);` on live Turso database: columns `publisherNames`, `multiplayer`, `controllerSupport`, `vrSupport` confirmed active.
+- Automated emoji check script executed across modified files: 0 emojis found.
+- Build verified with `npm run build:quick`: compiled cleanly in 9.75s with 0 errors.
+
+
+
+
 
 
 

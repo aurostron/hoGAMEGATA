@@ -1,4 +1,4 @@
-# Gamegata Curation Rubric & Decision Rules
+# hoGAMEGATA Curation Rubric & Decision Rules
 
 > The objective standard used by human curators, automated scrapers, and local AI arbiters to determine whether a game is accepted into the catalog or hidden as noise.
 
@@ -13,13 +13,13 @@ This leads to three major types of tag distortion:
 2. **The Ironic Tag:** Steam users tag a bright dating sim or a notoriously stressful competitive shooter with "Psychological Horror" as a meme.
 3. **The Cosmetic Reskin:** An arcade pinball table or racing game licenses Dracula or a slasher villain, slap on some dark textures, and claims the horror genre without offering an ounce of tension or dread.
 
-Gamegata does not blindly trust user-submitted tags. Every game in the catalog is tested against a rigorous **5-Point Curatorial Test**.
+hoGAMEGATA does not blindly trust user-submitted tags. Every game in the catalog is tested against a rigorous **5-Point Curatorial Test**.
 
 ---
 
 ## 2. The 5-Point Curatorial Test
 
-To determine whether a game belongs in Gamegata, curators evaluate five foundational criteria:
+To determine whether a game belongs in hoGAMEGATA, curators evaluate five foundational criteria:
 
 ```
                   ┌─────────────────────────────────────┐
@@ -85,7 +85,7 @@ A game is classified as **Horror-Adjacent** when it contains unmistakable horror
 **The Golden Rule for Action-Horror:**
 > *Never reject a game simply because the player holds a gun or swings a sword.*
 
-If an action game features visceral body horror, terrifying creature stalkers, oppressive basements, or psychological trauma, it belongs in Gamegata as horror-adjacent.
+If an action game features visceral body horror, terrifying creature stalkers, oppressive basements, or psychological trauma, it belongs in hoGAMEGATA as horror-adjacent.
 
 **Real Catalog Examples:**
 - *Bloodborne*: A masterpiece of Victorian gothic architecture descending into cosmic Lovecraftian body horror, insight-induced madness, and terrifying beast hunts.
@@ -116,7 +116,7 @@ A game is classified as **Non-Horror** and removed from active discovery when it
 
 ## 4. How Soft-Hiding Works (Zero Data Loss)
 
-Gamegata enforces a strict database safety standard: **We never execute hard SQL deletes.**
+hoGAMEGATA enforces a strict database safety standard: **We never execute hard SQL deletes.**
 
 When a game is rejected:
 1. Its database row in TursoDB is updated to `status = 'hidden'`.
