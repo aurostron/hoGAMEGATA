@@ -72,7 +72,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
   try {
     const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search")?.trim() || "";
+    const search = searchParams.get("search")?.trim() || searchParams.get("q")?.trim() || "";
     
     if (search) {
       await trackSearch(search);
@@ -526,16 +526,21 @@ export const GET: APIRoute = async ({ request, locals }) => {
     } else if (sort === "trending") {
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
-        desc(gamesTable.popularity),
+        sql`COALESCE(${gamesTable.popularity}, 0) DESC`,
+        sql`COALESCE(${gamesTable.rating}, 0) DESC`,
+        desc(gamesTable.likesCount),
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "top-rated") {
       baseQuery = baseQuery.orderBy(
+        sql`CASE WHEN ${gamesTable.rating} IS NULL THEN 1 ELSE 0 END`,
         desc(gamesTable.rating),
+        sql`COALESCE(${gamesTable.steamRating}, 0) DESC`,
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "upcoming") {
       baseQuery = baseQuery.orderBy(
+        sql`CASE WHEN ${gamesTable.releaseDate} IS NULL THEN 1 ELSE 0 END`,
         asc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;
@@ -557,6 +562,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       ) as any;
     } else if (sort === "latest") {
       baseQuery = baseQuery.orderBy(
+        sql`CASE WHEN ${gamesTable.releaseDate} IS NULL THEN 1 ELSE 0 END`,
         desc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;
@@ -564,7 +570,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
       // default: trending
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
-        desc(gamesTable.popularity),
+        sql`COALESCE(${gamesTable.popularity}, 0) DESC`,
+        sql`COALESCE(${gamesTable.rating}, 0) DESC`,
+        desc(gamesTable.likesCount),
         desc(gamesTable.id)
       ) as any;
     }

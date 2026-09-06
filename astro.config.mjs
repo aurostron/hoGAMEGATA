@@ -7,6 +7,10 @@ import tailwindcss from '@tailwindcss/vite';
 
 import cloudflare from '@astrojs/cloudflare';
 import sanity from '@sanity/astro';
+import { ensureLocalDbBridge } from './src/lib/localDbBridge';
+
+// Automatically boot local SQLite bridge for local development if remote database is omitted
+ensureLocalDbBridge();
 
 // https://astro.build/config
 export default defineConfig({

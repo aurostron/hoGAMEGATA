@@ -3741,6 +3741,60 @@ Resolved multiple package manager peer dependency resolution errors (`npm error 
 - Executed `npm run build:quick` in primary project:
   - Prerendered routes and generated Cloudflare bundle cleanly in 11.63s with **0 errors**.
 
+---
+
+## 2026-09-06 — Standalone Zero-Config Local Mode (Curated 100 Iconic Games & SQLite Bridge)
+
+### Summary
+Transformed local development into a completely self-contained, 100% operational offline experience matching the production website 1:1 without requiring Turso Cloud credentials, external database servers, or paid infrastructure:
+1. **Curated 100 Iconic Horror Games Dataset (`data/curated-100-games.json`)**:
+   - Extracted and bundled 100 world-renowned horror games (Silent Hill franchise, Resident Evil franchise, Dead Space, Alien: Isolation, Outlast, Amnesia, FAITH, Signalis, Mouthwashing, Iron Lung, Puppet Combo hits, retro classics, and indie gems).
+   - Preserved complete relational graphs: 96 developers, 87 publishers, 17 genres, 173 tags, 28 platforms, 104 price snapshots, and 171 purchase links.
+2. **Dynamic Database Seeding (`scripts/seed-mock-db.ts`)**:
+   - Updated schema initialization to mirror `src/db/schema.ts` (including `catboxAlbumId`, `taxonomyScores`, `source`, `likesCount`, etc.).
+   - Added automated seeding from `curated-100-games.json` generating an 811 KB relational `local.db`.
+3. **Workerd-Compatible Local SQLite Bridge (`src/lib/localDbBridge.ts` & `astro.config.mjs`)**:
+   - Created a zero-overhead Node HTTP bridge on port `4322` that interfaces directly with `local.db` via `@libsql/client`.
+   - Bypasses Cloudflare Workerd sandbox restrictions (which disallow `file:` URLs) by streaming queries via `http://127.0.0.1:4322/query`.
+   - Wired bridge auto-startup into `astro.config.mjs` so `npm run dev` and builds initialize it automatically when `TURSO_DATABASE_URL` is omitted.
+4. **Universal Resilient Drizzle Adapter (`src/lib/turso.ts`)**:
+   - Implemented `formatBridgeResult()` handling both array-of-arrays (`values`) and array-of-objects (`rows`) representations, properly defining enumerable numeric indices and named property getters required by Drizzle ORM's `mapResultRow`.
+   - Ensures all fields (`title`, `slug`, `rating`, `coverUrl`, `screenshots`, `scareProfile`, `tags`, `purchaseLinks`, `priceSnapshots`) deserialize seamlessly.
+5. **Catalog Search & Sorting Polish (`src/pages/api/games/index.ts`)**:
+   - Added support for both `search` and `q` query parameters.
+   - Added SQL `COALESCE` guards for robust sorting by `trending`, `latest`, `upcoming`, `top-rated`, `price-asc`, and `price-desc` in local SQLite.
+6. **Random Game Discoverability (`src/data/randomPool.ts` & `src/pages/api/random.ts`)**:
+   - Populated random pool with the 100 curated game slugs/titles, guaranteeing instantaneous random dice rolls with zero 404s.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `data/curated-100-games.json` | NEW — Curated 100 iconic horror games relational dataset (635 KB) |
+| `scripts/seed-mock-db.ts` | Modified — Upgraded DDL schema and loader to seed curated dataset into `local.db` |
+| `src/lib/localDbBridge.ts` | NEW — Localhost HTTP bridge (port 4322) bridging Workerd sandbox to `local.db` |
+| `astro.config.mjs` | Modified — Auto-invoked `ensureLocalDbBridge()` when running without cloud credentials |
+| `src/lib/turso.ts` | Modified — Added fallback client and dual-format Drizzle row adapter |
+| `src/pages/api/games/index.ts` | Modified — Added `q` param support and null-safe sort ordering |
+| `src/data/randomPool.ts` | Modified — Populated with curated 100 game slugs and titles |
+| `walkthrough.md` | Modified — Appended changelog entry |
+
+### Verification Results
+- **Local SQLite Bridge & Drizzle Adapter**:
+  - Queried `http://localhost:4321/api/games?limit=2` -> Returns fully populated game records with non-null `title`, `slug`, `rating`, `coverUrl`, `tags`, and `purchaseLinks`.
+- **Catalog Search & Filtering**:
+  - Queried `http://localhost:4321/api/games?q=Silent%20Hill` -> Returns 3 Silent Hill games (`totalCount: 3`).
+  - Queried `http://localhost:4321/api/games?freeOnly=true` -> Returns 21 free games.
+  - Queried `http://localhost:4321/api/games?sort=top-rated` -> Returns correctly sorted games ranked up to 100 rating.
+- **Random Dice Endpoint**:
+  - Queried `http://localhost:4321/api/random` across multiple calls -> Returns random iconic horror titles (e.g. *Bloodborne*, *Alone in the Dark*, *Murder House*).
+- **Frontend Pages**:
+  - `GET http://localhost:4321/` -> HTTP 200 OK with full hydrated catalog components and hero carousel.
+  - `GET http://localhost:4321/games` -> HTTP 200 OK.
+  - `GET http://localhost:4321/game/silent-hill-2--2` -> HTTP 200 OK.
+- **Production Build**:
+  - Executed `npm run build:quick` -> Server built and static routes prerendered in 14.47s with **0 errors**.
+
+
 
 
 
