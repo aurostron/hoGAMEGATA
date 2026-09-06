@@ -1,7 +1,7 @@
 {
   "name": "gamegata-astro",
   "type": "module",
-  "version": "0.9.0-beta.1",
+  "version": "0.9.5",
   "engines": {
     "node": ">=22.12.0"
   },
@@ -14,6 +14,7 @@
     "generate-types": "wrangler types",
     "console": "tsx scripts/dev-tools.ts",
     "dev-gui": "tsx scripts/dev-gui.ts",
+    "setup:mock": "tsx scripts/seed-mock-db.ts",
     "db:generate": "prisma generate",
     "deploy": "npm run build && wrangler deploy",
     "deploy:quick": "npm run build:quick && wrangler deploy",

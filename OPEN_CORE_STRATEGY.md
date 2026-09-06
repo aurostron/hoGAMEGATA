@@ -61,10 +61,17 @@ Transition GAMEGATA (`gamegata-astro`) into an **Open-Core platform** to:
   2. `.github/workflows/sitemap-search-cache.yml`: Runs daily to pre-generate search indexes and update `sitemap.xml`.
 
 ### Phase 4: Licensing & Legal Dual-Structure
-- **Objective**: Define clear boundaries between open-source code and proprietary data.
+- **Objective**: Define clear, legally enforceable boundaries between open-source code, open database, and proprietary data assets.
+- **Decided License Stack (2026-09-06)**:
+  - **Code (`/LICENSE`)**: MIT License — permissive, OSI-approved, Cloudflare Project Alexandria compatible
+  - **Curated Database (`DATA_LICENSE.md` → Section 2)**: Open Database License (ODbL 1.0) — attribution required, share-alike for derivative databases, "Produced Work" exception allows apps using the data to remain closed-source
+  - **Scare Meter ratings & tag taxonomy (`DATA_LICENSE.md` → Section 3)**: Proprietary / All Rights Reserved — core data moat, no open license granted
+  - **Third-party game metadata (`DATA_LICENSE.md` → Section 4)**: Not licensed by hoGAMEGATA — belongs to respective game publishers/developers
 - **Tasks**:
-  - Create `LICENSE` (MIT for codebase).
-  - Add **Data License Notice** in `README.md` and `TERMS.md` specifying that the curated dataset, Scare Meter metrics, and tag taxonomy remain proprietary property of aurostron / GAMEGATA.
+  - Create `LICENSE` (MIT for application source code)
+  - Create `DATA_LICENSE.md` with all four sections (code → ODbL → proprietary → third-party notice)
+  - Add **Attribution notice** in `README.md`: code is MIT, database is ODbL, Scare Meter and tags are proprietary
+  - Confirm aurostron is a personal pseudonym (single individual), not a registered commercial entity — state this clearly in the Project Alexandria application
 
 ### Phase 5: Repository Public Launch
 - **Objective**: Transition GitHub repository to Public visibility.
@@ -87,6 +94,10 @@ Transition GAMEGATA (`gamegata-astro`) into an **Open-Core platform** to:
 
 ## 5. Verification & Deliverables
 
-1. `OPEN_CORE_STRATEGY.md` exported to root workspace folder.
-2. `.github/workflows/daily-price-updates.yml` created for automated cron runs.
-3. Updated `README.md` clarifying MIT Code License vs. Proprietary Data Rights.
+1. `OPEN_CORE_STRATEGY.md` updated with finalized license decisions.
+2. `planning/OPEN_CORE_AND_CLOUDFLARE_PLAN.md` — Full implementation plan (see this file for phase-by-phase detail).
+3. `LICENSE` — MIT license file at repo root (to be created in Phase 2).
+4. `DATA_LICENSE.md` — Three-layer data license document: ODbL 1.0 (catalog) + Proprietary (Scare Meter, tags) + Third-party notice (to be created in Phase 2).
+5. `.github/workflows/daily-price-updates.yml` — Automated cron workflow (to be created in Phase 3/7).
+6. Updated `README.md` — Correctly references MIT (code), ODbL (database), and proprietary (Scare Meter/tags) layers.
+

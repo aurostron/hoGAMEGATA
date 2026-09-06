@@ -32,9 +32,13 @@ pnpm-debug.log*
 # /src/lib/db.ts
 
 # local sqlite databases
-# *.db
-# *.db-journal
-# *.sqlite
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+local.db
+local.db-journal
 
 # temporary scratch and ingestion files
 /scratch/

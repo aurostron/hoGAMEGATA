@@ -22,7 +22,7 @@ function getAuth(): ReturnType<typeof betterAuth> {
 
     const isDev = import.meta.env?.DEV || (typeof process !== "undefined" && process.env && process.env.NODE_ENV === "development");
 
-    const secret = getEnvVal("BETTER_AUTH_SECRET") || "";
+    const secret = getEnvVal("BETTER_AUTH_SECRET") || (isDev ? "gamegata-dev-insecure-secret-key-32chars" : "");
     const envBaseURL = getEnvVal("BETTER_AUTH_URL");
     const defaultBaseURL = isDev ? "http://localhost:4321" : "https://gamegata.xyz";
     const baseURL = (isDev && envBaseURL && envBaseURL.includes("gamegata.xyz")) ? "http://localhost:4321" : (envBaseURL || defaultBaseURL);
@@ -115,12 +115,14 @@ function getAuth(): ReturnType<typeof betterAuth> {
           }
         }
       },
-      socialProviders: {
-        google: {
-          clientId: googleClientId,
-          clientSecret: googleClientSecret,
+      ...(googleClientId && googleClientSecret ? {
+        socialProviders: {
+          google: {
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+          },
         },
-      },
+      } : {}),
       advanced: {
         defaultCookieAttributes: {
           sameSite: "lax",
