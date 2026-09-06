@@ -72,8 +72,8 @@ For a complete breakdown of boundaries and legal terms, see [OPEN_CORE.md](./doc
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/aurostron/gamegata-v1.git
-   cd gamegata-v1
+   git clone https://github.com/aurostron/hoGAMEGATA.git
+   cd hoGAMEGATA
    ```
 
 2. Install dependencies:

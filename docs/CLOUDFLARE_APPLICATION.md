@@ -4,7 +4,7 @@
 > **Application URL**: https://www.cloudflare.com/lp/project-alexandria/  
 > **Applicant**: aurostron / hoGAMEGATA  
 > **Project URL**: https://gamegata.xyz  
-> **Repository**: https://github.com/aurostron/gamegata-v1  
+> **Repository**: https://github.com/aurostron/hoGAMEGATA  
 
 ---
 
@@ -36,7 +36,7 @@ In accordance with Project Alexandria requirements, hoGAMEGATA maintains an open
 
 * **Application Code**: Licensed under the **MIT License** (`LICENSE` at repository root).
 * **Curated Database**: Published under the **Open Database License (ODbL) v1.0** (`DATA_LICENSE.md`), ensuring that compiled catalog structures remain open to the public while allowing developers to create Produced Works.
-* **Open Repository**: https://github.com/aurostron/gamegata-v1
+* **Open Repository**: https://github.com/aurostron/hoGAMEGATA
 
 ---
 
@@ -88,5 +88,5 @@ hoGAMEGATA proudly acknowledges its infrastructure partners:
 
 * **Lead Maintainer**: aurostron
 * **Email**: contact@gamegata.xyz
-* **Repository**: https://github.com/aurostron/gamegata-v1
+* **Repository**: https://github.com/aurostron/hoGAMEGATA
 * **Live Service**: https://gamegata.xyz

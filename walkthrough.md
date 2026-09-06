@@ -217,7 +217,7 @@ Integrated and renamed the provided official platform/storefront vector marks:
 - **itch.io**: Official red circular badge with white controller silhouette (`public/icons/itch.svg`).
 - **Reddit**: Official full-color circular Reddit mark (`public/icons/reddit.png`).
 
-Updated [`BrandIcon.tsx`](file:///C:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/icons/BrandIcon.tsx) and [`OfficialLinkIcon.astro`](file:///C:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/icons/OfficialLinkIcon.astro) to render these exact marks across game detail pages, price comparisons, and official links.
+Updated [`BrandIcon.tsx`](file:///C:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/icons/BrandIcon.tsx) and [`OfficialLinkIcon.astro`](file:///C:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/icons/OfficialLinkIcon.astro) to render these exact marks across game detail pages, price comparisons, and official links.
 
 ### Files Modified
 | File | Action |
@@ -395,7 +395,7 @@ Revamped local search across the platform from strict exact-matching to an intel
 ### Verification
 - Ran live audit on production `https://gamegata.xyz`:
   - `GET /game/visage`: Verified "Buy / Download on itch.io" CTA is gone, fake $0 deal is gone, and real Steam/GOG deals render.
-  - `GET /re/species-unknown/steam`: Verified valid Turnstile site key `0x4AAAAAADxZWPj99fIewEFh` and operational server verification.
+  - `GET /re/species-unknown/steam`: Verified valid Turnstile site key `<turnstile-site-key>` and operational server verification.
   - `GET /directory`: Verified 301 redirect to `https://project-hgg.github.io`.
 - Deployed to Cloudflare (`npm run deploy`): Version ID `3ac4abb2-95db-4a25-a383-42cf3714b015` live on `https://gamegata.xyz`.
 
@@ -525,11 +525,11 @@ Fixed the `/re/[slug]/[store]` redirect gateway bug where the Turnstile CAPTCHA 
 ### Summary
 Implemented a random game discovery button with a multi-phase "Void Warp" cosmic space tunnel / spooky mist transition:
 1. **Interactive Dice Button**:
-   - Created [`RandomDiceButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomDiceButton.tsx) featuring a dynamic rolling animation on click and subtle hover effects matching the sci-fi/horror header aesthetic.
-   - Added the button to [`Header.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/Header.astro) right action cluster alongside Search, Notifications, Cart, and Settings.
-   - Updated [`BottomNav.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/BottomNav.tsx) to use the `Dices` icon and connect the mobile `action:random` trigger to the warp system.
+   - Created [`RandomDiceButton.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/RandomDiceButton.tsx) featuring a dynamic rolling animation on click and subtle hover effects matching the sci-fi/horror header aesthetic.
+   - Added the button to [`Header.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/Header.astro) right action cluster alongside Search, Notifications, Cart, and Settings.
+   - Updated [`BottomNav.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/BottomNav.tsx) to use the `Dices` icon and connect the mobile `action:random` trigger to the warp system.
 2. **Cosmic Void Warp Transition Overlay**:
-   - Created [`RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx) and keyframe styles in [`random-warp.css`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/styles/random-warp.css) mounted globally in [`Layout.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro).
+   - Created [`RandomWarpOverlay.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx) and keyframe styles in [`random-warp.css`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/styles/random-warp.css) mounted globally in [`Layout.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro).
    - Multi-phase cinematic sequence:
      - Deep crimson & purple counter-rotating nebula mist layers.
      - Accelerated hyperspace star streaks and rotating dashed event horizon rings.
@@ -537,7 +537,7 @@ Implemented a random game discovery button with a multi-phase "Void Warp" cosmic
      - Blinding white/crimson supernova hyper-flash masking the SSR page transition cleanly.
    - Respects `prefers-reduced-motion` for instant redirection without animation.
 3. **JSON Random Pre-fetch Endpoint**:
-   - Created [`/api/random.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/random.ts) returning random game slug and title as JSON so the client fetches the target in parallel during the warp animation before navigating.
+   - Created [`/api/random.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/api/random.ts) returning random game slug and title as JSON so the client fetches the target in parallel during the warp animation before navigating.
 
 ### Files Modified
 | File | Action |
@@ -654,7 +654,7 @@ Overhauled the promotional presentation in `promo/` and `src/pages/promo.astro` 
 ## 2026-08-22 — Atmospheric Starfield & Subtle Void Dissolve Transition
 
 ### Summary
-Refined the random game transition in [`RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx) following the `frontend-design` and `3d-ui` principles to be silky smooth, subtle, and easy on the eyes:
+Refined the random game transition in [`RandomWarpOverlay.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx) following the `frontend-design` and `3d-ui` principles to be silky smooth, subtle, and easy on the eyes:
 1. **Understated Cosmic Palette**:
    - Replaced loud, high-contrast candy neon colors with a refined, deep atmospheric palette: Soft Starlight White (`rgba(240, 244, 255, 0.65)`), Ethereal Blue (`rgba(200, 220, 255, 0.55)`), Muted Crimson Accent (`rgba(220, 38, 38, 0.5)`), and Deep Cosmic Violet (`rgba(168, 85, 247, 0.45)`).
 2. **Delicate Filaments & Organic Density**:
@@ -980,7 +980,7 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 
 ### Summary
 1. **Zero-Delay Seamless Navigation Handoff**:
-   - Resolved the post-animation delay on game discovery transitions by introducing background prefetching and an early navigation handoff in [`RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx).
+   - Resolved the post-animation delay on game discovery transitions by introducing background prefetching and an early navigation handoff in [`RandomWarpOverlay.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx).
    - As soon as `/api/random` returns `{ slug }`, a `<link rel="prefetch" href="/game/[slug]">` is injected into document `<head>`, downloading the target HTML and assets while the animation is still running.
    - Handed off navigation at `1150ms` (during the peak glide and dark dissolve) so the target page renders instantly at the end of the 1.6s transition with zero perceptible delay.
 2. **Cloudflare Production Deployment**:
@@ -1032,13 +1032,13 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
    - The original queries in `/api/random` performed two full-table scans across 107,814 rows in Turso (`SELECT COUNT(*)` followed by `LIMIT 1 OFFSET [random_index]`).
    - On a large database, high offset queries without an index caused queries to take 16+ seconds over remote network calls, triggering browser fetch timeouts and locking the overlay.
 2. **Ultra-Fast Single-Query B-Tree Indexed Seek (<30ms)**:
-   - Replaced multi-step count/offset queries in [`src/pages/api/random.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/random.ts) and [`src/pages/random.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/random.ts) with a direct B-tree `rowid >= ?` lookup:
+   - Replaced multi-step count/offset queries in [`src/pages/api/random.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/api/random.ts) and [`src/pages/random.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/random.ts) with a direct B-tree `rowid >= ?` lookup:
      `SELECT slug, title, source FROM Game WHERE rowid >= ? AND (status IS NULL OR status != 'hidden') LIMIT 1;`
    - Response times dropped from 16,000ms to <50ms.
 3. **Middleware Public Paths Whitelist**:
-   - Added `/api/random` and `/random` to `PUBLIC_PATHS` in [`src/middleware.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/middleware.ts).
+   - Added `/api/random` and `/random` to `PUBLIC_PATHS` in [`src/middleware.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/middleware.ts).
 4. **Interactive Failsafe & Escape Handling**:
-   - In [`src/components/RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx), added `Escape` key dismiss and a `2.8s` auto-dismiss timer.
+   - In [`src/components/RandomWarpOverlay.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx), added `Escape` key dismiss and a `2.8s` auto-dismiss timer.
 5. **Cloudflare Deployment**:
    - Deployed live to Cloudflare Workers (Version ID: `b56daec0-3d0e-4b79-9ead-a296fdb5de24`).
    - Verified live responses for both `/api/random` and `/random`.
@@ -1125,7 +1125,7 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 ## 2026-08-23 — HUD Badge Label Update
 
 ### Summary
-- Updated the overlay HUD badge label from `"SUMMONING NIGHTMARE"` to `"SUMMONING"` in [`src/components/RandomWarpOverlay.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx).
+- Updated the overlay HUD badge label from `"SUMMONING NIGHTMARE"` to `"SUMMONING"` in [`src/components/RandomWarpOverlay.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/RandomWarpOverlay.tsx).
 - Retained clean local build verification.
 
 ### Files Modified
@@ -1181,15 +1181,15 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 ### Summary
 1. **Catalog Scale Update Across Meta & JSON-LD**:
    - Updated homepage and global layouts from outdated ~16.5k/18k metrics to the real-time verified figures: **107,800+ horror games**, **68,000+ developers**, **15,800+ micro-genre tags**, **430,000+ screenshots**, and **95,000+ live deal snapshots**.
-   - Added structured Schema.org `DataCatalog` and `Dataset` JSON-LD entities in [`src/layouts/Layout.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro) specifying the exact catalog inventory for web crawlers and AI search indexers.
+   - Added structured Schema.org `DataCatalog` and `Dataset` JSON-LD entities in [`src/layouts/Layout.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro) specifying the exact catalog inventory for web crawlers and AI search indexers.
 2. **AI-Native Discovery Standard (`llms.txt` & `llms-full.txt`)**:
-   - Created [`public/llms.txt`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/public/llms.txt) and [`public/llms-full.txt`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/public/llms-full.txt) to provide machine-readable documentation of the database scale, categorization taxonomy, and API endpoints for ChatGPT, Claude, Perplexity, and other AI systems.
+   - Created [`public/llms.txt`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/public/llms.txt) and [`public/llms-full.txt`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/public/llms-full.txt) to provide machine-readable documentation of the database scale, categorization taxonomy, and API endpoints for ChatGPT, Claude, Perplexity, and other AI systems.
 3. **AI Crawler Permissions in `robots.txt`**:
-   - Configured [`public/robots.txt`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/public/robots.txt) to explicitly allow AI search engines (`GPTBot`, `Claude-Web`, `PerplexityBot`, `Google-Extended`) to access `/llms.txt`, `/llms-full.txt`, `/api/stats`, and directory routes for fresh citations.
+   - Configured [`public/robots.txt`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/public/robots.txt) to explicitly allow AI search engines (`GPTBot`, `Claude-Web`, `PerplexityBot`, `Google-Extended`) to access `/llms.txt`, `/llms-full.txt`, `/api/stats`, and directory routes for fresh citations.
 4. **Site Copy & FAQ Synchronization**:
-   - Updated [`src/pages/about.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) FAQ content and JSON-LD `FAQPage` schema to reflect the 107,000+ titles.
-   - Updated default copy in [`src/lib/siteContent.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/lib/siteContent.ts) and [`src/pages/index.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/index.astro).
-   - Fixed count destructuring in [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro).
+   - Updated [`src/pages/about.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) FAQ content and JSON-LD `FAQPage` schema to reflect the 107,000+ titles.
+   - Updated default copy in [`src/lib/siteContent.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/lib/siteContent.ts) and [`src/pages/index.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/index.astro).
+   - Fixed count destructuring in [`src/pages/support.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/support.astro).
 
 ### Files Modified & Created
 | File | Action |
@@ -1214,7 +1214,7 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 
 ### Summary
 1. **Added "Awesome Stuff & Useful Links" Section**:
-   - Implemented a curated 3rd-party directory on [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro) directly after the "WE WOULD LIKE TO THANK" sponsor marquee.
+   - Implemented a curated 3rd-party directory on [`src/pages/support.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/support.astro) directly after the "WE WOULD LIKE TO THANK" sponsor marquee.
    - Categorized into 4 clean cards with matching dark sci-fi aesthetic, monospace pill badges, external link icons, and subtle hover interactions:
      - **Communities & Discussion** (`r/horrorgaming`, `r/survivalhorror`, `SurvivalHorrors.com`, `DreadXP`, `Rely on Horror`)
      - **Indie Platforms & Studios** (`itch.io Horror`, `Haunted PS1`, `Puppet Combo`, `Chilla's Art`, `Ludum Dare`)
@@ -1240,9 +1240,9 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 
 ### Summary
 1. **Footer Author Credit Update**:
-   - Updated global [`src/components/Footer.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/Footer.astro) credit from `"Made with ❤️ by aurostron and team."` to `"Made with ❤️ by aurostron."` across all site pages.
+   - Updated global [`src/components/Footer.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/Footer.astro) credit from `"Made with ❤️ by aurostron and team."` to `"Made with ❤️ by aurostron."` across all site pages.
 2. **Support Page Badge Removal**:
-   - Removed the `"Curated Network"` pill badge above the Awesome Stuff heading in [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro).
+   - Removed the `"Curated Network"` pill badge above the Awesome Stuff heading in [`src/pages/support.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/support.astro).
    - Removed section-level color tag badges (`FORUMS & HUBS`, `INDIE SCENE`, `METADATA & ARCHIVES`, `USEFUL TOOLS`) for a cleaner, unified minimalist aesthetic.
 
 ### Files Modified
@@ -1261,7 +1261,7 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 
 ### Summary
 1. **Precautions & Disclaimer Section Added to Support Page**:
-   - Added a dedicated card on [`src/pages/support.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/support.astro) with warning/precaution icon clarifying that hoGAMEGATA operates strictly as an open-access aggregator and metadata catalog.
+   - Added a dedicated card on [`src/pages/support.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/support.astro) with warning/precaution icon clarifying that hoGAMEGATA operates strictly as an open-access aggregator and metadata catalog.
    - Clarified that although external links/deals are gathered from reliable sources, hoGAMEGATA, site maintainers, owners, and aurostron assume no liability for external storefront transactions, software downloads, third-party content, or damages.
 2. **Updated Terms & Conditions (`src/pages/terms.astro`)**:
    - Updated sections `// 6. Disclaimer of Warranties & Aggregator Role` and `// 7. Limitation of Liability` to explicitly state aggregator status and zero liability for third-party platforms, external purchases, or software behavior.
@@ -1284,7 +1284,7 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 ## 2026-08-31 — Added Terms & Conditions Hyperlink to Registration Form
 
 ### Summary
-- Updated the registration checkbox in [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) to turn `"Terms & Conditions"` into a clickable hyperlink (`<a href="/terms" target="_blank" rel="noopener noreferrer">`).
+- Updated the registration checkbox in [`src/components/LoginPage.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) to turn `"Terms & Conditions"` into a clickable hyperlink (`<a href="/terms" target="_blank" rel="noopener noreferrer">`).
 - Included `onClick={(e) => e.stopPropagation()}` so clicking the link opens the Terms of Service in a new tab without inadvertently toggling the checkbox or interrupting input focus.
 
 ### Files Modified
@@ -1302,10 +1302,10 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 
 ### Summary
 1. **Removed Black Footer Box & Cleaned Return Button**:
-   - Stripped the heavy dark bordered footer box (`bg-black/80 md:bg-black/40 border-t border-white/5 backdrop-blur-sm`) and inner dividers from [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx).
+   - Stripped the heavy dark bordered footer box (`bg-black/80 md:bg-black/40 border-t border-white/5 backdrop-blur-sm`) and inner dividers from [`src/components/LoginPage.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx).
    - Replaced it with a minimal, elegant inline bottom bar displaying the clean pill Return button (`Return to Storefront`) alongside the `© 2026 hoGAMEGATA` copyright.
 2. **Fixed Viewport Overflow (No Scroll Required)**:
-   - Configured [`src/pages/login.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/login.astro) and [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) to strictly fit `h-screen h-[100dvh] overflow-hidden`.
+   - Configured [`src/pages/login.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/login.astro) and [`src/components/LoginPage.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) to strictly fit `h-screen h-[100dvh] overflow-hidden`.
    - Tightened `LoginForm` card padding and vertical element gaps (`p-5 sm:p-7 space-y-3.5`, input `py-2.5 px-3.5`) so the entire form, Turnstile captcha, buttons, and bottom controls remain fully visible without any scrolling.
 3. **Ensured Bottom-Right Screenshot Credits Stay Visible**:
    - Styled the background screenshot metadata chip with a floating backdrop pill (`bottom-4 right-4 sm:bottom-6 sm:right-6 bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10`) ensuring the game name and developer credits are never cut off.
@@ -1326,9 +1326,9 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 
 ### Summary
 1. **Outfit & Global Google Fonts in Login Page**:
-   - Updated [`src/pages/login.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/login.astro) `<head>` to import the site's full Google Fonts stylesheet (`Outfit`, `Geist`, `Geist Mono`, `Hanken Grotesk`), ensuring the `hoGAMEGATA` header logo renders in its authentic **Outfit** brand typography.
+   - Updated [`src/pages/login.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/login.astro) `<head>` to import the site's full Google Fonts stylesheet (`Outfit`, `Geist`, `Geist Mono`, `Hanken Grotesk`), ensuring the `hoGAMEGATA` header logo renders in its authentic **Outfit** brand typography.
 2. **Restored Original Game Metadata Typography**:
-   - Reverted the screenshot credit in [`src/components/LoginPage.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) back to its original clean `font-sans text-[10px] sm:text-xs uppercase tracking-widest text-neutral-400 text-right drop-shadow-md` styling at `bottom-4 right-4 sm:bottom-6 sm:right-8`.
+   - Reverted the screenshot credit in [`src/components/LoginPage.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/LoginPage.tsx) back to its original clean `font-sans text-[10px] sm:text-xs uppercase tracking-widest text-neutral-400 text-right drop-shadow-md` styling at `bottom-4 right-4 sm:bottom-6 sm:right-8`.
 
 ### Files Modified
 | File | Action |
@@ -1346,18 +1346,18 @@ Replaced all raster emojis across the promotional reels with clean, modular, glo
 ### Summary
 Diagnosed and resolved the root cause of horizontal cutoff, misalignment, and page overflow on mobile devices:
 1. **Header Mobile Overcrowding & Width Fix**:
-   - **Root Cause**: On mobile screens (<640px), [`Header.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/Header.astro) was rendering 8 non-collapsing elements (`Logo`, `Beta badge`, `Edit this page button`, `Search`, `Dice`, `Bell`, `Cart`, `User`) on a single row, pushing minimum header width to ~500px and forcing horizontal overflow/page clipping on narrow phone viewports (360px–390px).
+   - **Root Cause**: On mobile screens (<640px), [`Header.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/Header.astro) was rendering 8 non-collapsing elements (`Logo`, `Beta badge`, `Edit this page button`, `Search`, `Dice`, `Bell`, `Cart`, `User`) on a single row, pushing minimum header width to ~500px and forcing horizontal overflow/page clipping on narrow phone viewports (360px–390px).
    - **Fix**:
      - Hidden `RandomDiceButton` on mobile (`hidden md:flex`) since Random discovery is already permanently present in the mobile floating `BottomNav`.
-     - In [`EditPageButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx), made the text label `hidden sm:inline` so mobile devices show a sleek, compact pencil icon button without consuming horizontal space.
+     - In [`EditPageButton.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx), made the text label `hidden sm:inline` so mobile devices show a sleek, compact pencil icon button without consuming horizontal space.
      - Adjusted header action icons to compact `w-8 h-8 sm:w-10 sm:h-10` with `gap-0.5 sm:gap-2` and `overflow-x-clip`.
-     - In [`HeaderSearch.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/HeaderSearch.tsx), made the collapsed search button responsive (`w-9 sm:w-11`).
+     - In [`HeaderSearch.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/HeaderSearch.tsx), made the collapsed search button responsive (`w-9 sm:w-11`).
 2. **Global Viewport & Overflow-X Protection**:
-   - In [`Layout.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro), updated the viewport meta tag to standard `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` and added `overflow-x-hidden w-full max-w-full relative`.
+   - In [`Layout.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/layouts/Layout.astro), updated the viewport meta tag to standard `<meta name="viewport" content="width=device-width, initial-scale=1.0" />` and added `overflow-x-hidden w-full max-w-full relative`.
    - Increased mobile bottom padding to `pb-28 md:pb-0` so the floating bottom navigation bar never overlaps page content or footer elements.
-   - In [`global.css`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/styles/global.css), enforced strict `box-sizing: border-box`, `max-width: 100vw`, and `overflow-x: hidden` on `html` and `body`.
+   - In [`global.css`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/styles/global.css), enforced strict `box-sizing: border-box`, `max-width: 100vw`, and `overflow-x: hidden` on `html` and `body`.
 3. **Typography & Heading Word-Break Protection**:
-   - Added `break-words` to massive display game titles in [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) to prevent extra-long titles from expanding container boundaries.
+   - Added `break-words` to massive display game titles in [`src/pages/game/[slug].astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) to prevent extra-long titles from expanding container boundaries.
 
 ### Files Modified
 | File | Action |
@@ -3040,14 +3040,14 @@ Standardized all user-facing references and JSON-LD schema descriptions to use *
 ## 2026-09-05 — 4-Volume Horror Taxonomy & Curatorial Framework Integration into /about
 
 ### Summary
-Integrated the 4-volume horror taxonomy documentation suite directly into [`src/pages/about.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) as modular, high-contrast monochrome sections. Crafted interactive components for the 7D Scare Profile Archetypes and the 21 Sub-Feelings Affective Index, and presented the 5-Point Curatorial Test and Fear Psychology using grounded, human language strictly conforming to `avoid-ai-writing` and `unslop` guidelines. Kept changes strictly local without Cloudflare deployment.
+Integrated the 4-volume horror taxonomy documentation suite directly into [`src/pages/about.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) as modular, high-contrast monochrome sections. Crafted interactive components for the 7D Scare Profile Archetypes and the 21 Sub-Feelings Affective Index, and presented the 5-Point Curatorial Test and Fear Psychology using grounded, human language strictly conforming to `avoid-ai-writing` and `unslop` guidelines. Kept changes strictly local without Cloudflare deployment.
 
 ### Files Created & Modified
 | File | Action |
 |------|--------|
-| [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) | NEW — Interactive 7-dimensional scare profile comparison card featuring *Amnesia: The Bunker*, *Silent Hill 2*, *Iron Lung*, *Resident Evil 2 (Remake)*, and *Signalis* with clean monochrome progress meters |
-| [`src/components/about/SubFeelingsMatrix.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/SubFeelingsMatrix.tsx) | NEW — Interactive selector for the 6 psychological realms and 21 sub-feelings with plain definitions, evolutionary biological roots, and game examples |
-| [`src/pages/about.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) | Modified — Added sticky/clean chapter navigation sub-bar, Curatorial 5-Point Test flowchart cards, Fear Psychology breakdown (Paradox of Safe Fear, King's Triad, Dominance Curve), and mounted the interactive components |
+| [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) | NEW — Interactive 7-dimensional scare profile comparison card featuring *Amnesia: The Bunker*, *Silent Hill 2*, *Iron Lung*, *Resident Evil 2 (Remake)*, and *Signalis* with clean monochrome progress meters |
+| [`src/components/about/SubFeelingsMatrix.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/about/SubFeelingsMatrix.tsx) | NEW — Interactive selector for the 6 psychological realms and 21 sub-feelings with plain definitions, evolutionary biological roots, and game examples |
+| [`src/pages/about.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) | Modified — Added sticky/clean chapter navigation sub-bar, Curatorial 5-Point Test flowchart cards, Fear Psychology breakdown (Paradox of Safe Fear, King's Triad, Dominance Curve), and mounted the interactive components |
 | `walkthrough.md` | Modified — Appended taxonomy integration details and verification results |
 
 ### Design Decisions & Language Polish
@@ -3070,13 +3070,13 @@ Integrated the 4-volume horror taxonomy documentation suite directly into [`src/
 ## 2026-09-05 — UI/UX Pro Max: API Docs Vertical Stack Sidebar for /about
 
 ### Summary
-Redesigned the navigation on [`src/pages/about.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) from an awkward wrapping horizontal bar into an API docs-style vertical stack sidebar. Created [`DocsSidebar.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/DocsSidebar.tsx) featuring a sticky vertical table of contents on desktop and a compact, collapsible chapter dropdown on mobile, complete with real-time scrollspy position tracking and `scroll-mt-24` header offset guards.
+Redesigned the navigation on [`src/pages/about.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) from an awkward wrapping horizontal bar into an API docs-style vertical stack sidebar. Created [`DocsSidebar.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/about/DocsSidebar.tsx) featuring a sticky vertical table of contents on desktop and a compact, collapsible chapter dropdown on mobile, complete with real-time scrollspy position tracking and `scroll-mt-24` header offset guards.
 
 ### Files Created & Modified
 | File | Action |
 |------|--------|
-| [`src/components/about/DocsSidebar.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/DocsSidebar.tsx) | NEW — Sticky API docs-style sidebar with chapter numbers (`01`–`06`), active scrollspy indicator line, smooth scrolling triggers, and mobile drawer jump bar |
-| [`src/pages/about.astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) | Modified — Removed horizontal navigation bar, converted layout to 2-column flex container (`max-w-6xl`), and added `scroll-mt-24` across all 6 chapter sections |
+| [`src/components/about/DocsSidebar.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/about/DocsSidebar.tsx) | NEW — Sticky API docs-style sidebar with chapter numbers (`01`–`06`), active scrollspy indicator line, smooth scrolling triggers, and mobile drawer jump bar |
+| [`src/pages/about.astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/about.astro) | Modified — Removed horizontal navigation bar, converted layout to 2-column flex container (`max-w-6xl`), and added `scroll-mt-24` across all 6 chapter sections |
 | `walkthrough.md` | Modified — Appended API docs sidebar redesign log |
 
 ### Design Decisions / Rationale
@@ -3144,14 +3144,14 @@ Committed, pushed, and deployed the complete `/about` page taxonomy suite and pe
 ## 2026-09-06 — 7D Scare Profile Subjective Calibration Disclaimer & Brand Standardization
 
 ### Summary
-Added a subjective editorial calibration disclaimer directly beneath the "7D Scare Profile" heading in [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) and updated [`docs/horror-taxonomy/README.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/README.md) and [`docs/horror-taxonomy/curation-rubric.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/curation-rubric.md) to standardize branding on `hoGAMEGATA`.
+Added a subjective editorial calibration disclaimer directly beneath the "7D Scare Profile" heading in [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) and updated [`docs/horror-taxonomy/README.md`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/README.md) and [`docs/horror-taxonomy/curation-rubric.md`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/curation-rubric.md) to standardize branding on `hoGAMEGATA`.
 
 ### Files Modified
 | File | Action |
 |------|--------|
-| [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) | Modified — Placed the subjective disclaimer note directly beneath the 7D Scare Profile heading in muted `text-xs text-neutral-400` styling |
-| [`docs/horror-taxonomy/README.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/README.md) | Modified — Added subjective editorial note under 7D Scare Profile section and standardized on `hoGAMEGATA` |
-| [`docs/horror-taxonomy/curation-rubric.md`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/curation-rubric.md) | Modified — Replaced all legacy `Gamegata` occurrences with `hoGAMEGATA` |
+| [`src/components/about/ScareProfileComparison.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/about/ScareProfileComparison.tsx) | Modified — Placed the subjective disclaimer note directly beneath the 7D Scare Profile heading in muted `text-xs text-neutral-400` styling |
+| [`docs/horror-taxonomy/README.md`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/README.md) | Modified — Added subjective editorial note under 7D Scare Profile section and standardized on `hoGAMEGATA` |
+| [`docs/horror-taxonomy/curation-rubric.md`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/docs/horror-taxonomy/curation-rubric.md) | Modified — Replaced all legacy `Gamegata` occurrences with `hoGAMEGATA` |
 | `walkthrough.md` | Modified — Appended change documentation |
 
 ### Design Decisions / Rationale
@@ -3166,18 +3166,18 @@ Added a subjective editorial calibration disclaimer directly beneath the "7D Sca
 ## 2026-09-06 — Edit Toolbox Upgrade: Wrong Purchase Link Tool & Quick Reporter
 
 ### Summary
-Added a dedicated **"Wrong Purchase Link"** reporting and fixing tool into the community metadata edit toolbox ([`src/components/editing/EditPageModal.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx)). Connected existing game purchase links from [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) into the edit flow, allowing players to select existing store links or report missing/broken storefront links across Steam, itch.io, GOG, Epic Games, PlayStation, Xbox, and Nintendo. Also added a direct trigger in [`src/components/PriceComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/PriceComparison.tsx).
+Added a dedicated **"Wrong Purchase Link"** reporting and fixing tool into the community metadata edit toolbox ([`src/components/editing/EditPageModal.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx)). Connected existing game purchase links from [`src/pages/game/[slug].astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) into the edit flow, allowing players to select existing store links or report missing/broken storefront links across Steam, itch.io, GOG, Epic Games, PlayStation, Xbox, and Nintendo. Also added a direct trigger in [`src/components/PriceComparison.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/PriceComparison.tsx).
 
 ### Files Modified
 | File | Action |
 |------|--------|
-| [`src/components/editing/EditPageModal.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx) | Modified — Added `purchaseLink` field with interactive storefront selector (`STORE_OPTIONS`), issue type pills (`LINK_ISSUE_TYPES`), existing listed links quick-select cards, and formatted proposal builder |
-| [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) | Modified — Passed `purchaseLinks` into `editGameData.gameData` for real-time modal context |
-| [`src/components/editing/EditPageButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
-| [`src/components/editing/HelpMenuDropdown.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/HelpMenuDropdown.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
-| [`src/components/editing/GameActionsMenu.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/GameActionsMenu.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
-| [`src/components/PriceComparison.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/PriceComparison.tsx) | Modified — Added quick "Wrong or broken purchase link?" action that opens `EditPageModal` directly to `purchaseLink` |
-| [`src/lib/userReputation.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/lib/userReputation.ts) | Modified — Added `'purchaseLink'` to `LOW_RISK_FIELDS` for trusted contributor auto-approval |
+| [`src/components/editing/EditPageModal.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx) | Modified — Added `purchaseLink` field with interactive storefront selector (`STORE_OPTIONS`), issue type pills (`LINK_ISSUE_TYPES`), existing listed links quick-select cards, and formatted proposal builder |
+| [`src/pages/game/[slug].astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) | Modified — Passed `purchaseLinks` into `editGameData.gameData` for real-time modal context |
+| [`src/components/editing/EditPageButton.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
+| [`src/components/editing/HelpMenuDropdown.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/HelpMenuDropdown.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
+| [`src/components/editing/GameActionsMenu.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/GameActionsMenu.tsx) | Modified — Updated prop types to pass `purchaseLinks` |
+| [`src/components/PriceComparison.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/PriceComparison.tsx) | Modified — Added quick "Wrong or broken purchase link?" action that opens `EditPageModal` directly to `purchaseLink` |
+| [`src/lib/userReputation.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/lib/userReputation.ts) | Modified — Added `'purchaseLink'` to `LOW_RISK_FIELDS` for trusted contributor auto-approval |
 | `walkthrough.md` | Modified — Appended change documentation |
 
 ### Verification Results
@@ -3203,16 +3203,16 @@ Expanded the hoGAMEGATA community edit toolbox modal with 7 new essential game m
 ### Files Modified
 | File | Action |
 |------|--------|
-| [`src/db/schema.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/db/schema.ts) | Modified — Added `publisherNames`, `multiplayer`, `controllerSupport`, and `vrSupport` columns to `games` table in Drizzle schema |
+| [`src/db/schema.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/db/schema.ts) | Modified — Added `publisherNames`, `multiplayer`, `controllerSupport`, and `vrSupport` columns to `games` table in Drizzle schema |
 | `scripts/migrate-game-specs.ts` | Created & Executed — Ran `ALTER TABLE Game ADD COLUMN ...` on Turso SQLite for all 4 columns |
-| [`src/pages/api/admin/edits/approve.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/admin/edits/approve.ts) | Modified — Expanded `ALLOWED_GAME_FIELDS` and added custom handlers for `releaseDate`, `publisherNames` (with relational entity & join table sync), `playerWarnings` (merging into `scareProfile` JSON), and `purchaseLink` (upserting `PurchaseLink` table) |
-| [`src/pages/api/edits/suggest.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/api/edits/suggest.ts) | Modified — Enhanced trusted contributor auto-publishing to support `purchaseLink`, `playerWarnings`, and `releaseDate` |
-| [`src/lib/userReputation.ts`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/lib/userReputation.ts) | Modified — Added `'releaseDate'`, `'publisherNames'`, `'multiplayer'`, `'controllerSupport'`, `'vrSupport'`, and `'playerWarnings'` to `LOW_RISK_FIELDS` |
-| [`src/components/editing/EditPageModal.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx) | Modified — Complete UI overhaul with 6 categorized tabs, SVG icons for every tab and field, interactive presets for all 7 new fields, zero emojis, and plain English descriptions |
-| [`src/pages/game/[slug].astro`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) | Modified — Passed all new fields in `editGameData.gameData` and `HelpMenuDropdown`; added publisher subheader credit and features badges (Game Modes, Controller, VR) with crisp SVG icons |
-| [`src/components/editing/EditPageButton.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx) | Modified — Expanded `EditPageButtonProps` gameData type definitions |
-| [`src/components/editing/HelpMenuDropdown.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/HelpMenuDropdown.tsx) | Modified — Expanded `HelpMenuDropdownProps` gameData type definitions |
-| [`src/components/editing/GameActionsMenu.tsx`](file:///c:/Users/bapum/Desktop/Portfolio/gamegata-astro/src/components/editing/GameActionsMenu.tsx) | Modified — Expanded `GameActionsMenuProps` gameData type definitions |
+| [`src/pages/api/admin/edits/approve.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/api/admin/edits/approve.ts) | Modified — Expanded `ALLOWED_GAME_FIELDS` and added custom handlers for `releaseDate`, `publisherNames` (with relational entity & join table sync), `playerWarnings` (merging into `scareProfile` JSON), and `purchaseLink` (upserting `PurchaseLink` table) |
+| [`src/pages/api/edits/suggest.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/api/edits/suggest.ts) | Modified — Enhanced trusted contributor auto-publishing to support `purchaseLink`, `playerWarnings`, and `releaseDate` |
+| [`src/lib/userReputation.ts`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/lib/userReputation.ts) | Modified — Added `'releaseDate'`, `'publisherNames'`, `'multiplayer'`, `'controllerSupport'`, `'vrSupport'`, and `'playerWarnings'` to `LOW_RISK_FIELDS` |
+| [`src/components/editing/EditPageModal.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageModal.tsx) | Modified — Complete UI overhaul with 6 categorized tabs, SVG icons for every tab and field, interactive presets for all 7 new fields, zero emojis, and plain English descriptions |
+| [`src/pages/game/[slug].astro`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/pages/game/%5Bslug%5D.astro) | Modified — Passed all new fields in `editGameData.gameData` and `HelpMenuDropdown`; added publisher subheader credit and features badges (Game Modes, Controller, VR) with crisp SVG icons |
+| [`src/components/editing/EditPageButton.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/EditPageButton.tsx) | Modified — Expanded `EditPageButtonProps` gameData type definitions |
+| [`src/components/editing/HelpMenuDropdown.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/HelpMenuDropdown.tsx) | Modified — Expanded `HelpMenuDropdownProps` gameData type definitions |
+| [`src/components/editing/GameActionsMenu.tsx`](file:///c:/Users/<user>/Desktop/Portfolio/gamegata-astro/src/components/editing/GameActionsMenu.tsx) | Modified — Expanded `GameActionsMenuProps` gameData type definitions |
 
 ### Design Decisions / Rationale
 - **Zero Emojis**: Followed strict user instruction and `/ui-ux-pro-max` guideline `no-emoji-icons`. Replaced all potential emojis with dedicated vector SVG icons from `lucide-react` (`FileText`, `Building2`, `Gamepad2`, `ShieldAlert`, `Terminal`, `Link2`, `Calendar`, `Tag`, `Users`, `Glasses`, `Clock`, `Info`).
@@ -3624,6 +3624,62 @@ Enforced the strict open-core perimeter by purging all custom proprietary admin 
 ### Verification Results
 - Executed `npm run build:quick`: Server built and prerendered in 13.57s with **0 errors**.
 - Verified all proprietary files remain safely on local disk and on `private-history`.
+
+---
+
+## 2026-09-06 — Comprehensive Multi-Pass Open-Core Release & Security Audit (hoGAMEGATA v0.9.5)
+
+### Summary & Objectives
+Completed a rigorous, five-pass security, privacy, and integrity audit across the entire repository in preparation for making `https://github.com/aurostron/hoGAMEGATA` public under an Open-Core model.
+
+### Key Changes
+1. **Fallback Credential Sanitization**:
+   - Sanitized `src/pages/re/[slug]/[store].astro`: Replaced hardcoded fallback Turnstile site key (`0x4...`) with Cloudflare's official testing dummy key (`1x00000000000000000000AA`).
+2. **Git Tracking Sanitization**:
+   - Untracked temporary scratch file `test_db.ts` and added it to `.gitignore`.
+   - Untracked lingering build cache directory `vitepress-index/docs/.vitepress/cache/` (16 dependency artifacts and source maps).
+3. **Repository URL Synchronization**:
+   - Updated clone paths and repository links from `gamegata-v1` to `hoGAMEGATA` across `README.md`, `CONTRIBUTING.md`, and `docs/CLOUDFLARE_APPLICATION.md`.
+4. **Documentation Privacy Hardening**:
+   - Redacted local Windows user directory paths (`C:\Users\<user>`) and historical Turnstile test site keys from `walkthrough.md`.
+
+### Files Modified / Untracked
+| File | Action | Description |
+|---|---|---|
+| `src/pages/re/[slug]/[store].astro` | Modified | Replaced hardcoded Turnstile site key fallback with test dummy key |
+| `.gitignore` | Modified | Added `test_db.ts` to ignored scratch files |
+| `CONTRIBUTING.md` | Modified | Updated clone repository URL to `hoGAMEGATA` |
+| `README.md` | Modified | Updated clone repository URL to `hoGAMEGATA` |
+| `docs/CLOUDFLARE_APPLICATION.md` | Modified | Updated application repository links to `hoGAMEGATA` |
+| `test_db.ts` | Untracked | Removed scratch script from Git tracking |
+| `vitepress-index/docs/.vitepress/cache/` | Untracked | Removed 16 build cache files from Git tracking |
+| `walkthrough.md` | Modified | Redacted local paths, sanitized credentials, and appended audit results |
+
+### Comprehensive 5-Pass Verification Results
+- **Pass 1: Secret, Token & Personal Identity Leak Audit**:
+  - `0` Turso auth tokens or database connection strings.
+  - `0` Resend API keys (`re_...`).
+  - `0` Better-Auth production secrets.
+  - `0` Google OAuth client IDs or client secrets (`*.apps.googleusercontent.com`).
+  - `0` Discord bot tokens or webhooks.
+  - `0` Cloudflare Turnstile production secret or site keys.
+  - `0` Private cryptographic keys (`BEGIN PRIVATE KEY`).
+  - `0` Personal email addresses in application code (only placeholder dummy emails and public domain contact `contact@gamegata.xyz`).
+  - `0` Occurrences of personal developer username (`bapum`).
+- **Pass 2: Proprietary File Perimeter Audit**:
+  - `0` admin pages (`src/pages/admin/`) tracked.
+  - `0` admin API endpoints (`src/pages/api/admin/`) tracked.
+  - `0` admin layouts or moderation UI components tracked.
+  - `0` proprietary crawlers or ingestion scripts tracked (`scripts/` contains strictly `seed-mock-db.ts` and `fix-manifest-urls.mjs`).
+  - `0` SQLite database binaries or SQL dumps tracked. All proprietary files remain safely stored on local disk and in `private-history`.
+- **Pass 3: Contributor Clean-Clone & DX Verification**:
+  - Executed `npm run setup:mock`: Successfully seeded 10 horror games, 5 developers, 2 publishers, 5 genres, 8 tags, and 3 platforms into `./local.db` in 2.0s without requiring any remote credentials.
+  - Verified `.env.example` provides empty placeholders and official Cloudflare test keys for frictionless onboarding.
+- **Pass 4: Production Build Verification**:
+  - Executed `npm run build:quick`: Astro 5 SSR and Vite compiler finished in 31.09s with **0 errors**. Static routes prerendered and Windows manifest URL helper completed cleanly.
+- **Pass 5: Project Alexandria & Licensing Alignment**:
+  - Verified `LICENSE` (MIT) and `DATA_LICENSE.md` (ODbL 1.0 + Proprietary Scare Meter & Micro-Genre Taxonomy) accurately reflect the dual-licensing structure.
+  - Verified `docs/CLOUDFLARE_APPLICATION.md` accurately targets `https://github.com/aurostron/hoGAMEGATA` and emphasizes non-profit digital preservation.
 
 
 

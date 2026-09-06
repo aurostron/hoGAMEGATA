@@ -35,8 +35,8 @@ Before contributing, please review our open-core architectural boundary:
 
 1. **Fork and Clone**:
    ```bash
-   git clone https://github.com/<your-username>/gamegata-v1.git
-   cd gamegata-v1
+   git clone https://github.com/<your-username>/hoGAMEGATA.git
+   cd hoGAMEGATA
    ```
 
 2. **Install Dependencies**:

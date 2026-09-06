@@ -83,3 +83,6 @@ data/*.csv
 admin-app/
 *.apk
 
+# Scratch test files
+test_db.ts
+
