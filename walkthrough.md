@@ -3681,6 +3681,40 @@ Completed a rigorous, five-pass security, privacy, and integrity audit across th
   - Verified `LICENSE` (MIT) and `DATA_LICENSE.md` (ODbL 1.0 + Proprietary Scare Meter & Micro-Genre Taxonomy) accurately reflect the dual-licensing structure.
   - Verified `docs/CLOUDFLARE_APPLICATION.md` accurately targets `https://github.com/aurostron/hoGAMEGATA` and emphasizes non-profit digital preservation.
 
+---
+
+## 2026-09-06 — Bug Fix: Resolve `Internal server error: module is not defined` in Astro Dev
+
+### Symptom & Root Cause Analysis
+- **Symptom**: During `npm run dev`, visiting `http://localhost:4321/` resulted in Vite throwing:
+  ```text
+  Internal server error: module is not defined
+    at runInRunnerObject (workers/runner-worker/index.js:107:3)
+    at NonRunnablePipeline.getComponentByRoute (...)
+  ```
+- **Root Cause**:
+  1. `astro.config.mjs` had an outdated `ssr: { external: [...], noExternal: [] }` block. In `@astrojs/cloudflare` (which runs Cloudflare's `workerd` isolate in dev), `noExternal` must remain `true` (the adapter's default) so all dependencies are bundled into the edge runtime. Disabling bundling caused workerd to attempt raw CommonJS loading, crashing with `ReferenceError: module is not defined`.
+  2. Dependencies were missing from `optimizeDeps.include` (`drizzle-orm`, `drizzle-orm/libsql`, `drizzle-orm/sqlite-core`, `@libsql/client/web`, `better-auth`, `@sanity/client`). When visited, Vite discovered them on-the-fly and initiated cascading `program reload` cycles during route matching, invalidating the worker runner mid-execution.
+  3. Non-existent package `styled-components` was present in `optimizeDeps.exclude`, triggering warnings and confusing Vite's dep scanner.
+
+### Changes Applied
+- **Updated `astro.config.mjs`**:
+  - Removed the broken `ssr: { external: [...], noExternal: [] }` override.
+  - Removed `styled-components`.
+  - Added comprehensive `optimizeDeps.include` configuration:
+    - `react`, `react-dom`, `react/jsx-runtime`, `react-dom/server`
+    - `drizzle-orm`, `drizzle-orm/libsql`, `drizzle-orm/sqlite-core`
+    - `@libsql/client/web`
+    - `better-auth`, `better-auth/adapters/drizzle`
+    - `@sanity/client`
+    - `clsx`, `tailwind-merge`, `lucide-react`
+  - Cleared stale `.vite` cache.
+
+### Verification Results
+- Verified local dev server boots and pre-bundles all dependencies cleanly on startup.
+- Verified GET `http://localhost:4321/` responds with `STATUS 200` and renders full HTML with 0 errors.
+- Verified `npm run build:quick` completes in 12.77s with **0 errors**.
+
 
 
 

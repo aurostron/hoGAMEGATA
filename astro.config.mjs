@@ -27,11 +27,22 @@ export default defineConfig({
       dedupe: ['react', 'react-dom']
     },
     optimizeDeps: {
-      exclude: ['better-auth', '@libsql/client', 'styled-components'],
-    },
-    ssr: {
-      external: ['better-auth', '@libsql/client', '@libsql/hrana-client'],
-      noExternal: [],
+      include: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react-dom/server',
+        'drizzle-orm',
+        'drizzle-orm/libsql',
+        'drizzle-orm/sqlite-core',
+        '@libsql/client/web',
+        'better-auth',
+        'better-auth/adapters/drizzle',
+        '@sanity/client',
+        'clsx',
+        'tailwind-merge',
+        'lucide-react',
+      ],
     },
   },
 
