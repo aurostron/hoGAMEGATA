@@ -20,7 +20,7 @@ Astro.response.headers.set(
 );
 
 const dataVersion = await getDataVersion();
-let totalGames: number = dataVersion.totalGames || 107851;
+let totalGames: number = dataVersion.totalGames || 107485;
 let allGenres: any[] = [];
 let allPlatforms: any[] = [];
 
@@ -36,7 +36,7 @@ try {
     turso.select({ name: platforms.name, slug: platforms.slug }).from(platforms).orderBy(platforms.name).limit(100)
   ]);
 
-  totalGames = dataVersion.totalGames || gamesCount || 107851;
+  totalGames = gamesCount || dataVersion.totalGames || 107485;
   allGenres = genresList;
   allPlatforms = platformsList;
 } catch (err) {

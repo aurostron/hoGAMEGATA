@@ -24,6 +24,8 @@ export interface SearchResult {
   developerNames: string | null;
 }
 
+import { loadCatalogFromDB, initCatalogWorker } from "./catalogStorage";
+
 const DB_NAME = "gamegata_search_v3";
 const STORE_NAME = "catalog_store";
 const CACHE_KEY = "search_catalog_with_covers";
@@ -112,12 +114,47 @@ export function initSearchEngine(): Promise<boolean> {
   initPromise = (async () => {
     isInitializing = true;
     try {
-      // 1. Try local IndexedDB first (0ms, offline)
+      // 1. Try unified Catalog Storage (GamegataCatalogDB_v1) first (0ms, 107k games)
+      const catalogRecords = await loadCatalogFromDB();
+      if (catalogRecords && catalogRecords.length > 0) {
+        memoryIndex = catalogRecords.map((r: any) => ({
+          i: r.i,
+          t: r.t,
+          s: r.s,
+          c: r.c || null,
+          d: r.dn || null,
+        }));
+        isInitializing = false;
+        return true;
+      }
+
+      // 2. Try legacy search IndexedDB (gamegata_search_v3)
       const cached = await loadFromIndexedDB();
       if (cached && cached.length > 0) {
         memoryIndex = cached;
         isInitializing = false;
         return true;
+      }
+
+      // 3. Trigger unified catalog worker sync in background (6.9MB gzip)
+      try {
+        const ready = await initCatalogWorker();
+        if (ready) {
+          const fresh = await loadCatalogFromDB();
+          if (fresh && fresh.length > 0) {
+            memoryIndex = fresh.map((r: any) => ({
+              i: r.i,
+              t: r.t,
+              s: r.s,
+              c: r.c || null,
+              d: r.dn || null,
+            }));
+            isInitializing = false;
+            return true;
+          }
+        }
+      } catch {
+        // Fallback to legacy JSON assets
       }
 
       // 2. Fetch index: prefer local static asset first (which contains cover URLs and IDs)

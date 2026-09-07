@@ -37,26 +37,8 @@ export const POST: APIRoute = async ({ params, request }) => {
       );
     }
 
-    let targetCountry = country;
-    if (!targetCountry || targetCountry === "detect") {
-      const geoHeaders = [
-        "x-vercel-ip-country",
-        "x-country",
-        "x-nf-country-code",
-        "cf-ipcountry",
-        "cloudfront-viewer-country"
-      ];
-      for (const h of geoHeaders) {
-        const val = request.headers.get(h);
-        if (val && val.length === 2) {
-          targetCountry = val.toUpperCase();
-          break;
-        }
-      }
-      if (!targetCountry) {
-        targetCountry = "US"; // default fallback
-      }
-    }
+    // Default scraper strictly to US / USD so prices remain globally standardized in USD
+    let targetCountry = country && country !== "detect" ? country.toUpperCase() : "US";
 
     const isStrictRefresh = Boolean(forceRefresh);
     const deals = await lazyGetPrices(id, title, purchaseLinks, targetCountry, isStrictRefresh, provider);

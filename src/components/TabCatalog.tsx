@@ -8,6 +8,7 @@ import type { HeroGameData } from "./HeroCarousel";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import HoverTrailer from "./HoverTrailer";
+import { queryLocalCatalog } from "../lib/catalogStorage";
 
 interface TabCatalogProps {
   latest: HeroGameData[];
@@ -98,10 +99,16 @@ export default function TabCatalog({
       const fetchForYou = async () => {
         setForYouLoading(true);
         try {
-          const response = await fetch(`/api/games?tags=${encodeURIComponent(vibes.join(","))}&limit=10`);
-          if (response.ok) {
-            const data = await response.json();
-            setForYouGames(data.games || []);
+          // 1. Try local catalog recommendations first (0ms, 0 reads)
+          const localRes = await queryLocalCatalog({ features: vibes, limit: 10 });
+          if (localRes && localRes.games.length > 0) {
+            setForYouGames(localRes.games as any);
+          } else {
+            const response = await fetch(`/api/games?tags=${encodeURIComponent(vibes.join(","))}&limit=10`);
+            if (response.ok) {
+              const data = await response.json();
+              setForYouGames(data.games || []);
+            }
           }
         } catch (err) {
           console.error("Failed to fetch For You recommendations:", err);

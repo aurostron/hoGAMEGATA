@@ -29,22 +29,22 @@ export async function enrichGamesWithRelations(gameList: any[]): Promise<GameSum
 
   const gameIds = gameList.map(g => g.id);
 
-  // 1. Fetch tags mapping
-  const tagsResult = await turso
-    .select({
-      gameId: gamesToTags.gameId,
-      name: tags.name,
-      slug: tags.slug,
-    })
-    .from(gamesToTags)
-    .innerJoin(tags, eq(gamesToTags.tagId, tags.id))
-    .where(inArray(gamesToTags.gameId, gameIds));
-
-  // 2. Fetch purchase links
-  const linksResult = await turso
-    .select()
-    .from(purchaseLinks)
-    .where(inArray(purchaseLinks.gameId, gameIds));
+  // 1 & 2. Fetch tags mapping and purchase links in parallel
+  const [tagsResult, linksResult] = await Promise.all([
+    turso
+      .select({
+        gameId: gamesToTags.gameId,
+        name: tags.name,
+        slug: tags.slug,
+      })
+      .from(gamesToTags)
+      .innerJoin(tags, eq(gamesToTags.tagId, tags.id))
+      .where(inArray(gamesToTags.gameId, gameIds)),
+    turso
+      .select()
+      .from(purchaseLinks)
+      .where(inArray(purchaseLinks.gameId, gameIds))
+  ]);
 
   // Create lookup maps
   const tagsMap = new Map<string, any[]>();

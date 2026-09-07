@@ -15,7 +15,7 @@ export const FALLBACK_VERSION: DataVersionInfo = {
   commitMessage: "fix(data): align data-version.json to valid commit 1bcac49",
   date: "2026-09-06T19:10:59Z",
   displayDate: "Sep 6, 19:10 UTC",
-  totalGames: 107932,
+  totalGames: 107485,
 };
 
 export function formatDisplayDate(isoString: string): string {

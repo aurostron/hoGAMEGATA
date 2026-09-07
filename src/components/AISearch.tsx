@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, Loader2, Info, X, Key, ExternalLink, ChevronDown, Cpu } from "lucide-react";
 import { getCloudinaryFetchUrl } from "../lib/utils";
+import { queryLocalCatalog } from "../lib/catalogStorage";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -580,15 +581,20 @@ export default function AISearch() {
 
       // Fallback
       try {
-        const fbData = await withTimeout(
-          (async () => {
-            const fb = await fetch(`/api/games?search=${encodeURIComponent(q)}&limit=12`);
-            if (fb.ok) return await fb.json();
-            throw new Error();
-          })(),
-          8000
-        );
-        setResults(fbData.games || []);
+        const localRes = await queryLocalCatalog({ search: q, limit: 12 });
+        if (localRes && localRes.games.length > 0) {
+          setResults(localRes.games as any);
+        } else {
+          const fbData = await withTimeout(
+            (async () => {
+              const fb = await fetch(`/api/games?search=${encodeURIComponent(q)}&limit=12`);
+              if (fb.ok) return await fb.json();
+              throw new Error();
+            })(),
+            8000
+          );
+          setResults(fbData.games || []);
+        }
       } catch {}
     } finally {
       setLoading(false);

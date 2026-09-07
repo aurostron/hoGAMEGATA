@@ -10,7 +10,7 @@ import {
   Bookmark, 
   LifeBuoy, 
   Info, 
-  PlusCircle 
+  PlusCircle
 } from "lucide-react";
 import { 
   DropdownMenu, 

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { turso, initTursoForRequest } from '../../../lib/turso';
+import { turso, initTursoForRequest, libsqlClient } from '../../../lib/turso';
 import { env as cfWorkerEnv } from "cloudflare:workers";
 import {
   games as gamesTable,
@@ -24,6 +24,10 @@ import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit'
 export const prerender = false;
 
 const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+
+// In-Memory API response cache (avoids repeated database round-trips)
+const API_RESPONSE_CACHE = new Map<string, { body: string; expiresAt: number }>();
+let cachedTotalVisibleGames: { val: number; timestamp: number } | null = null;
 
 let cachedGameTitles: string[] | null = null;
 async function getGameTitles(): Promise<string[]> {
@@ -64,6 +68,20 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const rl = await rateLimit(`games_api:${clientIp}`, 120, 60);
   if (!rl.allowed) return tooManyRequests(rl.retryAfter, undefined, request);
 
+  // Check In-Memory API Cache
+  const cacheKey = request.url;
+  const cached = API_RESPONSE_CACHE.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return new Response(cached.body, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Cache": "HIT",
+        "Cache-Control": "public, max-age=60, s-maxage=300",
+      },
+    });
+  }
+
   const runtimeEnv = isDev
     ? (typeof process !== "undefined" && process.env ? process.env : cfWorkerEnv)
     : (cfWorkerEnv || (typeof process !== "undefined" ? process.env : {}));
@@ -75,7 +93,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const search = searchParams.get("search")?.trim() || searchParams.get("q")?.trim() || "";
     
     if (search) {
-      await trackSearch(search);
+      // Non-blocking search analytics
+      trackSearch(search).catch((err) => console.error("trackSearch error:", err));
     }
     
     // Advanced Filters
@@ -127,11 +146,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // 1. Resolve Creator IDs Filter
-    let creatorGameIds: string[] | null = null;
-    if (creatorIdsParam) {
-      const creatorIds = creatorIdsParam.split(",").filter(Boolean);
-      if (creatorIds.length > 0) {
+    // 1-3. Resolve Filter IDs Concurrently in Parallel
+    const [creatorGameIds, tagGameIds, genreGameIds, platformGameIds] = await Promise.all([
+      // 1. Resolve Creator IDs Filter
+      (async (): Promise<string[] | null> => {
+        if (!creatorIdsParam) return null;
+        const creatorIds = creatorIdsParam.split(",").filter(Boolean);
+        if (creatorIds.length === 0) return null;
         const [devGames, pubGames] = await Promise.all([
           turso
             .select({ gameId: gamesToDevelopers.gameId })
@@ -142,135 +163,111 @@ export const GET: APIRoute = async ({ request, locals }) => {
             .from(gamesToPublishers)
             .where(inArray(gamesToPublishers.publisherId, creatorIds))
         ]);
-        creatorGameIds = Array.from(new Set([
+        return Array.from(new Set([
           ...devGames.map(dg => dg.gameId),
           ...pubGames.map(pg => pg.gameId)
         ]));
-      }
-    }
+      })(),
 
-    // 2. Resolve Tag/Feature Slugs Filter (AND logic)
-    let tagGameIds: string[] | null = null;
-    if (allActiveTags.length > 0) {
-      const matchedTags = await turso
-        .select({ id: tagsTable.id })
-        .from(tagsTable)
-        .where(inArray(tagsTable.slug, allActiveTags));
+      // 2. Resolve Tag/Feature Slugs Filter (AND logic)
+      (async (): Promise<string[] | null> => {
+        if (allActiveTags.length === 0) return null;
+        const matchedTags = await turso
+          .select({ id: tagsTable.id })
+          .from(tagsTable)
+          .where(inArray(tagsTable.slug, allActiveTags));
 
-      const tagIds = matchedTags.map(t => t.id);
-      if (tagIds.length === 0) {
-        return new Response(
-          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
-      }
+        const tagIds = matchedTags.map(t => t.id);
+        if (tagIds.length === 0) return [];
 
-      const rows = await turso
-        .select({ gameId: gamesToTags.gameId, tagId: gamesToTags.tagId })
-        .from(gamesToTags)
-        .where(inArray(gamesToTags.tagId, tagIds));
+        const rows = await turso
+          .select({ gameId: gamesToTags.gameId, tagId: gamesToTags.tagId })
+          .from(gamesToTags)
+          .where(inArray(gamesToTags.tagId, tagIds));
 
-      const tagCounts = new Map<string, number>();
-      for (const r of rows) {
-        tagCounts.set(r.gameId, (tagCounts.get(r.gameId) || 0) + 1);
-      }
-
-      tagGameIds = Array.from(tagCounts.entries())
-        .filter(([_, count]) => count >= tagIds.length)
-        .map(([id]) => id);
-      
-      if (tagGameIds.length === 0) {
-        return new Response(
-          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
-      }
-    }
-
-    // 3. Resolve Genre Slugs Filter (OR logic)
-    let genreGameIds: string[] | null = null;
-    if (selectedGenres.length > 0) {
-      const matchedGenres = await turso
-        .select({ id: genresTable.id })
-        .from(genresTable)
-        .where(inArray(genresTable.slug, selectedGenres));
-      const genreIds = matchedGenres.map(g => g.id);
-      if (genreIds.length === 0) {
-        return new Response(
-          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
-      }
-
-      const rows = await turso
-        .select({ gameId: gamesToGenres.gameId })
-        .from(gamesToGenres)
-        .where(inArray(gamesToGenres.genreId, genreIds));
-      
-      genreGameIds = Array.from(new Set(rows.map(r => r.gameId)));
-      if (genreGameIds.length === 0) {
-        return new Response(
-          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
-      }
-    }
-
-    // 3.5. Resolve Platform Filter
-    let platformGameIds: string[] | null = null;
-    if (selectedSystems.length > 0) {
-      const platformConds = [];
-      for (const sys of selectedSystems) {
-        if (sys === "win") {
-          platformConds.push(
-            like(platformsTable.slug, "%win%"),
-            like(platformsTable.slug, "%pc%"),
-            like(platformsTable.slug, "%windows%")
-          );
-        } else if (sys === "mac") {
-          platformConds.push(
-            like(platformsTable.slug, "%mac%"),
-            like(platformsTable.slug, "%os-x%"),
-            like(platformsTable.slug, "%macos%")
-          );
-        } else if (sys === "linux") {
-          platformConds.push(
-            like(platformsTable.slug, "%linux%")
-          );
+        const tagCounts = new Map<string, number>();
+        for (const r of rows) {
+          tagCounts.set(r.gameId, (tagCounts.get(r.gameId) || 0) + 1);
         }
-      }
-      const matchedPlatforms = await turso
-        .select({ id: platformsTable.id })
-        .from(platformsTable)
-        .where(or(...platformConds));
-      
-      const platformIds = matchedPlatforms.map(p => p.id);
-      if (platformIds.length > 0) {
+
+        return Array.from(tagCounts.entries())
+          .filter(([_, count]) => count >= tagIds.length)
+          .map(([id]) => id);
+      })(),
+
+      // 3. Resolve Genre Slugs Filter (OR logic)
+      (async (): Promise<string[] | null> => {
+        if (selectedGenres.length === 0) return null;
+        const matchedGenres = await turso
+          .select({ id: genresTable.id })
+          .from(genresTable)
+          .where(inArray(genresTable.slug, selectedGenres));
+        const genreIds = matchedGenres.map(g => g.id);
+        if (genreIds.length === 0) return [];
+
+        const rows = await turso
+          .select({ gameId: gamesToGenres.gameId })
+          .from(gamesToGenres)
+          .where(inArray(gamesToGenres.genreId, genreIds));
+        
+        return Array.from(new Set(rows.map(r => r.gameId)));
+      })(),
+
+      // 3.5. Resolve Platform Filter
+      (async (): Promise<string[] | null> => {
+        if (selectedSystems.length === 0) return null;
+        const platformConds = [];
+        for (const sys of selectedSystems) {
+          if (sys === "win") {
+            platformConds.push(
+              like(platformsTable.slug, "%win%"),
+              like(platformsTable.slug, "%pc%"),
+              like(platformsTable.slug, "%windows%")
+            );
+          } else if (sys === "mac") {
+            platformConds.push(
+              like(platformsTable.slug, "%mac%"),
+              like(platformsTable.slug, "%os-x%"),
+              like(platformsTable.slug, "%macos%")
+            );
+          } else if (sys === "linux") {
+            platformConds.push(like(platformsTable.slug, "%linux%"));
+          }
+        }
+        const matchedPlatforms = await turso
+          .select({ id: platformsTable.id })
+          .from(platformsTable)
+          .where(or(...platformConds));
+        
+        const platformIds = matchedPlatforms.map(p => p.id);
+        if (platformIds.length === 0) return [];
+
         const platformGames = await turso
           .select({ gameId: gamesToPlatforms.gameId })
           .from(gamesToPlatforms)
           .where(inArray(gamesToPlatforms.platformId, platformIds));
         
-        platformGameIds = Array.from(new Set(platformGames.map(pg => pg.gameId)));
-        if (platformGameIds.length === 0) {
-          return new Response(
-            JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
-            { status: 200, headers: { "Content-Type": "application/json" } }
-          );
-        }
-      } else {
-        return new Response(
-          JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        );
-      }
+        return Array.from(new Set(platformGames.map(pg => pg.gameId)));
+      })(),
+    ]);
+
+    // Check if any active filter produced 0 results
+    if (
+      (tagGameIds !== null && tagGameIds.length === 0) ||
+      (genreGameIds !== null && genreGameIds.length === 0) ||
+      (platformGameIds !== null && platformGameIds.length === 0) ||
+      (creatorGameIds !== null && creatorGameIds.length === 0)
+    ) {
+      return new Response(
+        JSON.stringify({ games: [], totalCount: 0, nextCursor: null }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
     }
 
     // 4. Intersect Filter IDs
     let filterGameIds: string[] | null = null;
     const activeFilters = [creatorGameIds, tagGameIds, genreGameIds, platformGameIds].filter(f => f !== null) as string[][];
     if (activeFilters.length > 0) {
-      // Find intersection of all active filter lists
       filterGameIds = activeFilters.reduce((a, b) => a.filter(id => b.includes(id)));
       if (filterGameIds.length === 0) {
         return new Response(
@@ -280,56 +277,64 @@ export const GET: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // Pre-fetch game IDs matching developers or publishers by name (only on catalog searches or 3+ char terms)
-    let searchGameIds: string[] = [];
-    if (search.trim() && (limit > 10 || search.trim().length >= 3)) {
-      const searchTerm = search.trim();
-      try {
-        // 1. Search Developers
-        const matchedDevs = await turso
-          .select({ id: developersTable.id })
-          .from(developersTable)
-          .where(like(developersTable.name, `%${searchTerm}%`));
-        
-        const devIds = matchedDevs.map(d => d.id);
-        let devGameIds: string[] = [];
-        if (devIds.length > 0) {
-          const devRows = await turso
-            .select({ gameId: gamesToDevelopers.gameId })
-            .from(gamesToDevelopers)
-            .where(inArray(gamesToDevelopers.developerId, devIds));
-          devGameIds = devRows.map(r => r.gameId);
-        }
-
-        // 2. Search Publishers
-        const matchedPubs = await turso
-          .select({ id: publishersTable.id })
-          .from(publishersTable)
-          .where(like(publishersTable.name, `%${searchTerm}%`));
-        
-        const pubIds = matchedPubs.map(p => p.id);
-        let pubGameIds: string[] = [];
-        if (pubIds.length > 0) {
-          const pubRows = await turso
-            .select({ gameId: gamesToPublishers.gameId })
-            .from(gamesToPublishers)
-            .where(inArray(gamesToPublishers.publisherId, pubIds));
-          pubGameIds = pubRows.map(r => r.gameId);
-        }
-        
-        searchGameIds = Array.from(new Set([...devGameIds, ...pubGameIds]));
-      } catch (err) {
-        console.error("Failed to query devs/publishers for search:", err);
-      }
-    }
-
-    // 6. Search Preprocessing & Correction
+    // 5. Search Preprocessing with FTS5 Indexing
     let finalSearch = search;
     let correctedQuery: string | null = null;
 
     const expandedAbbr = expandAbbreviations(search);
     if (expandedAbbr) {
       finalSearch = expandedAbbr;
+    }
+
+    let ftsGameIds: string[] | null = null;
+    if (finalSearch.trim()) {
+      const cleanTerm = finalSearch.trim().replace(/[^\w\s-]/g, " ").trim();
+      if (cleanTerm) {
+        const tokens = cleanTerm.split(/\s+/).filter(Boolean);
+        const ftsQuery = tokens.map(t => `"${t}"*`).join(" ");
+        try {
+          const ftsRes = await libsqlClient.execute({
+            sql: `SELECT id FROM "Game_fts" WHERE "Game_fts" MATCH ? ORDER BY rank LIMIT 500`,
+            args: [ftsQuery]
+          });
+          ftsGameIds = ftsRes.rows.map((r: any) => r.id as string);
+        } catch (ftsErr) {
+          console.warn("FTS5 query failed, falling back to standard LIKE search:", ftsErr);
+        }
+      }
+    }
+
+    if (ftsGameIds !== null && ftsGameIds.length === 0) {
+      if (finalSearch.length > 3) {
+        const allTitles = await getGameTitles();
+        const correction = suggestCorrection(finalSearch, allTitles);
+        if (correction && correction.toLowerCase() !== finalSearch.toLowerCase()) {
+          correctedQuery = correction;
+          finalSearch = correction;
+          const cleanTerm = finalSearch.trim().replace(/[^\w\s-]/g, " ").trim();
+          if (cleanTerm) {
+            const tokens = cleanTerm.split(/\s+/).filter(Boolean);
+            const ftsQuery = tokens.map(t => `"${t}"*`).join(" ");
+            try {
+              const ftsRes = await libsqlClient.execute({
+                sql: `SELECT id FROM "Game_fts" WHERE "Game_fts" MATCH ? ORDER BY rank LIMIT 500`,
+                args: [ftsQuery]
+              });
+              ftsGameIds = ftsRes.rows.map((r: any) => r.id as string);
+            } catch (e) {
+              // ignore
+            }
+          }
+        }
+      }
+
+      if (ftsGameIds.length === 0) {
+        // Fast path: No matching games found even after typo correction
+        return new Response(
+          JSON.stringify({ games: [], totalCount: 0, correctedQuery, nextCursor: null }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const buildConditions = (searchTerm: string, activeFilterIds: string[] | null) => {
@@ -350,8 +355,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
         conds.push(
           and(
             or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
-            isNotNull(gamesTable.releaseDate),
-            lte(gamesTable.releaseDate, todayDate)
+            or(
+              isNull(gamesTable.releaseDate),
+              lte(gamesTable.releaseDate, todayDate)
+            )
           )
         );
       } else {
@@ -396,17 +403,18 @@ export const GET: APIRoute = async ({ request, locals }) => {
         }
       }
 
-      if (searchTerm) {
+      // If FTS5 matched IDs, constrain directly by primary key index (zero full table scans!)
+      if (ftsGameIds !== null && ftsGameIds.length > 0) {
+        conds.push(inArray(gamesTable.id, ftsGameIds));
+      } else if (searchTerm) {
         const searchOrConds = [
           like(gamesTable.title, `%${searchTerm}%`),
           like(gamesTable.developerNames, `%${searchTerm}%`),
           like(gamesTable.slug, `%${searchTerm}%`)
         ];
-        if (searchGameIds.length > 0) {
-          searchOrConds.push(inArray(gamesTable.id, searchGameIds));
-        }
         conds.push(or(...searchOrConds));
       }
+
       if (hideDlcs) {
         conds.push(or(isNull(gamesTable.category), sql`${gamesTable.category} NOT IN (1, 2, 3, 10, 13)`));
       }
@@ -438,12 +446,29 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     let conditions = buildConditions(finalSearch, filterGameIds);
 
-    // Get Total Matching Count
-    let countQuery = turso.select({ count: count() }).from(gamesTable);
-    if (conditions.length > 0) {
-      countQuery = countQuery.where(and(...conditions)) as any;
+    // Get Total Matching Count (Optimized: avoid 107k row scans when count is known)
+    let totalCount = 0;
+    if (ftsGameIds !== null && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
+      // FTS search exact count is already known without scanning Game table
+      totalCount = ftsGameIds.length;
+    } else if (conditions.length <= 2 && !finalSearch && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
+      // Default catalog browse: use cached total count with 1h TTL
+      if (cachedTotalVisibleGames && Date.now() - cachedTotalVisibleGames.timestamp < 3600000) {
+        totalCount = cachedTotalVisibleGames.val;
+      } else {
+        const countQuery = turso.select({ count: count() }).from(gamesTable).where(and(...conditions));
+        const [{ count: countVal }] = await countQuery;
+        totalCount = countVal;
+        cachedTotalVisibleGames = { val: totalCount, timestamp: Date.now() };
+      }
+    } else {
+      let countQuery = turso.select({ count: count() }).from(gamesTable);
+      if (conditions.length > 0) {
+        countQuery = countQuery.where(and(...conditions)) as any;
+      }
+      const [{ count: countVal }] = await countQuery;
+      totalCount = countVal;
     }
-    let [{ count: totalCount }] = await countQuery;
 
     // Run Typo Correction if no results found
     if (totalCount === 0 && finalSearch && finalSearch.length > 3) {
@@ -586,17 +611,17 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const rows = await finalQuery;
     fetchedGames = rows.map((r: any) => r.game);
 
-    // Enrich with relations (tags, purchase links)
-    const enrichedGames = await enrichGamesWithRelations(fetchedGames);
-
-    // Fetch price snapshots for fetched games
-    const gameIds = enrichedGames.map((g: any) => g.id);
-    const snapshots = gameIds.length > 0
-      ? await turso
-          .select()
-          .from(priceSnapshotsTable)
-          .where(inArray(priceSnapshotsTable.gameId, gameIds))
-      : [];
+    // Parallelize relation enrichment (tags, purchase links) and price snapshots
+    const gameIds = fetchedGames.map((g: any) => g.id);
+    const [enrichedGames, snapshots] = await Promise.all([
+      enrichGamesWithRelations(fetchedGames),
+      gameIds.length > 0
+        ? turso
+            .select()
+            .from(priceSnapshotsTable)
+            .where(inArray(priceSnapshotsTable.gameId, gameIds))
+        : Promise.resolve([]),
+    ]);
 
     const snapshotMap = new Map<string, any[]>();
     for (const row of snapshots) {
@@ -641,19 +666,33 @@ export const GET: APIRoute = async ({ request, locals }) => {
       nextCursor = `${nextOffset}_${lastItem.id}`;
     }
 
+    const responsePayload = JSON.stringify({
+      games: enrichedGames,
+      totalCount,
+      maxPrice,
+      correctedQuery,
+      nextCursor
+    });
+
+    // Cache response in memory: 60s for searches, 300s for catalog browsing
+    const cacheTtlMs = search ? 60 * 1000 : 300 * 1000;
+    if (API_RESPONSE_CACHE.size > 200) {
+      const firstKey = API_RESPONSE_CACHE.keys().next().value;
+      if (firstKey) API_RESPONSE_CACHE.delete(firstKey);
+    }
+    API_RESPONSE_CACHE.set(cacheKey, {
+      body: responsePayload,
+      expiresAt: Date.now() + cacheTtlMs,
+    });
+
     return new Response(
-      JSON.stringify({
-        games: enrichedGames,
-        totalCount,
-        maxPrice,
-        correctedQuery,
-        nextCursor
-      }),
+      responsePayload,
       {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+          "X-Cache": "MISS",
+          "Cache-Control": "public, max-age=60, s-maxage=300, stale-while-revalidate=600"
         }
       }
     );

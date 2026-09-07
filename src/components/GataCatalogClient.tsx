@@ -29,12 +29,28 @@ import HoverTrailer from "./HoverTrailer";
 
 import { searchNative } from "../lib/nativeSearchManager";
 import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
+import { useCatalogMode } from "../hooks/useCatalogMode";
+import { 
+  isCatalogCached, 
+  loadCatalogFromDB, 
+  syncCatalog, 
+  initCatalogWorker, 
+  queryLocalCatalog, 
+  isLocalWorkerReady 
+} from "../lib/catalogStorage";
 
 const formatDate = (dateVal: string | Date | null | undefined) => {
   if (!dateVal) return "TBD";
   try {
-    const d = new Date(dateVal);
-    if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return "TBD";
+    let d: Date;
+    if (typeof dateVal === "number" || (/^\d+$/.test(String(dateVal)) && !String(dateVal).includes("-"))) {
+      const num = Number(dateVal);
+      // If > 100 billion, it's already milliseconds; otherwise unix seconds
+      d = new Date(num > 100000000000 ? num : num * 1000);
+    } else {
+      d = new Date(dateVal);
+    }
+    if (isNaN(d.getTime()) || d.getFullYear() <= 1970 || d.getFullYear() > 2100) return "TBD";
     return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short"
@@ -301,6 +317,28 @@ function GataCatalogClientInner({
 
   const gamesPerPage = 24;
 
+  // Local vs Cloud Catalog Mode
+  const { mode: catalogMode, setMode: setCatalogMode } = useCatalogMode();
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+  const [isLocalReady, setIsLocalReady] = useState<boolean>(false);
+
+  // Auto-initialize local worker (auto-downloads on first visit)
+  useEffect(() => {
+    isCatalogCached().then(async (cached) => {
+      if (cached.cached) {
+        const ready = await initCatalogWorker();
+        if (ready) setIsLocalReady(true);
+      } else {
+        setDownloadProgress(0);
+        const ready = await initCatalogWorker((pct) => {
+          setDownloadProgress(pct);
+        });
+        setDownloadProgress(null);
+        if (ready) setIsLocalReady(true);
+      }
+    });
+  }, []);
+
   // Keyboard shortcut listener (⌘K / Ctrl+K / / to focus search input)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -435,6 +473,38 @@ function GataCatalogClientInner({
           }
         }
 
+        // Check if Local Mode is active (Default & Primary Search Engine)
+        if (catalogMode === "local") {
+          try {
+            const finalMaxPriceNum = finalMaxPrice ? parseFloat(finalMaxPrice) : undefined;
+            const minPriceNum = minPrice ? parseFloat(minPrice) : undefined;
+            const localRes = await queryLocalCatalog({
+              search: debouncedSearch.trim() || undefined,
+              sort: sortBy,
+              hideDlcs,
+              freeOnly,
+              minPrice: minPriceNum,
+              maxPrice: finalMaxPriceNum,
+              genres: selectedGenres.length > 0 ? selectedGenres : undefined,
+              systems: selectedSystems.length > 0 ? selectedSystems : undefined,
+              decades: selectedDecades.length > 0 ? selectedDecades : undefined,
+              features: selectedFeatures.length > 0 ? selectedFeatures : undefined,
+              offset: (currentPage - 1) * gamesPerPage,
+              limit: gamesPerPage,
+            }, (pct) => setDownloadProgress(pct));
+
+            if (localRes && !controller.signal.aborted) {
+              setGames(localRes.games || []);
+              setTotalCount(localRes.totalCount || 0);
+              setDownloadProgress(null);
+              setLoading(false);
+              return;
+            }
+          } catch (localErr) {
+            console.warn("Local catalog query failed, falling back to Cloud:", localErr);
+          }
+        }
+
         const cacheKey = queryParams.toString();
         const cachedData = getCachedCatalogResponse(cacheKey);
         if (cachedData && !controller.signal.aborted) {
@@ -500,7 +570,9 @@ function GataCatalogClientInner({
     selectedGenres,
     selectedSystems,
     selectedDecades,
-    selectedFeatures
+    selectedFeatures,
+    catalogMode,
+    isLocalReady
   ]);
 
   // Category cards click handlers
@@ -1251,7 +1323,7 @@ function GataCatalogClientInner({
 
           {/* ── Sort & Layout Controls Top Bar ── */}
           <div className="flex items-center justify-between bg-[#121217]/95 border border-white/12 p-3 sm:p-4 rounded-2xl flex-wrap gap-3 backdrop-blur-md shadow-xl">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <span className="font-sans text-xs text-white/50 font-semibold tracking-wide">
                 Sort by:
               </span>
@@ -1298,12 +1370,24 @@ function GataCatalogClientInner({
             </div>
           </div>
 
+          {/* Progress bar during initial download */}
+          {downloadProgress !== null && (
+            <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden -mt-1">
+              <div
+                className="bg-white/40 h-full transition-all duration-300 rounded-full"
+                style={{ width: `${downloadProgress}%` }}
+              />
+            </div>
+          )}
+
           {/* ── Game List Layouts ── */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 min-h-[300px]">
               <Loader2 className="w-8 h-8 animate-spin text-white mb-2" />
               <span className="font-mono text-xs uppercase tracking-widest text-white/40 font-bold animate-pulse">
-                Hang on...
+                {downloadProgress !== null
+                  ? `Loading games (${downloadProgress}%)...`
+                  : "Loading games..."}
               </span>
             </div>
           ) : games.length === 0 ? (
@@ -1360,12 +1444,19 @@ function GataCatalogClientInner({
                                 aspectClass="w-full h-full"
                               />
 
-                              {/* Category Badge on cover */}
-                              {badge && (
+                              {/* Trending & Category Badges */}
+                              {(game as any).trendingRank && (game as any).trendingRank <= 50 ? (
+                                <span 
+                                  title={(game as any).trendingReason || `Top ${(game as any).trendingRank} trending horror game this week`}
+                                  className="absolute top-2 left-2 text-[9px] font-mono font-bold bg-amber-400 text-black rounded-full px-2 py-0.5 z-10 select-none shadow-md flex items-center gap-1 tracking-tight"
+                                >
+                                  🔥 #{(game as any).trendingRank}
+                                </span>
+                              ) : badge ? (
                                 <span className="absolute top-2 left-2 text-[9px] font-bold bg-[#7a3bfa] text-white rounded-full px-2 py-0.5 z-10 select-none shadow-sm">
                                   {badge}
                                 </span>
-                              )}
+                              ) : null}
 
                               {/* Rating Badge on cover */}
                               {renderRatingBadge(game)}

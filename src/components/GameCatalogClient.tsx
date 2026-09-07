@@ -8,6 +8,7 @@ import NyanLoader from "./NyanLoader";
 import { usePreferences } from "../hooks/usePreferences";
 import { searchNative } from "../lib/nativeSearchManager";
 import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
+import { queryLocalCatalog } from "../lib/catalogStorage";
 import HeroCarousel from "./HeroCarousel";
 import TabCatalog from "./TabCatalog";
 import StorefrontLists from "./StorefrontLists";
@@ -77,8 +78,15 @@ const formatPrice = (amount: number, currencyCode: string) => {
 const formatDate = (dateVal: string | Date | null | undefined) => {
   if (!dateVal) return "TBD";
   try {
-    const d = new Date(dateVal);
-    if (isNaN(d.getTime()) || d.getFullYear() <= 1970) return "TBD";
+    let d: Date;
+    if (typeof dateVal === "number" || (/^\d+$/.test(String(dateVal)) && !String(dateVal).includes("-"))) {
+      const num = Number(dateVal);
+      // If > 100 billion, it's already milliseconds; otherwise unix seconds
+      d = new Date(num > 100000000000 ? num : num * 1000);
+    } else {
+      d = new Date(dateVal);
+    }
+    if (isNaN(d.getTime()) || d.getFullYear() <= 1970 || d.getFullYear() > 2100) return "TBD";
     return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short"
@@ -656,11 +664,18 @@ function GameCatalogClientInner({
 
     setLuckyLoading(true);
     try {
-      const modeParam = isSemantic ? "&mode=semantic" : "";
-      const response = await fetch(`/api/games?search=${encodeURIComponent(searchQuery)}&limit=10${modeParam}`);
-      if (response.ok) {
-        const data = await response.json();
-        const fetchedGames: GameData[] = data.games || [];
+      let fetchedGames: GameData[] = [];
+      const localRes = await queryLocalCatalog({ search: searchQuery, limit: 10 });
+      if (localRes && localRes.games.length > 0) {
+        fetchedGames = localRes.games as any;
+      } else {
+        const modeParam = isSemantic ? "&mode=semantic" : "";
+        const response = await fetch(`/api/games?search=${encodeURIComponent(searchQuery)}&limit=10${modeParam}`);
+        if (response.ok) {
+          const data = await response.json();
+          fetchedGames = data.games || [];
+        }
+      }
         
         if (fetchedGames.length > 0) {
           const q = searchQuery.toLowerCase().trim().replace(/[^a-z0-9]/g, "");
@@ -686,9 +701,8 @@ function GameCatalogClientInner({
             return;
           }
         }
-      }
-      alert(`No close match found for "${searchQuery}".`);
-    } catch (e) {
+        alert(`No close match found for "${searchQuery}".`);
+      } catch (e) {
       console.error("I'm feeling lucky search failed", e);
     } finally {
       setLuckyLoading(false);
@@ -753,6 +767,27 @@ function GameCatalogClientInner({
       }
       setLoading(true);
       try {
+        // 1. Try offline catalog search first (0ms, 0 reads)
+        if (debouncedSearch && !isSemantic) {
+          try {
+            const localRes = await queryLocalCatalog({
+              search: debouncedSearch,
+              sort: sortBy === "top-rated" ? "top-rated" : sortBy === "latest" ? "latest" : "trending",
+              limit: 20,
+            });
+            if (localRes && localRes.games.length > 0) {
+              setGames(localRes.games as any);
+              setNextCursor(null);
+              setResolvedExpandedQuery(null);
+              setLoading(false);
+              setHasInitialFetchRun(true);
+              return;
+            }
+          } catch {
+            // Fall back to server API
+          }
+        }
+
         const queryParams = new URLSearchParams();
         if (debouncedSearch && !isSemantic) {
           queryParams.set("search", debouncedSearch);

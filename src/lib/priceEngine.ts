@@ -1033,19 +1033,31 @@ export async function lazyGetPrices(
           await turso
             .insert(priceSnapshotsTable)
             .values(
-              freshDeals.map(deal => ({
-                id: generatePriceSnapshotId(),
-                gameId,
-                storeName: deal.storeName,
-                dealPrice: deal.dealPrice,
-                retailPrice: deal.retailPrice,
-                discountPercent: deal.discountPercent,
-                dealUrl: deal.dealUrl,
-                currency: deal.currency,
-                country: upperCountry,
-                provider,
-                updatedAt: new Date()
-              }))
+              freshDeals.map(deal => {
+                let normDealPrice = deal.dealPrice;
+                let normRetailPrice = deal.retailPrice;
+                let normCurrency = deal.currency || "USD";
+
+                if (normCurrency === "INR") {
+                  normDealPrice = Math.round((normDealPrice / 83.5) * 100) / 100;
+                  normRetailPrice = Math.round((normRetailPrice / 83.5) * 100) / 100;
+                  normCurrency = "USD";
+                }
+
+                return {
+                  id: generatePriceSnapshotId(),
+                  gameId,
+                  storeName: deal.storeName,
+                  dealPrice: normDealPrice,
+                  retailPrice: normRetailPrice,
+                  discountPercent: deal.discountPercent,
+                  dealUrl: deal.dealUrl,
+                  currency: normCurrency,
+                  country: upperCountry,
+                  provider,
+                  updatedAt: new Date()
+                };
+              })
             );
         } catch (insertError) {
           console.warn("⚠️ Failed to write fresh prices to Turso:", insertError);
