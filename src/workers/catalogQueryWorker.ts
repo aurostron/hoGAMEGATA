@@ -204,6 +204,21 @@ function findCorrection(query: string): string | null {
         }
       }
     }
+
+    // 3. Single-word query matching first word of a multi-word franchise title (e.g. "amneisa" -> "Amnesia")
+    if (qWords.length === 1 && item.words.length > 1) {
+      const firstWord = item.words[0];
+      const d = damerauLevenshtein(qClean, firstWord);
+      const maxAllowed = qClean.length <= 4 ? 1 : 2;
+      if (d <= maxAllowed && Math.abs(qClean.length - firstWord.length) <= 2) {
+        const score = 88 - d * 15 + Math.min(25, item.pop * 0.25);
+        if (score > bestScore) {
+          bestScore = score;
+          const capWord = firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
+          bestMatch = { ...item, title: capWord };
+        }
+      }
+    }
   }
 
   if (bestMatch && bestScore >= 60 && bestMatch.clean !== qClean) {

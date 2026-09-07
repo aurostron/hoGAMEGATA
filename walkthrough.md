@@ -4381,6 +4381,7 @@ Added fast typo tolerance to the search engine across both the client web worker
   - `phasmaphobia` -> `Phasmophobia`
 
 - **Server-side API Spelling Indexing**: Upgraded `getGameTitles()` in `src/pages/api/games/index.ts` to include rated, trending, and liked titles with `COALESCE` ranking, ensuring indie cult horror titles with null popularity are indexed for fallback spelling suggestions.
+- **Single-Word Franchise Matching**: Added first-word token matching in `catalogQueryWorker.ts` and `searchEngine.ts` to auto-correct single-word franchise misspellings (e.g. `amneisa` -> `Amnesia`, `silnt` -> `Silent`) matching multi-word titles.
 
 
 

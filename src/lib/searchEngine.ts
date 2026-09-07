@@ -165,18 +165,19 @@ export function suggestCorrection(query: string, allTitles: string[]): string | 
   let minDistance = Infinity;
   let bestSimilarity = 0;
 
-  for (const title of allTitles) {
-    if (!title) continue;
-    const cleanTitle = title.toLowerCase().trim().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
+  for (const rawTitle of allTitles) {
+    if (!rawTitle) continue;
+    let candidateTitle = rawTitle;
+    const cleanTitle = rawTitle.toLowerCase().trim().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
     if (!cleanTitle) continue;
 
     // Exact match on alphanumeric representation
     if (cleanTitle === cleanQuery) {
-      return title; // Found exact match
+      return rawTitle; // Found exact match
     }
 
     // Direct distance
-    const dist = levenshteinDistance(cleanQuery, cleanTitle);
+    let dist = levenshteinDistance(cleanQuery, cleanTitle);
     const maxLen = Math.max(cleanQuery.length, cleanTitle.length);
     const similarity = maxLen > 0 ? 1 - dist / maxLen : 0;
     const isSubstring = cleanTitle.includes(cleanQuery) || cleanQuery.includes(cleanTitle);
@@ -209,12 +210,28 @@ export function suggestCorrection(query: string, allTitles: string[]): string | 
           if (tokenSim > score) score = tokenSim;
         }
       }
+    } else if (qWords.length === 1) {
+      const tWords = cleanTitle.split(/[\s:,\-_]+/).filter(Boolean);
+      if (tWords.length > 1) {
+        const firstWord = tWords[0];
+        const d = levenshteinDistance(cleanQuery, firstWord);
+        const maxAllowed = cleanQuery.length <= 4 ? 1 : 2;
+        if (d <= maxAllowed && Math.abs(cleanQuery.length - firstWord.length) <= 2) {
+          const capWord = firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
+          const wordSim = 0.88 - d * 0.1;
+          if (wordSim > score) {
+            score = wordSim;
+            candidateTitle = capWord;
+            dist = d;
+          }
+        }
+      }
     }
 
     if (score > bestSimilarity) {
       bestSimilarity = score;
       minDistance = dist;
-      bestTitle = title;
+      bestTitle = candidateTitle;
     }
   }
 
