@@ -126,6 +126,7 @@ export function levenshteinDistance(s1: string, s2: string): number {
   const n = s2.length;
   if (m === 0) return n;
   if (n === 0) return m;
+  if (Math.abs(m - n) > 4) return 99;
 
   const dp: number[][] = [];
   for (let i = 0; i <= m; i++) {
@@ -143,6 +144,10 @@ export function levenshteinDistance(s1: string, s2: string): number {
         dp[i][j - 1] + 1,      // Insertion
         dp[i - 1][j - 1] + cost // Substitution
       );
+      // Damerau adjacent transposition
+      if (i > 1 && j > 1 && s1[i - 1] === s2[j - 2] && s1[i - 2] === s2[j - 1]) {
+        dp[i][j] = Math.min(dp[i][j], dp[i - 2][j - 2] + 1);
+      }
     }
   }
 
@@ -154,6 +159,7 @@ export function suggestCorrection(query: string, allTitles: string[]): string | 
   
   const cleanQuery = query.toLowerCase().trim().replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, " ");
   if (!cleanQuery) return null;
+  const qWords = cleanQuery.split(/\s+/).filter(Boolean);
 
   let bestTitle: string | null = null;
   let minDistance = Infinity;
@@ -169,32 +175,52 @@ export function suggestCorrection(query: string, allTitles: string[]): string | 
       return title; // Found exact match
     }
 
-    // Compute Levenshtein distance
+    // Direct distance
     const dist = levenshteinDistance(cleanQuery, cleanTitle);
-    
-    // Calculate similarity index: 1 - (distance / maxLength)
     const maxLen = Math.max(cleanQuery.length, cleanTitle.length);
     const similarity = maxLen > 0 ? 1 - dist / maxLen : 0;
-
-    // Check for substring match (e.g. "resident ev" in "resident evil") which has high weight
     const isSubstring = cleanTitle.includes(cleanQuery) || cleanQuery.includes(cleanTitle);
 
-    if (similarity > bestSimilarity || (isSubstring && similarity + 0.12 > bestSimilarity)) {
-      let score = similarity;
-      if (isSubstring) score += 0.12; // Give boost to substring overlaps
-      
-      if (score > bestSimilarity) {
-        bestSimilarity = score;
-        minDistance = dist;
-        bestTitle = title;
+    let score = similarity;
+    if (isSubstring) score += 0.12;
+
+    // Token-level check for multi-word queries
+    if (qWords.length > 1) {
+      const tWords = cleanTitle.split(/\s+/).filter(Boolean);
+      if (tWords.length >= qWords.length) {
+        let matched = 0;
+        let tokenDist = 0;
+        for (let k = 0; k < qWords.length; k++) {
+          const qw = qWords[k];
+          const tw = tWords[k];
+          if (!tw) break;
+          if (qw === tw) {
+            matched++;
+          } else {
+            const d = levenshteinDistance(qw, tw);
+            if (d <= (qw.length <= 4 ? 1 : 2)) {
+              matched++;
+              tokenDist += d;
+            }
+          }
+        }
+        if (matched === qWords.length) {
+          const tokenSim = Math.max(0.75, 1 - tokenDist / cleanQuery.length);
+          if (tokenSim > score) score = tokenSim;
+        }
       }
+    }
+
+    if (score > bestSimilarity) {
+      bestSimilarity = score;
+      minDistance = dist;
+      bestTitle = title;
     }
   }
 
-  // Threshold: only suggest if similarity score is high enough (e.g. > 0.72)
-  if (bestTitle && bestSimilarity >= 0.72) {
-    // Avoid correcting if the distance is too large relative to query length
-    if (minDistance <= Math.max(2, Math.floor(cleanQuery.length / 2))) {
+  // Threshold: only suggest if similarity score is high enough (e.g. >= 0.70)
+  if (bestTitle && bestSimilarity >= 0.70) {
+    if (minDistance <= Math.max(2, Math.floor(cleanQuery.length / 2)) || bestSimilarity >= 0.75) {
       return bestTitle;
     }
   }

@@ -229,6 +229,14 @@ export interface LocalQueryParams {
   maxPrice?: number;
   offset?: number;
   limit?: number;
+  skipCorrection?: boolean;
+}
+
+export interface LocalQueryResult {
+  games: any[];
+  totalCount: number;
+  correctedQuery?: string | null;
+  originalQuery?: string | null;
 }
 
 let workerInstance: Worker | null = null;
@@ -307,7 +315,7 @@ export async function initCatalogWorker(
 export async function queryLocalCatalog(
   params: LocalQueryParams,
   onProgress?: (percent: number) => void
-): Promise<{ games: any[]; totalCount: number } | null> {
+): Promise<LocalQueryResult | null> {
   if (typeof window === 'undefined') return null;
 
   if (!isWorkerReady) {
@@ -320,7 +328,9 @@ export async function queryLocalCatalog(
     pendingQueries.set(queryId, (result) => {
       resolve({
         games: result.games || [],
-        totalCount: result.totalCount || 0
+        totalCount: result.totalCount || 0,
+        correctedQuery: result.correctedQuery || null,
+        originalQuery: result.originalQuery || null,
       });
     });
 

@@ -209,6 +209,34 @@ export function isSearchReady(): boolean {
   return memoryIndex !== null && memoryIndex.length > 0;
 }
 
+function damerauLevenshtein(a: string, b: string): number {
+  const al = a.length;
+  const bl = b.length;
+  if (al === 0) return bl;
+  if (bl === 0) return al;
+  if (Math.abs(al - bl) > 3) return 99;
+
+  const d: number[][] = [];
+  for (let i = 0; i <= al; i++) d[i] = [i];
+  for (let j = 0; j <= bl; j++) d[0][j] = j;
+
+  for (let i = 1; i <= al; i++) {
+    for (let j = 1; j <= bl; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(
+        d[i - 1][j] + 1,
+        d[i][j - 1] + 1,
+        d[i - 1][j - 1] + cost
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+  }
+
+  return d[al][bl];
+}
+
 /**
  * Fast in-memory search across all 107k games
  * Execution time: <5ms
@@ -267,6 +295,64 @@ export function searchLocal(query: string, limit = 8): SearchResult[] {
 
     if (score > 0) {
       matches.push({ item: game, score });
+    }
+  }
+
+  // Typo tolerance fallback if 0 exact matches found
+  if (matches.length === 0 && cleanQuery.length >= 3) {
+    let bestMatchTitle: string | null = null;
+    let bestScore = -1;
+    const qWords = cleanQuery.split(/[\s:,\-_]+/).filter(Boolean);
+
+    for (let i = 0; i < memoryIndex.length; i++) {
+      const game = memoryIndex[i];
+      const tClean = game.t.toLowerCase().trim();
+
+      if (Math.abs(tClean.length - cleanQuery.length) > 5) continue;
+
+      const dist = damerauLevenshtein(cleanQuery, tClean);
+      const maxAllowed = cleanQuery.length <= 4 ? 1 : (cleanQuery.length <= 8 ? 2 : 3);
+      if (dist <= maxAllowed) {
+        const score = 100 - dist * 20;
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatchTitle = tClean;
+        }
+        continue;
+      }
+
+      if (qWords.length > 1) {
+        const tWords = tClean.split(/[\s:,\-_]+/).filter(Boolean);
+        if (tWords.length >= qWords.length) {
+          let matchedCount = 0;
+          let totalDist = 0;
+          for (let k = 0; k < qWords.length; k++) {
+            const qw = qWords[k];
+            const tw = tWords[k];
+            if (!tw) break;
+            if (qw === tw) {
+              matchedCount++;
+            } else {
+              const d = damerauLevenshtein(qw, tw);
+              if (d <= (qw.length <= 4 ? 1 : 2)) {
+                matchedCount++;
+                totalDist += d;
+              }
+            }
+          }
+          if (matchedCount === qWords.length) {
+            const score = 90 - totalDist * 10;
+            if (score > bestScore) {
+              bestScore = score;
+              bestMatchTitle = tClean;
+            }
+          }
+        }
+      }
+    }
+
+    if (bestMatchTitle && bestMatchTitle !== cleanQuery) {
+      return searchLocal(bestMatchTitle, limit);
     }
   }
 

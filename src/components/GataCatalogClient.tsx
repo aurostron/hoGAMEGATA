@@ -298,6 +298,7 @@ function GataCatalogClientInner({
   // Correction Suggestion
   const [correctedQuery, setCorrectedQuery] = useState<string | null>(null);
   const [originalSearch, setOriginalSearch] = useState<string>("");
+  const bypassCorrectionRef = useRef<string | null>(null);
 
   // UI Accordion Toggles
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -478,6 +479,7 @@ function GataCatalogClientInner({
           try {
             const finalMaxPriceNum = finalMaxPrice ? parseFloat(finalMaxPrice) : undefined;
             const minPriceNum = minPrice ? parseFloat(minPrice) : undefined;
+            const isBypassed = bypassCorrectionRef.current === debouncedSearch.trim();
             const localRes = await queryLocalCatalog({
               search: debouncedSearch.trim() || undefined,
               sort: sortBy,
@@ -491,11 +493,18 @@ function GataCatalogClientInner({
               features: selectedFeatures.length > 0 ? selectedFeatures : undefined,
               offset: (currentPage - 1) * gamesPerPage,
               limit: gamesPerPage,
+              skipCorrection: isBypassed,
             }, (pct) => setDownloadProgress(pct));
 
             if (localRes && !controller.signal.aborted) {
               setGames(localRes.games || []);
               setTotalCount(localRes.totalCount || 0);
+              if (localRes.correctedQuery) {
+                setCorrectedQuery(localRes.correctedQuery);
+                setOriginalSearch(debouncedSearch);
+              } else {
+                setCorrectedQuery(null);
+              }
               setDownloadProgress(null);
               setLoading(false);
               return;
@@ -517,6 +526,8 @@ function GataCatalogClientInner({
           if (cachedData.correctedQuery) {
             setCorrectedQuery(cachedData.correctedQuery);
             setOriginalSearch(debouncedSearch);
+          } else {
+            setCorrectedQuery(null);
           }
           setLoading(false);
           return;
@@ -536,6 +547,8 @@ function GataCatalogClientInner({
             if (data.correctedQuery) {
               setCorrectedQuery(data.correctedQuery);
               setOriginalSearch(debouncedSearch);
+            } else {
+              setCorrectedQuery(null);
             }
 
             // Write to client cache
@@ -1201,14 +1214,20 @@ function GataCatalogClientInner({
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    bypassCorrectionRef.current = null;
+                    setSearchQuery(e.target.value);
+                  }}
                   placeholder="Search games by title, developer, genre, or keyword..."
                   className="w-full h-12 pl-11 pr-24 bg-[#121216] hover:bg-[#16161c] text-xs sm:text-sm text-white placeholder:text-white/40 rounded-full focus:outline-none focus:bg-[#181820] transition-all duration-200 font-sans tracking-wide"
                 />
                 <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
                   {searchQuery ? (
                     <button 
-                      onClick={() => setSearchQuery("")}
+                      onClick={() => {
+                        bypassCorrectionRef.current = null;
+                        setSearchQuery("");
+                      }}
                       className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer"
                       title="Clear search"
                     >
@@ -1233,7 +1252,10 @@ function GataCatalogClientInner({
                   )}
                 </span>
                 <button 
-                  onClick={() => setSearchQuery("")} 
+                  onClick={() => {
+                    bypassCorrectionRef.current = null;
+                    setSearchQuery("");
+                  }} 
                   className="text-white/40 hover:text-white transition-colors cursor-pointer text-xs underline font-medium"
                 >
                   Clear filter
@@ -1242,24 +1264,23 @@ function GataCatalogClientInner({
             )}
           </div>
 
-          {/* Spelling auto-correction banner (Google styled) */}
+          {/* Spelling auto-correction banner */}
           {correctedQuery && (
-            <div className="border border-emerald-500/30 bg-emerald-500/5 p-4 font-mono text-xs uppercase flex items-center justify-between gap-3 text-white/80 animate-fade-in">
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>
-                  Showing results for <strong className="text-white underline">{correctedQuery}</strong>{" "}
-                  <span className="text-white/40">(searched instead for "{originalSearch}")</span>
-                </span>
+            <div className="border border-white/10 bg-white/[0.02] px-4 py-3 text-xs flex items-center justify-between gap-3 text-neutral-300">
+              <span className="text-neutral-300">
+                Showing results for <strong className="text-white font-medium underline underline-offset-2">{correctedQuery}</strong>.
+                <span className="text-neutral-500 ml-1.5 font-normal">Search for "{originalSearch}" instead.</span>
               </span>
               <button 
+                type="button"
                 onClick={() => {
+                  bypassCorrectionRef.current = originalSearch.trim();
                   setSearchQuery(originalSearch);
                   setCorrectedQuery(null);
                 }}
-                className="text-[10px] border border-white/20 px-2 py-0.5 hover:bg-white hover:text-black font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                className="text-[11px] text-neutral-300 hover:text-white border border-white/15 hover:border-white/40 px-2.5 py-1 rounded transition-colors cursor-pointer shrink-0"
               >
-                Search "{originalSearch}" instead
+                Search "{originalSearch}"
               </button>
             </div>
           )}
@@ -1391,11 +1412,29 @@ function GataCatalogClientInner({
               </span>
             </div>
           ) : games.length === 0 ? (
-            <div className="border border-white/10 text-center py-24 min-h-[300px] flex flex-col justify-center items-center">
-              <span className="font-mono text-xs text-white/50 uppercase font-black tracking-widest mb-2">NO GAMES FOUND</span>
-              <p className="font-mono text-[10px] text-white/30 max-w-sm leading-relaxed uppercase">
-                Modify your active filters or clear search query.
-              </p>
+            <div className="border border-white/10 text-center py-20 min-h-[260px] flex flex-col justify-center items-center gap-3">
+              <span className="font-mono text-xs text-white/50 uppercase font-bold tracking-widest">No games found</span>
+              {correctedQuery ? (
+                <div className="text-xs sm:text-sm text-neutral-300 flex items-center justify-center gap-1.5 font-sans">
+                  <span>Did you mean:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      bypassCorrectionRef.current = null;
+                      setSearchQuery(correctedQuery);
+                      setCorrectedQuery(null);
+                    }}
+                    className="text-white underline underline-offset-4 hover:text-neutral-200 font-medium cursor-pointer transition-colors"
+                  >
+                    "{correctedQuery}"
+                  </button>
+                  <span>?</span>
+                </div>
+              ) : (
+                <p className="font-mono text-[10px] text-white/30 max-w-sm leading-relaxed uppercase">
+                  Modify your active filters or clear search query.
+                </p>
+              )}
             </div>
           ) : (
             <div className="relative">

@@ -76,6 +76,7 @@ interface QueryParams {
   maxPrice?: number;
   offset?: number;
   limit?: number;
+  skipCorrection?: boolean;
 }
 
 const ABBREVIATIONS: Record<string, string> = {
@@ -91,13 +92,132 @@ const ABBREVIATIONS: Record<string, string> = {
   dbd: 'Dead by Daylight',
 };
 
+interface TitleIndexItem {
+  title: string;
+  clean: string;
+  words: string[];
+  pop: number;
+  rating: number;
+  len: number;
+}
+
 let allRecords: CatalogRecord[] = [];
+let titleIndex: TitleIndexItem[] = [];
+
+function buildTitleIndex(records: CatalogRecord[]) {
+  titleIndex = [];
+  for (const g of records) {
+    if (!g.t) continue;
+    const clean = g.t.toLowerCase().trim();
+    const words = clean.split(/[\s:,\-_]+/).filter(w => w.length >= 2);
+    titleIndex.push({
+      title: g.t,
+      clean,
+      words,
+      pop: g.pop || 0,
+      rating: g.rt || 0,
+      len: clean.length,
+    });
+  }
+}
+
+function damerauLevenshtein(a: string, b: string): number {
+  const al = a.length;
+  const bl = b.length;
+  if (al === 0) return bl;
+  if (bl === 0) return al;
+  if (Math.abs(al - bl) > 3) return 99;
+
+  const d: number[][] = [];
+  for (let i = 0; i <= al; i++) d[i] = [i];
+  for (let j = 0; j <= bl; j++) d[0][j] = j;
+
+  for (let i = 1; i <= al; i++) {
+    for (let j = 1; j <= bl; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(
+        d[i - 1][j] + 1,
+        d[i][j - 1] + 1,
+        d[i - 1][j - 1] + cost
+      );
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+  }
+
+  return d[al][bl];
+}
+
+function findCorrection(query: string): string | null {
+  const qClean = query.toLowerCase().trim();
+  if (qClean.length < 3) return null;
+  const qWords = qClean.split(/[\s:,\-_]+/).filter(Boolean);
+  if (qWords.length === 0) return null;
+
+  let bestMatch: TitleIndexItem | null = null;
+  let bestScore = -1;
+
+  for (const item of titleIndex) {
+    if (Math.abs(item.len - qClean.length) > 5 && Math.abs(item.words.length - qWords.length) > 1) {
+      continue;
+    }
+
+    // Direct whole title comparison
+    const dist = damerauLevenshtein(qClean, item.clean);
+    const maxAllowedDist = qClean.length <= 4 ? 1 : (qClean.length <= 8 ? 2 : 3);
+    if (dist <= maxAllowedDist) {
+      const score = 100 - dist * 15 + Math.min(25, item.pop * 0.25);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = item;
+      }
+      continue;
+    }
+
+    // Token-level comparison for multi-word phrases (e.g. "silnt hill" -> "Silent Hill")
+    if (qWords.length > 1 && item.words.length >= qWords.length) {
+      let matchedCount = 0;
+      let totalDist = 0;
+
+      for (let i = 0; i < qWords.length; i++) {
+        const qw = qWords[i];
+        const tw = item.words[i];
+        if (!tw) break;
+
+        if (qw === tw) {
+          matchedCount++;
+        } else {
+          const d = damerauLevenshtein(qw, tw);
+          if (d <= (qw.length <= 4 ? 1 : 2)) {
+            matchedCount++;
+            totalDist += d;
+          }
+        }
+      }
+
+      if (matchedCount === qWords.length) {
+        const score = 90 - totalDist * 10 + Math.min(25, item.pop * 0.25);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = item;
+        }
+      }
+    }
+  }
+
+  if (bestMatch && bestScore >= 60 && bestMatch.clean !== qClean) {
+    return bestMatch.title;
+  }
+  return null;
+}
 
 self.onmessage = (event: MessageEvent) => {
   const { type, payload, id } = event.data;
 
   if (type === 'LOAD_CATALOG') {
     allRecords = payload as CatalogRecord[];
+    buildTitleIndex(allRecords);
     self.postMessage({ id, type: 'LOAD_SUCCESS', count: allRecords.length });
   } else if (type === 'QUERY') {
     const results = processQuery(payload as QueryParams);
@@ -119,6 +239,7 @@ function processQuery(params: QueryParams) {
     maxPrice,
     offset = 0,
     limit = 24,
+    skipCorrection = false,
   } = params;
 
   let searchTerm = search.trim().toLowerCase();
@@ -127,92 +248,112 @@ function processQuery(params: QueryParams) {
   }
 
   const nowSec = Math.floor(Date.now() / 1000);
-  
-  let filtered = [];
-  
-  for (const game of allRecords) {
-    const gameStatus = game.st || 'released';
-    if (gameStatus === 'hidden') continue;
 
-    if (hideDlcs && game.cat != null && [1, 2, 3, 10, 13].includes(game.cat)) continue;
+  function executeFilter(term: string) {
+    const results: { game: CatalogRecord; searchRank: number }[] = [];
 
-    const gameGs = game.gs || [];
-    if (genres.length > 0 && !genres.some((g) => gameGs.includes(g))) continue;
+    for (const game of allRecords) {
+      const gameStatus = game.st || 'released';
+      if (gameStatus === 'hidden') continue;
 
-    const gameTs = game.ts || [];
-    if (features.length > 0 && !features.every((f) => gameTs.includes(f))) continue;
+      if (hideDlcs && game.cat != null && [1, 2, 3, 10, 13].includes(game.cat)) continue;
 
-    if (systems.length > 0) {
-      const pnLower = (game.pn || '').toLowerCase();
-      const hasMatch = systems.some((sys) => {
-        if (sys === 'win') return pnLower.includes('win') || pnLower.includes('pc') || pnLower.includes('windows');
-        if (sys === 'mac') return pnLower.includes('mac') || pnLower.includes('os x') || pnLower.includes('macos');
-        if (sys === 'linux') return pnLower.includes('linux');
-        return false;
-      });
-      if (!hasMatch) continue;
-    }
+      const gameGs = game.gs || [];
+      if (genres.length > 0 && !genres.some((g) => gameGs.includes(g))) continue;
 
-    const rdSec = game.rd != null
-      ? (typeof game.rd === 'number' ? game.rd : Math.floor(new Date(game.rd).getTime() / 1000))
-      : null;
+      const gameTs = game.ts || [];
+      if (features.length > 0 && !features.every((f) => gameTs.includes(f))) continue;
 
-    if (decades.length > 0) {
-      const year = rdSec != null ? new Date(rdSec * 1000).getUTCFullYear() : null;
-      let matchedDecade = false;
-      if (year !== null) {
-        if (decades.includes('2020s') && year >= 2020 && year <= 2029) matchedDecade = true;
-        else if (decades.includes('2010s') && year >= 2010 && year <= 2019) matchedDecade = true;
-        else if (decades.includes('2000s') && year >= 2000 && year <= 2009) matchedDecade = true;
-        else if (decades.includes('1990s') && year >= 1990 && year <= 1999) matchedDecade = true;
-        else if (decades.includes('older') && year < 1990) matchedDecade = true;
+      if (systems.length > 0) {
+        const pnLower = (game.pn || '').toLowerCase();
+        const hasMatch = systems.some((sys) => {
+          if (sys === 'win') return pnLower.includes('win') || pnLower.includes('pc') || pnLower.includes('windows');
+          if (sys === 'mac') return pnLower.includes('mac') || pnLower.includes('os x') || pnLower.includes('macos');
+          if (sys === 'linux') return pnLower.includes('linux');
+          return false;
+        });
+        if (!hasMatch) continue;
       }
-      if (!matchedDecade) continue;
-    }
 
-    if (freeOnly) {
-      if (!(game.dp === 0 || gameTs.includes('free'))) continue;
-    }
+      const rdSec = game.rd != null
+        ? (typeof game.rd === 'number' ? game.rd : Math.floor(new Date(game.rd).getTime() / 1000))
+        : null;
 
-    if (minPrice !== undefined && (game.dp == null || game.dp < minPrice)) continue;
-    if (maxPrice !== undefined && (game.dp == null || game.dp > maxPrice)) continue;
+      if (decades.length > 0) {
+        const year = rdSec != null ? new Date(rdSec * 1000).getUTCFullYear() : null;
+        let matchedDecade = false;
+        if (year !== null) {
+          if (decades.includes('2020s') && year >= 2020 && year <= 2029) matchedDecade = true;
+          else if (decades.includes('2010s') && year >= 2010 && year <= 2019) matchedDecade = true;
+          else if (decades.includes('2000s') && year >= 2000 && year <= 2009) matchedDecade = true;
+          else if (decades.includes('1990s') && year >= 1990 && year <= 1999) matchedDecade = true;
+          else if (decades.includes('older') && year < 1990) matchedDecade = true;
+        }
+        if (!matchedDecade) continue;
+      }
 
-    if (sort === 'upcoming') {
-      if (!(gameStatus === 'upcoming' || (rdSec != null && rdSec > nowSec))) continue;
-    } else if (sort === 'latest') {
-      if (gameStatus === 'upcoming') continue;
-      if (rdSec != null && rdSec > nowSec) continue;
-    } else {
-      if (gameStatus === 'upcoming') continue;
-    }
+      if (freeOnly) {
+        if (!(game.dp === 0 || gameTs.includes('free'))) continue;
+      }
 
-    let searchRank = -1;
-    if (searchTerm) {
-      const tLower = game.t.toLowerCase();
-      const dnLower = (game.dn || '').toLowerCase();
-      const sLower = game.s.toLowerCase();
+      if (minPrice !== undefined && (game.dp == null || game.dp < minPrice)) continue;
+      if (maxPrice !== undefined && (game.dp == null || game.dp > maxPrice)) continue;
 
-      if (tLower === searchTerm) {
-        searchRank = 0;
-      } else if (tLower.startsWith(searchTerm)) {
-        searchRank = 1;
-      } else if (tLower.includes(searchTerm)) {
-        searchRank = 2;
-      } else if (dnLower.includes(searchTerm) || sLower.includes(searchTerm)) {
-        searchRank = 3;
+      if (sort === 'upcoming') {
+        if (!(gameStatus === 'upcoming' || (rdSec != null && rdSec > nowSec))) continue;
+      } else if (sort === 'latest') {
+        if (gameStatus === 'upcoming') continue;
+        if (rdSec != null && rdSec > nowSec) continue;
       } else {
-        continue; // Doesn't match search term
+        if (gameStatus === 'upcoming') continue;
       }
+
+      let searchRank = -1;
+      if (term) {
+        const tLower = game.t.toLowerCase();
+        const dnLower = (game.dn || '').toLowerCase();
+        const sLower = game.s.toLowerCase();
+
+        if (tLower === term) {
+          searchRank = 0;
+        } else if (tLower.startsWith(term)) {
+          searchRank = 1;
+        } else if (tLower.includes(term)) {
+          searchRank = 2;
+        } else if (dnLower.includes(term) || sLower.includes(term)) {
+          searchRank = 3;
+        } else {
+          continue; // Doesn't match search term
+        }
+      }
+
+      results.push({ game, searchRank });
     }
 
-    filtered.push({ game, searchRank });
+    return results;
+  }
+
+  let filtered = executeFilter(searchTerm);
+  let correctedQuery: string | null = null;
+  let originalQuery: string | null = null;
+  let effectiveSearchTerm = searchTerm;
+
+  // Typo auto-correction fallback if 0 matches found for search query
+  if (searchTerm && filtered.length === 0 && !skipCorrection && searchTerm.length >= 3) {
+    const correction = findCorrection(searchTerm);
+    if (correction && correction.toLowerCase() !== searchTerm) {
+      correctedQuery = correction;
+      originalQuery = search.trim();
+      effectiveSearchTerm = correction.toLowerCase().trim();
+      filtered = executeFilter(effectiveSearchTerm);
+    }
   }
 
   filtered.sort((a, b) => {
     const ga = a.game;
     const gb = b.game;
 
-    if (searchTerm && !sort) {
+    if (effectiveSearchTerm && !sort) {
       if (a.searchRank !== b.searchRank) return a.searchRank - b.searchRank;
       const trA = ga.tr ? 1 : 0;
       const trB = gb.tr ? 1 : 0;
@@ -373,5 +514,5 @@ function processQuery(params: QueryParams) {
     };
   });
 
-  return { games, totalCount };
+  return { games, totalCount, correctedQuery, originalQuery };
 }
