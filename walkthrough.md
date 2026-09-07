@@ -4380,6 +4380,8 @@ Added fast typo tolerance to the search engine across both the client web worker
   - `resedent evil` -> `Resident Evil`
   - `phasmaphobia` -> `Phasmophobia`
 
+- **Server-side API Spelling Indexing**: Upgraded `getGameTitles()` in `src/pages/api/games/index.ts` to include rated, trending, and liked titles with `COALESCE` ranking, ensuring indie cult horror titles with null popularity are indexed for fallback spelling suggestions.
+
 
 
 

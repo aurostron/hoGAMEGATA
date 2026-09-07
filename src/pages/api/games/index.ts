@@ -36,8 +36,15 @@ async function getGameTitles(): Promise<string[]> {
     const rows = await turso
       .select({ title: gamesTable.title })
       .from(gamesTable)
-      .orderBy(desc(gamesTable.popularity))
-      .limit(1000);
+      .where(or(
+        isNotNull(gamesTable.rating),
+        isNotNull(gamesTable.steamRating),
+        eq(gamesTable.isTrending, true),
+        gt(gamesTable.likesCount, 0),
+        isNotNull(gamesTable.popularity)
+      ))
+      .orderBy(desc(sql`COALESCE(${gamesTable.popularity}, 0) + COALESCE(${gamesTable.rating}, 0) + (CASE WHEN ${gamesTable.isTrending} THEN 100 ELSE 0 END)`))
+      .limit(5000);
     cachedGameTitles = rows.map(r => r.title).filter(Boolean);
     return cachedGameTitles;
   } catch (err) {
