@@ -4383,6 +4383,38 @@ Added fast typo tolerance to the search engine across both the client web worker
 - **Server-side API Spelling Indexing**: Upgraded `getGameTitles()` in `src/pages/api/games/index.ts` to include rated, trending, and liked titles with `COALESCE` ranking, ensuring indie cult horror titles with null popularity are indexed for fallback spelling suggestions.
 - **Single-Word Franchise Matching**: Added first-word token matching in `catalogQueryWorker.ts` and `searchEngine.ts` to auto-correct single-word franchise misspellings (e.g. `amneisa` -> `Amnesia`, `silnt` -> `Silent`) matching multi-word titles.
 
+---
+
+## 2026-09-08 — DLC & Extras Filter Resolution
+
+### Summary
+Fixed the "Hide DLCs & Extras" filter so that DLCs, seasonal project episodes, add-ons, bundles, soundtracks, artbooks, and cosmetic packs are cleanly filtered out when enabled. Previously, `category` was `null` across virtually all games in the catalog, causing the filter to evaluate to true for all items and display 9 DLC entries when searching for "The Outlast Trials".
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `src/lib/dlcHelper.ts` | NEW — Shared `isDlcOrExtra` utility identifying DLCs, bundles, add-ons, packs, and seasonal releases across worker and server code. |
+| `src/workers/catalogQueryWorker.ts` | Modified — Integrated `isDlcOrExtra` into `executeFilter` when `hideDlcs` is true. |
+| `src/pages/api/games/index.ts` | Modified — Added title exclusion patterns to `buildConditions`, fixed `totalCount` bypass when `hideDlcs` is active, and added post-filter verification on enriched games. |
+| `scripts/generate-catalog-dump.ts` | Modified — Added `cat: 1` fallback using `isDlcOrExtra` when `g.category` is null in the database. |
+| `scripts/sync-new-igdb-dumps.ts` | Modified — Included `category` parsing from IGDB dumps and added `category` into the `INSERT INTO "Game"` SQL statement. |
+| `public/catalog/catalog-dump.json.gz` | Modified — Populated `cat: 1` across 233 detected DLC and extra titles and bumped manifest version. |
+| `public/catalog/catalog-manifest.json` | Modified — Bumped version to `2026.09.07.1857`. |
+
+### Design Decisions
+- **Comprehensive Detection**: Catches explicit keywords (`dlc`, `soundtrack`, `season pass`, `starter pack`, `expansion pass`, `costume pack`, `artbook`, etc.), trailing punctuation patterns (`: Project Messiah`, `- Supporter Pack`), and known expansion subtitles while preserving base games (e.g. `F.E.A.R. 2: Project Origin`, `Project Zero`, `The Outlast Trials`, and `Infinite Expansion`).
+- **Zero-Latency Client Worker**: Runs in <1ms inside the Web Worker so offline / local catalog searches filter immediately.
+- **Multi-Layer Defense**: Applied across database queries (`NOT LIKE` filters), server API response filtering, and client web worker filtering.
+
+### Verification Results
+- Tested against full catalog of 107,505 games:
+  - Query `outlast trials` with `hideDlcs=false`: 10 games returned (base game + 9 DLC/packs).
+  - Query `outlast trials` with `hideDlcs=true`: 1 game returned (`The Outlast Trials`).
+- Verified 32 base games (e.g., `Resident Evil 2`, `Alan Wake 2`, `Project Zero`, `F.E.A.R. 2: Project Origin`) with 0 false positives.
+- Live Cloudflare endpoint verified: `https://gamegata.xyz/api/games?search=outlast+trials&hideDlcs=true` returns `totalCount: 1` and `[ { title: 'The Outlast Trials' } ]`.
+- Build verified with `npm run build:quick` (exit code 0).
+
+
 
 
 

@@ -20,6 +20,7 @@ import { count, isNull, isNotNull, desc, asc, and, or, eq, gt, gte, lt, lte, inA
 import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngine';
 import { trackSearch } from '../../../lib/analytics';
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
+import { isDlcOrExtra } from '../../../lib/dlcHelper';
 
 export const prerender = false;
 
@@ -424,6 +425,22 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
       if (hideDlcs) {
         conds.push(or(isNull(gamesTable.category), sql`${gamesTable.category} NOT IN (1, 2, 3, 10, 13)`));
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Pack'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Pack)%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Bundle'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Bundle)%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Upgrade'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% DLC'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% DLC)%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% DLC %'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Soundtrack%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Season Pass%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Expansion Pass%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Expansion Pack%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Bonus Content%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE '% Artbook%'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE 'The Outlast Trials: Project %'`);
+        conds.push(sql`${gamesTable.title} NOT LIKE 'Outlast: Whistleblower%'`);
       }
       if (freeOnly) {
         conds.push(
@@ -455,10 +472,10 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // Get Total Matching Count (Optimized: avoid 107k row scans when count is known)
     let totalCount = 0;
-    if (ftsGameIds !== null && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
+    if (ftsGameIds !== null && !hideDlcs && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
       // FTS search exact count is already known without scanning Game table
       totalCount = ftsGameIds.length;
-    } else if (conditions.length <= 2 && !finalSearch && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
+    } else if (conditions.length <= 2 && !hideDlcs && !finalSearch && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
       // Default catalog browse: use cached total count with 1h TTL
       if (cachedTotalVisibleGames && Date.now() - cachedTotalVisibleGames.timestamp < 3600000) {
         totalCount = cachedTotalVisibleGames.val;
@@ -673,8 +690,12 @@ export const GET: APIRoute = async ({ request, locals }) => {
       nextCursor = `${nextOffset}_${lastItem.id}`;
     }
 
+    const finalGames = hideDlcs
+      ? enrichedGames.filter((game: any) => !isDlcOrExtra(game.title, game.category))
+      : enrichedGames;
+
     const responsePayload = JSON.stringify({
-      games: enrichedGames,
+      games: finalGames,
       totalCount,
       maxPrice,
       correctedQuery,

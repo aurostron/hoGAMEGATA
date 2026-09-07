@@ -12,6 +12,7 @@ import {
   priceSnapshots as priceSnapshotsTable,
 } from "../src/db/schema";
 import { or, isNull, ne, sql, inArray } from "drizzle-orm";
+import { isDlcOrExtra } from "../src/lib/dlcHelper";
 
 initTursoForRequest(process.env);
 
@@ -159,7 +160,7 @@ async function generateCatalogDump() {
       sr: g.steamRating != null ? Math.round(g.steamRating * 10) / 10 : null,
       mc: g.metacritic || null,
       rr: g.rawgRating != null ? Math.round(g.rawgRating * 10) / 10 : null,
-      cat: g.category != null ? g.category : null,
+      cat: g.category != null ? g.category : (isDlcOrExtra(g.title) ? 1 : null),
       pop: g.popularity != null ? Math.round(g.popularity * 10) / 10 : null,
       tr: Boolean(g.isTrending),
       lk: g.likesCount || 0,

@@ -6,6 +6,7 @@ import * as crypto from "crypto";
 import { Readable } from "stream";
 import { pipeline } from "stream/promises";
 import { createClient } from "@libsql/client";
+import { isDlcOrExtra } from "../src/lib/dlcHelper";
 
 interface SearchRecord {
   i: string;
@@ -24,6 +25,7 @@ interface GameCandidate {
   firstReleaseDate: number | null;
   totalRating: number | null;
   follows: number | null;
+  category: number | null;
   coverId: number | null;
   screenshotIds: number[];
   videoIds: number[];
@@ -305,6 +307,9 @@ async function main() {
       const rawFollows = parseInt(getField("follows"), 10);
       const follows = Number.isFinite(rawFollows) && rawFollows >= 0 ? rawFollows : null;
 
+      const rawCategory = parseInt(getField("category"), 10);
+      const category = Number.isFinite(rawCategory) ? rawCategory : (isDlcOrExtra(name) ? 1 : null);
+
       candidateGames.push({
         id,
         name,
@@ -314,6 +319,7 @@ async function main() {
         firstReleaseDate,
         totalRating,
         follows,
+        category,
         coverId,
         screenshotIds,
         videoIds,
@@ -590,6 +596,7 @@ async function main() {
         releaseDate,
         status,
         purchaseLinks,
+        category: g.category,
         primaryDeveloper: devNames[0] || "Independent Creator",
       });
 
@@ -617,8 +624,8 @@ async function main() {
       batchStatements.push({
         sql: `INSERT INTO "Game" (
           id, igdbId, title, slug, summary, storyline, coverUrl, trailerUrl, screenshots, rating, popularity,
-          developerNames, genreNames, platformNames, status, source, isTrending, likesCount, createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'igdb', 0, 0, ?, ?)
+          developerNames, genreNames, platformNames, status, source, isTrending, likesCount, category, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'igdb', 0, 0, ?, ?, ?)
         ON CONFLICT DO NOTHING`,
         args: [
           g.id,
@@ -636,6 +643,7 @@ async function main() {
           g.genreNames || null,
           g.platformNames || null,
           g.status || "released",
+          g.category ?? null,
           safeNow,
           safeNow,
         ],

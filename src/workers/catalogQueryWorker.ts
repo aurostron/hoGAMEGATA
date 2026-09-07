@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import trendingTop50 from '../data/trendingTop50.json';
+import { isDlcOrExtra } from '../lib/dlcHelper';
 
 const trendingRankMap = new Map<string, { rank: number; reason: string; category: string }>();
 if (Array.isArray(trendingTop50)) {
@@ -271,7 +272,7 @@ function processQuery(params: QueryParams) {
       const gameStatus = game.st || 'released';
       if (gameStatus === 'hidden') continue;
 
-      if (hideDlcs && game.cat != null && [1, 2, 3, 10, 13].includes(game.cat)) continue;
+      if (hideDlcs && isDlcOrExtra(game.t, game.cat)) continue;
 
       const gameGs = game.gs || [];
       if (genres.length > 0 && !genres.some((g) => gameGs.includes(g))) continue;
