@@ -4327,6 +4327,28 @@ Diagnosed and resolved a fatal `RangeError: Only finite numbers (not Infinity or
 - **Astro Build (`npm run build:quick`)**: Passed with exit code 0 (`Server built in 44.53s`, static routes prerendered, Windows file URLs normalized).
 - **Strict Prohibition**: Maintained without exception (no `wrangler deploy` executed).
 
+---
+
+## 2026-09-07 — Production Deployment & Global Repository Synchronization
+
+### Summary
+With explicit user approval, staged, committed, and pushed all updates across both repositories and deployed the production application to Cloudflare:
+1. **GitHub Push to `aurostron/hoGAMEGATA`**:
+   - Pushed commit `deb587e` (`feat(catalog): client-side offline search engine, usd price normalization, and weekly trending top 50`) comprising 36 files and +3,944 additions.
+   - Pushed the weekly trending workflow (`.github/workflows/weekly-trending.yml`), client worker (`catalogQueryWorker.ts`), offline storage manager (`catalogStorage.ts`), mode selector (`useCatalogMode.ts`), and local catalog dump assets.
+2. **GitHub Push to `project-hgg/project-hgg.github.io`**:
+   - Pushed commits `58ce34a`, `1663b4f`, `ff35257` containing the IGDB ingestion resilience fixes, weekly trending pipeline, and initial `trendingTop50.json`.
+   - Verified that the IGDB ingestion workflow completed with 100% success on GitHub Actions (commit `fb224ed`).
+3. **Cloudflare Production Deployment (`gamegata-v1`)**:
+   - Built the full application bundle with static route prerendering (`/search`, `/index.html`) and Windows URL path fixers.
+   - Uploaded 14 new/modified static assets (including `/catalog/catalog-dump.json.gz` and worker scripts).
+   - Deployed Worker `gamegata-v1` (Version ID: `a3c03caf-fdc7-4980-bed6-04f9ccc1132f`) to custom domain `gamegata.xyz`.
+
+### Verification Results
+- **Live Endpoint Test**: `curl.exe -I https://gamegata.xyz/` responded `HTTP/1.1 200 OK` from Cloudflare edge.
+- **Offline Catalog Manifest**: `curl.exe -I https://gamegata.xyz/catalog/catalog-manifest.json` responded `HTTP/1.1 200 OK`.
+- **Git Repositories**: Both `project-hgg.github.io` and `aurostron/hoGAMEGATA` are 100% clean and synchronized on their `main` branches.
+
 
 
 
