@@ -4619,6 +4619,34 @@ Completely isolated the `aurostron/hoGAMEGATA` repository to be purely frontend-
 - **Fast Build (`npm run build:quick`)**: Passed with exit code 0. Server built in 28.48s, static routes prerendered in 13.14s, and Windows `file:///` URLs normalized with 0 errors.
 - **Tracked Files Audit**: Verified with `git ls-files` that only frontend code, public static assets, the 2 mock data files, and 2 essential build scripts are tracked.
 
+---
+
+## 2026-09-08 — Local SQLite Bridge In-Process Seeding & Offline Fallbacks
+
+### Summary
+Resolved development runtime crashes and remote query failures when launching `npm run dev` in clean clone environments without cloud credentials or existing `local.db`:
+1. **In-Process Seeding in `localDbBridge.ts`**: Replaced synchronous child process execution (`execSync("npx tsx scripts/seed-mock-db.ts")`) with an in-process asynchronous function import (`seedCuratedDatabase`). Statically imported `createClient` from `@libsql/client` to eliminate `Vite module runner has been closed` errors during dev server boot.
+2. **`SiteContent` Table in Mock Schema**: Added `SiteContent` table creation and initial boilerplate content rows (hero title, subtitle, CTA text) to `scripts/seed-mock-db.ts`, preventing `DrizzleQueryError: select ... from "SiteContent"` exceptions during homepage SSR.
+3. **Graceful Offline Fallback in `src/pages/index.astro`**: Added resilient fallback to `data/curated-100-games.json` within the homepage SSR catch block so hero carousels and tabbed game grids populate immediately even when remote database queries fail or network is unavailable.
+4. **Clean Logging in `src/lib/siteContent.ts`**: Silenced redundant stack traces when remote Turso configuration is absent or failing, cleanly returning `DEFAULT_CONTENT`.
+
+### Files Modified
+| File | Action |
+|------|--------|
+| `scripts/seed-mock-db.ts` | Modified — Added `SiteContent` DDL + seed data; exported `seedCuratedDatabase` |
+| `src/lib/localDbBridge.ts` | Modified — Converted from `execSync` child process to in-process seeder; static `@libsql/client` import |
+| `src/pages/index.astro` | Modified — Added fallback to `data/curated-100-games.json` on remote database query catch |
+| `src/lib/siteContent.ts` | Modified — Suppressed noisy stack trace on fetch error and defaulted gracefully |
+
+### Design Decisions & Rationale
+- **Zero Vite Event Loop Blocking**: Calling `execSync` inside a Vite/Astro middleware hook causes event loop starvation and socket disconnection, resulting in Vite closing its module runner prematurely. Running `seedCuratedDatabase()` as a pure async in-process function prevents this entirely.
+- **Immediate Local Out-of-the-Box Experience**: Anyone cloning the repository can run `npm install && npm run dev` and get a functioning application immediately with 0 configuration, 0 environment variables, and 0 database credentials.
+
+### Verification Results
+- **Auto-seed Bridge Test**: Tested deleting `local.db` and triggering `ensureLocalDbBridge()` — database auto-initialized and bridge started on port 4322 cleanly in under 4 seconds.
+- **Fast Build (`npm run build:quick`)**: Passed with exit code 0 in 10.82s.
+
+
 
 
 

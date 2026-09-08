@@ -1,6 +1,7 @@
 import http from "node:http";
 import path from "node:path";
 import fs from "node:fs";
+import { createClient } from "@libsql/client";
 
 let bridgeServer: http.Server | null = null;
 
@@ -14,8 +15,8 @@ export async function ensureLocalDbBridge() {
     if (fs.existsSync(jsonPath)) {
       console.log("[local-db-bridge] local.db not found. Auto-generating from data/curated-100-games.json...");
       try {
-        const { execSync } = await import("node:child_process");
-        execSync("npx tsx scripts/seed-mock-db.ts", { stdio: "inherit" });
+        const { seedCuratedDatabase } = await import("../../scripts/seed-mock-db");
+        await seedCuratedDatabase();
       } catch (err) {
         console.error("[local-db-bridge] Failed to auto-seed local.db:", err);
       }
@@ -28,7 +29,6 @@ export async function ensureLocalDbBridge() {
   }
 
   try {
-    const { createClient } = await import("@libsql/client");
     const localClient = createClient({ url: `file:${dbPath}` });
 
     bridgeServer = http.createServer(async (req, res) => {

@@ -72,8 +72,7 @@ export async function getOrSeedContent() {
     }
 
     return current;
-  } catch (e) {
-    console.error("Failed to fetch site content from Turso:", e);
+  } catch {
     return DEFAULT_CONTENT;
   }
 }

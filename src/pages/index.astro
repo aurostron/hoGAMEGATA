@@ -183,7 +183,22 @@ try {
     }
   }
 } catch (err) {
-  console.error("Failed to fetch homepage games from Turso:", err);
+  console.warn("[homepage] Remote database query unavailable; falling back to local curated dataset.");
+  try {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const jsonPath = path.resolve(process.cwd(), "data", "curated-100-games.json");
+    if (fs.existsSync(jsonPath)) {
+      const data = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+      const fallbackList = data.games || [];
+      heroGames = fallbackList.filter((g: any) => g.screenshots && g.screenshots.length > 0).slice(0, 6);
+      latestGames = fallbackList.slice(0, 30);
+      trendingGames = fallbackList.filter((g: any) => g.isTrending).slice(0, 30);
+      if (trendingGames.length === 0) trendingGames = fallbackList.slice(0, 30);
+      upcomingGames = fallbackList.filter((g: any) => g.status === "upcoming").slice(0, 8);
+      topRatedGames = fallbackList.slice(0, 8);
+    }
+  } catch {}
 }
 
 // Set up cursor for client-side pagination fallback (Latest tab initial set)

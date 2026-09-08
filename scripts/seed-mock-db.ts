@@ -1,4 +1,4 @@
-﻿import { createClient } from "@libsql/client";
+import { createClient } from "@libsql/client";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -20,6 +20,7 @@ async function main() {
 
   console.log("[seed-mock] Ensuring relational schema tables exist...");
 
+  await client.execute(`DROP TABLE IF EXISTS "SiteContent"`);
   await client.execute(`DROP TABLE IF EXISTS "Game"`);
   await client.execute(`DROP TABLE IF EXISTS "Developer"`);
   await client.execute(`DROP TABLE IF EXISTS "Publisher"`);
@@ -33,6 +34,18 @@ async function main() {
   await client.execute(`DROP TABLE IF EXISTS "_GameToPlatform"`);
   await client.execute(`DROP TABLE IF EXISTS "PriceSnapshot"`);
   await client.execute(`DROP TABLE IF EXISTS "PurchaseLink"`);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS "SiteContent" (
+      "key" TEXT PRIMARY KEY,
+      "value" TEXT NOT NULL,
+      "type" TEXT NOT NULL DEFAULT 'text',
+      "label" TEXT,
+      "section" TEXT,
+      "updatedAt" INTEGER NOT NULL,
+      "updatedBy" TEXT
+    );
+  `);
 
   await client.execute(`
     CREATE TABLE "Developer" (
@@ -267,6 +280,21 @@ async function main() {
 
   await batchInsert("PurchaseLink", ["id", "gameId", "storeName", "url"], data.purchaseLinks);
 
+  const defaultContent = [
+    { key: "hero_title", value: "The Horror Games Database", type: "text", label: "Hero Title", section: "hero" },
+    { key: "hero_subtitle", value: "Discover curated survival horror, psychological terror, and indie nightmare games.", type: "text", label: "Hero Subtitle", section: "hero" },
+    { key: "catalog_cta_title", value: "Explore the Archive", type: "text", label: "Catalogue CTA Title", section: "catalog" },
+    { key: "catalog_cta_desc", value: "Search and filter through horror game history.", type: "text", label: "Catalogue CTA Description", section: "catalog" },
+    { key: "support_title", value: "Help keep the project alive", type: "text", label: "Support Heading", section: "support" },
+    { key: "support_desc", value: "hoGAMEGATA is a free, ad-free open-access database.", type: "text", label: "Support Description", section: "support" },
+  ];
+  for (const c of defaultContent) {
+    await client.execute({
+      sql: `INSERT OR IGNORE INTO "SiteContent" ("key", "value", "type", "label", "section", "updatedAt") VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [c.key, c.value, c.type, c.label, c.section, Date.now()]
+    });
+  }
+
   console.log("[seed-mock] Building indexes...");
   await client.execute(`CREATE INDEX IF NOT EXISTS "idx_game_slug" ON "Game"("slug")`);
   await client.execute(`CREATE INDEX IF NOT EXISTS "idx_game_title" ON "Game"("title")`);
@@ -284,7 +312,12 @@ async function main() {
   console.log("=================================================");
 }
 
-main().catch(err => {
-  console.error("[seed-mock] Failed to seed database:", err);
-  process.exit(1);
-});
+export { main as seedCuratedDatabase };
+
+// Auto-run if executed directly as a script
+if (process.argv[1]?.replace(/\\/g, '/').endsWith('scripts/seed-mock-db.ts')) {
+  main().catch(err => {
+    console.error("[seed-mock] Failed to seed database:", err);
+    process.exit(1);
+  });
+}
