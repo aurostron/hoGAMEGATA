@@ -27,7 +27,6 @@ import { CartProvider, useCart } from "../context/CartContext";
 import { AuthProvider } from "../context/AuthContext";
 import HoverTrailer from "./HoverTrailer";
 
-import { searchNative } from "../lib/nativeSearchManager";
 import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
 import { useCatalogMode } from "../hooks/useCatalogMode";
 import { 
@@ -1289,13 +1288,39 @@ function GataCatalogClientInner({
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-4 border-b border-white/10">
             <div>
               <h2 className="text-xl sm:text-2xl font-black uppercase text-white tracking-wide">
-                PC games / All Games ({totalCount})
+                {(() => {
+                  const parts: string[] = [];
+                  if (selectedSystems.length === 1) {
+                    const sys = selectedSystems[0];
+                    parts.push(sys === "win" ? "PC" : sys === "mac" ? "macOS" : "Linux");
+                  } else if (selectedSystems.length > 1) {
+                    parts.push("Multi-Platform");
+                  }
+                  if (selectedGenres.length === 1) {
+                    const g = HORROR_SUBGENRES.find((sg) => sg.slug === selectedGenres[0]) ||
+                              initialGenres.find((ig) => ig.slug === selectedGenres[0]);
+                    if (g) parts.push(g.name);
+                  } else if (selectedGenres.length > 1) {
+                    parts.push("Selected Genres");
+                  }
+                  if (selectedDecades.length === 1) {
+                    const d = DECADES.find((dec) => dec.slug === selectedDecades[0]);
+                    if (d) parts.push(d.name);
+                  }
+                  if (parts.length === 0) return "All Games";
+                  return `${parts.join(" · ")} Games`;
+                })()}
               </h2>
-              {initialTotalGames && (
-                <span className="font-mono text-[10px] text-white/40 block mt-1 uppercase font-bold tracking-wider">
-                  of {initialTotalGames} games in total
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 font-mono text-[11px]">
+                <span className="text-white/90 font-bold tracking-wider uppercase">
+                  Showing {totalCount.toLocaleString()} {totalCount === 1 ? "game" : "games"}
                 </span>
-              )}
+                {initialTotalGames && totalCount !== initialTotalGames && (
+                  <span className="text-white/40 tracking-wider">
+                    (of {initialTotalGames.toLocaleString()} in catalog)
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Top Pagination controls inside header row */}
@@ -1522,16 +1547,16 @@ function GataCatalogClientInner({
                                 {finalDeal ? (
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     {finalDeal.discountPercent > 0 && (
-                                      <span className="text-[10px] font-bold bg-[#7a3bfa] text-white px-1.5 py-0.5 rounded select-none">
+                                      <span className="text-[11px] font-sans font-bold bg-[#7a3bfa] text-white px-1.5 py-0.5 rounded select-none tracking-tight">
                                         -{finalDeal.discountPercent}%
                                       </span>
                                     )}
                                     <div className="flex flex-col items-start leading-none">
-                                      <span className="text-xs font-bold text-white leading-none">
+                                      <span className="font-sans text-sm sm:text-base font-bold text-white tracking-tight leading-none">
                                         {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
                                       </span>
                                       {finalDeal.discountPercent > 0 && (
-                                        <span className="text-[9px] text-white/40 line-through mt-0.5">
+                                        <span className="font-sans text-[11px] text-white/40 line-through mt-0.5 leading-none">
                                           {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
                                         </span>
                                       )}
@@ -1691,16 +1716,16 @@ function GataCatalogClientInner({
                               {finalDeal ? (
                                 <div className="flex items-center gap-2 justify-end">
                                   {finalDeal.discountPercent > 0 && (
-                                    <span className="text-[10px] font-bold bg-[#7a3bfa] text-white px-1.5 py-0.5 rounded">
+                                    <span className="text-[11px] font-sans font-bold bg-[#7a3bfa] text-white px-1.5 py-0.5 rounded tracking-tight">
                                       -{finalDeal.discountPercent}%
                                     </span>
                                   )}
                                   <div className="text-right leading-none">
-                                    <span className="text-xs font-bold text-white">
+                                    <span className="font-sans text-sm sm:text-base font-bold text-white tracking-tight">
                                       {formatPrice(finalDeal.dealPrice, finalDeal.currency)}
                                     </span>
                                     {finalDeal.discountPercent > 0 && (
-                                      <span className="text-[9px] text-white/40 line-through block mt-0.5">
+                                      <span className="font-sans text-[11px] text-white/40 line-through block mt-0.5 leading-none">
                                         {formatPrice(finalDeal.retailPrice, finalDeal.currency)}
                                       </span>
                                     )}

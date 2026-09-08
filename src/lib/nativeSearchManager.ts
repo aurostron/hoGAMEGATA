@@ -7,6 +7,7 @@
  */
 
 import MiniSearch from "minisearch";
+import { loadCatalogFromDB, initCatalogWorker } from "./catalogStorage";
 
 export interface NativeSearchResult {
   id: string;
@@ -203,17 +204,26 @@ async function loadRecordsIntoEngine(records: SearchIndexRecord[]): Promise<void
 
 async function fetchFreshIndex(): Promise<boolean> {
   try {
-    const res = await fetch("/search-index.json", { cache: "default" });
-    if (!res.ok) return false;
-    const records: SearchIndexRecord[] = await res.json();
-    if (Array.isArray(records) && records.length > 0) {
+    let catalogRecords = await loadCatalogFromDB();
+    if (!catalogRecords || catalogRecords.length === 0) {
+      await initCatalogWorker();
+      catalogRecords = await loadCatalogFromDB();
+    }
+    if (catalogRecords && catalogRecords.length > 0) {
+      const records: SearchIndexRecord[] = catalogRecords.map((r: any) => ({
+        i: r.i,
+        t: r.t,
+        s: r.s,
+        c: r.c || null,
+        d: r.dn ? [r.dn] : [],
+      }));
       await saveCachedRecords(records);
       await loadRecordsIntoEngine(records);
       isEngineReady = true;
       return true;
     }
   } catch (e) {
-    console.warn("Failed to fetch fresh search index:", e);
+    console.warn("Failed to load records into search engine:", e);
   }
   return false;
 }
@@ -284,13 +294,4 @@ export async function searchNative(query: string, limit = 20): Promise<NativeSea
   }
 
   return null;
-}
-
-// Auto-initialize background load on idle for ALL devices
-if (typeof window !== "undefined") {
-  if ("requestIdleCallback" in window) {
-    (window as any).requestIdleCallback(() => initNativeSearch());
-  } else {
-    setTimeout(() => initNativeSearch(), 500);
-  }
 }

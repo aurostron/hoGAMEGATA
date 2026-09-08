@@ -100,15 +100,10 @@ For a complete breakdown of boundaries and legal terms, see [OPEN_CORE.md](./doc
 | Command | Action |
 |---|---|
 | `npm run dev` | Starts the Astro development server at `localhost:4321` |
-| `npm run build` | Generates sitemaps and runs production build for Cloudflare Workers |
-| `npm run build:quick` | Builds the application bundle without regenerating sitemaps |
-| `npm run preview` | Runs the compiled production build locally |
-| `npm run console` | Launches the interactive developer console (`scripts/dev-tools.ts`) |
-| `npm run dev-gui` | Starts the local administrative web interface |
-| `npm run sync:prices` | Runs storefront price synchronizers for Steam and GOG |
-| `npm run search:apply` | Applies client-side search cache updates |
-
-For details on all automated workflows and utilities, see [`scripts/README.md`](./scripts/README.md).
+| `npm run setup:mock` | Seeds local SQLite (`local.db`) with 100 curated games for zero-config offline development |
+| `npm run build` | Builds the production bundle and normalizes Cloudflare Worker entrypoint manifests |
+| `npm run build:quick` | Fast production build without regenerating static sitemaps |
+| `npm run preview` | Runs the compiled Cloudflare Worker build locally |
 
 ---
 

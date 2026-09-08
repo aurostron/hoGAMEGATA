@@ -6,13 +6,12 @@ import GameCatalogClient from '../components/GameCatalogClient';
 import { turso } from '../lib/turso';
 import {
   games,
-  developers,
-  tags,
   priceSnapshots
 } from '../db/schema';
-import { count, isNull, isNotNull, desc, and, or, eq, ne, gt, lt, lte, inArray } from 'drizzle-orm';
+import { isNull, isNotNull, desc, and, or, eq, ne, gt, lt, lte, inArray } from 'drizzle-orm';
 import { enrichGamesWithRelations } from '../lib/gameQueries';
 import { getContentMap } from '../lib/siteContent';
+import { getCatalogStats } from '../lib/catalogMeta';
 
 let stats: { games: number; developers: number; tags: number; deals: number } | null = null;
 let heroGames: any[] = [];
@@ -25,24 +24,14 @@ let content: Record<string, string> = {};
 try {
   // Query site content copy map
   content = await getContentMap();
-  // 1. Fetch database stats in parallel from Turso
-  const [
-    [{ count: gamesCount }],
-    [{ count: devsCount }],
-    [{ count: tagsCount }],
-    [{ count: dealsCount }],
-  ] = await Promise.all([
-    turso.select({ count: count() }).from(games).where(or(isNull(games.status), ne(games.status, "hidden"))),
-    turso.select({ count: count() }).from(developers),
-    turso.select({ count: count() }).from(tags),
-    turso.select({ count: count() }).from(priceSnapshots),
-  ]);
 
+  // 1. Fetch precomputed catalog stats (0 Turso reads)
+  const catalogStats = getCatalogStats();
   stats = {
-    games: gamesCount,
-    developers: devsCount,
-    tags: tagsCount,
-    deals: dealsCount,
+    games: catalogStats.totalVisibleGames,
+    developers: catalogStats.totalDevelopers,
+    tags: catalogStats.totalTags,
+    deals: catalogStats.totalDeals,
   };
 
   const baseSelect = {

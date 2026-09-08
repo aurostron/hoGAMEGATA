@@ -277,16 +277,16 @@ export default function StorefrontLists({
             {deal ? (
               <>
                 {hasDiscount && (
-                  <span className="font-mono text-xs font-black bg-[#7b3fc4] text-white px-1.5 py-0.5 tracking-wide">
+                  <span className="font-sans text-xs font-bold bg-[#7b3fc4] text-white px-1.5 py-0.5 tracking-tight rounded-xs">
                     -{deal.discountPercent}%
                   </span>
                 )}
-                <div className="flex flex-col items-end justify-center font-mono">
-                  <span className="text-sm sm:text-base font-black text-emerald-400 leading-none">
+                <div className="flex flex-col items-end justify-center font-sans">
+                  <span className="text-base sm:text-lg font-bold text-emerald-400 leading-none tracking-tight">
                     {formatPrice(deal.dealPrice, deal.currency)}
                   </span>
                   {hasDiscount && (
-                    <span className="text-[10px] sm:text-xs text-white/30 line-through leading-none mt-0.5">
+                    <span className="text-xs text-white/35 line-through leading-none mt-0.5">
                       {formatPrice(deal.retailPrice, deal.currency)}
                     </span>
                   )}

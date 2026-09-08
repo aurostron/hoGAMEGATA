@@ -90,8 +90,8 @@ export default function HeaderSearch() {
         const cachedPrice = sessionPriceCache.get(m.id);
         return {
           ...m,
-          priceBadge: cachedPrice?.priceBadge || null,
-          badgeType: cachedPrice?.badgeType || "paid",
+          priceBadge: cachedPrice?.priceBadge || m.priceBadge || null,
+          badgeType: cachedPrice?.badgeType || m.badgeType || "paid",
           coverUrl: cachedPrice?.coverUrl || m.coverUrl || null,
         };
       });
@@ -278,7 +278,7 @@ export default function HeaderSearch() {
 
       {/* Autocomplete Dropdown list */}
       {isOpen && isExpanded && (
-        <div className="fixed top-14 left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 mt-1.5 sm:w-80 bg-black/95 backdrop-blur-md border border-white/20 rounded-xl z-50 divide-y divide-white/10 max-h-80 overflow-y-auto shadow-2xl flex flex-col">
+        <div className="fixed top-14 left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 mt-1.5 sm:w-[370px] bg-black/95 backdrop-blur-md border border-white/20 rounded-xl z-50 divide-y divide-white/10 max-h-80 overflow-y-auto shadow-2xl flex flex-col">
           {results.length > 0 ? (
             results.map((game) => (
               <button
@@ -299,18 +299,18 @@ export default function HeaderSearch() {
                   </div>
                 )}
                 <div className="flex flex-col min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center justify-between gap-2.5">
                     <span className="font-sans text-xs font-bold tracking-tight truncate block">
                       {game.title}
                     </span>
                     {game.priceBadge && (
                       <span
-                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${
+                        className={`text-xs font-sans font-bold px-2.5 py-0.5 rounded-full shrink-0 tracking-tight transition-colors shadow-xs ${
                           game.badgeType === "free"
-                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 group-hover:border-emerald-600 group-hover:text-emerald-700"
+                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 group-hover:bg-emerald-600 group-hover:text-white group-hover:border-transparent"
                             : game.badgeType === "sale"
-                            ? "bg-amber-500/15 text-amber-400 border border-amber-500/25 group-hover:border-amber-600 group-hover:text-amber-700"
-                            : "bg-white/10 text-white/70 border border-white/10 group-hover:border-black/20 group-hover:text-black/70"
+                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30 group-hover:bg-amber-500 group-hover:text-black group-hover:border-transparent"
+                            : "bg-white/10 text-white border border-white/20 group-hover:bg-black group-hover:text-white group-hover:border-transparent"
                         }`}
                       >
                         {game.priceBadge}
@@ -318,7 +318,7 @@ export default function HeaderSearch() {
                     )}
                   </div>
                   {game.developerNames && (
-                    <span className="font-mono text-[9px] text-white/50 group-hover:text-black/60 truncate block font-medium transition-colors">
+                    <span className="font-sans text-[11px] text-white/45 group-hover:text-black/60 truncate block transition-colors">
                       by {game.developerNames}
                     </span>
                   )}

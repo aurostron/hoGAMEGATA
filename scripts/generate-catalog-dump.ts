@@ -219,6 +219,27 @@ async function generateCatalogDump() {
     }
   }
 
+  // Update src/data/catalogStats.json to keep build/SSR counts fresh with zero DB reads
+  try {
+    const visibleNonDlc = records.filter(r => !isDlcOrExtra(r.t, r.cat)).length;
+    const statsPath = path.resolve(process.cwd(), "src", "data", "catalogStats.json");
+    let prevStats: any = {};
+    if (fs.existsSync(statsPath)) {
+      prevStats = JSON.parse(fs.readFileSync(statsPath, "utf8"));
+    }
+    const newStats = {
+      ...prevStats,
+      totalGames: records.length,
+      totalVisibleGames: visibleNonDlc,
+      totalDeals: priceMap.size,
+      updatedAt: now.toISOString(),
+    };
+    fs.writeFileSync(statsPath, JSON.stringify(newStats, null, 2));
+    console.log("   ✓ Updated src/data/catalogStats.json with refreshed metrics");
+  } catch (err: any) {
+    console.warn("   ⚠️ Warning: Could not update catalogStats.json:", err.message);
+  }
+
   const totalTime = ((performance.now() - startTime) / 1000).toFixed(1);
   console.log("\n==================================================");
   console.log(`🎉 CATALOG DUMP READY in ${totalTime}s`);

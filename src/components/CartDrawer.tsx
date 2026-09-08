@@ -217,7 +217,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <span className={`text-sm font-bold block truncate ${isDone ? "line-through text-white/50" : "text-white"}`}>
                               {item.gameTitle}
                             </span>
-                            <span className="text-xs text-white/50 block font-mono">
+                            <span className="text-xs text-white/50 block font-sans">
                               {item.storeName} — <strong className="text-emerald-400 font-bold">{formatPrice(item.dealPrice, item.currency)}</strong>
                             </span>
                           </div>
@@ -268,7 +268,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <span className="text-xs font-black uppercase tracking-widest text-[#7b3fc4]">
                               {storeName}
                             </span>
-                            <span className="text-xs text-white/60 font-bold font-mono">
+                            <span className="text-xs text-white/70 font-bold font-sans">
                               Subtotal: {formatPrice(storeSubtotal, storeItems[0]?.currency)}
                             </span>
                           </div>
@@ -319,11 +319,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                   )}
 
                                   <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs font-black text-emerald-400 font-mono">
+                                    <span className="text-sm font-bold text-emerald-400 font-sans tracking-tight">
                                       {formatPrice(item.dealPrice, item.currency)}
                                     </span>
                                     {item.discountPercent > 0 && (
-                                      <span className="text-[9px] bg-[#7b3fc4] text-white font-bold px-1 py-0.2">
+                                      <span className="text-[10px] bg-[#7b3fc4] text-white font-bold px-1.5 py-0.5 rounded-xs font-sans tracking-tight">
                                         -{item.discountPercent}%
                                       </span>
                                     )}
@@ -356,7 +356,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <div className="border-t border-white/20 p-5 bg-zinc-950/80 backdrop-blur space-y-3">
               <div className="flex items-center justify-between text-sm font-black uppercase tracking-wider text-white">
                 <span>Total Multi-Store Value</span>
-                <span className="text-emerald-400 font-mono text-base">
+                <span className="text-emerald-400 font-sans font-bold text-lg tracking-tight">
                   {formatPrice(totalValue)}
                 </span>
               </div>

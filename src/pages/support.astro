@@ -1,31 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { turso } from "../lib/turso";
-import { games, developers, tags } from "../db/schema";
-import { count, or, isNull, ne } from "drizzle-orm";
+import { getCatalogStats } from "../lib/catalogMeta";
 
-// Fetch DB stats for the header component directly from Turso
-let stats: any = null;
-try {
-  const [
-    [{ count: gamesCount }],
-    [{ count: devsCount }],
-    [{ count: tagsCount }],
-  ] = await Promise.all([
-    turso.select({ count: count() }).from(games).where(or(isNull(games.status), ne(games.status, "hidden"))),
-    turso.select({ count: count() }).from(developers),
-    turso.select({ count: count() }).from(tags),
-  ]);
-
-  stats = {
-    games: gamesCount,
-    developers: devsCount,
-    tags: tagsCount,
-    screenshots: gamesCount * 4,
-  };
-} catch (e) {
-  console.error("Failed to query DB stats in support.astro:", e);
-}
+const catalogStats = getCatalogStats();
+const stats = {
+  games: catalogStats.totalVisibleGames,
+  developers: catalogStats.totalDevelopers,
+  tags: catalogStats.totalTags,
+  screenshots: catalogStats.totalScreenshots,
+};
 
 const awesomeResources = [
   {

@@ -14,6 +14,8 @@ export interface SearchRecord {
   s: string;           // slug
   c?: string | null;   // coverUrl
   d?: string[] | string | null; // developers
+  dp?: number | null;  // cheapest price
+  rt?: number | null;  // rating
 }
 
 export interface SearchResult {
@@ -22,90 +24,18 @@ export interface SearchResult {
   slug: string;
   coverUrl: string | null;
   developerNames: string | null;
+  priceBadge?: string | null;
+  badgeType?: "free" | "sale" | "paid";
 }
 
 import { loadCatalogFromDB, initCatalogWorker } from "./catalogStorage";
-
-const DB_NAME = "gamegata_search_v3";
-const STORE_NAME = "catalog_store";
-const CACHE_KEY = "search_catalog_with_covers";
-const INDEX_VERSION = "2026.09.04.v5_covers";
-
-const LOCAL_PRIMARY_URL = "/search-index.json";
-const CDN_URL = "https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/search-index.json";
 
 let memoryIndex: SearchRecord[] | null = null;
 let isInitializing = false;
 let initPromise: Promise<boolean> | null = null;
 
 /**
- * Open IndexedDB safely
- */
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (typeof indexedDB === "undefined") {
-      return reject(new Error("IndexedDB not supported"));
-    }
-    const request = indexedDB.open(DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-/**
- * Load cached index from IndexedDB
- */
-async function loadFromIndexedDB(): Promise<SearchRecord[] | null> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.get(CACHE_KEY);
-      req.onsuccess = () => {
-        const val = req.result;
-        // Strict check: must have correct version and must have valid IDs and covers
-        if (
-          val &&
-          val.version === INDEX_VERSION &&
-          Array.isArray(val.data) &&
-          val.data.length > 0 &&
-          val.data[0]?.i
-        ) {
-          resolve(val.data);
-        } else {
-          resolve(null);
-        }
-      };
-      req.onerror = () => resolve(null);
-    });
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Save index to IndexedDB for future visits
- */
-async function saveToIndexedDB(data: SearchRecord[]): Promise<void> {
-  try {
-    const db = await openDB();
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    store.put({ version: INDEX_VERSION, data }, CACHE_KEY);
-  } catch {
-    // Ignore storage errors (quota/private mode)
-  }
-}
-
-/**
- * Initialize search engine in background
+ * Initialize search engine using unified catalog dump in IndexedDB
  */
 export function initSearchEngine(): Promise<boolean> {
   if (memoryIndex !== null) return Promise.resolve(true);
@@ -114,7 +44,7 @@ export function initSearchEngine(): Promise<boolean> {
   initPromise = (async () => {
     isInitializing = true;
     try {
-      // 1. Try unified Catalog Storage (GamegataCatalogDB_v1) first (0ms, 107k games)
+      // 1. Load from unified Catalog Storage (GamegataCatalogDB_v1) first (0ms, 108k+ games)
       const catalogRecords = await loadCatalogFromDB();
       if (catalogRecords && catalogRecords.length > 0) {
         memoryIndex = catalogRecords.map((r: any) => ({
@@ -123,20 +53,14 @@ export function initSearchEngine(): Promise<boolean> {
           s: r.s,
           c: r.c || null,
           d: r.dn || null,
+          dp: r.dp ?? null,
+          rt: r.rt ?? null,
         }));
         isInitializing = false;
         return true;
       }
 
-      // 2. Try legacy search IndexedDB (gamegata_search_v3)
-      const cached = await loadFromIndexedDB();
-      if (cached && cached.length > 0) {
-        memoryIndex = cached;
-        isInitializing = false;
-        return true;
-      }
-
-      // 3. Trigger unified catalog worker sync in background (6.9MB gzip)
+      // 2. If not yet cached in IndexedDB, trigger the unified catalog worker sync (streams catalog-dump.json.gz)
       try {
         const ready = await initCatalogWorker();
         if (ready) {
@@ -148,49 +72,15 @@ export function initSearchEngine(): Promise<boolean> {
               s: r.s,
               c: r.c || null,
               d: r.dn || null,
+              dp: r.dp ?? null,
+              rt: r.rt ?? null,
             }));
             isInitializing = false;
             return true;
           }
         }
-      } catch {
-        // Fallback to legacy JSON assets
-      }
-
-      // 2. Fetch index: prefer local static asset first (which contains cover URLs and IDs)
-      let data: SearchRecord[] | null = null;
-      try {
-        const localRes = await fetch(LOCAL_PRIMARY_URL);
-        if (localRes.ok) {
-          const json = await localRes.json();
-          if (Array.isArray(json) && json.length > 0 && json[0]?.i) {
-            data = json;
-          }
-        }
-      } catch {
-        // Fallback to CDN
-      }
-
-      if (!data) {
-        try {
-          const cdnRes = await fetch(CDN_URL, { cache: "force-cache" });
-          if (cdnRes.ok) {
-            const json = await cdnRes.json();
-            if (Array.isArray(json) && json.length > 0 && json[0]?.i) {
-              data = json;
-            }
-          }
-        } catch {
-          // CDN error
-        }
-      }
-
-      if (data && data.length > 0) {
-        memoryIndex = data;
-        // Asynchronously save to IndexedDB without blocking UI
-        saveToIndexedDB(data).catch(() => {});
-        isInitializing = false;
-        return true;
+      } catch (workerErr) {
+        console.warn("[ClientSearchEngine] Catalog worker sync failed:", workerErr);
       }
 
       isInitializing = false;
@@ -366,12 +256,26 @@ export function searchLocal(query: string, limit = 8): SearchResult[] {
         : String(m.item.d)
       : null;
 
+    let priceBadge: string | null = null;
+    let badgeType: "free" | "sale" | "paid" = "paid";
+    if (m.item.dp !== undefined && m.item.dp !== null) {
+      if (m.item.dp === 0) {
+        priceBadge = "FREE";
+        badgeType = "free";
+      } else {
+        priceBadge = `$${m.item.dp.toFixed(2)}`;
+        badgeType = "paid";
+      }
+    }
+
     return {
       id: m.item.i,
       title: m.item.t,
       slug: m.item.s,
       coverUrl: m.item.c || null,
       developerNames: devNames,
+      priceBadge,
+      badgeType,
     };
   });
 }

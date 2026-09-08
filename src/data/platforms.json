@@ -1,0 +1,402 @@
+[
+  {
+    "name": "3DO Interactive Multiplayer",
+    "slug": "3do"
+  },
+  {
+    "name": "64DD",
+    "slug": "64dd"
+  },
+  {
+    "name": "Acorn Archimedes",
+    "slug": "acorn-archimedes"
+  },
+  {
+    "name": "Acorn Electron",
+    "slug": "acorn-electron"
+  },
+  {
+    "name": "Amazon Fire TV",
+    "slug": "firetv"
+  },
+  {
+    "name": "Amiga",
+    "slug": "amiga"
+  },
+  {
+    "name": "Amiga CD32",
+    "slug": "amiga-cd32"
+  },
+  {
+    "name": "Amstrad CPC",
+    "slug": "acpc"
+  },
+  {
+    "name": "Android",
+    "slug": "android"
+  },
+  {
+    "name": "Apple II",
+    "slug": "appleii"
+  },
+  {
+    "name": "Apple IIGS",
+    "slug": "apple-iigs"
+  },
+  {
+    "name": "Arcade",
+    "slug": "arcade"
+  },
+  {
+    "name": "Arduboy",
+    "slug": "arduboy"
+  },
+  {
+    "name": "Atari 2600",
+    "slug": "atari2600"
+  },
+  {
+    "name": "Atari 5200",
+    "slug": "atari5200"
+  },
+  {
+    "name": "Atari 7800",
+    "slug": "atari7800"
+  },
+  {
+    "name": "Atari 8-bit",
+    "slug": "atari8bit"
+  },
+  {
+    "name": "Atari Jaguar CD",
+    "slug": "atari-jaguar-cd"
+  },
+  {
+    "name": "Atari Lynx",
+    "slug": "lynx"
+  },
+  {
+    "name": "Atari ST/STE",
+    "slug": "atari-st"
+  },
+  {
+    "name": "BBC Microcomputer System",
+    "slug": "bbcmicro"
+  },
+  {
+    "name": "Bally Astrocade",
+    "slug": "astrocade"
+  },
+  {
+    "name": "BlackBerry OS",
+    "slug": "blackberry"
+  },
+  {
+    "name": "Blu-ray Player",
+    "slug": "blu-ray-player"
+  },
+  {
+    "name": "Classic",
+    "slug": "classic"
+  },
+  {
+    "name": "Commodore 16",
+    "slug": "c16"
+  },
+  {
+    "name": "Commodore C64/128/MAX",
+    "slug": "c64"
+  },
+  {
+    "name": "Commodore CDTV",
+    "slug": "commodore-cdtv"
+  },
+  {
+    "name": "Commodore PET",
+    "slug": "cpet"
+  },
+  {
+    "name": "Commodore Plus/4",
+    "slug": "c-plus-4"
+  },
+  {
+    "name": "Commodore VIC-20",
+    "slug": "vic-20"
+  },
+  {
+    "name": "DOS",
+    "slug": "dos"
+  },
+  {
+    "name": "DVD Player",
+    "slug": "dvd-player"
+  },
+  {
+    "name": "Daydream",
+    "slug": "daydream"
+  },
+  {
+    "name": "Dragon 32/64",
+    "slug": "dragon-32-slash-64"
+  },
+  {
+    "name": "Dreamcast",
+    "slug": "dc"
+  },
+  {
+    "name": "Epoch Cassette Vision",
+    "slug": "epoch-cassette-vision"
+  },
+  {
+    "name": "Epoch Super Cassette Vision",
+    "slug": "epoch-super-cassette-vision"
+  },
+  {
+    "name": "Evercade",
+    "slug": "evercade"
+  },
+  {
+    "name": "Exidy Sorcerer",
+    "slug": "exidy-sorcerer"
+  },
+  {
+    "name": "FM Towns",
+    "slug": "fm-towns"
+  },
+  {
+    "name": "FM-7",
+    "slug": "fm-7"
+  },
+  {
+    "name": "Family Computer",
+    "slug": "famicom"
+  },
+  {
+    "name": "Family Computer Disk System",
+    "slug": "fds"
+  },
+  {
+    "name": "Game Boy",
+    "slug": "gb"
+  },
+  {
+    "name": "Game Boy Advance",
+    "slug": "gba"
+  },
+  {
+    "name": "Game Boy Color",
+    "slug": "gbc"
+  },
+  {
+    "name": "Gear VR",
+    "slug": "gear-vr"
+  },
+  {
+    "name": "Google Stadia",
+    "slug": "stadia"
+  },
+  {
+    "name": "Handheld Electronic LCD",
+    "slug": "handheld"
+  },
+  {
+    "name": "Hyper Neo Geo 64",
+    "slug": "hyper-neo-geo-64"
+  },
+  {
+    "name": "Intellivision",
+    "slug": "intellivision"
+  },
+  {
+    "name": "Intellivision Amico",
+    "slug": "intellivision-amico"
+  },
+  {
+    "name": "Legacy Computer",
+    "slug": "legacy-computer"
+  },
+  {
+    "name": "Legacy Mobile Device",
+    "slug": "mobile"
+  },
+  {
+    "name": "Linux",
+    "slug": "linux"
+  },
+  {
+    "name": "MSX",
+    "slug": "msx"
+  },
+  {
+    "name": "MSX2",
+    "slug": "msx2"
+  },
+  {
+    "name": "Mac",
+    "slug": "mac"
+  },
+  {
+    "name": "Meta Quest 2",
+    "slug": "meta-quest-2"
+  },
+  {
+    "name": "Meta Quest 3",
+    "slug": "meta-quest-3"
+  },
+  {
+    "name": "N-Gage",
+    "slug": "ngage"
+  },
+  {
+    "name": "NEC PC-6000 Series",
+    "slug": "nec-pc-6000-series"
+  },
+  {
+    "name": "Neo Geo AES",
+    "slug": "neogeoaes"
+  },
+  {
+    "name": "Neo Geo MVS",
+    "slug": "neogeomvs"
+  },
+  {
+    "name": "Neo Geo Pocket Color",
+    "slug": "neo-geo-pocket-color"
+  },
+  {
+    "name": "New Nintendo 3DS",
+    "slug": "new-3ds"
+  },
+  {
+    "name": "Nintendo 3DS",
+    "slug": "3ds"
+  },
+  {
+    "name": "Nintendo 64",
+    "slug": "n64"
+  },
+  {
+    "name": "Nintendo DS",
+    "slug": "nds"
+  },
+  {
+    "name": "Nintendo DSi",
+    "slug": "nintendo-dsi"
+  },
+  {
+    "name": "Nintendo Entertainment System",
+    "slug": "nes"
+  },
+  {
+    "name": "Nintendo GameCube",
+    "slug": "ngc"
+  },
+  {
+    "name": "Nintendo Switch",
+    "slug": "switch"
+  },
+  {
+    "name": "Nintendo Switch 2",
+    "slug": "switch-2"
+  },
+  {
+    "name": "Oculus Go",
+    "slug": "oculus-go"
+  },
+  {
+    "name": "Oculus Quest",
+    "slug": "oculus-quest"
+  },
+  {
+    "name": "Oculus Rift",
+    "slug": "oculus-rift"
+  },
+  {
+    "name": "Oculus VR",
+    "slug": "oculus-vr"
+  },
+  {
+    "name": "Odyssey",
+    "slug": "odyssey--1"
+  },
+  {
+    "name": "Odyssey 2 / Videopac G7000",
+    "slug": "odyssey-2-slash-videopac-g7000"
+  },
+  {
+    "name": "Ouya",
+    "slug": "ouya"
+  },
+  {
+    "name": "PC (Microsoft Windows)",
+    "slug": "win"
+  },
+  {
+    "name": "PC Engine SuperGrafx",
+    "slug": "supergrafx"
+  },
+  {
+    "name": "PC-8800 Series",
+    "slug": "pc-8800-series"
+  },
+  {
+    "name": "PC-9800 Series",
+    "slug": "pc-9800-series"
+  },
+  {
+    "name": "Panasonic M2",
+    "slug": "panasonic-m2"
+  },
+  {
+    "name": "Philips CD-i",
+    "slug": "philips-cdi"
+  },
+  {
+    "name": "PlayStation",
+    "slug": "ps"
+  },
+  {
+    "name": "PlayStation 2",
+    "slug": "ps2"
+  },
+  {
+    "name": "PlayStation 3",
+    "slug": "ps3"
+  },
+  {
+    "name": "PlayStation 4",
+    "slug": "ps4--1"
+  },
+  {
+    "name": "PlayStation 5",
+    "slug": "ps5"
+  },
+  {
+    "name": "PlayStation Portable",
+    "slug": "psp"
+  },
+  {
+    "name": "PlayStation VR",
+    "slug": "psvr"
+  },
+  {
+    "name": "PlayStation VR2",
+    "slug": "psvr2"
+  },
+  {
+    "name": "PlayStation Vita",
+    "slug": "psvita"
+  },
+  {
+    "name": "Playdate",
+    "slug": "playdate"
+  },
+  {
+    "name": "Plug & Play",
+    "slug": "plug-and-play"
+  },
+  {
+    "name": "Satellaview",
+    "slug": "satellaview"
+  }
+]

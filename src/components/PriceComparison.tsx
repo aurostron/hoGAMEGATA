@@ -343,28 +343,28 @@ export default function PriceComparison({
                     </span>
                   )}
                   {isFreeDeal && deal.retailPrice > 0 ? (
-                    <span className="font-mono text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 font-bold uppercase rounded">
+                    <span className="font-sans text-[11px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 font-bold uppercase rounded-full">
                       100% OFF (FREE)
                     </span>
                   ) : isFreeDeal ? (
-                    <span className="font-mono text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 font-bold uppercase rounded">
+                    <span className="font-sans text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 font-bold uppercase rounded-full">
                       FREE
                     </span>
                   ) : deal.discountPercent > 0 ? (
-                    <span className="font-mono text-[9px] bg-white/10 text-white/80 border border-white/10 px-1.5 py-0.5 font-bold uppercase rounded">
+                    <span className="font-sans text-[11px] bg-white/10 text-white/90 border border-white/15 px-2 py-0.5 font-bold uppercase rounded-full">
                       -{deal.discountPercent}% OFF
                     </span>
                   ) : null}
                 </div>
                 
                 <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-                  <div className="flex items-baseline gap-2 font-mono">
+                  <div className="flex items-baseline gap-2 font-sans">
                     {deal.discountPercent > 0 && deal.retailPrice > 0 && (
                       <span className="text-xs text-white/40 line-through">
                         {formatPrice(deal.retailPrice)}
                       </span>
                     )}
-                    <span className={`text-base font-bold ${isCheapest || isFreeDeal ? "text-emerald-400" : "text-white"}`}>
+                    <span className={`text-lg font-bold tracking-tight ${isCheapest || isFreeDeal ? "text-emerald-400" : "text-white"}`}>
                       {formatPrice(deal.dealPrice)}
                     </span>
                   </div>

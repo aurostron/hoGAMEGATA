@@ -1,0 +1,238 @@
+[
+  {
+    "name": "Action",
+    "slug": "action"
+  },
+  {
+    "name": "Adventure",
+    "slug": "adventure"
+  },
+  {
+    "name": "Arcade",
+    "slug": "arcade"
+  },
+  {
+    "name": "Building",
+    "slug": "building"
+  },
+  {
+    "name": "Card & Board Game",
+    "slug": "card-and-board-game"
+  },
+  {
+    "name": "Card Game",
+    "slug": "card-game"
+  },
+  {
+    "name": "Casual",
+    "slug": "casual"
+  },
+  {
+    "name": "Combat",
+    "slug": "combat"
+  },
+  {
+    "name": "Comedy",
+    "slug": "comedy"
+  },
+  {
+    "name": "Detective-mystery",
+    "slug": "detective"
+  },
+  {
+    "name": "Early Access",
+    "slug": "early-access"
+  },
+  {
+    "name": "Exploration",
+    "slug": "exploration"
+  },
+  {
+    "name": "FPP",
+    "slug": "fpp"
+  },
+  {
+    "name": "Fantasy",
+    "slug": "fantasy"
+  },
+  {
+    "name": "Fighting",
+    "slug": "fighting"
+  },
+  {
+    "name": "Free To Play",
+    "slug": "free-to-play"
+  },
+  {
+    "name": "Hack and slash/Beat 'em up",
+    "slug": "hack-and-slash-beat-em-up"
+  },
+  {
+    "name": "Hidden Object",
+    "slug": "hidden-object"
+  },
+  {
+    "name": "Horror",
+    "slug": "horror"
+  },
+  {
+    "name": "Indie",
+    "slug": "indie"
+  },
+  {
+    "name": "JRPG",
+    "slug": "jrpg"
+  },
+  {
+    "name": "MOBA",
+    "slug": "moba"
+  },
+  {
+    "name": "Managerial",
+    "slug": "managerial"
+  },
+  {
+    "name": "Massively Multiplayer",
+    "slug": "massively-multiplayer"
+  },
+  {
+    "name": "Metroidvania",
+    "slug": "metroidvania"
+  },
+  {
+    "name": "Modern",
+    "slug": "modern"
+  },
+  {
+    "name": "Music",
+    "slug": "music"
+  },
+  {
+    "name": "Mystery",
+    "slug": "mystery"
+  },
+  {
+    "name": "Narrative",
+    "slug": "narrative"
+  },
+  {
+    "name": "Open World",
+    "slug": "open-world"
+  },
+  {
+    "name": "Pinball",
+    "slug": "pinball"
+  },
+  {
+    "name": "Platform",
+    "slug": "platform"
+  },
+  {
+    "name": "Platformer",
+    "slug": "platformer"
+  },
+  {
+    "name": "Point-and-click",
+    "slug": "point-and-click"
+  },
+  {
+    "name": "Puzzle",
+    "slug": "puzzle"
+  },
+  {
+    "name": "Quiz/Trivia",
+    "slug": "quiz-trivia"
+  },
+  {
+    "name": "Racing",
+    "slug": "racing"
+  },
+  {
+    "name": "Real Time Strategy (RTS)",
+    "slug": "real-time-strategy-rts"
+  },
+  {
+    "name": "Real-time",
+    "slug": "realtime"
+  },
+  {
+    "name": "Roguelike",
+    "slug": "rougelike"
+  },
+  {
+    "name": "Role-playing",
+    "slug": "rpg"
+  },
+  {
+    "name": "Role-playing (RPG)",
+    "slug": "role-playing-rpg"
+  },
+  {
+    "name": "Sandbox",
+    "slug": "sandbox"
+  },
+  {
+    "name": "Sci-fi",
+    "slug": "scifi"
+  },
+  {
+    "name": "Shoot 'em Up",
+    "slug": "shoot-em-up"
+  },
+  {
+    "name": "Shooter",
+    "slug": "shooter"
+  },
+  {
+    "name": "Simulation",
+    "slug": "simulation"
+  },
+  {
+    "name": "Simulator",
+    "slug": "simulator"
+  },
+  {
+    "name": "Sport",
+    "slug": "sport"
+  },
+  {
+    "name": "Sports",
+    "slug": "sports"
+  },
+  {
+    "name": "Stealth",
+    "slug": "stealth"
+  },
+  {
+    "name": "Strategy",
+    "slug": "strategy"
+  },
+  {
+    "name": "Survival",
+    "slug": "survival"
+  },
+  {
+    "name": "TPP",
+    "slug": "tpp"
+  },
+  {
+    "name": "Tactical",
+    "slug": "tactical"
+  },
+  {
+    "name": "Turn-based",
+    "slug": "turnbased"
+  },
+  {
+    "name": "Turn-based strategy (TBS)",
+    "slug": "turn-based-strategy-tbs"
+  },
+  {
+    "name": "Virtual life",
+    "slug": "virtuallife"
+  },
+  {
+    "name": "Visual Novel",
+    "slug": "visual-novel"
+  }
+]

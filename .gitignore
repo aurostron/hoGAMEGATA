@@ -73,16 +73,8 @@ scripts/*
 !scripts/seed-mock-db.ts
 !scripts/fix-manifest-urls.mjs
 !scripts/generate-catalog-dump.ts
-!scripts/generate-search-index.ts
 !scripts/generate-weekly-trending.ts
 !scripts/sync-new-igdb-dumps.ts
-!scripts/clean-price-snapshots.ts
-!scripts/benchmark-turso-search.ts
-!scripts/check-fts5.ts
-!scripts/test-enrichment.ts
-!scripts/test-subquery.ts
-!scripts/setup-fts5.ts
-!scripts/setup-fts-triggers.ts
 pending-search-cache.json
 
 # Local large database dumps

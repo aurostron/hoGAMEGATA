@@ -6,7 +6,6 @@ import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle
 import PlatformLogos from "./PlatformLogos";
 import NyanLoader from "./NyanLoader";
 import { usePreferences } from "../hooks/usePreferences";
-import { searchNative } from "../lib/nativeSearchManager";
 import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
 import { queryLocalCatalog } from "../lib/catalogStorage";
 import HeroCarousel from "./HeroCarousel";

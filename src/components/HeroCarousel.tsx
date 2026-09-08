@@ -286,16 +286,16 @@ export default function HeroCarousel({ games, activeRegion }: HeroCarouselProps)
               {deal ? (
                 <div className="flex items-center bg-black/50 border border-white/20 p-1 backdrop-blur-xs">
                   {hasDiscount && (
-                    <span className="font-mono text-xs sm:text-sm font-black bg-[#7b3fc4] text-white px-2 py-1.5 tracking-wide mr-2.5">
+                    <span className="font-sans text-xs sm:text-sm font-bold bg-[#7b3fc4] text-white px-2 py-1.5 tracking-wide mr-2.5">
                       -{deal.discountPercent}%
                     </span>
                   )}
                   <div className="flex flex-col justify-center pr-2">
-                    <span className="font-mono text-sm sm:text-base font-black text-emerald-400 leading-none">
+                    <span className="font-sans text-base sm:text-lg font-bold text-emerald-400 leading-none tracking-tight">
                       {formatPrice(deal.dealPrice, deal.currency)}
                     </span>
                     {hasDiscount && (
-                      <span className="font-mono text-[9px] sm:text-[10px] text-white/40 line-through mt-0.5 leading-none">
+                      <span className="font-sans text-xs text-white/40 line-through mt-0.5 leading-none">
                         {formatPrice(deal.retailPrice, deal.currency)}
                       </span>
                     )}

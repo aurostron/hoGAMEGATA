@@ -21,6 +21,7 @@ import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngin
 import { trackSearch } from '../../../lib/analytics';
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import { isDlcOrExtra } from '../../../lib/dlcHelper';
+import { getCatalogStats } from '../../../lib/catalogMeta';
 
 export const prerender = false;
 
@@ -28,7 +29,7 @@ const isDev = import.meta.env?.DEV || (typeof process !== 'undefined' && process
 
 // In-Memory API response cache (avoids repeated database round-trips)
 const API_RESPONSE_CACHE = new Map<string, { body: string; expiresAt: number }>();
-let cachedTotalVisibleGames: { val: number; timestamp: number } | null = null;
+const COUNT_CACHE = new Map<string, { val: number; timestamp: number }>();
 
 let cachedGameTitles: string[] | null = null;
 async function getGameTitles(): Promise<string[]> {
@@ -470,43 +471,37 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     let conditions = buildConditions(finalSearch, filterGameIds);
 
-    // Get Total Matching Count (Optimized: avoid 107k row scans when count is known)
+    // Get Total Matching Count (Optimized: 0 Turso row scans for standard browsing and indexed search)
     let totalCount = 0;
-    if (ftsGameIds !== null && !hideDlcs && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
-      // FTS search exact count is already known without scanning Game table
+    const catalogStats = getCatalogStats();
+
+    if (ftsGameIds !== null) {
+      // FTS search count is directly derived from matching IDs without scanning Game table
       totalCount = ftsGameIds.length;
-    } else if (conditions.length <= 2 && !hideDlcs && !finalSearch && !filterGameIds && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
-      // Default catalog browse: use cached total count with 1h TTL
-      if (cachedTotalVisibleGames && Date.now() - cachedTotalVisibleGames.timestamp < 3600000) {
-        totalCount = cachedTotalVisibleGames.val;
+    } else if (filterGameIds !== null && filterGameIds.length > 0) {
+      // Filter intersection count is known from the joined IDs
+      totalCount = filterGameIds.length;
+    } else if (!finalSearch && !minPriceParam && !maxPriceParam && !freeOnly && selectedDecades.length === 0) {
+      // Standard catalog browsing: use pre-computed count directly (0 reads)
+      totalCount = hideDlcs ? catalogStats.totalVisibleGames : catalogStats.totalGames;
+    } else {
+      // Custom filter combination: use in-memory LRU cache with 15m TTL to prevent repeated scans
+      const countKey = `${conditions.length}_${finalSearch}_${minPriceParam}_${maxPriceParam}_${freeOnly}_${selectedDecades.join(",")}_${hideDlcs}`;
+      const cached = COUNT_CACHE.get(countKey);
+      if (cached && Date.now() - cached.timestamp < 900000) {
+        totalCount = cached.val;
       } else {
-        const countQuery = turso.select({ count: count() }).from(gamesTable).where(and(...conditions));
+        let countQuery = turso.select({ count: count() }).from(gamesTable);
+        if (conditions.length > 0) {
+          countQuery = countQuery.where(and(...conditions)) as any;
+        }
         const [{ count: countVal }] = await countQuery;
         totalCount = countVal;
-        cachedTotalVisibleGames = { val: totalCount, timestamp: Date.now() };
-      }
-    } else {
-      let countQuery = turso.select({ count: count() }).from(gamesTable);
-      if (conditions.length > 0) {
-        countQuery = countQuery.where(and(...conditions)) as any;
-      }
-      const [{ count: countVal }] = await countQuery;
-      totalCount = countVal;
-    }
-
-    // Run Typo Correction if no results found
-    if (totalCount === 0 && finalSearch && finalSearch.length > 3) {
-      const allTitles = await getGameTitles();
-      const correction = suggestCorrection(finalSearch, allTitles);
-      if (correction && correction.toLowerCase() !== finalSearch.toLowerCase()) {
-        correctedQuery = correction;
-        finalSearch = correction;
-        conditions = buildConditions(finalSearch, filterGameIds);
-        const [{ count: newCount }] = await turso
-          .select({ count: count() })
-          .from(gamesTable)
-          .where(and(...conditions));
-        totalCount = newCount;
+        if (COUNT_CACHE.size > 200) {
+          const firstKey = COUNT_CACHE.keys().next().value;
+          if (firstKey) COUNT_CACHE.delete(firstKey);
+        }
+        COUNT_CACHE.set(countKey, { val: totalCount, timestamp: Date.now() });
       }
     }
 

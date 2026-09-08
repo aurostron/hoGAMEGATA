@@ -194,23 +194,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // 3.5. Private Dev-Only Gating: /promo and /promo/*
-  if (pathname === "/promo" || pathname.startsWith("/promo/")) {
-    const isDevOrLocal = isDev || url.hostname === "localhost" || url.hostname === "127.0.0.1";
-    if (!isDevOrLocal) {
-      initTursoAuthForRequest(runtimeEnv);
-      initBetterAuth(runtimeEnv);
-      const user = await getServerUser(context.request, context.cookies, runtimeEnv);
-      const isAdmin = user && isAdminUser(user.email, runtimeEnv);
-      const bypassCookie = context.cookies.get("maintenance_bypass")?.value;
-      const secret = (runtimeEnv as any)?.MAINTENANCE_SECRET;
-      const hasBypass = bypassCookie && secret && bypassCookie === secret;
-
-      if (!isAdmin && !hasBypass) {
-        return applySecurityHeaders(new Response("Not Found", { status: 404, statusText: "Not Found" }));
-      }
-    }
-  }
 
   // 4. Allow public paths without authentication
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"))) {
