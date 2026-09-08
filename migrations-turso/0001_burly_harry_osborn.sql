@@ -1,1 +1,0 @@
-CREATE INDEX `game_title_idx` ON `Game` (`title`);

@@ -33,7 +33,6 @@ const PUBLIC_PATHS = [
   "/legal",
   "/maintenance",
   "/submit-game",
-  "/api/maintenance",
   "/search",
   "/api/edits",
   "/api/user/reputation",
@@ -169,10 +168,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // 2. Maintenance mode check via Cloudflare KV (0 DB reads)
-  // Skip if already on the maintenance page or maintenance API to prevent redirect loops
+  // Skip if already on the maintenance page to prevent redirect loops
   const isMaintenancePage = pathname === "/maintenance" || pathname.startsWith("/maintenance/");
-  const isMaintenanceApi = pathname.startsWith("/api/maintenance");
-  if (!isMaintenancePage && !isMaintenanceApi) {
+  if (!isMaintenancePage) {
     try {
       const kv = (runtimeEnv as any).MAINTENANCE as KVNamespace | undefined;
       if (kv) {

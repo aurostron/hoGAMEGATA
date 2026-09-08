@@ -4582,6 +4582,43 @@ Cleanly consolidated all deleted files, pruned legacy assets, and committed all 
 - **Cloudflare Deployment**: Uploaded 9 modified client assets and worker bundle in 18.39s; triggers deployed in 7.41s to `gamegata.xyz`.
 - **Live Endpoint Verification**: `GET https://gamegata.xyz/` (HTTP 200 OK) and `GET https://gamegata.xyz/games` (HTTP 200 OK).
 
+---
+
+## 2026-09-09 — Frontend-Only Repository Isolation & Comprehensive Privacy Hardening
+
+### Summary
+Completely isolated the `aurostron/hoGAMEGATA` repository to be purely frontend-focused with the basic 100 curated games for zero-config testing. Relocated all internal business planning, proprietary strategy (`OPEN_CORE_STRATEGY.md`, all of `docs/`), catalog analysis reports (`data/*.html`, `data/*.pptx`), backend database migrations (`migrations-turso/`, `prisma/`), configs (`prisma.config.ts`, `drizzle.config*.ts`), cron workflows (`.github/workflows/weekly-trending.yml`), backend ingestion scripts (`scripts/generate-catalog-dump.ts`, `generate-weekly-trending.ts`, `sync-new-igdb-dumps.ts`), admin portal pages/components (`src/pages/admin/`, `src/pages/api/admin/`, `AdminLayout.astro`, `components/admin/`, `BugManagementQueue.tsx`, `ModerationQueue.tsx`, `dev-bypass.ts`, `adminSchemas.ts`), internal maintenance/discord bot endpoints, and agent instructions (`.opencode/`, `.agents/`, `AGENTS.md`, `CLAUDE.md`) into the gitignored `planning/` directory. Updated `.gitignore` and aligned `README.md` to reflect the 100% open-source web client and offline mock testing mode.
+
+### Files Modified & Relocated
+| File / Directory | Destination / Action | Description |
+| :--- | :--- | :--- |
+| `OPEN_CORE_STRATEGY.md` | `planning/strategy/` | Private business strategy & moat documentation removed from git tracking |
+| `docs/` (13 files) | `planning/docs/` | Internal deduplication algorithms, fear psychology, and architecture notes moved to planning |
+| `data/Gamegata_Catalog_Analysis_Report.*` | `planning/reports/` | Internal presentation and HTML reports moved to planning |
+| `migrations-turso/` (8 files) | `planning/backend/` | Turso SQL migrations moved to private planning; removed from git |
+| `prisma/` & `prisma.config.ts` | `planning/backend/` | PostgreSQL/Prisma schemas and migrations moved to private planning; removed from git |
+| `drizzle.config.ts`, `drizzle.config.auth.ts` | `planning/backend/` | Backend ORM configs moved to private planning; removed from git |
+| `.github/workflows/weekly-trending.yml` | `planning/backend/` | Backend cron workflow with private API keys removed from git |
+| `scripts/` (3 ingestion scripts) | `planning/backend/scripts/` | `generate-catalog-dump.ts`, `generate-weekly-trending.ts`, `sync-new-igdb-dumps.ts` moved to planning |
+| Admin Portal (Pages, API, Layouts, Components) | `planning/admin/` | `src/pages/admin/`, `src/pages/api/admin/`, `AdminLayout.astro`, `components/admin/`, `BugManagementQueue.tsx`, `ModerationQueue.tsx`, `dev-bypass.ts`, `adminSchemas.ts` moved to planning |
+| Internal Ops Endpoints | `planning/admin/` | `src/pages/api/maintenance/` and `src/pages/api/discord/` moved to planning |
+| Agent Instructions & Rules | Untracked & Ignored | `.opencode/`, `.agents/`, `AGENTS.md`, and `CLAUDE.md` untracked and added to `.gitignore` |
+| `scripts/` (Retained) | Stays in Repo | Retained only `fix-manifest-urls.mjs` (Astro build) and `seed-mock-db.ts` (100 testing games seed) |
+| `data/` (Retained) | Stays in Repo | Retained only `curated-100-games.json` and `mock-seed.json` for offline testing |
+| `.gitignore` | Modified | Hardened to guard `planning/`, `.agents/`, `.opencode/`, `docs/`, `migrations-turso/`, `prisma/`, `admin`, etc. |
+| `README.md` | Modified | Updated Open Access & Licensing section; aligned scripts table to pure frontend dev workflow |
+| `package.json` | Modified | Removed obsolete `"catalog:generate"` script |
+| `src/middleware.ts` | Modified | Removed `/api/maintenance` public route and check |
+
+### Design Decisions & Rationale
+- **Pure Frontend Experience**: The open-source repository now represents a clean, self-contained Astro SSR frontend client. Anyone can clone, run `npm run setup:mock`, and immediately have a full local development experience with the curated 100-game dataset without needing external database credentials.
+- **Zero Exposure of Private Strategy**: No grant applications, business moat discussions, proprietary fear psychology docs, or backend database migrations are tracked on GitHub. Everything private is preserved safely on disk inside `planning/`, which is permanently ignored by `.gitignore`.
+- **Zero Admin Bloat**: Pruning the proprietary admin portal and moderation queues completely out of `src/` ensures Astro never bundles admin routes and reviewers see only the public platform code.
+
+### Verification Results
+- **Fast Build (`npm run build:quick`)**: Passed with exit code 0. Server built in 28.48s, static routes prerendered in 13.14s, and Windows `file:///` URLs normalized with 0 errors.
+- **Tracked Files Audit**: Verified with `git ls-files` that only frontend code, public static assets, the 2 mock data files, and 2 essential build scripts are tracked.
+
 
 
 

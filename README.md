@@ -30,21 +30,17 @@ Cloudflare Edge Network
 
 ---
 
-## Open-Core Model
+## Licensing & Open Access Model
 
-hoGAMEGATA publishes its application software, schema definitions, and tools under open-source licenses, while keeping production operational credentials, user data, and core editorial classification datasets private.
+hoGAMEGATA publishes its application software and curated test catalog under recognized open licenses:
 
-| Area | Status | License / Availability |
-|---|---|---|
-| Application Frontend (`src/`) | Open | MIT License |
-| Database Schemas (`src/db/`) | Open | MIT License |
-| Search DSL & Ingestion Runners (`scripts/`) | Open | MIT License |
-| Curated Catalog Metadata | Open | ODbL 1.0 (Attribution & Share-Alike) |
-| Scare Meter Scoring System | Private | Proprietary (All Rights Reserved) |
-| Horror Micro-Tag Taxonomy (15,800+ tags) | Private | Proprietary (All Rights Reserved) |
-| Production Database Credentials & User PII | Private | Internal Only |
+| Component | License / Availability |
+|---|---|
+| Application Frontend (`src/`) | [MIT License](./LICENSE) |
+| Curated Test Dataset (`data/`) | [Open Database License (ODbL) v1.0](./DATA_LICENSE.md) |
+| Developer Build Tools (`scripts/`) | [MIT License](./LICENSE) |
 
-For a complete breakdown of boundaries and legal terms, see [OPEN_CORE.md](./docs/OPEN_CORE.md) and [DATA_LICENSE.md](./DATA_LICENSE.md).
+The core web client is 100% open source. Anyone can clone, build, inspect, and contribute to the platform. Proprietary production secrets, Cloudflare tokens, and backend database credentials are strictly decoupled and never committed.
 
 ---
 

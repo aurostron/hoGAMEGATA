@@ -1,1 +1,0 @@
-ALTER TABLE `Game` ADD `catboxAlbumId` text;

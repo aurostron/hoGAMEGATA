@@ -26,10 +26,11 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 
-# Local Developer tools & database ORM
-# /prisma/
-# /scripts/
-# /src/lib/db.ts
+# Agent instructions & rules
+.opencode/
+.agents/
+AGENTS.md
+CLAUDE.md
 
 # local sqlite databases
 *.db
@@ -40,6 +41,19 @@ pnpm-debug.log*
 local.db
 local.db-journal
 
+# internal planning & strategy
+planning/
+docs/
+OPEN_CORE_STRATEGY.md
+
+# backend database migrations, schemas & configs
+migrations-turso/
+prisma/
+prisma.config.ts
+drizzle.config.ts
+drizzle.config.auth.ts
+.github/workflows/weekly-trending.yml
+
 # temporary scratch and ingestion files
 /scratch/
 ingest_cursor.json
@@ -47,19 +61,13 @@ gamegata-sync/
 hogamegata/
 backups/
 
-# internal planning documents
-planning/
-
 # Local IGDB data dumps
 scripts/igdb-dumps/
-
-
-
 
 # Local db profiles
 .env.db-profiles.json
 
-# Proprietary Admin Portal & Moderation Suite
+# Proprietary Admin Portal, Moderation & Internal Ops
 src/pages/admin/
 src/pages/api/admin/
 src/layouts/AdminLayout.astro
@@ -67,20 +75,22 @@ src/components/admin/
 src/components/bugs/BugManagementQueue.tsx
 src/components/editing/ModerationQueue.tsx
 src/pages/api/auth/dev-bypass.ts
+src/lib/validations/adminSchemas.ts
+src/pages/api/maintenance/
+src/pages/api/discord/
 
-# Proprietary Ingestion, Scraping & Migration Scripts
+# Scripts (Frontend only keeps build & local mock seed)
 scripts/*
 !scripts/seed-mock-db.ts
 !scripts/fix-manifest-urls.mjs
-!scripts/generate-catalog-dump.ts
-!scripts/generate-weekly-trending.ts
-!scripts/sync-new-igdb-dumps.ts
 pending-search-cache.json
 
-# Local large database dumps
+# Local large database dumps & reports
 data/*.db
 data/*.sql
 data/*.csv
+data/*.html
+data/*.pptx
 
 # Local admin app & binaries
 admin-app/
