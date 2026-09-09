@@ -45,6 +45,7 @@ local.db-journal
 planning/
 docs/
 OPEN_CORE_STRATEGY.md
+walkthrough.md
 
 # backend database migrations, schemas & configs
 migrations-turso/
