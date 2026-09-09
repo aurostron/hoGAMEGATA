@@ -1,8 +1,7 @@
 import type { APIRoute } from 'astro';
 import { generateAffiliateLink } from '../../../../lib/affiliate';
 import { turso, initTursoForRequest } from '../../../../lib/turso';
-import { tursoAuth, initTursoAuthForRequest } from '../../../../lib/tursoAuth';
-import { referralClick as referralClickTable } from '../../../../db/auth-schema';
+import { initTursoAuthForRequest } from '../../../../lib/tursoAuth';
 import { games as gamesTable, purchaseLinks as purchaseLinksTable } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
 import { env as cfWorkerEnv } from "cloudflare:workers";
@@ -192,17 +191,8 @@ export const POST: APIRoute = async (context) => {
       finalRedirectionUrl = finalRedirectionUrl.replace(/\/purchase$/, "");
     }
 
-    // 4. Log referral click in database (separate Auth/User DB)
-    try {
-      await tursoAuth.insert(referralClickTable).values({
-        id: crypto.randomUUID(),
-        gameId: game.id,
-        storeName: cleanLink?.storeName || targetStoreName,
-        targetUrl: finalRedirectionUrl,
-      });
-    } catch (dbErr) {
-      console.error("[Redirect Analytics Error] Failed to log ReferralClick:", dbErr);
-    }
+    // 4. Referral-click logging deleted (2026-09-09): zero DB writes on the
+    // redirect path. The target URL resolution below is unchanged.
 
     // 5. Return target URL
     return new Response(JSON.stringify({ redirectUrl: finalRedirectionUrl }), {

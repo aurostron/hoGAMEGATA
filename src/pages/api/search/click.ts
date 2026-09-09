@@ -1,7 +1,5 @@
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import type { APIRoute } from 'astro';
-import { tursoAuth } from '../../../lib/tursoAuth';
-import { searchClick as searchClickTable } from '../../../db/auth-schema';
 
 export const prerender = false;
 
@@ -17,17 +15,11 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
     }
 
+    // Search-click logging deleted (2026-09-09): acknowledge without any DB write.
     const clickId = crypto.randomUUID();
-
-    // Insert search click into separate Auth Database
-    await tursoAuth
-      .insert(searchClickTable)
-      .values({
-        id: clickId,
-        query: query.trim(),
-        gameId,
-        position,
-      });
+    void query;
+    void gameId;
+    void position;
 
     return new Response(JSON.stringify({ success: true, id: clickId }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {

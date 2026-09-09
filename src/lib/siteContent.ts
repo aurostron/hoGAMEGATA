@@ -48,30 +48,15 @@ export const DEFAULT_CONTENT = [
 ];
 
 export async function getOrSeedContent() {
+  // Read-only (2026-09-09): merge DB copy over in-memory defaults, never seed.
+  // Seeding from the request path caused Turso writes on homepage renders.
   try {
     const current = await turso.select().from(siteContent);
-    const dbMap = new Map(current.map(item => [item.key, item]));
-
-    let updatedCount = 0;
-    for (const item of DEFAULT_CONTENT) {
-      if (!dbMap.has(item.key)) {
-        await turso.insert(siteContent).values({
-          key: item.key,
-          value: item.value,
-          type: item.type,
-          label: item.label,
-          section: item.section,
-          updatedAt: new Date()
-        }).onConflictDoNothing();
-        updatedCount++;
-      }
-    }
-
-    if (updatedCount > 0) {
-      return await turso.select().from(siteContent);
-    }
-
-    return current;
+    const dbMap = new Map(current.map(item => [item.key, item.value]));
+    return DEFAULT_CONTENT.map((item) => ({
+      ...item,
+      value: dbMap.get(item.key) ?? item.value,
+    }));
   } catch {
     return DEFAULT_CONTENT;
   }

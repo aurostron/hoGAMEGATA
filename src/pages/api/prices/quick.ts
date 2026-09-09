@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { turso, initTursoForRequest } from "../../../lib/turso";
-import { games as gamesTable, purchaseLinks as purchaseLinksTable, priceSnapshots as priceSnapshotsTable } from "../../../db/schema";
+import { purchaseLinks as purchaseLinksTable, priceSnapshots as priceSnapshotsTable } from "../../../db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { env as cfEnv } from "cloudflare:workers";
 import { rateLimit, getClientIp, tooManyRequests } from "../../../lib/rateLimit";
@@ -131,41 +131,14 @@ export const GET: APIRoute = async ({ request }) => {
             try {
               const itchData = await fetchItchDataJson(link.url, 1500);
               if (itchData.success) {
+                // Display-only (2026-09-09): live data.json served in-response.
+                // Never persist from the request path — the weekly batch owns all writes.
                 const badge = formatItchBadge(itchData);
                 results[link.gameId] = {
                   priceBadge: badge.badgeText,
                   badgeType: badge.badgeType,
                   coverUrl: itchData.coverUrl || null,
                 };
-
-                // Non-blocking write to Turso so future searches by anyone are instant
-                const dealP = itchData.price ?? 0;
-                const retP = itchData.originalPrice ?? dealP;
-                const discP = itchData.discountPercent ?? 0;
-                turso
-                  .insert(priceSnapshotsTable)
-                  .values({
-                    id: `snap_${link.gameId}_itchio_US_direct`,
-                    gameId: link.gameId,
-                    storeName: "itch.io",
-                    dealPrice: dealP,
-                    retailPrice: retP,
-                    discountPercent: discP,
-                    dealUrl: link.url.replace(/\/purchase$/, "").replace(/\/+$/, ""),
-                    currency: itchData.currency || "USD",
-                    country: "US",
-                    provider: "direct",
-                    updatedAt: new Date(),
-                  })
-                  .catch(() => {});
-
-                if (itchData.coverUrl) {
-                  turso
-                    .update(gamesTable)
-                    .set({ coverUrl: itchData.coverUrl })
-                    .where(eq(gamesTable.id, link.gameId))
-                    .catch(() => {});
-                }
               }
             } catch {
               // Ignore timeout

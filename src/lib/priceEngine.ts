@@ -449,21 +449,8 @@ export async function fetchSteamDirect(
         const retailPrice = priceInfo.initial / 100;
         const discountPercent = priceInfo.discount_percent;
 
-        // 3. Asynchronously cache the resolved Steam App ID in the PurchaseLink table ONLY if Steam link already exists
-        if (resolvedFromSearch && hasSteamLink) {
-          const steamUrl = `https://store.steampowered.com/app/${resolvedAppId}/`;
-          turso
-            .update(purchaseLinksTable)
-            .set({ url: steamUrl })
-            .where(
-              and(
-                eq(purchaseLinksTable.gameId, gameId),
-                eq(purchaseLinksTable.storeName, "Steam")
-              )
-            )
-            .then(() => console.log(`✓ Updated Steam link in DB for game ${gameId} with AppID ${resolvedAppId}`))
-            .catch((err) => console.warn(`⚠️ Failed to update Steam link in DB:`, err));
-        }
+        // 3. Display-only (2026-09-09): resolved App IDs are returned in-response.
+        // Never persist link caches from the request path — the weekly batch owns all writes.
 
         return [{
           storeName: "Steam",
@@ -558,24 +545,8 @@ export async function fetchGogDirect(
         discountPercent = Math.round(((basePrice - finalPrice) / basePrice) * 100);
       }
 
-      // 4. Asynchronously cache the resolved GOG ID in the database to avoid future catalog lookups
-      if (resolvedFromCatalog) {
-        const updatedUrl = cleanGogUrl.includes("?")
-          ? `${cleanGogUrl}&gogId=${gogProductId}`
-          : `${cleanGogUrl}?gogId=${gogProductId}`;
-
-        turso
-          .update(purchaseLinksTable)
-          .set({ url: updatedUrl })
-          .where(
-            and(
-              eq(purchaseLinksTable.gameId, gameId),
-              eq(purchaseLinksTable.storeName, "GOG")
-            )
-          )
-          .then(() => console.log(`✓ Cached GOG ID ${gogProductId} in PurchaseLink for game ${gameId}`))
-          .catch((err) => console.warn(`⚠️ Failed to cache GOG ID in DB:`, err));
-      }
+      // 4. Display-only (2026-09-09): resolved GOG IDs are used in-response only.
+      // Never persist link caches from the request path — the weekly batch owns all writes.
 
       return [{
         storeName: "GOG",
@@ -794,29 +765,8 @@ export async function lazyGetPrices(
               currency: itchData.currency || "USD"
             };
 
-            // Wipe any rogue non-itch snapshots and write clean itch snapshot
-            try {
-              await turso
-                .delete(priceSnapshotsTable)
-                .where(eq(priceSnapshotsTable.gameId, gameId));
-              await turso
-                .insert(priceSnapshotsTable)
-                .values({
-                  id: generatePriceSnapshotId(),
-                  gameId,
-                  storeName: "itch.io",
-                  dealPrice: dealP,
-                  retailPrice: retP,
-                  discountPercent: discP,
-                  dealUrl: cleanItchUrl,
-                  currency: itchData.currency || "USD",
-                  country: upperCountry,
-                  provider: "direct",
-                  updatedAt: new Date()
-                });
-            } catch (dbErr) {
-              console.warn("⚠️ Failed to write itch price snapshot to Turso:", dbErr);
-            }
+            // Display-only (2026-09-09): the clean itch deal is returned
+            // in-response. Never persist from the request path.
 
             return [finalItchDeal];
           }
@@ -917,33 +867,8 @@ export async function lazyGetPrices(
             currency: itchData.currency || "USD"
           };
 
-          // If coverUrl is provided by data.json and game in Turso is missing a cover, backfill it!
-          if (itchData.coverUrl && gameId) {
-            try {
-              turso
-                .select({ coverUrl: gamesTable.coverUrl })
-                .from(gamesTable)
-                .where(eq(gamesTable.id, gameId))
-                .limit(1)
-                .then((rows) => {
-                  if (rows.length > 0 && !rows[0].coverUrl) {
-                    turso
-                      .update(gamesTable)
-                      .set({ coverUrl: itchData.coverUrl })
-                      .where(eq(gamesTable.id, gameId))
-                      .then(() =>
-                        console.log(
-                          `[Pricing Engine] 🖼️ Backfilled missing coverUrl for game ${gameId} from itch data.json`
-                        )
-                      )
-                      .catch((e) =>
-                        console.error("[Pricing Engine] Failed to backfill cover:", e)
-                      );
-                  }
-                })
-                .catch(() => {});
-            } catch {}
-          }
+          // Display-only (2026-09-09): data.json covers are served in-response
+          // by callers (suggest/quick return coverUrl directly). No backfill writes.
         }
       } catch (err) {
         console.warn(`[Pricing Engine] Failed to fetch itch data.json for "${title}":`, err);
@@ -1011,59 +936,16 @@ export async function lazyGetPrices(
     }
 
     if (freshDeals.length > 0) {
-      // E. Update local cached data in Turso (Delete stale, then Insert fresh)
-      // Only write to DB if we have expanded stores (don't overwrite good cache with degraded data)
-      const hasExpandedResult = freshDeals.some(d => d.storeName !== "Steam" && d.storeName !== "GOG");
-      if (hasExpandedResult || provider === "aggregated" || Boolean(itchDeal)) {
-        try {
-          await turso
-            .delete(priceSnapshotsTable)
-            .where(
-              and(
-                eq(priceSnapshotsTable.gameId, gameId),
-                eq(priceSnapshotsTable.country, upperCountry),
-                eq(priceSnapshotsTable.provider, provider)
-              )
-            );
-        } catch (deleteError) {
-          console.warn("⚠️ Failed to delete stale prices from Turso:", deleteError);
+      // E. Display-only (2026-09-09): fresh deals are returned in-response with
+      // USD normalization applied in memory. Never persist from the request path —
+      // the weekly batch owns all snapshot writes (it must apply the same
+      // INR→USD normalization before inserting).
+      for (const deal of freshDeals) {
+        if ((deal.currency || "USD") === "INR") {
+          deal.dealPrice = Math.round((deal.dealPrice / 83.5) * 100) / 100;
+          deal.retailPrice = Math.round((deal.retailPrice / 83.5) * 100) / 100;
+          deal.currency = "USD";
         }
-
-        try {
-          await turso
-            .insert(priceSnapshotsTable)
-            .values(
-              freshDeals.map(deal => {
-                let normDealPrice = deal.dealPrice;
-                let normRetailPrice = deal.retailPrice;
-                let normCurrency = deal.currency || "USD";
-
-                if (normCurrency === "INR") {
-                  normDealPrice = Math.round((normDealPrice / 83.5) * 100) / 100;
-                  normRetailPrice = Math.round((normRetailPrice / 83.5) * 100) / 100;
-                  normCurrency = "USD";
-                }
-
-                return {
-                  id: generatePriceSnapshotId(),
-                  gameId,
-                  storeName: deal.storeName,
-                  dealPrice: normDealPrice,
-                  retailPrice: normRetailPrice,
-                  discountPercent: deal.discountPercent,
-                  dealUrl: deal.dealUrl,
-                  currency: normCurrency,
-                  country: upperCountry,
-                  provider,
-                  updatedAt: new Date()
-                };
-              })
-            );
-        } catch (insertError) {
-          console.warn("⚠️ Failed to write fresh prices to Turso:", insertError);
-        }
-      } else {
-        console.log(`[Pricing Engine] ⏭️ Skipping DB write — only Steam/GOG in result, preserving existing cache`);
       }
 
       return freshDeals;

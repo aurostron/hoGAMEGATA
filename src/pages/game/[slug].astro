@@ -41,7 +41,7 @@ import { HelpMenuDropdown } from '../../components/editing/HelpMenuDropdown';
 import { BugReportTrigger } from '../../components/bugs/BugReportTrigger';
 import CoverFavoriteButton from '../../components/CoverFavoriteButton';
 import OfficialLinkIcon from '../../components/icons/OfficialLinkIcon.astro';
-import { trackGameView } from '../../lib/analytics';
+import { queueItchEnrichment } from '../../lib/enrichQueue';
 
 // SSR: render every game on-demand instead of pre-building a limited static set.
 export const prerender = false;
@@ -72,13 +72,9 @@ for (const r of rows) {
 }
 let linksData = Array.from(linksMap.values());
 
-// Track game view in background without blocking SSR page rendering
+// Zero-DB-write request path (2026-09-09): no analytics, no JIT persistence.
+// Unenriched itch games are queued for the weekly batch enricher (KV list).
 const cfCtx = (Astro.locals as any).cfContext;
-if (cfCtx?.waitUntil) {
-  cfCtx.waitUntil(trackGameView(rawGame.id, rawGame.title));
-} else {
-  trackGameView(rawGame.id, rawGame.title).catch(() => {});
-}
 
 const isItchGame = Boolean(rawGame.slug.startsWith("itch-") || (rawGame as any).source === "itch" || (rawGame as any).source === "itchio");
 
@@ -139,27 +135,10 @@ if (isItchGame) {
         rawGame.platformNames = platNames;
         rawGame.rawgEnriched = true;
 
-        // Asynchronously update Turso so the enriched data is permanently saved for all future visitors
-        const bgUpdate = turso
-          .update(gamesTable)
-          .set({
-            coverUrl: newCover,
-            summary: newSummary,
-            screenshots: JSON.stringify(parsedScreenshots),
-            rating: newRating,
-            developerNames: authorName,
-            genreNames: tagNames,
-            platformNames: platNames,
-            rawgEnriched: true,
-            updatedAt: new Date(),
-          })
-          .where(eq(gamesTable.id, rawGame.id));
-
-        if (cfCtx?.waitUntil) {
-          cfCtx.waitUntil(bgUpdate);
-        } else {
-          bgUpdate.catch((err: any) => console.error("Failed background Turso enrichment update:", err));
-        }
+        // Display-only enrichment (2026-09-09): the live-scraped values above are
+        // used for THIS render only. Persistence happens in the weekly batch
+        // Action (<=200 stmts/batch, off-peak). Queue the slug via KV (0 Turso writes).
+        queueItchEnrichment(rawGame.slug).catch(() => {});
 
         // Pre-warm and cache scraped itch images in Cloudflare Edge Cache via /api/image-proxy
         const imagesToCache = [newCover, ...parsedScreenshots.slice(0, 8)].filter(Boolean) as string[];
@@ -258,13 +237,9 @@ if (isItchGame) {
             provider: "direct",
             updatedAt: new Date(),
           };
+          // Display-only (2026-09-09): serve the live data.json deal in-response,
+          // never persist from the request path. The weekly batch owns all writes.
           priceSnapshotsData = [snapshot];
-          const insertTask = turso.insert(priceSnapshotsTable).values(snapshot);
-          if (cfCtx?.waitUntil) {
-            cfCtx.waitUntil(insertTask);
-          } else {
-            insertTask.catch(() => {});
-          }
         }
       }
     }

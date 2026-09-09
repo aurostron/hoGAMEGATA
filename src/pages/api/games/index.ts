@@ -18,7 +18,6 @@ import {
 import { enrichGamesWithRelations } from '../../../lib/gameQueries';
 import { count, isNull, isNotNull, desc, asc, and, or, eq, gt, gte, lt, lte, inArray, like, ne, sql } from 'drizzle-orm';
 import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngine';
-import { trackSearch } from '../../../lib/analytics';
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import { isDlcOrExtra } from '../../../lib/dlcHelper';
 import { getCatalogStats } from '../../../lib/catalogMeta';
@@ -100,12 +99,9 @@ export const GET: APIRoute = async ({ request, locals }) => {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || searchParams.get("q")?.trim() || "";
-    
-    if (search) {
-      // Non-blocking search analytics
-      trackSearch(search).catch((err) => console.error("trackSearch error:", err));
-    }
-    
+
+    // Search analytics deleted (2026-09-09): zero Turso writes on the request path.
+
     // Advanced Filters
     const genresParam = searchParams.get("genres")?.trim() || "";
     const selectedGenres = genresParam ? genresParam.split(",").map(g => g.trim()).filter(Boolean) : [];

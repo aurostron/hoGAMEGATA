@@ -1,36 +1,32 @@
-# GAMEGATA (hoGAMEGATA) — Built by solo developer aurostron.
-# Started as a summer break project learning web dev & databases, GAMEGATA is aurostron's first public web project.
+# hoGAMEGATA — Built by solo developer aurostron.
+# Quota-hardened robots policy (2026-09-09): crawlers (including AI bots) may
+# index the homepage, simple docs, and machine-readable catalog files ONLY.
+# Actual game/developer catalog pages are disallowed to protect the Turso
+# free-tier rows-read quota. No per-bot Allow sections: every bot follows the
+# default group below.
 
 User-agent: *
-Allow: /
-Allow: /game/
-Allow: /developer/
-Allow: /directory
+Allow: /$
 Allow: /about
-Allow: /upcoming
+Allow: /support
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /legal
 Allow: /blog
+Allow: /upcoming
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /api/stats
+Disallow: /game/
+Disallow: /developer/
+Disallow: /directory
+Disallow: /re/
 Disallow: /api/
 Disallow: /search/
 Disallow: /search?*
 Disallow: /login
 Disallow: /dashboard
 
-# Explicitly welcome AI Search Crawlers for fresh discovery
-User-agent: GPTBot
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
 Sitemap: https://gamegata.xyz/sitemap.xml
 Sitemap: https://gamegata.xyz/sitemap-index.xml
-

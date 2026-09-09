@@ -215,40 +215,16 @@ export const GET: APIRoute = async ({ request }) => {
             try {
               const itchData = await fetchItchDataJson(itchLink.url, 1500);
               if (itchData.success) {
+                // Display-only (2026-09-09): live data.json enriches THIS response.
+                // Never persist from the request path — the weekly batch owns all writes.
                 if (!activeCoverUrl && itchData.coverUrl) {
                   activeCoverUrl = itchData.coverUrl;
-                  // Non-blocking background write to Turso so future searches have cover
-                  turso
-                    .update(gamesTable)
-                    .set({ coverUrl: itchData.coverUrl })
-                    .where(eq(gamesTable.id, game.id))
-                    .catch(() => {});
                 }
 
                 if (!priceBadge) {
                   const badge = formatItchBadge(itchData);
                   priceBadge = badge.badgeText;
                   badgeType = badge.badgeType;
-
-                  const dealP = itchData.price ?? 0;
-                  const retP = itchData.originalPrice ?? dealP;
-                  const discP = itchData.discountPercent ?? 0;
-                  turso
-                    .insert(priceSnapshotsTable)
-                    .values({
-                      id: `snap_${game.id}_itchio_US_direct`,
-                      gameId: game.id,
-                      storeName: "itch.io",
-                      dealPrice: dealP,
-                      retailPrice: retP,
-                      discountPercent: discP,
-                      dealUrl: itchLink.url.replace(/\/purchase$/, "").replace(/\/+$/, ""),
-                      currency: itchData.currency || "USD",
-                      country: "US",
-                      provider: "direct",
-                      updatedAt: new Date(),
-                    })
-                    .catch(() => {});
                 }
               }
             } catch {

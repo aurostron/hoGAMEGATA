@@ -1,6 +1,5 @@
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import type { APIRoute } from "astro";
-import { trackLinkClick } from "../../../lib/analytics";
 
 export const prerender = false;
 
@@ -19,8 +18,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Call tracking (await to ensure reliability)
-    await trackLinkClick(gameId, storeName, refTitle || `${gameId} link`);
+    // Click analytics deleted (2026-09-09): acknowledge without any DB write.
+    void refTitle;
 
     return new Response(
       JSON.stringify({ success: true }),
