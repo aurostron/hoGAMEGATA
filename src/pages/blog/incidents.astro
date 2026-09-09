@@ -1,0 +1,139 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { sanityClient } from '../../lib/sanity';
+import { PortableText } from 'astro-portabletext';
+import PortableTextImage from '../../components/PortableTextImage.astro';
+import ReturnButton from '../../components/ReturnButton';
+import KenBurnsBackground from '../../components/KenBurnsBackground';
+
+export const prerender = false;
+
+// Ensure browsers and edge CDN never stale-cache incident communications
+Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+let post: any = null;
+try {
+  // Direct uncached fetch to reflect Sanity Studio publishes instantly
+  post = await sanityClient.withConfig({ useCdn: false }).fetch(`
+    *[_type == "post" && slug.current == "incidents"][0] {
+      title,
+      slug,
+      publishedAt,
+      excerpt,
+      coverImage,
+      body
+    }
+  `);
+} catch (e) {
+  console.error("Failed to fetch Sanity incident post:", e);
+}
+
+// Resilient fallback if Sanity is momentarily unreachable
+if (!post) {
+  post = {
+    title: "We'll be right back.",
+    publishedAt: new Date().toISOString(),
+    excerpt: "Temporary service interruption notice.",
+    body: [
+      {
+        _type: "block",
+        style: "normal",
+        children: [
+          {
+            _type: "span",
+            text: "Dear visitor,"
+          }
+        ]
+      },
+      {
+        _type: "block",
+        style: "normal",
+        children: [
+          {
+            _type: "span",
+            text: "If you're reading this, it means hoGAMEGATA's database is currently unreachable. All game and user data remain safe. We are working to restore full access as soon as possible."
+          }
+        ]
+      },
+      {
+        _type: "block",
+        style: "normal",
+        children: [
+          {
+            _type: "span",
+            text: "Thank you for your patience."
+          }
+        ]
+      }
+    ]
+  };
+}
+
+const formattedDate = post.publishedAt
+  ? new Date(post.publishedAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  : 'Recent Update';
+
+const components = {
+  type: {
+    image: PortableTextImage,
+  }
+};
+---
+
+<Layout
+  title={`${post.title} | hoGAMEGATA Incident Notice`}
+  description={post.excerpt || "Official system status and incident report from hoGAMEGATA."}
+  withSearch={false}
+  withLink={true}
+>
+  {/* Ken Burns Ambient Background Slideshow (50 Curated Horror Screenshots) */}
+  <KenBurnsBackground client:only="react" />
+
+  {/* Main Content Area */}
+  <main class="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 my-8 sm:my-12 pb-24 font-sans">
+    <div class="max-w-3xl w-full border border-white/20 bg-[#09090c]/90 backdrop-blur-md p-6 sm:p-10 md:p-12 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col gap-8 relative">
+      
+      {/* Top Header Row with Title, Badge & Return Button */}
+      <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-6">
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400" aria-hidden="true" />
+              Incident Notice
+            </span>
+            <span class="font-sans text-xs text-neutral-400 font-medium">
+              {formattedDate}
+            </span>
+          </div>
+          <h1 class="font-sans font-bold text-3xl sm:text-4xl text-white tracking-tight leading-tight">
+            {post.title}
+          </h1>
+        </div>
+        <ReturnButton client:only="react" />
+      </div>
+
+      {/* Incident Letter Body from Sanity */}
+      <div class="space-y-6 text-sm sm:text-base text-neutral-300 leading-relaxed font-sans font-normal">
+        {post.excerpt && (
+          <p class="text-sm sm:text-base text-neutral-400 italic border-l-2 border-white/20 pl-4">
+            {post.excerpt}
+          </p>
+        )}
+
+        <article class="changelog-content space-y-4 font-sans text-neutral-200">
+          <PortableText value={post.body} components={components} />
+        </article>
+      </div>
+
+      {/* Footer inside card */}
+      <div class="border-t border-white/10 pt-6 font-sans text-xs text-neutral-500 flex flex-col sm:flex-row justify-between items-center gap-2 w-full">
+        <span>© 2026 hoGAMEGATA Project</span>
+        <span>Live updates via Sanity Studio</span>
+      </div>
+    </div>
+  </main>
+</Layout>

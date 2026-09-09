@@ -12,7 +12,7 @@ let error = false;
 
 try {
   posts = await sanityClient.fetch(`
-    *[_type == "post" && defined(slug.current)] | order(publishedAt desc) {
+    *[_type == "post" && defined(slug.current) && slug.current != "incidents"] | order(publishedAt desc) {
       title,
       "slug": slug.current,
       publishedAt,
