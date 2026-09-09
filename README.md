@@ -4,6 +4,8 @@ hoGAMEGATA is an open-core discovery and preservation database for horror video 
 
 The live website is ad-free and does not require an account for searching, filtering, or viewing catalog records: [https://gamegata.xyz](https://gamegata.xyz)
 
+[![nFXt0F4.md.png](https://iili.io/nFXt0F4.md.png)](https://freeimage.host/i/nFXt0F4)
+
 ---
 
 ## Architecture Overview
@@ -27,6 +29,8 @@ Cloudflare Edge Network
   └── Turso Database (libSQL)
         └── Production catalog records, relationships, and metadata
 ```
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/6c11e9de-62d2-441b-9063-6398a48f16f0" />
+<img width="200" height="100" alt="image" src="https://github.com/user-attachments/assets/ce16df0c-90dd-4956-94ae-416dd1ec49b5" />
 
 ---
 
@@ -54,6 +58,17 @@ The core web client is 100% open source. Anyone can clone, build, inspect, and c
 * **Local Database (Development)**: SQLite (`file:local.db`)
 * **Search Engine**: MiniSearch (client-side pre-indexed search)
 * **Authentication**: Better-Auth with Cloudflare KV session support
+
+![Astro](https://img.shields.io/badge/astro-%232C2052.svg?style=for-the-badge&logo=astro&logoColor=white)
+![Drizzle](https://img.shields.io/badge/Drizzle-%23000000.svg?style=for-the-badge&logo=drizzle&logoColor=C5F74F)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+<img width="100" height="30" alt="Minisearch" src="https://github.com/user-attachments/assets/b5423b2a-3635-45c6-82f9-78784660f53c" />
+
+![NodeJS](https://img.shields.io/badge/node.js-%236DA55F.svg?style=for-the-badge&logo=node.js&logoColor=white)
+<img width="100" height="30" alt="Better Auth" src="https://github.com/user-attachments/assets/c9053416-b70f-48c0-9583-f4555c78e799" />
+
+
 
 ---
 
@@ -117,3 +132,6 @@ Please read our [Contributing Guide](./CONTRIBUTING.md) for branch naming standa
 * **Curated Database Compilations**: Licensed under the [Open Database License (ODbL) v1.0](./DATA_LICENSE.md).
 * **Proprietary Assets**: The Scare Meter algorithm, intensity ratings, and horror micro-tag taxonomy are proprietary works of aurostron. All rights reserved.
 * **Third-Party Game IP**: Game titles, cover artwork, and publisher metadata remain the property of their respective creators and are used under nominative fair use for historical preservation.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) hoGAMEGATA
+[![License: ODbL](https://img.shields.io/badge/License-ODbL-brightgreen.svg)](https://opendatacommons.org/licenses/odbl/) hoGAMEGATA's data (under Project-hGG)
