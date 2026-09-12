@@ -177,37 +177,26 @@ export async function syncCatalog(
 
     if (onProgress) onProgress(85);
 
-    // 3. Decompress in-memory with DecompressionStream
+    // 3. Save compressed blob directly to IndexedDB (only ~7.3MB in storage!)
+    // Avoids decompressing and allocating 107k V8 objects on the main thread.
     const compressedBlob = new Blob(chunksData, { type: 'application/gzip' });
-    let jsonString: string;
+    const count = manifest.totalGames || 107505;
 
-    if (typeof DecompressionStream !== 'undefined') {
-      const decompressedStream = compressedBlob.stream().pipeThrough(new DecompressionStream('gzip'));
-      jsonString = await new Response(decompressedStream).text();
-    } else {
-      throw new Error('DecompressionStream is not supported in this browser environment');
-    }
-
-    if (onProgress) onProgress(95);
-
-    const allRecords = JSON.parse(jsonString);
-
-    // 4. Save to IndexedDB
-    await setToDB('records', allRecords);
+    await setToDB('compressed_dump', compressedBlob);
     await setToDB('meta', {
       version: manifest.version,
-      count: allRecords.length,
+      count,
       savedAt: Date.now()
     });
 
     if (onProgress) onProgress(100);
 
-    // 5. If Web Worker is initialized, load records into worker memory
+    // 4. Notify Web Worker to initialize directly from IndexedDB
     if (workerInstance) {
-      workerInstance.postMessage({ type: 'LOAD_CATALOG', payload: allRecords, id: 'sync' });
+      workerInstance.postMessage({ type: 'INIT_FROM_DB', id: 'sync' });
     }
 
-    return { success: true, count: allRecords.length };
+    return { success: true, count };
   } catch (e) {
     console.error('Catalog sync failed:', e);
     return { success: false, count: 0 };
@@ -257,14 +246,11 @@ export async function initCatalogWorker(
 
   workerInitPromise = (async () => {
     try {
-      let records = await loadCatalogFromDB();
-      if (!records || records.length === 0) {
+      const cached = await isCatalogCached();
+      if (!cached.cached) {
         const syncResult = await syncCatalog(onProgress);
         if (!syncResult.success) return false;
-        records = await loadCatalogFromDB();
       }
-
-      if (!records || records.length === 0) return false;
 
       if (!workerInstance && typeof Worker !== 'undefined') {
         workerInstance = new Worker(
@@ -287,20 +273,35 @@ export async function initCatalogWorker(
 
       if (!workerInstance) return false;
 
-      await new Promise<void>((resolve) => {
+      // Ask worker to initialize directly from IndexedDB without main-thread payload cloning
+      const ready = await new Promise<boolean>((resolve) => {
         const loadId = 'init_' + Math.random().toString(36).substring(2, 8);
-        pendingQueries.set(loadId, () => {
+        pendingQueries.set(loadId, async (res: any) => {
+          if (res?.type === 'NEED_SYNC') {
+            const syncResult = await syncCatalog(onProgress);
+            if (syncResult.success && workerInstance) {
+              const retryId = 'retry_' + Math.random().toString(36).substring(2, 8);
+              pendingQueries.set(retryId, () => {
+                isWorkerReady = true;
+                resolve(true);
+              });
+              workerInstance.postMessage({ type: 'INIT_FROM_DB', id: retryId });
+              return;
+            }
+            resolve(false);
+            return;
+          }
           isWorkerReady = true;
-          resolve();
+          resolve(true);
         });
+
         workerInstance!.postMessage({
-          type: 'LOAD_CATALOG',
-          payload: records,
+          type: 'INIT_FROM_DB',
           id: loadId
         });
       });
 
-      return true;
+      return ready;
     } catch (e) {
       console.error('Failed to initialize catalog worker:', e);
       return false;

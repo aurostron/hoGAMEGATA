@@ -308,12 +308,12 @@ export default function StorefrontLists({
         {/* Left Column: Popular Horrors */}
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 className="font-mono text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2.5">
-              <span className="w-2 h-5 bg-red-500 inline-block" /> POPULAR HORRORS
+            <h3 className="font-sans text-sm sm:text-base font-bold uppercase tracking-wider text-white flex items-center gap-2.5">
+              <span className="w-1.5 h-4.5 sm:h-5 bg-red-500 rounded-xs inline-block shrink-0" /> POPULAR HORRORS
             </h3>
             <button
               onClick={onExplore}
-              className="font-mono text-xs uppercase font-bold tracking-wider text-white/45 hover:text-white transition-colors cursor-pointer"
+              className="font-sans text-xs sm:text-sm font-semibold text-neutral-400 hover:text-white transition-colors cursor-pointer"
             >
               See more
             </button>
@@ -326,12 +326,12 @@ export default function StorefrontLists({
         {/* Right Column: New Releases */}
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 className="font-mono text-sm sm:text-base font-black uppercase tracking-wider text-white flex items-center gap-2.5">
-              <span className="w-2 h-5 bg-red-500 inline-block" /> LATEST DEPLOYMENTS
+            <h3 className="font-sans text-sm sm:text-base font-bold uppercase tracking-wider text-white flex items-center gap-2.5">
+              <span className="w-1.5 h-4.5 sm:h-5 bg-red-500 rounded-xs inline-block shrink-0" /> LATEST DEPLOYMENTS
             </h3>
             <button
               onClick={onExplore}
-              className="font-mono text-xs uppercase font-bold tracking-wider text-white/45 hover:text-white transition-colors cursor-pointer"
+              className="font-sans text-xs sm:text-sm font-semibold text-neutral-400 hover:text-white transition-colors cursor-pointer"
             >
               See more
             </button>
@@ -405,6 +405,29 @@ export default function StorefrontLists({
              SUPPORT US! 
           </button>
         </a>
+
+        {/* 4. As Seen On / Recognition Section */}
+        <div className="pt-12 sm:pt-16 flex flex-col items-center justify-center gap-5 sm:gap-6 w-full max-w-2xl mx-auto">
+          <h3 className="font-sans text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white uppercase">
+            As seen on
+          </h3>
+          <a
+            href="https://fmhy.net"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative block w-full max-w-md sm:max-w-xl md:max-w-2xl rounded-2xl overflow-hidden border border-white/20 hover:border-white/40 bg-black shadow-2xl transition-all duration-300 hover:scale-[1.015] cursor-pointer"
+            title="FreeMediaHeckYeah (FMHY)"
+            aria-label="FreeMediaHeckYeah (FMHY)"
+          >
+            <img
+              src="/images/fmhy.webp"
+              alt="FreeMediaHeckYeah (FMHY)"
+              className="w-full h-auto object-cover rounded-2xl transition-opacity duration-300 opacity-95 group-hover:opacity-100"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+        </div>
       </div>
 
       {/* Inject custom CSS keyframe for the slideshow fade transition */}

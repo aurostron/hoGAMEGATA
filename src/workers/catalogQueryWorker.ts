@@ -93,32 +93,69 @@ const ABBREVIATIONS: Record<string, string> = {
   dbd: 'Dead by Daylight',
 };
 
-interface TitleIndexItem {
-  title: string;
-  clean: string;
-  words: string[];
-  pop: number;
-  rating: number;
-  len: number;
-}
+const DB_NAME = 'GamegataCatalogDB_v1';
+const STORE_NAME = 'catalog';
 
 let allRecords: CatalogRecord[] = [];
-let titleIndex: TitleIndexItem[] = [];
 
-function buildTitleIndex(records: CatalogRecord[]) {
-  titleIndex = [];
-  for (const g of records) {
-    if (!g.t) continue;
-    const clean = g.t.toLowerCase().trim();
-    const words = clean.split(/[\s:,\-_]+/).filter(w => w.length >= 2);
-    titleIndex.push({
-      title: g.t,
-      clean,
-      words,
-      pop: g.pop || 0,
-      rating: g.rt || 0,
-      len: clean.length,
+function openWorkerDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') return reject(new Error('IndexedDB unavailable in worker'));
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function loadRecordsFromIndexedDB(): Promise<boolean> {
+  try {
+    const db = await openWorkerDB();
+
+    // 1. Check for compressed gzip dump first (only ~7.3MB in storage)
+    const compressedData = await new Promise<any>((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get('compressed_dump');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
     });
+
+    if (compressedData) {
+      const blob = compressedData instanceof Blob
+        ? compressedData
+        : new Blob([compressedData], { type: 'application/gzip' });
+      if (typeof DecompressionStream !== 'undefined') {
+        const decompressedStream = blob.stream().pipeThrough(new DecompressionStream('gzip'));
+        const jsonText = await new Response(decompressedStream).text();
+        allRecords = JSON.parse(jsonText);
+        return Array.isArray(allRecords) && allRecords.length > 0;
+      }
+    }
+
+    // 2. Fallback: check for uncompressed records array (legacy store)
+    const rawRecords = await new Promise<any>((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get('records');
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+
+    if (rawRecords && Array.isArray(rawRecords) && rawRecords.length > 0) {
+      allRecords = rawRecords;
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    console.error('[Worker] Failed to read from IndexedDB:', err);
+    return false;
   }
 }
 
@@ -150,91 +187,128 @@ function damerauLevenshtein(a: string, b: string): number {
   return d[al][bl];
 }
 
+// On-demand typo correction checking without pre-allocated titleIndex
 function findCorrection(query: string): string | null {
   const qClean = query.toLowerCase().trim();
   if (qClean.length < 3) return null;
   const qWords = qClean.split(/[\s:,\-_]+/).filter(Boolean);
   if (qWords.length === 0) return null;
 
-  let bestMatch: TitleIndexItem | null = null;
+  let bestMatchTitle: string | null = null;
   let bestScore = -1;
 
-  for (const item of titleIndex) {
-    if (Math.abs(item.len - qClean.length) > 5 && Math.abs(item.words.length - qWords.length) > 1) {
-      continue;
-    }
+  for (let i = 0; i < allRecords.length; i++) {
+    const game = allRecords[i];
+    if (!game || !game.t) continue;
 
-    // Direct whole title comparison
-    const dist = damerauLevenshtein(qClean, item.clean);
+    // Filter to notable candidates (has rating, popularity, likes, or is trending)
+    // This avoids matching zero-relevance obscure shovelware and speeds up evaluation 10x
+    const pop = game.pop || 0;
+    const rt = game.rt || 0;
+    const lk = game.lk || 0;
+    if (pop <= 0 && rt <= 0 && lk <= 0 && !game.tr) continue;
+
+    const tClean = game.t.toLowerCase().trim();
+    if (Math.abs(tClean.length - qClean.length) > 5) continue;
+
+    // 1. Direct whole title comparison
+    const dist = damerauLevenshtein(qClean, tClean);
     const maxAllowedDist = qClean.length <= 4 ? 1 : (qClean.length <= 8 ? 2 : 3);
     if (dist <= maxAllowedDist) {
-      const score = 100 - dist * 15 + Math.min(25, item.pop * 0.25);
+      const score = 100 - dist * 15 + Math.min(25, pop * 0.25);
       if (score > bestScore) {
         bestScore = score;
-        bestMatch = item;
+        bestMatchTitle = game.t;
       }
       continue;
     }
 
-    // Token-level comparison for multi-word phrases (e.g. "silnt hill" -> "Silent Hill")
-    if (qWords.length > 1 && item.words.length >= qWords.length) {
-      let matchedCount = 0;
-      let totalDist = 0;
+    // 2. Token-level comparison for multi-word phrases
+    if (qWords.length > 1) {
+      const tWords = tClean.split(/[\s:,\-_]+/).filter(Boolean);
+      if (tWords.length >= qWords.length) {
+        let matchedCount = 0;
+        let totalDist = 0;
 
-      for (let i = 0; i < qWords.length; i++) {
-        const qw = qWords[i];
-        const tw = item.words[i];
-        if (!tw) break;
+        for (let j = 0; j < qWords.length; j++) {
+          const qw = qWords[j];
+          const tw = tWords[j];
+          if (!tw) break;
 
-        if (qw === tw) {
-          matchedCount++;
-        } else {
-          const d = damerauLevenshtein(qw, tw);
-          if (d <= (qw.length <= 4 ? 1 : 2)) {
+          if (qw === tw) {
             matchedCount++;
-            totalDist += d;
+          } else {
+            const d = damerauLevenshtein(qw, tw);
+            if (d <= (qw.length <= 4 ? 1 : 2)) {
+              matchedCount++;
+              totalDist += d;
+            }
+          }
+        }
+
+        if (matchedCount === qWords.length) {
+          const score = 90 - totalDist * 10 + Math.min(25, pop * 0.25);
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatchTitle = game.t;
           }
         }
       }
-
-      if (matchedCount === qWords.length) {
-        const score = 90 - totalDist * 10 + Math.min(25, item.pop * 0.25);
-        if (score > bestScore) {
-          bestScore = score;
-          bestMatch = item;
-        }
-      }
     }
 
-    // 3. Single-word query matching first word of a multi-word franchise title (e.g. "amneisa" -> "Amnesia")
-    if (qWords.length === 1 && item.words.length > 1) {
-      const firstWord = item.words[0];
-      const d = damerauLevenshtein(qClean, firstWord);
-      const maxAllowed = qClean.length <= 4 ? 1 : 2;
-      if (d <= maxAllowed && Math.abs(qClean.length - firstWord.length) <= 2) {
-        const score = 88 - d * 15 + Math.min(25, item.pop * 0.25);
-        if (score > bestScore) {
-          bestScore = score;
-          const capWord = firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
-          bestMatch = { ...item, title: capWord };
+    // 3. Single-word query matching first word of franchise title
+    if (qWords.length === 1) {
+      const tWords = tClean.split(/[\s:,\-_]+/).filter(Boolean);
+      if (tWords.length > 1) {
+        const firstWord = tWords[0];
+        const d = damerauLevenshtein(qClean, firstWord);
+        const maxAllowed = qClean.length <= 4 ? 1 : 2;
+        if (d <= maxAllowed && Math.abs(qClean.length - firstWord.length) <= 2) {
+          const score = 88 - d * 15 + Math.min(25, pop * 0.25);
+          if (score > bestScore) {
+            bestScore = score;
+            const capWord = firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
+            bestMatchTitle = capWord;
+          }
         }
       }
     }
   }
 
-  if (bestMatch && bestScore >= 60 && bestMatch.clean !== qClean) {
-    return bestMatch.title;
+  if (bestMatchTitle && bestScore >= 60 && bestMatchTitle.toLowerCase().trim() !== qClean) {
+    return bestMatchTitle;
   }
   return null;
 }
 
-self.onmessage = (event: MessageEvent) => {
+self.onmessage = async (event: MessageEvent) => {
   const { type, payload, id } = event.data;
 
-  if (type === 'LOAD_CATALOG') {
+  if (type === 'INIT_FROM_DB') {
+    if (allRecords.length > 0) {
+      self.postMessage({ id, type: 'LOAD_SUCCESS', count: allRecords.length });
+      return;
+    }
+    const success = await loadRecordsFromIndexedDB();
+    if (success) {
+      self.postMessage({ id, type: 'LOAD_SUCCESS', count: allRecords.length });
+    } else {
+      self.postMessage({ id, type: 'NEED_SYNC' });
+    }
+  } else if (type === 'LOAD_CATALOG') {
     allRecords = payload as CatalogRecord[];
-    buildTitleIndex(allRecords);
     self.postMessage({ id, type: 'LOAD_SUCCESS', count: allRecords.length });
+  } else if (type === 'LOAD_COMPRESSED_BUFFER') {
+    try {
+      const buffer = payload as ArrayBuffer;
+      const blob = new Blob([buffer], { type: 'application/gzip' });
+      const decompressedStream = blob.stream().pipeThrough(new DecompressionStream('gzip'));
+      const jsonText = await new Response(decompressedStream).text();
+      allRecords = JSON.parse(jsonText);
+      self.postMessage({ id, type: 'LOAD_SUCCESS', count: allRecords.length });
+    } catch (err: any) {
+      self.postMessage({ id, type: 'LOAD_ERROR', error: err.message });
+    }
   } else if (type === 'QUERY') {
     const results = processQuery(payload as QueryParams);
     self.postMessage({ id, type: 'QUERY_RESULTS', ...results });
@@ -265,10 +339,75 @@ function processQuery(params: QueryParams) {
 
   const nowSec = Math.floor(Date.now() / 1000);
 
-  function executeFilter(term: string) {
+  function executeFilter(term: string): (CatalogRecord | { game: CatalogRecord; searchRank: number })[] {
+    if (!term) {
+      // Browsing / filtering path: 0 wrapper objects allocated!
+      const directResults: CatalogRecord[] = [];
+      for (let i = 0; i < allRecords.length; i++) {
+        const game = allRecords[i];
+        const gameStatus = game.st || 'released';
+        if (gameStatus === 'hidden') continue;
+
+        if (hideDlcs && isDlcOrExtra(game.t, game.cat)) continue;
+
+        const gameGs = game.gs || [];
+        if (genres.length > 0 && !genres.some((g) => gameGs.includes(g))) continue;
+
+        const gameTs = game.ts || [];
+        if (features.length > 0 && !features.every((f) => gameTs.includes(f))) continue;
+
+        if (systems.length > 0) {
+          const pnLower = (game.pn || '').toLowerCase();
+          const hasMatch = systems.some((sys) => {
+            if (sys === 'win') return pnLower.includes('win') || pnLower.includes('pc') || pnLower.includes('windows');
+            if (sys === 'mac') return pnLower.includes('mac') || pnLower.includes('os x') || pnLower.includes('macos');
+            if (sys === 'linux') return pnLower.includes('linux');
+            return false;
+          });
+          if (!hasMatch) continue;
+        }
+
+        const rdSec = game.rd != null
+          ? (typeof game.rd === 'number' ? game.rd : Math.floor(new Date(game.rd).getTime() / 1000))
+          : null;
+
+        if (decades.length > 0) {
+          const year = rdSec != null ? new Date(rdSec * 1000).getUTCFullYear() : null;
+          let matchedDecade = false;
+          if (year !== null) {
+            if (decades.includes('2020s') && year >= 2020 && year <= 2029) matchedDecade = true;
+            else if (decades.includes('2010s') && year >= 2010 && year <= 2019) matchedDecade = true;
+            else if (decades.includes('2000s') && year >= 2000 && year <= 2009) matchedDecade = true;
+            else if (decades.includes('1990s') && year >= 1990 && year <= 1999) matchedDecade = true;
+            else if (decades.includes('older') && year < 1990) matchedDecade = true;
+          }
+          if (!matchedDecade) continue;
+        }
+
+        if (freeOnly) {
+          if (!(game.dp === 0 || gameTs.includes('free'))) continue;
+        }
+
+        if (minPrice !== undefined && (game.dp == null || game.dp < minPrice)) continue;
+        if (maxPrice !== undefined && (game.dp == null || game.dp > maxPrice)) continue;
+
+        if (sort === 'upcoming') {
+          if (!(gameStatus === 'upcoming' || (rdSec != null && rdSec > nowSec))) continue;
+        } else {
+          // Main catalog displays playable releases; upcoming games live on /upcoming
+          if (gameStatus === 'upcoming' || (rdSec != null && rdSec > nowSec)) continue;
+        }
+
+        directResults.push(game);
+      }
+      return directResults;
+    }
+
+    // Search query path: only matches (<500 items) are wrapped with searchRank
     const results: { game: CatalogRecord; searchRank: number }[] = [];
 
-    for (const game of allRecords) {
+    for (let i = 0; i < allRecords.length; i++) {
+      const game = allRecords[i];
       const gameStatus = game.st || 'released';
       if (gameStatus === 'hidden') continue;
 
@@ -317,30 +456,26 @@ function processQuery(params: QueryParams) {
 
       if (sort === 'upcoming') {
         if (!(gameStatus === 'upcoming' || (rdSec != null && rdSec > nowSec))) continue;
-      } else if (sort === 'latest') {
-        if (gameStatus === 'upcoming') continue;
-        if (rdSec != null && rdSec > nowSec) continue;
       } else {
-        if (gameStatus === 'upcoming') continue;
+        // Main catalog displays playable releases; upcoming games live on /upcoming
+        if (gameStatus === 'upcoming' || (rdSec != null && rdSec > nowSec)) continue;
       }
 
       let searchRank = -1;
-      if (term) {
-        const tLower = game.t.toLowerCase();
-        const dnLower = (game.dn || '').toLowerCase();
-        const sLower = game.s.toLowerCase();
+      const tLower = game.t.toLowerCase();
+      const dnLower = (game.dn || '').toLowerCase();
+      const sLower = game.s.toLowerCase();
 
-        if (tLower === term) {
-          searchRank = 0;
-        } else if (tLower.startsWith(term)) {
-          searchRank = 1;
-        } else if (tLower.includes(term)) {
-          searchRank = 2;
-        } else if (dnLower.includes(term) || sLower.includes(term)) {
-          searchRank = 3;
-        } else {
-          continue; // Doesn't match search term
-        }
+      if (tLower === term) {
+        searchRank = 0;
+      } else if (tLower.startsWith(term)) {
+        searchRank = 1;
+      } else if (tLower.includes(term)) {
+        searchRank = 2;
+      } else if (dnLower.includes(term) || sLower.includes(term)) {
+        searchRank = 3;
+      } else {
+        continue; // Doesn't match search term
       }
 
       results.push({ game, searchRank });
@@ -366,11 +501,13 @@ function processQuery(params: QueryParams) {
   }
 
   filtered.sort((a, b) => {
-    const ga = a.game;
-    const gb = b.game;
+    const ga: CatalogRecord = (a as any).game || (a as CatalogRecord);
+    const gb: CatalogRecord = (b as any).game || (b as CatalogRecord);
 
     if (effectiveSearchTerm && !sort) {
-      if (a.searchRank !== b.searchRank) return a.searchRank - b.searchRank;
+      const rankA = (a as any).searchRank ?? 0;
+      const rankB = (b as any).searchRank ?? 0;
+      if (rankA !== rankB) return rankA - rankB;
       const trA = ga.tr ? 1 : 0;
       const trB = gb.tr ? 1 : 0;
       if (trA !== trB) return trB - trA;
@@ -475,7 +612,8 @@ function processQuery(params: QueryParams) {
   const totalCount = filtered.length;
   const paginated = filtered.slice(offset, offset + limit);
 
-  const games: GameResult[] = paginated.map(({ game }) => {
+  const games: GameResult[] = paginated.map((item: any) => {
+    const game: CatalogRecord = item.game || item;
     let displayRating: number | null = null;
     let isAbsoluteCinema = false;
 

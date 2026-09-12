@@ -26,12 +26,12 @@ import NyanLoader from "./NyanLoader";
 import { CartProvider, useCart } from "../context/CartContext";
 import { AuthProvider } from "../context/AuthContext";
 import HoverTrailer from "./HoverTrailer";
+import { CURATED_HORROR_SCREENSHOTS } from "../data/curatedScreenshots";
 
 import { getCachedCatalogResponse, setCachedCatalogResponse } from "../lib/catalogCache";
 import { useCatalogMode } from "../hooks/useCatalogMode";
 import { 
   isCatalogCached, 
-  loadCatalogFromDB, 
   syncCatalog, 
   initCatalogWorker, 
   queryLocalCatalog, 
@@ -99,46 +99,34 @@ interface GataCatalogClientProps {
   initialPlatforms: Array<{ name: string; slug: string }>;
 }
 
-const CATEGORIES = [
+const DISCOVERY_HUBS = [
   { 
-    name: "Classic", 
-    filterType: "tags", 
-    filterValue: "retro", 
-    gradient: "from-red-950/75 via-neutral-900/80 to-black/90 border-red-950/30 hover:border-red-600/60", 
-    desc: "Retro psychological dread",
-    bgImage: "https://img.itch.zone/aW1hZ2UvMTg2NTI5Mi8xMDk2MzMwNy5wbmc=/original/MwuFZC.png"
-  },
-  { 
-    name: "Strategy", 
-    filterType: "genres", 
-    filterValue: "strategy", 
-    gradient: "from-indigo-950/75 via-neutral-900/80 to-black/90 border-indigo-950/30 hover:border-indigo-600/60", 
-    desc: "Tactical resources & planning",
-    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sciazw.jpg"
-  },
-  { 
-    name: "Adventure", 
-    filterType: "genres", 
-    filterValue: "adventure", 
-    gradient: "from-emerald-950/75 via-neutral-900/80 to-black/90 border-emerald-950/30 hover:border-emerald-600/60", 
-    desc: "Narrative & exploration",
-    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scrris.jpg"
-  },
-  { 
-    name: "Indie", 
-    filterType: "genres", 
-    filterValue: "indie", 
-    gradient: "from-fuchsia-950/75 via-neutral-900/80 to-black/90 border-fuchsia-950/30 hover:border-fuchsia-600/60", 
-    desc: "Lo-fi experimental nightmares",
-    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc9d42.jpg"
-  },
-  { 
-    name: "Role-Playing", 
-    filterType: "genres", 
-    filterValue: "role-playing-rpg", 
+    id: "trending", 
+    name: "Trending", 
     gradient: "from-amber-950/75 via-neutral-900/80 to-black/90 border-amber-950/30 hover:border-amber-600/60", 
-    desc: "RPG survival elements",
-    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/zsco1iaj6riez8rpzphh.jpg"
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sciazw.jpg",
+    isUpcoming: false,
+  },
+  { 
+    id: "latest", 
+    name: "Latest", 
+    gradient: "from-indigo-950/75 via-neutral-900/80 to-black/90 border-indigo-950/30 hover:border-indigo-600/60", 
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scrris.jpg",
+    isUpcoming: false,
+  },
+  { 
+    id: "top-rated", 
+    name: "Top Rated", 
+    gradient: "from-emerald-950/75 via-neutral-900/80 to-black/90 border-emerald-950/30 hover:border-emerald-600/60", 
+    bgImage: "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/zsco1iaj6riez8rpzphh.jpg",
+    isUpcoming: false,
+  },
+  { 
+    id: "upcoming", 
+    name: "Upcoming", 
+    gradient: "from-red-950/75 via-neutral-900/80 to-black/90 border-red-950/30 hover:border-red-600/60", 
+    bgImage: "https://img.itch.zone/aW1hZ2UvMTg2NTI5Mi8xMDk2MzMwNy5wbmc=/original/MwuFZC.png",
+    isUpcoming: true,
   },
 ];
 
@@ -171,13 +159,12 @@ const DECADES = [
   { name: "Older", slug: "older" },
 ];
 
-const SORT_OPTIONS = [
-  { label: "Bestselling (Trending)", value: "trending" },
-  { label: "Release Date (Latest)", value: "latest" },
-  { label: "Release Date (Upcoming)", value: "upcoming" },
-  { label: "Rating (Top Rated)", value: "top-rated" },
+
+const ORDER_OPTIONS = [
+  { label: "Default Order", value: "default" },
   { label: "Price (Low to High)", value: "price-asc" },
   { label: "Price (High to Low)", value: "price-desc" },
+  { label: "Title (A to Z)", value: "title" },
 ];
 
 const formatPrice = (amount: number, currencyCode: string = "USD") => {
@@ -239,6 +226,133 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+interface RotatingHubCardProps {
+  hub: typeof DISCOVERY_HUBS[0];
+  initialScreenshotIndex: number;
+  initialDelayMs: number;
+  active: boolean;
+  onClick: () => void;
+}
+
+const RotatingHubCard: React.FC<RotatingHubCardProps> = ({
+  hub,
+  initialScreenshotIndex,
+  initialDelayMs,
+  active,
+  onClick,
+}) => {
+  const formatScreenshot = (url: string) => {
+    if (!url) return "";
+    return url.replace("t_screenshot_huge", "t_screenshot_med");
+  };
+
+  const [slides] = useState<string[]>(() => {
+    if (!CURATED_HORROR_SCREENSHOTS || CURATED_HORROR_SCREENSHOTS.length === 0) {
+      return [formatScreenshot(hub.bgImage)];
+    }
+    const pool: string[] = [];
+    const len = CURATED_HORROR_SCREENSHOTS.length;
+    for (let i = 0; i < 8; i++) {
+      const idx = (initialScreenshotIndex + i * 13) % len;
+      pool.push(formatScreenshot(CURATED_HORROR_SCREENSHOTS[idx]?.url || hub.bgImage));
+    }
+    return pool;
+  });
+
+  const [activeUrl, setActiveUrl] = useState(() => slides[0]);
+  const [incomingUrl, setIncomingUrl] = useState<string | null>(null);
+  const [fadeIn, setFadeIn] = useState(false);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    let timer: ReturnType<typeof setTimeout>;
+    let stepTimer: ReturnType<typeof setTimeout>;
+    let completeTimer: ReturnType<typeof setTimeout>;
+
+    const scheduleNext = () => {
+      // Independent un-synced random interval: between 5000ms and 8500ms
+      const delay = 5000 + Math.floor(Math.random() * 3500);
+      timer = setTimeout(() => {
+        const nextUrl = slides[Math.floor(Math.random() * slides.length)] || slides[0];
+        setIncomingUrl(nextUrl);
+        setFadeIn(false);
+
+        stepTimer = setTimeout(() => {
+          setFadeIn(true);
+        }, 40);
+
+        completeTimer = setTimeout(() => {
+          setActiveUrl(nextUrl);
+          setIncomingUrl(null);
+          setFadeIn(false);
+        }, 1100);
+
+        scheduleNext();
+      }, delay);
+    };
+
+    // Staggered initial delay so each card fades at a completely different time
+    const initialTimer = setTimeout(scheduleNext, initialDelayMs);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearTimeout(timer);
+      clearTimeout(stepTimer);
+      clearTimeout(completeTimer);
+    };
+  }, [slides, initialDelayMs]);
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full snap-start border p-3 sm:p-4 text-center flex flex-col justify-center items-center transition-all duration-300 relative group min-h-[90px] sm:min-h-[105px] cursor-pointer bg-gradient-to-br ${hub.gradient} overflow-hidden rounded-2xl
+        ${active 
+          ? "shadow-[0_0_25px_rgba(255,255,255,0.15)] scale-[1.02] border-white! text-white ring-1 ring-white/30" 
+          : "border-white/10 text-white/70 hover:text-white hover:border-white/30"
+        }`}
+    >
+      {/* Ken Burns Background Slides: Lean 2-Layer DOM prevents 40 simultaneous 1080p decoded bitmaps (saves ~320MB GPU RAM) */}
+      <div className="absolute inset-0 w-full h-full z-0 pointer-events-none overflow-hidden select-none">
+        {/* Base Active Slide */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center filter brightness-[0.70] contrast-[1.10] transform scale-104 transition-transform duration-[8000ms] ease-out"
+          style={{ backgroundImage: `url(${activeUrl})` }}
+        />
+
+        {/* Cross-Fading Incoming Slide */}
+        {incomingUrl && (
+          <div
+            className={`absolute inset-0 w-full h-full bg-cover bg-center filter brightness-[0.70] contrast-[1.10] transition-opacity duration-1000 ease-in-out transform transition-transform duration-[8000ms] ease-out ${
+              fadeIn ? "opacity-100 scale-106" : "opacity-0 scale-100"
+            }`}
+            style={{ backgroundImage: `url(${incomingUrl})` }}
+          />
+        )}
+
+        {/* Atmospheric Vignette: Boosted visibility with safe text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/50 group-hover:from-black/50 group-hover:via-black/10 group-hover:to-black/40 transition-colors" />
+      </div>
+
+      {/* Super-Wide Centered Sans-Serif Text */}
+      <div className="relative z-10 flex items-center justify-center w-full px-1 sm:px-2">
+        <h4 className="font-sans font-black uppercase text-sm sm:text-base md:text-lg lg:text-base xl:text-lg tracking-[0.25em] sm:tracking-[0.3em] text-white text-center w-full drop-shadow-[0_2px_12px_rgba(0,0,0,1)] drop-shadow-[0_0_16px_rgba(0,0,0,0.85)] leading-tight select-none flex items-center justify-center gap-1.5">
+          <span>{hub.name}</span>
+          {hub.isUpcoming && (
+            <span className="text-white/40 group-hover:text-white transition-all text-xs sm:text-sm group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+              ↗
+            </span>
+          )}
+        </h4>
+      </div>
+
+      {/* Active Crimson Bottom Indicator Bar */}
+      {active && (
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-red-600 rounded-full shadow-[0_0_10px_#dc2626] z-20" />
+      )}
+    </button>
+  );
+};
+
 export default function GataCatalogClient(props: GataCatalogClientProps) {
   return (
     <AuthProvider>
@@ -269,6 +383,7 @@ function GataCatalogClientInner({
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeFeed, setActiveFeed] = useState<"trending" | "latest" | "top-rated">("trending");
   const [sortBy, setSortBy] = useState("trending");
   const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
   const [hideDlcs, setHideDlcs] = useState(true);
@@ -359,8 +474,15 @@ function GataCatalogClientInner({
     const hydrateFromUrl = () => {
       const params = new URLSearchParams(window.location.search);
       setSearchQuery(params.get("search") || "");
-      setDebouncedSearch(params.get("search") || "");
-      setSortBy(params.get("sort") || "trending");
+      const urlSort = params.get("sort") || "trending";
+      if (urlSort === "upcoming") {
+        window.location.replace("/upcoming");
+        return;
+      }
+      setSortBy(urlSort);
+      if (urlSort === "latest" || urlSort === "top-rated" || urlSort === "trending") {
+        setActiveFeed(urlSort);
+      }
       setHideDlcs(params.get("hideDlcs") !== "false");
       setFreeOnly(params.get("freeOnly") === "true");
       setMinPrice(params.get("minPrice") || "");
@@ -587,31 +709,21 @@ function GataCatalogClientInner({
     isLocalReady
   ]);
 
-  // Category cards click handlers
-  const handleCategoryClick = (category: typeof CATEGORIES[0]) => {
-    setCurrentPage(1);
-    if (category.filterType === "genres") {
-      setSelectedGenres(prev => 
-        prev.includes(category.filterValue) 
-          ? prev.filter(g => g !== category.filterValue)
-          : [...prev, category.filterValue]
-      );
-    } else if (category.filterType === "tags") {
-      setSelectedFeatures(prev => 
-        prev.includes(category.filterValue)
-          ? prev.filter(f => f !== category.filterValue)
-          : [...prev, category.filterValue]
-      );
+  // Discovery hubs click handlers
+  const handleHubClick = (hub: typeof DISCOVERY_HUBS[0]) => {
+    if (hub.isUpcoming) {
+      window.location.assign("/upcoming");
+      return;
     }
+    setActiveFeed(hub.id as "trending" | "latest" | "top-rated");
+    setSortBy(hub.id);
+    setCurrentPage(1);
   };
 
-  const isCategoryActive = (category: typeof CATEGORIES[0]) => {
-    if (category.filterType === "genres") {
-      return selectedGenres.includes(category.filterValue);
-    } else if (category.filterType === "tags") {
-      return selectedFeatures.includes(category.filterValue);
-    }
-    return false;
+  const isHubActive = (hub: typeof DISCOVERY_HUBS[0]) => {
+    if (hub.isUpcoming) return false;
+    const isOrderActive = ["price-asc", "price-desc", "title"].includes(sortBy);
+    return activeFeed === hub.id && !isOrderActive;
   };
 
   // Checkbox toggle handlers
@@ -647,6 +759,7 @@ function GataCatalogClientInner({
     setSearchQuery("");
     setDebouncedSearch("");
     setCurrentPage(1);
+    setActiveFeed("trending");
     setSortBy("trending");
     setHideDlcs(true);
     setFreeOnly(false);
@@ -812,44 +925,19 @@ function GataCatalogClientInner({
 
   return (
     <div className="space-y-8 select-none">
-      {/* ── Top Category Cards ── */}
-      <div className="flex lg:grid lg:grid-cols-5 gap-3 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 snap-x scrollbar-none select-none">
-        {CATEGORIES.map((cat, i) => {
-          const active = isCategoryActive(cat);
+      {/* ── Primary Discovery Hubs (Trending, Latest, Top Rated, Upcoming) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 select-none">
+        {DISCOVERY_HUBS.map((hub, i) => {
+          const delays = [1000, 3200, 2100, 4500];
           return (
-            <button
-              key={i}
-              onClick={() => handleCategoryClick(cat)}
-              className={`flex-shrink-0 w-36 sm:w-44 lg:w-auto snap-start border p-3 sm:p-4 text-left flex flex-col justify-between transition-all duration-300 relative group min-h-[95px] sm:min-h-[110px] cursor-pointer bg-gradient-to-br ${cat.gradient} overflow-hidden
-                ${active 
-                  ? "shadow-[0_0_20px_rgba(255,255,255,0.08)] scale-102 border-white! text-white" 
-                  : "text-white/70 hover:text-white"
-                }`}
-            >
-              {cat.bgImage && (
-                <div className="absolute inset-0 w-full h-full z-0 transition-transform duration-500 group-hover:scale-105 pointer-events-none overflow-hidden">
-                  <img
-                    src={cat.bgImage}
-                    alt=""
-                    className="w-full h-full object-cover filter brightness-[0.55] group-hover:brightness-[0.70] contrast-[1.05] transition-all duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/15 group-hover:bg-black/5 transition-colors" />
-                </div>
-              )}
-              <div className="flex justify-between items-start w-full relative z-10">
-                <span className="font-mono text-[9px] uppercase tracking-widest text-white/35 font-bold group-hover:text-white/50 transition-colors">
-                  // 0{i + 1}
-                </span>
-                {active && (
-                  <span className="w-2.5 h-2.5 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_#dc2626]" />
-                )}
-              </div>
-              <div className="mt-3 relative z-10">
-                <h4 className="font-sans font-black uppercase text-sm sm:text-base tracking-wider leading-none text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.95)]">
-                  {cat.name}
-                </h4>
-              </div>
-            </button>
+            <RotatingHubCard
+              key={hub.id}
+              hub={hub}
+              initialScreenshotIndex={i * 22}
+              initialDelayMs={delays[i % delays.length]}
+              active={isHubActive(hub)}
+              onClick={() => handleHubClick(hub)}
+            />
           );
         })}
       </div>
@@ -1367,21 +1455,27 @@ function GataCatalogClientInner({
             )}
           </div>
 
-          {/* ── Sort & Layout Controls Top Bar ── */}
+          {/* ── Sort & Layout Controls Bar ── */}
           <div className="flex items-center justify-between bg-[#121217]/95 border border-white/12 p-3 sm:p-4 rounded-2xl flex-wrap gap-3 backdrop-blur-md shadow-xl">
-            <div className="flex items-center gap-3 flex-wrap">
+            {/* Left: Sort by Order Selector */}
+            <div className="flex items-center gap-3">
               <span className="font-sans text-xs text-white/50 font-semibold tracking-wide">
                 Sort by:
               </span>
               <select
-                value={sortBy}
+                value={["price-asc", "price-desc", "title"].includes(sortBy) ? sortBy : "default"}
                 onChange={(e) => {
                   setCurrentPage(1);
-                  setSortBy(e.target.value);
+                  const val = e.target.value;
+                  if (val === "default") {
+                    setSortBy(activeFeed);
+                  } else {
+                    setSortBy(val);
+                  }
                 }}
                 className="bg-[#181820] border border-white/15 px-3.5 py-2 text-xs text-white font-sans rounded-xl focus:outline-none focus:border-white/40 focus:ring-1 focus:ring-white/20 font-bold cursor-pointer transition-all shadow-sm"
               >
-                {SORT_OPTIONS.map((opt) => (
+                {ORDER_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value} className="bg-[#121217] text-white">
                     {opt.label}
                   </option>
@@ -1389,7 +1483,7 @@ function GataCatalogClientInner({
               </select>
             </div>
 
-            {/* Layout Mode Toggles */}
+            {/* Right: Layout Mode Toggles */}
             <div className="flex bg-[#181820] border border-white/12 rounded-xl p-1 gap-1">
               <button
                 onClick={() => changeLayoutMode("grid")}

@@ -82,108 +82,122 @@ export default function HeaderSearch() {
       return;
     }
 
-    // 2. Try Client-side In-Memory / IndexedDB search engine (0 Turso reads)
-    const localMatches = searchLocal(trimmedQuery, 8);
-    if (localMatches.length > 0) {
-      // Map local matches using sessionPriceCache (no fake/assumed badges!)
-      const gamesWithDefaults: GameSearchResult[] = localMatches.map((m) => {
-        const cachedPrice = sessionPriceCache.get(m.id);
-        return {
-          ...m,
-          priceBadge: cachedPrice?.priceBadge || m.priceBadge || null,
-          badgeType: cachedPrice?.badgeType || m.badgeType || "paid",
-          coverUrl: cachedPrice?.coverUrl || m.coverUrl || null,
-        };
-      });
+    let isCancelled = false;
 
-      setResults(gamesWithDefaults);
-      setIsOpen(true);
-      setLoading(false);
-      setCachedResults(trimmedQuery, gamesWithDefaults);
-      abortControllerRef.current?.abort();
+    // 2. Try Client-side In-Memory / IndexedDB Web Worker search engine (0 Turso reads)
+    (async () => {
+      try {
+        const localMatches = await searchLocal(trimmedQuery, 8);
+        if (isCancelled || activeQueryRef.current.trim() !== trimmedQuery) return;
 
-      // On-demand fetch live prices for visible games missing from session cache
-      const missingIds = gamesWithDefaults
-        .filter((g) => !sessionPriceCache.has(g.id))
-        .map((g) => g.id);
+        if (localMatches && localMatches.length > 0) {
+          // Map local matches using sessionPriceCache (no fake/assumed badges!)
+          const gamesWithDefaults: GameSearchResult[] = localMatches.map((m) => {
+            const cachedPrice = sessionPriceCache.get(m.id);
+            return {
+              ...m,
+              priceBadge: cachedPrice?.priceBadge || m.priceBadge || null,
+              badgeType: cachedPrice?.badgeType || m.badgeType || "paid",
+              coverUrl: cachedPrice?.coverUrl || m.coverUrl || null,
+            };
+          });
 
-      if (missingIds.length > 0) {
-        priceAbortRef.current?.abort();
-        const priceController = new AbortController();
-        priceAbortRef.current = priceController;
+          setResults(gamesWithDefaults);
+          setIsOpen(true);
+          setLoading(false);
+          setCachedResults(trimmedQuery, gamesWithDefaults);
+          abortControllerRef.current?.abort();
 
-        clearTimeout(priceDebounceRef.current);
-        priceDebounceRef.current = setTimeout(() => {
-          fetch(`/api/prices/quick?ids=${missingIds.join(",")}`, {
-            signal: priceController.signal,
-          })
-            .then((res) => (res.ok ? res.json() : null))
-            .then((data) => {
-              if (data && data.prices) {
-                for (const [id, priceInfo] of Object.entries(data.prices as Record<string, any>)) {
-                  sessionPriceCache.set(id, priceInfo);
-                }
+          // On-demand fetch live prices for visible games missing from session cache
+          const missingIds = gamesWithDefaults
+            .filter((g) => !sessionPriceCache.has(g.id))
+            .map((g) => g.id);
 
-                setResults((prev) =>
-                  prev.map((g) => {
-                    const fresh = data.prices[g.id];
-                    if (fresh) {
-                      return {
-                        ...g,
-                        priceBadge: fresh.priceBadge,
-                        badgeType: fresh.badgeType,
-                        coverUrl: fresh.coverUrl || g.coverUrl,
-                      };
+          if (missingIds.length > 0) {
+            priceAbortRef.current?.abort();
+            const priceController = new AbortController();
+            priceAbortRef.current = priceController;
+
+            clearTimeout(priceDebounceRef.current);
+            priceDebounceRef.current = setTimeout(() => {
+              fetch(`/api/prices/quick?ids=${missingIds.join(",")}`, {
+                signal: priceController.signal,
+              })
+                .then((res) => (res.ok ? res.json() : null))
+                .then((data) => {
+                  if (data && data.prices) {
+                    for (const [id, priceInfo] of Object.entries(data.prices as Record<string, any>)) {
+                      sessionPriceCache.set(id, priceInfo);
                     }
-                    return g;
-                  })
-                );
-              }
-            })
-            .catch(() => {});
-        }, 200);
+
+                    setResults((prev) =>
+                      prev.map((g) => {
+                        const fresh = data.prices[g.id];
+                        if (fresh) {
+                          return {
+                            ...g,
+                            priceBadge: fresh.priceBadge,
+                            badgeType: fresh.badgeType,
+                            coverUrl: fresh.coverUrl || g.coverUrl,
+                          };
+                        }
+                        return g;
+                      })
+                    );
+                  }
+                })
+                .catch(() => {});
+            }, 200);
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn("[HeaderSearch] Local worker search error:", err);
       }
-      return;
-    }
 
-    // 3. Fallback to Cloud Edge API if local index is still downloading or no local match
-    abortControllerRef.current?.abort();
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
+      if (isCancelled || activeQueryRef.current.trim() !== trimmedQuery) return;
 
-    setLoading(true);
+      // 3. Fallback to Cloud Edge API if local index is still downloading or no local match
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-    const debounceTimer = setTimeout(() => {
-      fetch(`/api/search/suggest?q=${encodeURIComponent(trimmedQuery)}`, {
-        signal: controller.signal,
-      })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data && data.games) {
-            const fetchedGames: GameSearchResult[] = data.games || [];
-            setCachedResults(trimmedQuery, fetchedGames);
+      setLoading(true);
 
-            if (activeQueryRef.current.trim() === trimmedQuery) {
-              setResults(fetchedGames);
-              setIsOpen(true);
+      const debounceTimer = setTimeout(() => {
+        fetch(`/api/search/suggest?q=${encodeURIComponent(trimmedQuery)}`, {
+          signal: controller.signal,
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data && data.games) {
+              const fetchedGames: GameSearchResult[] = data.games || [];
+              setCachedResults(trimmedQuery, fetchedGames);
+
+              if (activeQueryRef.current.trim() === trimmedQuery) {
+                setResults(fetchedGames);
+                setIsOpen(true);
+              }
             }
-          }
-        })
-        .catch((err) => {
-          if (err.name !== "AbortError") {
-            console.error("Header search suggest error:", err);
-          }
-        })
-        .finally(() => {
-          if (activeQueryRef.current.trim() === trimmedQuery) {
-            setLoading(false);
-          }
-        });
-    }, 200);
+          })
+          .catch((err) => {
+            if (err.name !== "AbortError") {
+              console.error("Header search suggest error:", err);
+            }
+          })
+          .finally(() => {
+            if (activeQueryRef.current.trim() === trimmedQuery) {
+              setLoading(false);
+            }
+          });
+      }, 150);
+    })();
 
     return () => {
-      clearTimeout(debounceTimer);
-      controller.abort();
+      isCancelled = true;
+      abortControllerRef.current?.abort();
+      priceAbortRef.current?.abort();
+      clearTimeout(priceDebounceRef.current);
     };
   }, [query]);
 
