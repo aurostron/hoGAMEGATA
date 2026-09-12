@@ -1,20 +1,39 @@
 import { createClient as createWebClient } from "@libsql/client/web";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle as drizzleLibsql } from "drizzle-orm/libsql";
+import { drizzle as drizzleD1 } from "drizzle-orm/d1";
+import { env as cfEnv } from "cloudflare:workers";
 import * as schema from "../db/schema";
 
-// Cached singleton — creating new drizzle + libSQL clients per-request is too
+// Cached singleton — creating new drizzle + libSQL/D1 clients per-request is too
 // CPU-expensive for Cloudflare Workers (10ms CPU limit on free plan).
 // We cache the instance and reuse it across requests in the same isolate.
-let cachedDb: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let cachedDb: any = null;
 let cachedConfigKey = "";
+let activeD1Client: any = null;
 
 export function initTursoForRequest(env: any) {
-  const dbUrl = env?.TURSO_DATABASE_URL || (typeof process !== "undefined" ? process.env?.TURSO_DATABASE_URL : null) || (import.meta as any).env?.TURSO_DATABASE_URL;
-  const dbToken = env?.TURSO_AUTH_TOKEN || (typeof process !== "undefined" ? process.env?.TURSO_AUTH_TOKEN : null) || (import.meta as any).env?.TURSO_AUTH_TOKEN;
+  // 1. Cloudflare D1 Database binding (Primary production storage)
+  const d1 = env?.DB || (cfEnv as any)?.DB;
+  if (d1) {
+    activeD1Client = d1;
+    if (cachedDb && cachedConfigKey === "cloudflare-d1") {
+      (globalThis as any).tursoInstance = cachedDb;
+      return;
+    }
+    cachedDb = drizzleD1(d1, { schema });
+    cachedConfigKey = "cloudflare-d1";
+    (globalThis as any).tursoInstance = cachedDb;
+    return;
+  }
+
+  // 2. Turso libSQL client (Remote URL + token)
+  const dbUrl = env?.TURSO_DATABASE_URL || (cfEnv as any)?.TURSO_DATABASE_URL || (typeof process !== "undefined" ? process.env?.TURSO_DATABASE_URL : null) || (import.meta as any).env?.TURSO_DATABASE_URL;
+  const dbToken = env?.TURSO_AUTH_TOKEN || (cfEnv as any)?.TURSO_AUTH_TOKEN || (typeof process !== "undefined" ? process.env?.TURSO_AUTH_TOKEN : null) || (import.meta as any).env?.TURSO_AUTH_TOKEN;
 
   if (dbUrl) {
     const configKey = `${dbUrl}:${(dbToken || "").slice(0, 10)}`;
     if (cachedDb && cachedConfigKey === configKey) {
+      activeD1Client = null;
       (globalThis as any).tursoInstance = cachedDb;
       return;
     }
@@ -25,8 +44,9 @@ export function initTursoForRequest(env: any) {
       fetch: (...args: [any, any?]) => fetch(...args),
     });
 
-    cachedDb = drizzle(client, { schema });
+    cachedDb = drizzleLibsql(client, { schema });
     cachedConfigKey = configKey;
+    activeD1Client = null;
     (globalThis as any).tursoInstance = cachedDb;
     return;
   }
@@ -115,13 +135,14 @@ export function initTursoForRequest(env: any) {
     }
   };
 
-  cachedDb = drizzle(localBridgeClient as any, { schema });
+  cachedDb = drizzleLibsql(localBridgeClient as any, { schema });
   cachedConfigKey = "local-bridge";
+  activeD1Client = null;
   (globalThis as any).tursoInstance = cachedDb;
 }
 
 // Proxy that forwards all calls to the active request-scoped instance.
-export const turso = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
+export const turso = new Proxy({} as ReturnType<typeof drizzleLibsql<typeof schema>>, {
   get(target, prop, receiver) {
     let activeInstance = (globalThis as any).tursoInstance;
     if (!activeInstance) {
@@ -131,7 +152,7 @@ export const turso = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, 
     if (!activeInstance) {
       const propStr = String(prop);
       if (["select", "insert", "update", "delete", "query", "selectDistinct"].includes(propStr)) {
-        throw new Error("Turso database client is not initialized. Ensure TURSO_DATABASE_URL is set.");
+        throw new Error("Database client is not initialized. Ensure D1 binding DB or TURSO_DATABASE_URL is set.");
       }
       return undefined;
     }
@@ -145,15 +166,30 @@ export const turso = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, 
 
 // Helper getter to access raw client if needed
 export const libsqlClient = {
-  execute: async (...args: any[]) => {
+  execute: async (stmt: any, ...params: any[]) => {
+    if (!activeD1Client && !(globalThis as any).tursoInstance) {
+      initTursoForRequest({});
+    }
+    if (activeD1Client) {
+      const sqlText = typeof stmt === "string" ? stmt : stmt.sql;
+      const sqlArgs = typeof stmt === "string" ? (params || []) : (stmt.args || []);
+      const statement = activeD1Client.prepare(sqlText);
+      const bound = sqlArgs && sqlArgs.length > 0 ? statement.bind(...sqlArgs) : statement;
+      const res = await bound.all();
+      return {
+        columns: res.results && res.results.length > 0 ? Object.keys(res.results[0] as object) : [],
+        rows: res.results || [],
+        rowsAffected: res.meta?.changes || 0,
+      };
+    }
     const activeInstance = (globalThis as any).tursoInstance;
     if (!activeInstance) {
-      throw new Error("Turso database client is not initialized.");
+      throw new Error("Database client is not initialized.");
     }
     const rawClient = (activeInstance as any).$client;
     if (rawClient && typeof rawClient.execute === "function") {
-      return rawClient.execute(...args);
+      return rawClient.execute(stmt, ...params);
     }
-    throw new Error("Raw libSQL client execute is not available");
+    throw new Error("Raw database client execute is not available");
   }
 };

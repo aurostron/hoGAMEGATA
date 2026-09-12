@@ -18,6 +18,13 @@
 		"BETTER_AUTH_URL": "https://gamegata.xyz",
 		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAADxZWPj99fIewEFh"
 	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "gamegata-db",
+			"database_id": "793cbbd8-84b1-43e7-9644-10071abdef18"
+		}
+	],
 	"kv_namespaces": [
 		{
 			"binding": "MAINTENANCE",

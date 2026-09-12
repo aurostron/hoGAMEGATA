@@ -37,6 +37,7 @@ export default defineConfig({
         'react/jsx-runtime',
         'react-dom/server',
         'drizzle-orm',
+        'drizzle-orm/d1',
         'drizzle-orm/libsql',
         'drizzle-orm/sqlite-core',
         '@libsql/client/web',
