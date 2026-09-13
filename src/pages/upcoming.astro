@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { turso } from '../lib/turso';
 import { games as gamesTable } from '../db/schema';
-import { eq, or, gt } from 'drizzle-orm';
+import { eq, or, gt, and, isNull } from 'drizzle-orm';
 import { enrichGamesWithRelations } from '../lib/gameQueries';
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge } from '../lib/utils';
 
@@ -11,22 +11,34 @@ Astro.response.headers.set(
   'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400'
 );
 
-const rawGames = await turso
-  .select({
-    id: gamesTable.id,
-    title: gamesTable.title,
-    slug: gamesTable.slug,
-    status: gamesTable.status,
-    coverUrl: gamesTable.coverUrl,
-    isTrending: gamesTable.isTrending,
-    category: gamesTable.category,
-    developerNames: gamesTable.developerNames,
-    releaseDate: gamesTable.releaseDate,
-  })
-  .from(gamesTable)
-  .where(or(eq(gamesTable.status, "upcoming"), gt(gamesTable.releaseDate, new Date())))
-  .orderBy(gamesTable.releaseDate)
-  .limit(200);
+const now = new Date();
+const selectFields = {
+  id: gamesTable.id,
+  title: gamesTable.title,
+  slug: gamesTable.slug,
+  status: gamesTable.status,
+  coverUrl: gamesTable.coverUrl,
+  isTrending: gamesTable.isTrending,
+  category: gamesTable.category,
+  developerNames: gamesTable.developerNames,
+  releaseDate: gamesTable.releaseDate,
+};
+
+const [datedUpcoming, tbaUpcoming] = await Promise.all([
+  turso
+    .select(selectFields)
+    .from(gamesTable)
+    .where(gt(gamesTable.releaseDate, now))
+    .orderBy(gamesTable.releaseDate)
+    .limit(150),
+  turso
+    .select(selectFields)
+    .from(gamesTable)
+    .where(and(eq(gamesTable.status, "upcoming"), isNull(gamesTable.releaseDate)))
+    .limit(50)
+]);
+
+const rawGames = [...datedUpcoming, ...tbaUpcoming];
 
 const games = await enrichGamesWithRelations(rawGames);
 
@@ -56,7 +68,6 @@ const sortedMonths = Object.keys(groupedGames).sort((a, b) => {
 });
 
 // Current date math
-const now = new Date();
 const currentMonthYear = now.toLocaleDateString("en-US", { year: "numeric", month: "long" });
 const getMonthSlug = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 const currentMonthSlug = getMonthSlug(currentMonthYear);

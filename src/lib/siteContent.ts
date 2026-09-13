@@ -47,18 +47,27 @@ export const DEFAULT_CONTENT = [
   }
 ];
 
+let cachedContent: any[] | null = null;
+let lastContentFetch = 0;
+const CONTENT_CACHE_TTL = 3600000; // 1 hour
+
 export async function getOrSeedContent() {
+  if (cachedContent && Date.now() - lastContentFetch < CONTENT_CACHE_TTL) {
+    return cachedContent;
+  }
   // Read-only (2026-09-09): merge DB copy over in-memory defaults, never seed.
   // Seeding from the request path caused Turso writes on homepage renders.
   try {
     const current = await turso.select().from(siteContent);
     const dbMap = new Map(current.map(item => [item.key, item.value]));
-    return DEFAULT_CONTENT.map((item) => ({
+    cachedContent = DEFAULT_CONTENT.map((item) => ({
       ...item,
       value: dbMap.get(item.key) ?? item.value,
     }));
+    lastContentFetch = Date.now();
+    return cachedContent;
   } catch {
-    return DEFAULT_CONTENT;
+    return cachedContent || DEFAULT_CONTENT;
   }
 }
 

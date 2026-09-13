@@ -14,7 +14,8 @@
     "generate-types": "wrangler types",
     "setup:mock": "tsx scripts/seed-mock-db.ts",
     "deploy": "npm run build && wrangler deploy",
-    "deploy:only": "wrangler deploy"
+    "deploy:only": "wrangler deploy",
+    "deploy:mirror": "npm run build && npx tsx scripts/deploy-mirror.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.0.0",

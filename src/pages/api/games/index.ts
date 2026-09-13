@@ -37,15 +37,8 @@ async function getGameTitles(): Promise<string[]> {
     const rows = await turso
       .select({ title: gamesTable.title })
       .from(gamesTable)
-      .where(or(
-        isNotNull(gamesTable.rating),
-        isNotNull(gamesTable.steamRating),
-        eq(gamesTable.isTrending, true),
-        gt(gamesTable.likesCount, 0),
-        isNotNull(gamesTable.popularity)
-      ))
-      .orderBy(desc(sql`COALESCE(${gamesTable.popularity}, 0) + COALESCE(${gamesTable.rating}, 0) + (CASE WHEN ${gamesTable.isTrending} THEN 100 ELSE 0 END)`))
-      .limit(5000);
+      .orderBy(desc(gamesTable.isTrending), desc(gamesTable.popularity), desc(gamesTable.id))
+      .limit(1000);
     cachedGameTitles = rows.map(r => r.title).filter(Boolean);
     return cachedGameTitles;
   } catch (err) {
@@ -304,7 +297,26 @@ export const GET: APIRoute = async ({ request, locals }) => {
           });
           ftsGameIds = ftsRes.rows.map((r: any) => r.id as string);
         } catch (ftsErr) {
-          console.warn("FTS5 query failed, falling back to standard LIKE search:", ftsErr);
+          // FTS5 virtual table missing on D1: use indexed slug range seek (zero full table scans)
+          const normalizedSlug = cleanTerm.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+          if (normalizedSlug.length >= 2) {
+            const nextSlug = normalizedSlug.slice(0, -1) + String.fromCharCode(normalizedSlug.charCodeAt(normalizedSlug.length - 1) + 1);
+            try {
+              const matchedSlugRows = await turso
+                .select({ id: gamesTable.id })
+                .from(gamesTable)
+                .where(and(
+                  gte(gamesTable.slug, normalizedSlug),
+                  lt(gamesTable.slug, nextSlug)
+                ))
+                .limit(100);
+              ftsGameIds = matchedSlugRows.map(r => r.id);
+            } catch (slugErr) {
+              ftsGameIds = [];
+            }
+          } else {
+            ftsGameIds = [];
+          }
         }
       }
     }
@@ -318,22 +330,28 @@ export const GET: APIRoute = async ({ request, locals }) => {
           finalSearch = correction;
           const cleanTerm = finalSearch.trim().replace(/[^\w\s-]/g, " ").trim();
           if (cleanTerm) {
-            const tokens = cleanTerm.split(/\s+/).filter(Boolean);
-            const ftsQuery = tokens.map(t => `"${t}"*`).join(" ");
-            try {
-              const ftsRes = await libsqlClient.execute({
-                sql: `SELECT id FROM "Game_fts" WHERE "Game_fts" MATCH ? ORDER BY rank LIMIT 500`,
-                args: [ftsQuery]
-              });
-              ftsGameIds = ftsRes.rows.map((r: any) => r.id as string);
-            } catch (e) {
-              // ignore
+            const normalizedSlug = cleanTerm.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+            if (normalizedSlug.length >= 2) {
+              const nextSlug = normalizedSlug.slice(0, -1) + String.fromCharCode(normalizedSlug.charCodeAt(normalizedSlug.length - 1) + 1);
+              try {
+                const matchedSlugRows = await turso
+                  .select({ id: gamesTable.id })
+                  .from(gamesTable)
+                  .where(and(
+                    gte(gamesTable.slug, normalizedSlug),
+                    lt(gamesTable.slug, nextSlug)
+                  ))
+                  .limit(100);
+                ftsGameIds = matchedSlugRows.map(r => r.id);
+              } catch (e) {
+                // ignore
+              }
             }
           }
         }
       }
 
-      if (ftsGameIds.length === 0) {
+      if (ftsGameIds !== null && ftsGameIds.length === 0) {
         // Fast path: No matching games found even after typo correction
         return new Response(
           JSON.stringify({ games: [], totalCount: 0, correctedQuery, nextCursor: null }),
@@ -350,32 +368,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
       
       const todayDate = new Date();
       if (sort === "upcoming") {
-        conds.push(
-          or(
-            eq(gamesTable.status, "upcoming"),
-            gt(gamesTable.releaseDate, todayDate)
-          )
-        );
+        conds.push(gt(gamesTable.releaseDate, todayDate));
       } else if (sort === "latest") {
-        conds.push(
-          and(
-            or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
-            or(
-              isNull(gamesTable.releaseDate),
-              lte(gamesTable.releaseDate, todayDate)
-            )
-          )
-        );
+        conds.push(or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")));
       } else {
-        conds.push(
-          and(
-            or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")),
-            or(
-              isNull(gamesTable.releaseDate),
-              lte(gamesTable.releaseDate, todayDate)
-            )
-          )
-        );
+        conds.push(or(isNull(gamesTable.status), ne(gamesTable.status, "upcoming")));
       }
 
       if (excludeId) {
@@ -481,18 +478,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
       // Standard catalog browsing: use pre-computed count directly (0 reads)
       totalCount = hideDlcs ? catalogStats.totalVisibleGames : catalogStats.totalGames;
     } else {
-      // Custom filter combination: use in-memory LRU cache with 15m TTL to prevent repeated scans
+      // Custom filter combination: estimate count from catalogStats to prevent burning 109k row reads
       const countKey = `${conditions.length}_${finalSearch}_${minPriceParam}_${maxPriceParam}_${freeOnly}_${selectedDecades.join(",")}_${hideDlcs}`;
       const cached = COUNT_CACHE.get(countKey);
       if (cached && Date.now() - cached.timestamp < 900000) {
         totalCount = cached.val;
       } else {
-        let countQuery = turso.select({ count: count() }).from(gamesTable);
-        if (conditions.length > 0) {
-          countQuery = countQuery.where(and(...conditions)) as any;
-        }
-        const [{ count: countVal }] = await countQuery;
-        totalCount = countVal;
+        totalCount = hideDlcs ? catalogStats.totalVisibleGames : catalogStats.totalGames;
         if (COUNT_CACHE.size > 200) {
           const firstKey = COUNT_CACHE.keys().next().value;
           if (firstKey) COUNT_CACHE.delete(firstKey);
@@ -566,27 +558,22 @@ export const GET: APIRoute = async ({ request, locals }) => {
     } else if (sort === "trending") {
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
-        sql`COALESCE(${gamesTable.popularity}, 0) DESC`,
-        sql`COALESCE(${gamesTable.rating}, 0) DESC`,
-        desc(gamesTable.likesCount),
+        desc(gamesTable.popularity),
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "top-rated") {
       baseQuery = baseQuery.orderBy(
-        sql`CASE WHEN ${gamesTable.rating} IS NULL THEN 1 ELSE 0 END`,
         desc(gamesTable.rating),
-        sql`COALESCE(${gamesTable.steamRating}, 0) DESC`,
         desc(gamesTable.id)
       ) as any;
     } else if (sort === "upcoming") {
       baseQuery = baseQuery.orderBy(
-        sql`CASE WHEN ${gamesTable.releaseDate} IS NULL THEN 1 ELSE 0 END`,
         asc(gamesTable.releaseDate),
-        desc(gamesTable.id)
+        asc(gamesTable.id)
       ) as any;
     } else if (sort === "title") {
       baseQuery = baseQuery.orderBy(
-        sql`${gamesTable.title} COLLATE NOCASE`
+        asc(gamesTable.title)
       ) as any;
     } else if (sort === "price-asc") {
       baseQuery = baseQuery.orderBy(
@@ -602,7 +589,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
       ) as any;
     } else if (sort === "latest") {
       baseQuery = baseQuery.orderBy(
-        sql`CASE WHEN ${gamesTable.releaseDate} IS NULL THEN 1 ELSE 0 END`,
         desc(gamesTable.releaseDate),
         desc(gamesTable.id)
       ) as any;
@@ -610,9 +596,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       // default: trending
       baseQuery = baseQuery.orderBy(
         desc(gamesTable.isTrending),
-        sql`COALESCE(${gamesTable.popularity}, 0) DESC`,
-        sql`COALESCE(${gamesTable.rating}, 0) DESC`,
-        desc(gamesTable.likesCount),
+        desc(gamesTable.popularity),
         desc(gamesTable.id)
       ) as any;
     }

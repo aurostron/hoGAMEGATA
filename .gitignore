@@ -100,3 +100,7 @@ admin-app/
 # Scratch test files
 test_db.ts
 
+# Local trailer preservation pipeline (untracked working tool, raw clips + renders)
+trailer-tool/
+
+

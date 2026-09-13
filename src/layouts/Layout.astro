@@ -1,4 +1,6 @@
 ---
+import MirrorGateway from '../components/MirrorGateway';
+import MirrorBanner from '../components/MirrorBanner';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import OnboardingModal from '../components/OnboardingModal';
@@ -180,6 +182,8 @@ const {
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 	</head>
 	<body class="min-h-full w-full max-w-full overflow-x-clip flex flex-col bg-background text-foreground selection:bg-white selection:text-black relative">
+    <MirrorGateway client:only="react" />
+    <MirrorBanner client:only="react" />
     <Header withSearch={withSearch} withLink={withLink} editGameData={editGameData} />
     <div class="flex-1 flex flex-col w-full max-w-full min-w-0 overflow-x-clip pb-28 md:pb-8">
       <slot />

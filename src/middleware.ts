@@ -43,27 +43,28 @@ const PUBLIC_PATHS = [
 ];
 
 
-function applySecurityHeaders(res: Response): Response {
-  try {
-    res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-    res.headers.set("X-Frame-Options", "DENY");
-    res.headers.set("X-Content-Type-Options", "nosniff");
-    res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
-    return res;
-  } catch {
-    const newHeaders = new Headers(res.headers);
-    newHeaders.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-    newHeaders.set("X-Frame-Options", "DENY");
-    newHeaders.set("X-Content-Type-Options", "nosniff");
-    newHeaders.set("Referrer-Policy", "strict-origin-when-cross-origin");
-    newHeaders.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
-    return new Response(res.body, {
-      status: res.status,
-      statusText: res.statusText,
-      headers: newHeaders,
-    });
+function applySecurityHeaders(res: Response, reqOrigin?: string | null): Response {
+  const isAllowed = reqOrigin && (
+    reqOrigin.endsWith(".pages.dev") ||
+    reqOrigin.endsWith(".gamegata.xyz") ||
+    reqOrigin === "https://gamegata.xyz" ||
+    reqOrigin === "https://project-hgg.github.io" ||
+    reqOrigin.includes("localhost") ||
+    reqOrigin.includes("127.0.0.1")
+  );
+
+  const headers = res.headers;
+  headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  if (isAllowed) {
+    headers.set("Access-Control-Allow-Origin", reqOrigin);
+    headers.set("Access-Control-Allow-Methods", "GET, HEAD, POST, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   }
+  return res;
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -76,13 +77,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
   initTursoForRequest(runtimeEnv);
   initTursoAuthForRequest(runtimeEnv);
 
+  const cfCtx = (context.locals as any)?.runtime?.ctx || (context.locals as any)?.cfContext;
+  if (cfCtx && !(context.locals as any).cfContext) {
+    (context.locals as any).cfContext = cfCtx;
+  }
+
   const { url, redirect } = context;
   const { pathname } = url;
+  const reqOrigin = context.request.headers.get("origin");
+
+  // Handle CORS preflight for API requests
+  if (context.request.method === "OPTIONS" && pathname.startsWith("/api/")) {
+    return applySecurityHeaders(new Response(null, { status: 204 }), reqOrigin);
+  }
 
   // Redirect www to non-www canonical domain (e.g. www.gamegata.xyz -> gamegata.xyz)
   if (url.hostname.startsWith("www.")) {
     const canonicalHost = url.hostname.replace(/^www\./, "");
-    return applySecurityHeaders(redirect(`https://${canonicalHost}${pathname}${url.search}`, 301));
+    return applySecurityHeaders(redirect(`https://${canonicalHost}${pathname}${url.search}`, 301), reqOrigin);
   }
 
   // 1. Skip static assets
@@ -91,7 +103,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     pathname.startsWith("/favicon.ico") ||
     pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|css|js|woff2|woff|ttf|ico)$/i)
   ) {
-    return applySecurityHeaders(await next());
+    return applySecurityHeaders(await next(), reqOrigin);
   }
 
   // 1.0. Global Security Check: Is Client IP Blocked or Lockout Cookie Active?
@@ -126,7 +138,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // 1.5. Cloudflare Edge Cache MATCH check (0 DB reads for cached pages)
   const cache = !isDev && typeof caches !== "undefined" && (caches as any).default;
   const isCacheableGet = context.request.method === "GET" && (
+    pathname === "/" ||
     pathname.startsWith("/game/") || 
+    pathname.startsWith("/developer/") ||
     pathname.startsWith("/api/games") || 
     pathname.startsWith("/api/search/suggest") ||
     pathname === "/about" ||
@@ -195,12 +209,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // 4. Allow public paths without authentication
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"))) {
-    return applySecurityHeaders(await next());
+    return applySecurityHeaders(await next(), reqOrigin);
   }
 
   // 5. Block /admin & /api/admin in open-core release
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-    return applySecurityHeaders(new Response("Not Found", { status: 404 }));
+    return applySecurityHeaders(new Response("Not Found", { status: 404 }), reqOrigin);
   }
 
   const response = await next();
@@ -211,7 +225,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const accept = context.request.headers.get("accept") || "";
       const secFetchDest = context.request.headers.get("sec-fetch-dest") || "";
       if (accept.includes("text/html") || secFetchDest === "document" || url.searchParams.has("html")) {
-        return applySecurityHeaders(createRateLimitHtmlResponse(response.status));
+        return applySecurityHeaders(createRateLimitHtmlResponse(response.status), reqOrigin);
       }
     }
   }
@@ -222,10 +236,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const cacheControl = response.headers.get("Cache-Control");
       if (cacheControl && cacheControl.includes("public")) {
         const responseToCache = response.clone();
-        let cfCtx: any;
-        try {
-          cfCtx = (context.locals as any)?.cfContext;
-        } catch {}
+        const cfCtx = (context.locals as any)?.runtime?.ctx || (context.locals as any)?.cfContext;
         if (cfCtx?.waitUntil) {
           cfCtx.waitUntil(cache.put(cacheKey, responseToCache));
         } else {
@@ -237,5 +248,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return applySecurityHeaders(response);
+  return applySecurityHeaders(response, reqOrigin);
 });

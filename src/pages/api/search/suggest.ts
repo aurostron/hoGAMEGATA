@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { turso, initTursoForRequest } from "../../../lib/turso";
 import { games as gamesTable, purchaseLinks as purchaseLinksTable, priceSnapshots as priceSnapshotsTable } from "../../../db/schema";
-import { and, or, ne, eq, inArray, like, sql, desc } from "drizzle-orm";
+import { and, or, ne, eq, inArray, like, sql, desc, gte, lt } from "drizzle-orm";
 import { env as cfEnv } from "cloudflare:workers";
 import { rateLimit, getClientIp, tooManyRequests } from "../../../lib/rateLimit";
 import { fetchItchDataJson, formatItchBadge } from "../../../lib/itchParser";
@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ request }) => {
     const { searchParams } = new URL(request.url);
     const rawQ = searchParams.get("q")?.trim() || searchParams.get("search")?.trim() || "";
 
-    if (!rawQ || rawQ.length === 0) {
+    if (!rawQ || rawQ.length < 2) {
       return new Response(
         JSON.stringify({ games: [] }),
         {
@@ -31,6 +31,20 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     const cleanQuery = rawQ.toLowerCase().replace(/['"]/g, "");
+    const normalizedSlug = cleanQuery.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+    if (!normalizedSlug || normalizedSlug.length < 2) {
+      return new Response(
+        JSON.stringify({ games: [] }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
+          },
+        }
+      );
+    }
 
     // 1. Check Cloudflare Worker Edge Cache for instant (3-5ms) response
     const cache = typeof caches !== "undefined" && (caches as any).default ? (caches as any).default : null;
@@ -38,7 +52,7 @@ export const GET: APIRoute = async ({ request }) => {
     if (cache) {
       try {
         const url = new URL(request.url);
-        cacheKey = new Request(`${url.origin}${url.pathname}?q=${encodeURIComponent(cleanQuery)}`, {
+        cacheKey = new Request(`${url.origin}${url.pathname}?q=${encodeURIComponent(normalizedSlug)}`, {
           method: "GET"
         });
         const cachedRes = await cache.match(cacheKey);
@@ -59,25 +73,8 @@ export const GET: APIRoute = async ({ request }) => {
 
     initTursoForRequest(runtimeEnv);
 
-    const terms = cleanQuery.split(/\s+/).filter(t => t.length > 0);
-    const prefixQuery = `${cleanQuery}%`;
-    const substringQuery = `%${cleanQuery}%`;
-
-    // Build conditions: match full substring or individual tokens
-    const conditions = [
-      like(gamesTable.title, substringQuery),
-      like(gamesTable.developerNames, substringQuery),
-    ];
-
-    for (const term of terms) {
-      if (term.length >= 2) {
-        conditions.push(like(gamesTable.title, `%${term}%`));
-        conditions.push(like(gamesTable.developerNames, `%${term}%`));
-      }
-    }
-
-    const firstTerm = terms[0] || cleanQuery;
-    const firstTermPrefix = `${firstTerm}%`;
+    // Indexed slug range seek (zero full table scans!)
+    const nextSlug = normalizedSlug.slice(0, -1) + String.fromCharCode(normalizedSlug.charCodeAt(normalizedSlug.length - 1) + 1);
 
     const rows = await turso
       .select({
@@ -93,22 +90,15 @@ export const GET: APIRoute = async ({ request }) => {
       .from(gamesTable)
       .where(
         and(
-          ne(gamesTable.status, "hidden"),
-          or(...conditions)
+          gte(gamesTable.slug, normalizedSlug),
+          lt(gamesTable.slug, nextSlug),
+          or(isNull(gamesTable.status), ne(gamesTable.status, "hidden"))
         )
       )
       .orderBy(
-        sql`CASE 
-          WHEN LOWER(${gamesTable.title}) = ${cleanQuery} THEN 1000
-          WHEN LOWER(${gamesTable.title}) LIKE ${prefixQuery} THEN 500
-          WHEN LOWER(${gamesTable.title}) LIKE ${substringQuery} THEN 300
-          WHEN LOWER(${gamesTable.title}) LIKE ${firstTermPrefix} THEN 200
-          WHEN LOWER(${gamesTable.developerNames}) LIKE ${substringQuery} THEN 150
-          ELSE 50
-        END DESC`,
         desc(gamesTable.isTrending),
-        desc(gamesTable.rating),
-        desc(gamesTable.popularity)
+        desc(gamesTable.popularity),
+        desc(gamesTable.rating)
       )
       .limit(10);
 
