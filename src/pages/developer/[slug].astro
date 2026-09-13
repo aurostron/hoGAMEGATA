@@ -1,16 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { turso } from '../../lib/turso';
-import {
-  games as gamesTable,
-  developers as developersTable,
-  gamesToDevelopers,
-  platforms as platformsTable,
-  gamesToPlatforms,
-  genres as genresTable,
-  gamesToGenres
-} from '../../db/schema';
-import { eq, inArray, and, or, isNull, ne } from 'drizzle-orm';
+import { getDeveloperData } from '../../lib/creatorGamesFetcher';
 import { getCloudinaryFetchUrl, getHighResCoverUrl, stripHtml, formatReleaseDate, getReleaseYear } from '../../lib/utils';
 import PlatformLogos from '../../components/PlatformLogos';
 
@@ -27,94 +17,18 @@ if (!slug) {
   return Astro.redirect('/404');
 }
 
-const STOREFRONT_NAMES = new Set([
-  "gog-com", "gog", "steam", "itch-io", "itch", "epic-games", "epic-games-store", "nintendo-eshop", "playstation-store", "xbox-store", "humble-bundle"
-]);
-
-if (STOREFRONT_NAMES.has(slug.toLowerCase().trim())) {
+const data = await getDeveloperData(slug);
+if (!data) {
   return Astro.redirect('/404');
 }
 
-// 1. Fetch Developer
-const [developer] = await turso
-  .select()
-  .from(developersTable)
-  .where(eq(developersTable.slug, slug))
-  .limit(1);
-
-if (!developer) {
-  return Astro.redirect('/404');
-}
-
-// 2. Fetch games of this developer via join table gamesToDevelopers
-const gameRelations = await turso
-  .select({ gameId: gamesToDevelopers.gameId })
-  .from(gamesToDevelopers)
-  .where(eq(gamesToDevelopers.developerId, developer.id));
-
-const gameIds = gameRelations.map((r: any) => r.gameId);
-
-let games: any[] = [];
-if (gameIds.length > 0) {
-  const fetchedGames = await turso
-    .select()
-    .from(gamesTable)
-    .where(
-      and(
-        inArray(gamesTable.id, gameIds),
-        or(isNull(gamesTable.status), ne(gamesTable.status, "hidden"))
-      )
-    )
-    .orderBy(gamesTable.releaseDate); // Chronological order
-
-  // Fetch platforms mapping
-  const platformsResult = await turso
-    .select({
-      gameId: gamesToPlatforms.gameId,
-      id: platformsTable.id,
-      name: platformsTable.name,
-      slug: platformsTable.slug,
-    })
-    .from(gamesToPlatforms)
-    .innerJoin(platformsTable, eq(gamesToPlatforms.platformId, platformsTable.id))
-    .where(inArray(gamesToPlatforms.gameId, gameIds));
-
-  // Fetch genres mapping
-  const genresResult = await turso
-    .select({
-      gameId: gamesToGenres.gameId,
-      id: genresTable.id,
-      name: genresTable.name,
-      slug: genresTable.slug,
-    })
-    .from(gamesToGenres)
-    .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
-    .where(inArray(gamesToGenres.gameId, gameIds));
-
-  const platformsMap = new Map<string, any[]>();
-  for (const p of platformsResult) {
-    if (!platformsMap.has(p.gameId)) platformsMap.set(p.gameId, []);
-    platformsMap.get(p.gameId)!.push({ id: p.id, name: p.name, slug: p.slug });
-  }
-
-  const genresMap = new Map<string, any[]>();
-  for (const g of genresResult) {
-    if (!genresMap.has(g.gameId)) genresMap.set(g.gameId, []);
-    genresMap.get(g.gameId)!.push({ id: g.id, name: g.name, slug: g.slug });
-  }
-
-  games = fetchedGames.map((g: any) => ({
-    ...g,
-    platforms: platformsMap.get(g.id) || [],
-    genres: genresMap.get(g.id) || [],
-  }));
-}
+const { developer, games } = data;
 
 // Compute statistics
 const totalGames = games.length;
 const ratedGames = games.filter(g => g.rating);
 const avgRating = ratedGames.length > 0 
-  ? Math.round(ratedGames.reduce((acc, curr) => acc + curr.rating, 0) / ratedGames.length) 
+  ? Math.round(ratedGames.reduce((acc, curr) => acc + (curr.rating || 0), 0) / ratedGames.length) 
   : null;
 
 const years = games
@@ -127,33 +41,13 @@ const years = games
 const startYear = years.length > 0 ? Math.min(...years) : null;
 const endYear = years.length > 0 ? Math.max(...years) : null;
 
-// Curated data fallbacks
-const DEV_CURATED_DATA: Record<string, { description?: string; location?: string; style?: string }> = {
-  "chillas-art": {
-    description: "Chilla's Art (チルズアート) is a legendary Japanese indie game developer duo known for pioneering the VHS aesthetic in psychological horror, capturing Japanese urban legends, and delivering dread-inducing gaming masterpieces.",
-    location: "Japan",
-    style: "VHS, Atmospheric Horror"
-  },
-  "deep-sea-prisoner": {
-    description: "Deep-Sea Prisoner (Funamusea) is a Japanese indie creator famous for highly narrative, atmospheric adventure horror titles like Mogeko Castle and The Gray Garden.",
-    location: "Japan",
-    style: "Adventure, Psychological Horror"
-  },
-  "limbolane": {
-    description: "LimboLane is an independent game studio creators of the surreal psychological adventure game Smile For Me.",
-    location: "USA",
-    style: "Surreal, Puzzle Adventure"
-  }
-};
-
 const allGenres = games.flatMap(g => g.genres || []).map((g: any) => g.name);
 const uniqueGenres = Array.from(new Set(allGenres)).slice(0, 3).join(", ");
 const computedStyle = uniqueGenres || "Horror, Atmospheric";
 
-const curated = DEV_CURATED_DATA[slug] || {};
-const devDescription = curated.description || `${developer.name} is a game developer. Check out their catalog of games, chronological release timeline, and ratings.`;
-const devLocation = curated.location || null;
-const devStyle = curated.style || computedStyle;
+const devDescription = developer.description || `${developer.name} is a game developer. Check out their catalog of games, chronological release timeline, and ratings.`;
+const devLocation = developer.location || null;
+const devStyle = developer.style || computedStyle;
 ---
 
 <Layout title={`${developer.name} | hoGAMEGATA`} description={devDescription} withSearch={true}>

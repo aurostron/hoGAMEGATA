@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { sanityClient, urlFor } from '../../lib/sanity';
 
+export const prerender = false;
+
 Astro.response.headers.set(
   'Cache-Control',
   'public, max-age=60, s-maxage=120, stale-while-revalidate=300'

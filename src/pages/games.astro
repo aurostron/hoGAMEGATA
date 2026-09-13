@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import GataCatalogClient from '../components/GataCatalogClient';
 import { getCatalogStats, getCatalogGenres, getCatalogPlatforms } from '../lib/catalogMeta';
 
+export const prerender = false;
+
 Astro.response.headers.set(
   'Cache-Control',
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
