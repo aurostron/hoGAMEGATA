@@ -28,6 +28,7 @@ import ScareMeter from '../../components/ScareMeter';
 import PriceComparison from '../../components/PriceComparison';
 import ScreenshotGallery from '../../components/ScreenshotGallery';
 import CreatorGames from '../../components/CreatorGames';
+import { getGamesByCreatorSlugs } from '../../lib/creatorGamesFetcher';
 import TrackControls from '../../components/TrackControls';
 import VibeTracker from '../../components/VibeTracker';
 import RatingDistributionBar from '../../components/RatingDistributionBar';
@@ -406,6 +407,19 @@ const developers = cleanEntityList((game.developers as any[]) || []);
 const publishers = cleanEntityList((game.publishers as any[]) || []);
 const genres = (game.genres as any[]) || [];
 const platforms = (game.platforms as any[]) || [];
+
+const creatorSlugsForRecs = developers.length > 0 
+  ? developers.map((d: any) => d.slug).filter(Boolean)
+  : publishers.map((p: any) => p.slug).filter(Boolean);
+
+let initialCreatorGames: any[] = [];
+if (creatorSlugsForRecs.length > 0) {
+  try {
+    initialCreatorGames = await getGamesByCreatorSlugs(creatorSlugsForRecs, game.id, 4);
+  } catch (e) {
+    console.warn("[Game Slug] Failed to get initial creator games:", e);
+  }
+}
 
 const requirements = { min: game.minRequirements, rec: game.recRequirements };
 
@@ -1292,6 +1306,7 @@ const editGameData = {
         creatorSlugs={developers.map((d: any) => d.slug).filter(Boolean)}
         creatorNames={developers.map((d: any) => d.name)}
         excludeGameId={game.id}
+        initialGames={initialCreatorGames}
       />
     ) : publishers.length > 0 ? (
       <CreatorGames 
@@ -1299,6 +1314,7 @@ const editGameData = {
         creatorSlugs={publishers.map((p: any) => p.slug).filter(Boolean)}
         creatorNames={publishers.map((p: any) => p.name)}
         excludeGameId={game.id}
+        initialGames={initialCreatorGames}
       />
     ) : null}
     </main>

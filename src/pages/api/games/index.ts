@@ -21,6 +21,7 @@ import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngin
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import { isDlcOrExtra } from '../../../lib/dlcHelper';
 import { getCatalogStats } from '../../../lib/catalogMeta';
+import { getGamesByCreatorSlugs } from '../../../lib/creatorGamesFetcher';
 import fallbackGames from '../../../data/homepageFallback.json';
 
 export const prerender = false;
@@ -142,6 +143,33 @@ export const GET: APIRoute = async ({ request, locals }) => {
       const parsedOffset = parseInt(parts[0], 10);
       if (!isNaN(parsedOffset)) {
         offset = parsedOffset;
+      }
+    }
+
+    const creatorSlugsParam = searchParams.get("creatorSlugs")?.trim() || "";
+    if (creatorSlugsParam) {
+      const slugs = creatorSlugsParam.split(",").map(s => s.trim()).filter(Boolean);
+      try {
+        const creatorGames = await getGamesByCreatorSlugs(slugs, excludeId, limit);
+        return new Response(
+          JSON.stringify({
+            games: creatorGames,
+            totalCount: creatorGames.length,
+            maxPrice: 60,
+            correctedQuery: null,
+            nextCursor: null,
+            isFallback: false,
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "public, max-age=3600, s-maxage=86400",
+            },
+          }
+        );
+      } catch (e) {
+        console.warn("Error resolving creator games from index:", e);
       }
     }
 
@@ -740,6 +768,25 @@ export const GET: APIRoute = async ({ request, locals }) => {
     console.error("Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
     try {
       const url = new URL(request.url);
+      if (url.searchParams.get("creatorSlugs") || url.searchParams.get("creatorIds")) {
+        return new Response(
+          JSON.stringify({
+            games: [],
+            totalCount: 0,
+            maxPrice: 60,
+            correctedQuery: null,
+            nextCursor: null,
+            isFallback: true,
+          }),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "public, max-age=60",
+            },
+          }
+        );
+      }
       const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "24", 10) || 24, 1), 120);
       const offset = Math.max(parseInt(url.searchParams.get("offset") || "0", 10) || 0, 0);
       const fallback = (fallbackGames as any[]).slice(offset, offset + limit);

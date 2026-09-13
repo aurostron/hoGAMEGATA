@@ -47,17 +47,24 @@ interface CreatorGamesProps {
   creatorSlugs: string[];
   creatorNames: string[];
   excludeGameId: string;
+  initialGames?: any[];
 }
 
-export default function CreatorGames({ creatorSlugs, creatorNames, excludeGameId }: CreatorGamesProps) {
-  const [games, setGames] = useState<GameData[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function CreatorGames({ creatorSlugs, creatorNames, excludeGameId, initialGames }: CreatorGamesProps) {
+  const [games, setGames] = useState<any[]>(initialGames && initialGames.length > 0 ? initialGames : []);
+  const [loading, setLoading] = useState(initialGames && initialGames.length > 0 ? false : true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
 
   const creatorsString = creatorNames.length > 0 ? creatorNames.join(" & ") : "Same Creators";
 
   useEffect(() => {
+    if (initialGames && initialGames.length > 0) {
+      setGames(initialGames);
+      setLoading(false);
+      return;
+    }
+
     async function fetchCreatorGames() {
       if (creatorSlugs.length === 0) {
         setLoading(false);
@@ -73,8 +80,12 @@ export default function CreatorGames({ creatorSlugs, creatorNames, excludeGameId
         const response = await fetch(`/api/games?${queryParams.toString()}`);
         if (response.ok) {
           const data = await response.json();
-          setGames(data.games || []);
-          setNextCursor(data.nextCursor || null);
+          if (data.isFallback) {
+            setGames([]);
+          } else {
+            setGames(data.games || []);
+            setNextCursor(data.nextCursor || null);
+          }
         }
       } catch (err) {
         console.error("❌ Error fetching creator games:", err);
@@ -83,7 +94,7 @@ export default function CreatorGames({ creatorSlugs, creatorNames, excludeGameId
       }
     }
     fetchCreatorGames();
-  }, [creatorSlugs, excludeGameId]);
+  }, [creatorSlugs, excludeGameId, initialGames]);
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
@@ -98,8 +109,10 @@ export default function CreatorGames({ creatorSlugs, creatorNames, excludeGameId
       const response = await fetch(`/api/games?${queryParams.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setGames((prev) => [...prev, ...(data.games || [])]);
-        setNextCursor(data.nextCursor || null);
+        if (!data.isFallback) {
+          setGames((prev) => [...prev, ...(data.games || [])]);
+          setNextCursor(data.nextCursor || null);
+        }
       }
     } catch (err) {
       console.error("❌ Error fetching next page of creator games:", err);
