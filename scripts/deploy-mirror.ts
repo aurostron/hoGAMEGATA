@@ -40,16 +40,13 @@ const routesConfig = {
     '/images/*',
     '/platforms/*',
     '/3rd-party/*',
-    '/favicon.*',
-    '/*.svg',
-    '/*.png',
-    '/*.jpg',
-    '/*.gif',
-    '/*.ico',
-    '/*.txt',
-    '/*.xml',
-    '/*.json',
+    '/favicon.ico',
+    '/favicon.svg',
+    '/manifest.json',
     '/sw.js',
+    '/robots.txt',
+    '/sitemap-index.xml',
+    '/sitemap-0.xml',
   ],
 };
 fs.writeFileSync(path.join(mirrorDir, '_routes.json'), JSON.stringify(routesConfig, null, 2));
@@ -83,14 +80,14 @@ export default {
     try {
       if (env.ASSETS) {
         const asset = await env.ASSETS.fetch(request);
-        if (asset.status !== 404) {
+        if (asset && asset.status !== 404) {
           return asset;
         }
       }
     } catch (e) {}
 
     // 2. Check Cloudflare Edge Cache for GET requests
-    const CACHE_VERSION = 'hgg-v3';
+    const CACHE_VERSION = 'hgg-v4';
     const cache = typeof caches !== 'undefined' && caches.default;
     const cleanUrl = new URL(request.url);
     const cacheKeyUrl = \`\${cleanUrl.origin}\${cleanUrl.pathname}\${cleanUrl.search}?_cv=\${CACHE_VERSION}\`;
@@ -107,19 +104,95 @@ export default {
       } catch (e) {}
     }
 
-    // 3. Route to Primary Node (gamegata.xyz)
+    // 3. Dedicated handler for Image Proxy (/api/image-proxy/*)
+    // Ensures covers and screenshots always load and are cached, with direct fallback
+    if (url.pathname.startsWith('/api/image-proxy')) {
+      const targetUrl = url.searchParams.get('url');
+      if (targetUrl) {
+        // Try origin first
+        try {
+          const primaryUrl = \`https://gamegata.xyz\${url.pathname}\${url.search}\`;
+          const originRes = await fetch(primaryUrl, {
+            headers: {
+              'User-Agent': 'HGG-Mirror-Agent/1.0',
+              'Accept': request.headers.get('Accept') || 'image/*,*/*',
+            },
+          });
+          if (originRes.ok) {
+            const resHeaders = new Headers(originRes.headers);
+            resHeaders.set('X-HGG-Mirror-Cache', 'MISS');
+            resHeaders.set('Access-Control-Allow-Origin', '*');
+            resHeaders.set('Cache-Control', 'public, max-age=31536000, s-maxage=31536000, immutable');
+            const imgRes = new Response(originRes.body, { status: 200, headers: resHeaders });
+            if (cache && ctx && ctx.waitUntil) {
+              ctx.waitUntil(cache.put(cacheKey, imgRes.clone()));
+            }
+            return imgRes;
+          }
+        } catch (e) {}
+
+        // Fallback: direct fetch for whitelisted image hosts
+        try {
+          const parsed = new URL(targetUrl);
+          const ALLOWED_HOSTS = [
+            'images.igdb.com', 'media.rawg.io', 'rawg.io', 'img.itch.zone', 'itch.zone',
+            'img.itch.io', 'itch.io', 'static.itch.io', 'steamstatic.com', 'steampowered.com',
+            'media.steampowered.com', 'shared.cloudflare.steamstatic.com', 'shared.akamai.steamstatic.com',
+            'cdn.akamai.steamstatic.com', 'images-common.gog-statics.com', 'gog-statics.com',
+            'iili.io', 'freeimage.host', 'catbox.moe', 'files.catbox.moe', 'res.cloudinary.com',
+            'imgur.com', 'i.imgur.com', 'postimg.cc', 'i.postimg.cc', 'postimages.org',
+            'youtube.com', 'img.youtube.com', 'i.ytimg.com'
+          ];
+          const isAllowed = ALLOWED_HOSTS.some(h => parsed.hostname === h || parsed.hostname.endsWith('.' + h));
+          if (isAllowed) {
+            const fetchHeaders = {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+              'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+            };
+            if (parsed.hostname.includes('itch')) {
+              fetchHeaders['Referer'] = 'https://itch.io/';
+            }
+            const directRes = await fetch(targetUrl, { headers: fetchHeaders });
+            if (directRes.ok) {
+              const contentType = directRes.headers.get('Content-Type') || 'image/jpeg';
+              const imgRes = new Response(directRes.body, {
+                status: 200,
+                headers: {
+                  'Content-Type': contentType,
+                  'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
+                  'Access-Control-Allow-Origin': '*',
+                  'X-HGG-Mirror-Direct': '1',
+                },
+              });
+              if (cache && ctx && ctx.waitUntil) {
+                ctx.waitUntil(cache.put(cacheKey, imgRes.clone()));
+              }
+              return imgRes;
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    // 4. Route to Primary Site (gamegata.xyz)
     try {
       const clientIp = request.headers.get('cf-connecting-ip') || '';
       const primaryUrl = \`https://gamegata.xyz\${url.pathname}\${url.search}\`;
+      
+      const forwardHeaders = new Headers(request.headers);
+      forwardHeaders.set('User-Agent', 'HGG-Mirror-Agent/1.0');
+      forwardHeaders.set('X-HGG-Mirror', '1');
+      forwardHeaders.set('X-Forwarded-Host', url.hostname);
+      if (clientIp) {
+        forwardHeaders.set('X-Forwarded-For', clientIp);
+      }
+
+      const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
       const forwardReq = new Request(primaryUrl, {
         method: request.method,
-        headers: {
-          'Accept': request.headers.get('Accept') || '*/*',
-          'User-Agent': 'HGG-Mirror-Agent/1.0',
-          'X-HGG-Mirror': '1',
-          'X-Forwarded-Host': url.hostname,
-          ...(clientIp ? { 'X-Forwarded-For': clientIp } : {}),
-        },
+        headers: forwardHeaders,
+        body: hasBody ? request.body : undefined,
+        duplex: hasBody ? 'half' : undefined,
       });
 
       const originRes = await fetch(forwardReq);
@@ -130,7 +203,7 @@ export default {
         resHeaders.set('X-HGG-Mirror-Origin', 'gamegata.xyz');
         resHeaders.set('Access-Control-Allow-Origin', '*');
 
-        // Edge cache HTML and API responses for 24 hours
+        // Edge cache HTML and API responses
         resHeaders.set(
           'Cache-Control',
           'public, max-age=1800, s-maxage=86400, stale-while-revalidate=604800'
@@ -175,7 +248,7 @@ export default {
         headers: originRes.headers,
       });
     } catch (err) {
-      // 4. Primary node unreachable: provide resilient fallback
+      // 5. Primary site unreachable: provide resilient fallback
       if (url.pathname === '/' || url.pathname === '') {
         return Response.redirect(\`\${url.origin}/search/\`, 302);
       }
@@ -185,20 +258,20 @@ export default {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>hoGAMEGATA Mirror — Primary Node Offline</title>
+  <title>hoGAMEGATA — Offline Backup</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { background: #000; color: #fff; font-family: ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 24px; text-align: center; }
-    h1 { font-size: 2rem; font-weight: 200; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem; }
-    p { color: #888; max-width: 480px; font-weight: 300; line-height: 1.6; margin-bottom: 2rem; }
-    a { border: 1px solid #fff; color: #fff; padding: 14px 28px; text-decoration: none; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.2em; transition: 0.2s; }
+    h1 { font-size: 2rem; font-weight: 300; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    p { color: #888; max-width: 480px; font-weight: 400; line-height: 1.6; margin-bottom: 2rem; }
+    a { border: 1px solid #fff; color: #fff; padding: 14px 28px; text-decoration: none; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.15em; transition: 0.2s; }
     a:hover { background: #fff; color: #000; }
   </style>
 </head>
 <body>
-  <h1>Mirror Protocol Active</h1>
-  <p>The primary gamegata.xyz cluster is currently offline. The client-side preservation catalog is fully operational.</p>
-  <a href="/search/">Browse 108,000+ Games</a>
+  <h1>Gamegata Offline Backup</h1>
+  <p>The main website is temporarily unreachable. You can continue searching and browsing the backup catalog.</p>
+  <a href="/search/">Browse Games</a>
 </body>
 </html>\`,
         {

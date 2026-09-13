@@ -136,12 +136,12 @@ export default function MirrorGateway({
         backgroundColor: '#000000',
       }}
     >
-      {/* Top Protocol Header */}
-      <header className="w-full px-8 md:px-16 pt-12 md:pt-16 flex justify-between items-center text-[10px] md:text-xs tracking-[0.3em] uppercase text-neutral-500 font-mono">
-        <div>HOGAMEGATA // MIRROR PROTOCOL</div>
-        <div className="flex items-center gap-3">
+      {/* Top Header */}
+      <header className="w-full px-8 md:px-16 pt-12 md:pt-16 flex justify-between items-center text-[11px] md:text-xs tracking-widest uppercase text-neutral-500 font-mono">
+        <span className="font-sans font-bold text-white tracking-tight text-sm">hoGAMEGATA</span>
+        <div className="flex items-center gap-2.5">
           <span
-            className={`inline-block w-1.5 h-1.5 rounded-full ${
+            className={`inline-block w-2 h-2 rounded-full ${
               status === 'probing'
                 ? 'bg-amber-400 animate-pulse'
                 : status === 'online'
@@ -149,74 +149,72 @@ export default function MirrorGateway({
                 : 'bg-neutral-600'
             }`}
           />
-          <span>{status === 'probing' ? 'PROBING CLUSTER' : status === 'online' ? 'PRIMARY ACTIVE' : 'PRIMARY OFFLINE'}</span>
+          <span>{status === 'probing' ? 'Checking connection...' : status === 'online' ? 'Main site online' : 'Main site offline'}</span>
         </div>
       </header>
 
       {/* Center Minimalist Body */}
-      <main className="w-full max-w-3xl mx-auto px-8 md:px-16 py-12 flex flex-col items-start justify-center">
-        <div className="text-xs md:text-sm tracking-[0.25em] uppercase text-neutral-500 mb-6 font-mono">
-          NODE RECOGNITION
-        </div>
-
-        <h1 className="text-3xl md:text-5xl font-extralight tracking-tight text-white mb-6 leading-tight">
-          {status === 'probing' && 'Checking primary node availability...'}
-          {status === 'online' && 'Primary cluster is online.'}
-          {status === 'offline' && 'Direct network unreachable.'}
+      <main className="w-full max-w-2xl mx-auto px-8 md:px-16 py-12 flex flex-col items-start justify-center">
+        <h1 className="text-3xl md:text-4xl font-light tracking-tight text-white mb-4 leading-tight">
+          {status === 'probing' && 'Checking main site availability...'}
+          {status === 'online' && 'Gamegata is online.'}
+          {status === 'offline' && 'Viewing offline catalog.'}
         </h1>
 
-        <p className="text-sm md:text-base font-light text-neutral-400 max-w-xl leading-relaxed mb-12">
+        <p className="text-sm md:text-base font-normal text-neutral-400 max-w-lg leading-relaxed mb-10">
           {status === 'probing' &&
-            'Handshaking with gamegata.xyz to determine optimal routing for your session.'}
+            'Testing connection to gamegata.xyz...'}
           {status === 'online' &&
-            'The official hoGAMEGATA cluster is fully operational with live user profiles, cloud library sync, and full database access.'}
+            'The main site is available with user accounts, collections, and reviews. You can head there now or keep browsing this backup.'}
           {status === 'offline' &&
-            'Primary cluster is currently offline or unreachable. Seamlessly engaging standalone mirror archive with local wishlist & cart.'}
+            'The main site is currently unreachable. You can continue searching and browsing the offline backup library.'}
         </p>
 
         {/* Action Controls */}
         {status === 'online' && (
-          <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-6">
+          <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <a
               href={primaryUrl}
-              className="px-8 py-4 border border-white bg-white text-black text-xs font-medium tracking-[0.2em] uppercase text-center hover:bg-transparent hover:text-white transition-colors duration-300"
+              className="px-6 py-3.5 border border-white bg-white text-black text-xs font-semibold tracking-wider uppercase text-center hover:bg-transparent hover:text-white transition-colors duration-200"
             >
-              Go to Gamegata.xyz ({countdown}s)
+              Go to gamegata.xyz ({countdown}s)
             </a>
 
             <button
               type="button"
               onClick={dismissGateway}
-              className="px-8 py-4 border border-neutral-800 text-neutral-400 text-xs font-medium tracking-[0.2em] uppercase hover:border-neutral-500 hover:text-white transition-colors duration-300 cursor-pointer"
+              className="px-6 py-3.5 border border-neutral-700 text-neutral-300 text-xs font-semibold tracking-wider uppercase hover:border-neutral-400 hover:text-white transition-colors duration-200 cursor-pointer"
             >
-              Continue on Mirror
+              Stay on backup
             </button>
           </div>
         )}
 
         {status === 'offline' && (
-          <div className="flex items-center gap-4 text-xs font-mono tracking-[0.2em] uppercase text-neutral-500">
-            <div className="w-4 h-4 border border-white/20 border-t-white rounded-full animate-spin" />
-            <span>Engaging local mirror archive...</span>
-          </div>
+          <button
+            type="button"
+            onClick={dismissGateway}
+            className="px-6 py-3.5 border border-white bg-white text-black text-xs font-semibold tracking-wider uppercase hover:bg-transparent hover:text-white transition-colors duration-200 cursor-pointer"
+          >
+            Browse Offline Catalog
+          </button>
         )}
 
         {status === 'probing' && (
-          <div className="flex items-center gap-4 text-xs font-mono tracking-[0.2em] uppercase text-neutral-600">
-            <div className="w-2 h-2 bg-neutral-600 rounded-full animate-ping" />
-            <span>Connecting to https://gamegata.xyz...</span>
+          <div className="flex items-center gap-3 text-xs text-neutral-400">
+            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-ping" />
+            <span>Connecting to gamegata.xyz...</span>
           </div>
         )}
       </main>
 
       {/* Bottom Minimalist Footer */}
-      <footer className="w-full px-8 md:px-16 pb-12 md:pb-16 flex justify-between items-end text-[10px] tracking-[0.2em] uppercase text-neutral-600 font-mono">
-        <div>ARCHIVE REF: CF-PAGES // 108,000+ PRESERVED TITLES</div>
+      <footer className="w-full px-8 md:px-16 pb-12 md:pb-16 flex justify-end items-center text-xs text-neutral-500">
         {status === 'online' && autoForwardActive && (
           <button
             type="button"
             onClick={() => setAutoForwardActive(false)}
-            className="text-neutral-500 hover:text-neutral-300 underline cursor-pointer"
+            className="text-neutral-400 hover:text-white transition-colors cursor-pointer text-xs"
           >
             Cancel auto-redirect
           </button>
