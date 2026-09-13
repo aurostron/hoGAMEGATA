@@ -204,66 +204,24 @@ const {
       }
     </script>
 
-    <!-- Global API Error & Rate Limit Lockout -->
+    <!-- Global Rate Limit & Lockout Cleanup -->
     <script is:inline>
-      (function setupApiErrorInterceptor() {
-        function showFullTabLockout() {
-          try {
-            sessionStorage.setItem('api_rate_limit_lockout', '1');
-            document.cookie = "api_rate_limit_lockout=1; max-age=900; path=/; SameSite=Lax";
-          } catch (e) {}
-
-          let container = document.getElementById('full-tab-rate-limit-overlay');
-          if (!container) {
-            container = document.createElement('div');
-            container.id = 'full-tab-rate-limit-overlay';
-            container.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;width:100vw;height:100vh;background:#000;z-index:99999999;display:flex;align-items:center;justify-content:center;overflow:hidden;';
-            
-            const img = document.createElement('img');
-            img.src = '/images/rate-limit.jpeg';
-            img.alt = 'Access Restricted';
-            img.style.cssText = 'width:100%;height:100%;object-fit:fill;object-position:center;display:block;pointer-events:none;';
-            
-            container.appendChild(img);
-            document.documentElement.appendChild(container);
-          }
-          
-          if (document.body) {
-            document.body.style.overflow = 'hidden';
-          }
-
-          // No go back options: Freeze browser history
-          history.pushState(null, null, location.href);
-          window.onpopstate = function () {
-            history.pushState(null, null, location.href);
-          };
-
-          window.addEventListener('keydown', function(e) {
-            if (
-              (e.altKey && (e.key === 'ArrowLeft' || e.key === 'Left')) ||
-              e.key === 'Backspace' ||
-              (e.ctrlKey && (e.key === 'r' || e.key === 'R'))
-            ) {
-              e.preventDefault();
-            }
-          });
-        }
-
-        // Auto-trigger if lockout active in storage/cookie
+      (function cleanupRateLimitLockout() {
         try {
-          if (sessionStorage.getItem('api_rate_limit_lockout') === '1' || document.cookie.includes('api_rate_limit_lockout=1')) {
-            showFullTabLockout();
-          }
+          sessionStorage.removeItem('api_rate_limit_lockout');
+          document.cookie = "api_rate_limit_lockout=; max-age=0; path=/; SameSite=Lax";
+          const existingOverlay = document.getElementById('full-tab-rate-limit-overlay');
+          if (existingOverlay) existingOverlay.remove();
+          if (document.body) document.body.style.overflow = '';
         } catch (e) {}
 
-        // Intercept window.fetch to log API warnings without locking out user viewport
         const originalFetch = window.fetch;
         if (typeof originalFetch === 'function') {
           window.fetch = async function(...args) {
             const response = await originalFetch.apply(this, args);
             try {
               if (response.status === 429) {
-                console.warn('[RateLimit] API request rate limited:', args[0]);
+                console.warn('[RateLimit] API request throttled:', args[0]);
               }
             } catch (e) {}
             return response;

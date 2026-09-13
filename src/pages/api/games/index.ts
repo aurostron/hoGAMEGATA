@@ -21,6 +21,7 @@ import { expandAbbreviations, suggestCorrection } from '../../../lib/searchEngin
 import { rateLimit, getClientIp, tooManyRequests } from '../../../lib/rateLimit';
 import { isDlcOrExtra } from '../../../lib/dlcHelper';
 import { getCatalogStats } from '../../../lib/catalogMeta';
+import fallbackGames from '../../../data/homepageFallback.json';
 
 export const prerender = false;
 
@@ -701,6 +702,30 @@ export const GET: APIRoute = async ({ request, locals }) => {
     );
   } catch (error) {
     console.error("Failed to fetch games from database:", error instanceof Error ? error.message : "Unknown error");
+    try {
+      const url = new URL(request.url);
+      const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "24", 10) || 24, 1), 120);
+      const offset = Math.max(parseInt(url.searchParams.get("offset") || "0", 10) || 0, 0);
+      const fallback = (fallbackGames as any[]).slice(offset, offset + limit);
+      return new Response(
+        JSON.stringify({
+          games: fallback,
+          totalCount: (fallbackGames as any[]).length,
+          maxPrice: 60,
+          correctedQuery: null,
+          nextCursor: null,
+          isFallback: true,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "public, max-age=60, s-maxage=300",
+            "X-Fallback": "1",
+          },
+        }
+      );
+    } catch {}
     return new Response(
       JSON.stringify({ error: "Failed to fetch games from database" }),
       { status: 500, headers: { "Content-Type": "application/json" } }

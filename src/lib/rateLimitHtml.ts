@@ -44,30 +44,6 @@ export function createRateLimitHtmlResponse(status: number = 429, retryAfter: nu
   <div class="full-screen-container">
     <img src="/images/rate-limit.jpeg" alt="Rate Limit Exceeded" class="full-screen-image" />
   </div>
-  <script>
-    (function lockNavigation() {
-      try {
-        sessionStorage.setItem('api_rate_limit_lockout', '1');
-        document.cookie = "api_rate_limit_lockout=1; max-age=900; path=/; SameSite=Lax";
-      } catch (e) {}
-
-      // Freeze browser history navigation (no go back options)
-      history.pushState(null, null, location.href);
-      window.onpopstate = function () {
-        history.pushState(null, null, location.href);
-      };
-
-      window.addEventListener('keydown', function(e) {
-        if (
-          (e.altKey && (e.key === 'ArrowLeft' || e.key === 'Left')) ||
-          e.key === 'Backspace' ||
-          (e.ctrlKey && (e.key === 'r' || e.key === 'R'))
-        ) {
-          e.preventDefault();
-        }
-      });
-    })();
-  </script>
 </body>
 </html>`;
 

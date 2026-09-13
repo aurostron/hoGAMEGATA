@@ -84,6 +84,7 @@ src/pages/api/discord/
 scripts/*
 !scripts/seed-mock-db.ts
 !scripts/fix-manifest-urls.mjs
+!scripts/deploy-mirror.ts
 pending-search-cache.json
 
 # Local large database dumps & reports

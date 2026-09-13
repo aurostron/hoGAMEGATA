@@ -77,10 +77,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   initTursoForRequest(runtimeEnv);
   initTursoAuthForRequest(runtimeEnv);
 
-  const cfCtx = (context.locals as any)?.runtime?.ctx || (context.locals as any)?.cfContext;
-  if (cfCtx && !(context.locals as any).cfContext) {
-    (context.locals as any).cfContext = cfCtx;
-  }
+  const cfCtx = (context.locals as any)?.cfContext;
 
   const { url, redirect } = context;
   const { pathname } = url;
@@ -107,23 +104,29 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // 1.0. Global Security Check: Is Client IP Blocked or Lockout Cookie Active?
-  const clientIp = getClientIp(context.request);
-  const isBlocked = await isIpBlocked(clientIp);
-  if (isBlocked) {
-    return applySecurityHeaders(createRateLimitHtmlResponse(429, 86400));
+  const isMirror = context.request.headers.get("X-HGG-Mirror") === "1";
+  const clientIp = isMirror
+    ? context.request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || getClientIp(context.request)
+    : getClientIp(context.request);
+
+  if (!isMirror) {
+    const isBlocked = await isIpBlocked(clientIp);
+    if (isBlocked) {
+      return applySecurityHeaders(createRateLimitHtmlResponse(429, 86400));
+    }
   }
 
   const acceptHeader = context.request.headers.get("accept") || "";
   const secFetchDest = context.request.headers.get("sec-fetch-dest") || "";
   const isDocumentRequest = acceptHeader.includes("text/html") || secFetchDest === "document";
 
-  // Check persistent lockout cookie for HTML page navigation
-  if (isDocumentRequest && context.cookies.get("api_rate_limit_lockout")?.value === "1") {
-    return applySecurityHeaders(createRateLimitHtmlResponse(429, 900));
+  // Proactively erase any legacy lockout cookie
+  if (context.cookies.has("api_rate_limit_lockout")) {
+    context.cookies.delete("api_rate_limit_lockout", { path: "/" });
   }
 
   // Enforce global document request rate limit (120 page views / min per IP)
-  if (isDocumentRequest) {
+  if (isDocumentRequest && !isMirror) {
     const docRl = await rateLimit(`doc_nav:${clientIp}`, 120, 60);
     if (!docRl.allowed) {
       return applySecurityHeaders(createRateLimitHtmlResponse(429, docRl.retryAfter));
@@ -236,7 +239,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const cacheControl = response.headers.get("Cache-Control");
       if (cacheControl && cacheControl.includes("public")) {
         const responseToCache = response.clone();
-        const cfCtx = (context.locals as any)?.runtime?.ctx || (context.locals as any)?.cfContext;
+        const cfCtx = (context.locals as any)?.cfContext;
         if (cfCtx?.waitUntil) {
           cfCtx.waitUntil(cache.put(cacheKey, responseToCache));
         } else {
