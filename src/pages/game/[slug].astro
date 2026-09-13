@@ -17,6 +17,7 @@ import {
   priceSnapshots as priceSnapshotsTable
 } from '../../db/schema';
 import { eq } from 'drizzle-orm';
+import { getGameBySlug } from '../../lib/gamePackFetcher';
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle, formatPrice, formatEmbedVideoUrl } from '../../lib/utils';
 import { fetchItchGameDetail, fetchItchDataJson } from '../../lib/itchParser';
 
@@ -48,42 +49,63 @@ export const prerender = false;
 
 const { slug } = Astro.params;
 
-// 1. Single Left Join query for Game + PurchaseLinks in ONE round trip (Optimized for Turso Read Quotas)
-const rows = await turso
-  .select({
-    game: gamesTable,
-    link: purchaseLinksTable,
-  })
-  .from(gamesTable)
-  .leftJoin(purchaseLinksTable, eq(purchaseLinksTable.gameId, gamesTable.id))
-  .where(eq(gamesTable.slug, slug!));
-
-if (!rows || rows.length === 0 || !rows[0].game) {
-  return Astro.redirect('/404');
-}
-
-const rawGame = rows[0].game;
-// Deduplicate purchase links returned from the join
-const linksMap = new Map<string, any>();
-for (const r of rows) {
-  if (r.link && !linksMap.has(r.link.id)) {
-    linksMap.set(r.link.id, r.link);
-  }
-}
-let linksData = Array.from(linksMap.values());
-
-// Zero-DB-write request path (2026-09-09): no analytics, no JIT persistence.
-// Unenriched itch games are queued for the weekly batch enricher (KV list).
-const cfCtx = (Astro.locals as any).cfContext;
-
-const isItchGame = Boolean(rawGame.slug.startsWith("itch-") || (rawGame as any).source === "itch" || (rawGame as any).source === "itchio");
-
+// 1. Ultra-fast Range fetcher from Hugging Face master dataset (0 database reads!)
+let rawGame: any = null;
+let linksData: any[] = [];
 let devsData: any[] = [];
 let pubsData: any[] = [];
 let genresData: any[] = [];
 let tagsData: any[] = [];
 let platsData: any[] = [];
 let priceSnapshotsData: any[] = [];
+
+let packGame: any = null;
+try {
+  packGame = await getGameBySlug(slug!);
+} catch (err) {
+  console.warn(`[GamePack] Range fetch failed for ${slug}, falling back:`, err);
+}
+
+if (packGame) {
+  rawGame = packGame;
+  linksData = packGame.purchaseLinks || [];
+  devsData = packGame.devs || [];
+  pubsData = packGame.pubs || [];
+  genresData = packGame.genres || [];
+  tagsData = packGame.tags || [];
+  platsData = packGame.platforms || [];
+  priceSnapshotsData = packGame.priceSnapshots || [];
+} else {
+  // Fallback to Turso database query if game is not in pack
+  const rows = await turso
+    .select({
+      game: gamesTable,
+      link: purchaseLinksTable,
+    })
+    .from(gamesTable)
+    .leftJoin(purchaseLinksTable, eq(purchaseLinksTable.gameId, gamesTable.id))
+    .where(eq(gamesTable.slug, slug!));
+
+  if (!rows || rows.length === 0 || !rows[0].game) {
+    return Astro.redirect('/404');
+  }
+
+  rawGame = rows[0].game;
+  // Deduplicate purchase links returned from the join
+  const linksMap = new Map<string, any>();
+  for (const r of rows) {
+    if (r.link && !linksMap.has(r.link.id)) {
+      linksMap.set(r.link.id, r.link);
+    }
+  }
+  linksData = Array.from(linksMap.values());
+}
+
+// Zero-DB-write request path (2026-09-09): no analytics, no JIT persistence.
+// Unenriched itch games are queued for the weekly batch enricher (KV list).
+const cfCtx = (Astro.locals as any).cfContext;
+
+const isItchGame = Boolean(rawGame.slug.startsWith("itch-") || (rawGame as any).source === "itch" || (rawGame as any).source === "itchio");
 let itchLoadFailed = false;
 let itchDirectUrl = "";
 
@@ -247,52 +269,54 @@ if (isItchGame) {
     console.warn("[Game Slug] Failed to load itch price snapshots:", e);
   }
 } else {
-  // Standard non-itch game: fetch relations in parallel (links already fetched in single query!)
-  const [
-    devsRes,
-    pubsRes,
-    genresRes,
-    tagsRes,
-    platsRes,
-    priceSnapshotsRes
-  ] = await Promise.all([
-    turso
-      .select({ id: developersTable.id, name: developersTable.name, slug: developersTable.slug })
-      .from(gamesToDevelopers)
-      .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id))
-      .where(eq(gamesToDevelopers.gameId, rawGame.id)),
-    turso
-      .select({ id: publishersTable.id, name: publishersTable.name, slug: publishersTable.slug })
-      .from(gamesToPublishers)
-      .innerJoin(publishersTable, eq(gamesToPublishers.publisherId, publishersTable.id))
-      .where(eq(gamesToPublishers.gameId, rawGame.id)),
-    turso
-      .select({ id: genresTable.id, name: genresTable.name, slug: genresTable.slug })
-      .from(gamesToGenres)
-      .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
-      .where(eq(gamesToGenres.gameId, rawGame.id)),
-    turso
-      .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
-      .from(gamesToTags)
-      .innerJoin(tagsTable, eq(gamesToTags.tagId, tagsTable.id))
-      .where(eq(gamesToTags.gameId, rawGame.id)),
-    turso
-      .select({ id: platformsTable.id, name: platformsTable.name, slug: platformsTable.slug })
-      .from(gamesToPlatforms)
-      .innerJoin(platformsTable, eq(gamesToPlatforms.platformId, platformsTable.id))
-      .where(eq(gamesToPlatforms.gameId, rawGame.id)),
-    turso
-      .select()
-      .from(priceSnapshotsTable)
-      .where(eq(priceSnapshotsTable.gameId, rawGame.id))
-  ]);
+  // Standard non-itch game: fetch relations if not already loaded from pack
+  if (!packGame) {
+    const [
+      devsRes,
+      pubsRes,
+      genresRes,
+      tagsRes,
+      platsRes,
+      priceSnapshotsRes
+    ] = await Promise.all([
+      turso
+        .select({ id: developersTable.id, name: developersTable.name, slug: developersTable.slug })
+        .from(gamesToDevelopers)
+        .innerJoin(developersTable, eq(gamesToDevelopers.developerId, developersTable.id))
+        .where(eq(gamesToDevelopers.gameId, rawGame.id)),
+      turso
+        .select({ id: publishersTable.id, name: publishersTable.name, slug: publishersTable.slug })
+        .from(gamesToPublishers)
+        .innerJoin(publishersTable, eq(gamesToPublishers.publisherId, publishersTable.id))
+        .where(eq(gamesToPublishers.gameId, rawGame.id)),
+      turso
+        .select({ id: genresTable.id, name: genresTable.name, slug: genresTable.slug })
+        .from(gamesToGenres)
+        .innerJoin(genresTable, eq(gamesToGenres.genreId, genresTable.id))
+        .where(eq(gamesToGenres.gameId, rawGame.id)),
+      turso
+        .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
+        .from(gamesToTags)
+        .innerJoin(tagsTable, eq(gamesToTags.tagId, tagsTable.id))
+        .where(eq(gamesToTags.gameId, rawGame.id)),
+      turso
+        .select({ id: platformsTable.id, name: platformsTable.name, slug: platformsTable.slug })
+        .from(gamesToPlatforms)
+        .innerJoin(platformsTable, eq(gamesToPlatforms.platformId, platformsTable.id))
+        .where(eq(gamesToPlatforms.gameId, rawGame.id)),
+      turso
+        .select()
+        .from(priceSnapshotsTable)
+        .where(eq(priceSnapshotsTable.gameId, rawGame.id))
+    ]);
 
-  devsData = devsRes;
-  pubsData = pubsRes;
-  genresData = genresRes;
-  tagsData = tagsRes;
-  platsData = platsRes;
-  priceSnapshotsData = priceSnapshotsRes;
+    devsData = devsRes;
+    pubsData = pubsRes;
+    genresData = genresRes;
+    tagsData = tagsRes;
+    platsData = platsRes;
+    priceSnapshotsData = priceSnapshotsRes;
+  }
 
   // Cache this rendered page at Cloudflare Edge CDN (1 day cache, 7 day stale-while-revalidate)
   Astro.response.headers.set(
@@ -304,9 +328,9 @@ if (isItchGame) {
 // 3. Assemble full game object with parsed json structures matching previous schema
 const game = {
   ...rawGame,
-  screenshots: rawGame.screenshots ? JSON.parse(rawGame.screenshots) : [],
-  scareProfile: rawGame.scareProfile ? JSON.parse(rawGame.scareProfile) : null,
-  taxonomyScores: rawGame.taxonomyScores ? JSON.parse(rawGame.taxonomyScores) : null,
+  screenshots: typeof rawGame.screenshots === "string" ? JSON.parse(rawGame.screenshots) : (rawGame.screenshots || []),
+  scareProfile: typeof rawGame.scareProfile === "string" ? JSON.parse(rawGame.scareProfile) : (rawGame.scareProfile || null),
+  taxonomyScores: typeof rawGame.taxonomyScores === "string" ? JSON.parse(rawGame.taxonomyScores) : (rawGame.taxonomyScores || null),
   developers: devsData,
   publishers: pubsData,
   genres: genresData,
