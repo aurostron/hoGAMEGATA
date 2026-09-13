@@ -147,8 +147,44 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     // 1-3. Resolve Filter IDs Concurrently in Parallel
     const [creatorGameIds, tagGameIds, genreGameIds, platformGameIds] = await Promise.all([
-      // 1. Resolve Creator IDs Filter
+      // 1. Resolve Creator Filter — prefers slug-based lookup (immune to ID mismatches)
       (async (): Promise<string[] | null> => {
+        const creatorSlugsParam = searchParams.get("creatorSlugs")?.trim() || "";
+        if (creatorSlugsParam) {
+          // New path: resolve dev/pub IDs from their slugs (correct Turso UUIDs)
+          const slugs = creatorSlugsParam.split(",").filter(Boolean);
+          if (slugs.length === 0) return null;
+          const [devRows, pubRows] = await Promise.all([
+            turso
+              .select({ id: developersTable.id })
+              .from(developersTable)
+              .where(inArray(developersTable.slug, slugs)),
+            turso
+              .select({ id: publishersTable.id })
+              .from(publishersTable)
+              .where(inArray(publishersTable.slug, slugs)),
+          ]);
+          const resolvedIds = [
+            ...devRows.map(r => r.id),
+            ...pubRows.map(r => r.id),
+          ];
+          if (resolvedIds.length === 0) return [];
+          const [devGames, pubGames] = await Promise.all([
+            turso
+              .select({ gameId: gamesToDevelopers.gameId })
+              .from(gamesToDevelopers)
+              .where(inArray(gamesToDevelopers.developerId, resolvedIds)),
+            turso
+              .select({ gameId: gamesToPublishers.gameId })
+              .from(gamesToPublishers)
+              .where(inArray(gamesToPublishers.publisherId, resolvedIds)),
+          ]);
+          return Array.from(new Set([
+            ...devGames.map(dg => dg.gameId),
+            ...pubGames.map(pg => pg.gameId),
+          ]));
+        }
+        // Legacy path: direct ID lookup (kept for backward compat)
         if (!creatorIdsParam) return null;
         const creatorIds = creatorIdsParam.split(",").filter(Boolean);
         if (creatorIds.length === 0) return null;

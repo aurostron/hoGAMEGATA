@@ -44,12 +44,12 @@ interface GameData {
 }
 
 interface CreatorGamesProps {
-  creatorIds: string[];
+  creatorSlugs: string[];
   creatorNames: string[];
   excludeGameId: string;
 }
 
-export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }: CreatorGamesProps) {
+export default function CreatorGames({ creatorSlugs, creatorNames, excludeGameId }: CreatorGamesProps) {
   const [games, setGames] = useState<GameData[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -59,14 +59,14 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
 
   useEffect(() => {
     async function fetchCreatorGames() {
-      if (creatorIds.length === 0) {
+      if (creatorSlugs.length === 0) {
         setLoading(false);
         return;
       }
       setLoading(true);
       try {
         const queryParams = new URLSearchParams();
-        queryParams.set("creatorIds", creatorIds.join(","));
+        queryParams.set("creatorSlugs", creatorSlugs.join(","));
         queryParams.set("excludeId", excludeGameId);
         queryParams.set("limit", "4");
 
@@ -83,14 +83,14 @@ export default function CreatorGames({ creatorIds, creatorNames, excludeGameId }
       }
     }
     fetchCreatorGames();
-  }, [creatorIds, excludeGameId]);
+  }, [creatorSlugs, excludeGameId]);
 
   async function loadMoreGames() {
     if (!nextCursor || loadingMore) return;
     setLoadingMore(true);
     try {
       const queryParams = new URLSearchParams();
-      queryParams.set("creatorIds", creatorIds.join(","));
+      queryParams.set("creatorSlugs", creatorSlugs.join(","));
       queryParams.set("excludeId", excludeGameId);
       queryParams.set("cursor", nextCursor);
       queryParams.set("limit", "4");

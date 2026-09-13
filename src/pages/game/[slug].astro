@@ -1289,14 +1289,14 @@ const editGameData = {
     {developers.length > 0 ? (
       <CreatorGames 
         client:visible
-        creatorIds={developers.map((d: any) => d.id)}
+        creatorSlugs={developers.map((d: any) => d.slug).filter(Boolean)}
         creatorNames={developers.map((d: any) => d.name)}
         excludeGameId={game.id}
       />
     ) : publishers.length > 0 ? (
       <CreatorGames 
         client:visible
-        creatorIds={publishers.map((p: any) => p.id)}
+        creatorSlugs={publishers.map((p: any) => p.slug).filter(Boolean)}
         creatorNames={publishers.map((p: any) => p.name)}
         excludeGameId={game.id}
       />
