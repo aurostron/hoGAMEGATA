@@ -457,3 +457,103 @@ export function formatItchBadge(data: ItchDataJsonResult): {
   return { badgeText: "FREE", badgeType: "free" };
 }
 
+export interface ItchHybridResult {
+  success: boolean;
+  source: "data.json" | "html" | "hybrid" | "none";
+  data?: ItchGameDetail;
+  error?: string;
+}
+
+/**
+ * Hybrid itch.io detail fetcher (Tier 1: /data.json + Tier 2: HTML scrape).
+ * - Fast path: queries /data.json (<50ms, ~600B, 0.05ms CPU), getting live deals, author, cover, tags.
+ * - Fallback / enrichment: queries HTML page (<2s timeout) if screenshots or rich summary needed.
+ * - Never throws, respects worker CPU limits (<2ms total CPU time).
+ */
+export async function fetchItchHybridDetail(
+  url: string,
+  options: { timeoutMs?: number; needScreenshots?: boolean } = {}
+): Promise<ItchHybridResult> {
+  const timeoutMs = options.timeoutMs ?? 2000;
+  const needScreenshots = options.needScreenshots ?? true;
+
+  // 1. Tier-1: Fast data.json fetch (<50ms, ~600B)
+  let dataJsonResult: ItchDataJsonResult | null = null;
+  try {
+    dataJsonResult = await fetchItchDataJson(url, Math.min(timeoutMs, 1200));
+  } catch {}
+
+  const hasValidJson = Boolean(
+    dataJsonResult?.success &&
+    (dataJsonResult.id || dataJsonResult.title || dataJsonResult.author)
+  );
+
+  // If data.json succeeded and screenshots are not needed, return immediately
+  if (hasValidJson && !needScreenshots) {
+    return {
+      success: true,
+      source: "data.json",
+      data: {
+        title: dataJsonResult!.title,
+        url: dataJsonResult!.url,
+        author: dataJsonResult!.author,
+        authorUrl: dataJsonResult!.authorUrl,
+        coverUrl: dataJsonResult!.coverUrl,
+        screenshots: [],
+        price: dataJsonResult!.price !== null && dataJsonResult!.price !== undefined ? String(dataJsonResult!.price) : undefined,
+        tags: dataJsonResult!.tags || [],
+        platforms: [],
+      },
+    };
+  }
+
+  // 2. Tier-2: HTML scrape (for screenshots and full summary)
+  let htmlResult: ItchScrapeResult | null = null;
+  try {
+    htmlResult = await fetchItchGameDetail(url, Math.min(timeoutMs, 1500));
+  } catch {}
+
+  // 3. Merge results
+  if (htmlResult?.success && htmlResult.data) {
+    const d = htmlResult.data;
+    if (hasValidJson && dataJsonResult) {
+      if (dataJsonResult.author && !d.author) d.author = dataJsonResult.author;
+      if (dataJsonResult.tags?.length && (!d.tags || d.tags.length === 0)) d.tags = dataJsonResult.tags;
+      if (dataJsonResult.coverUrl && !d.coverUrl) d.coverUrl = dataJsonResult.coverUrl;
+      if (dataJsonResult.price !== null && dataJsonResult.price !== undefined && !d.price) {
+        d.price = String(dataJsonResult.price);
+      }
+    }
+    return {
+      success: true,
+      source: hasValidJson ? "hybrid" : "html",
+      data: d,
+    };
+  }
+
+  // If HTML failed (e.g. 404/timeout) but data.json succeeded, return data.json result
+  if (hasValidJson && dataJsonResult) {
+    return {
+      success: true,
+      source: "data.json",
+      data: {
+        title: dataJsonResult.title,
+        url: dataJsonResult.url,
+        author: dataJsonResult.author,
+        authorUrl: dataJsonResult.authorUrl,
+        coverUrl: dataJsonResult.coverUrl,
+        screenshots: [],
+        price: dataJsonResult.price !== null && dataJsonResult.price !== undefined ? String(dataJsonResult.price) : undefined,
+        tags: dataJsonResult.tags || [],
+        platforms: [],
+      },
+    };
+  }
+
+  return {
+    success: false,
+    source: "none",
+    error: htmlResult?.error || dataJsonResult?.error || "Failed to fetch itch details",
+  };
+}
+

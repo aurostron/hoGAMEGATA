@@ -19,7 +19,7 @@ import {
 import { eq } from 'drizzle-orm';
 import { getGameBySlug } from '../../lib/gamePackFetcher';
 import { getHighResCoverUrl, getCloudinaryFetchUrl, getCategoryBadge, cleanTitle, formatPrice, formatEmbedVideoUrl } from '../../lib/utils';
-import { fetchItchGameDetail, fetchItchDataJson } from '../../lib/itchParser';
+import { fetchItchGameDetail, fetchItchDataJson, fetchItchHybridDetail } from '../../lib/itchParser';
 
 // Import React components
 import PlatformLogos from '../../components/PlatformLogos';
@@ -121,112 +121,108 @@ if (rawGame.status === "hidden") {
 
 // 2. Fetch game relations (Zero extra queries for itch games!)
 if (isItchGame) {
-  if (!rawGame.rawgEnriched) {
-    // Unenriched itch game: JIT parse on the fly using our 0.49ms ultra-fast engine
-    const itchLink = linksData.find((l: any) => 
-      l && (
-        (l.storeName && l.storeName.toLowerCase().includes("itch")) || 
-        (l.url && l.url.includes("itch.io"))
-      )
-    );
+  const itchLink = linksData.find((l: any) => 
+    l && (
+      (l.storeName && l.storeName.toLowerCase().includes("itch")) || 
+      (l.url && l.url.includes("itch.io"))
+    )
+  );
 
-    if (itchLink?.url) {
-      itchDirectUrl = itchLink.url;
-      const scrapeRes = await fetchItchGameDetail(itchLink.url, 3500);
-
-      if (scrapeRes.success && scrapeRes.data) {
-        const d = scrapeRes.data;
-        const parsedScreenshots = d.screenshots.length > 0 
-          ? d.screenshots 
-          : (rawGame.screenshots ? JSON.parse(rawGame.screenshots) : []);
-        const newCover = d.coverUrl || rawGame.coverUrl;
-        const newSummary = d.summary || rawGame.summary;
-        const newRating = d.rating !== undefined ? d.rating : rawGame.rating;
-        const authorName = d.author || rawGame.developerNames || "";
-        const tagNames = (d.tags || []).slice(0, 15).join(", ");
-        const platNames = (d.platforms || []).join(", ");
-
-        // In-memory update for THIS request
-        rawGame.coverUrl = newCover;
-        rawGame.summary = newSummary;
-        rawGame.screenshots = JSON.stringify(parsedScreenshots);
-        if (newRating !== undefined && newRating !== null) {
-          rawGame.rating = newRating;
-        }
-        rawGame.developerNames = authorName;
-        rawGame.genreNames = tagNames;
-        rawGame.platformNames = platNames;
-        rawGame.rawgEnriched = true;
-
-        // Display-only enrichment (2026-09-09): the live-scraped values above are
-        // used for THIS render only. Persistence happens in the weekly batch
-        // Action (<=200 stmts/batch, off-peak). Queue the slug via KV (0 Turso writes).
-        queueItchEnrichment(rawGame.slug).catch(() => {});
-
-        // Pre-warm and cache scraped itch images in Cloudflare Edge Cache via /api/image-proxy
-        const imagesToCache = [newCover, ...parsedScreenshots.slice(0, 8)].filter(Boolean) as string[];
-        if (imagesToCache.length > 0) {
-          const cacheImagesTask = Promise.allSettled(
-            imagesToCache.map((imgUrl, idx) => {
-              const relProxyUrl = getCloudinaryFetchUrl(
-                imgUrl,
-                false,
-                rawGame.slug,
-                idx === 0 ? "cover" : `screenshot-${idx}`
-              );
-              const proxyUrl = `${Astro.url.origin}${relProxyUrl}`;
-              return fetch(proxyUrl, {
-                headers: {
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-                },
-              });
-            })
-          );
-          if (cfCtx?.waitUntil) {
-            cfCtx.waitUntil(cacheImagesTask);
-          } else {
-            cacheImagesTask.catch(() => {});
-          }
-        }
-
-        // Populate in-memory relations for rendering
-        tagsData = (d.tags || []).map((t: string, idx: number) => ({ id: `itch-tag-${idx}`, name: t, slug: t.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
-        platsData = (d.platforms || []).map((p: string, idx: number) => ({ id: `itch-plat-${idx}`, name: p, slug: p.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
-        if (authorName) {
-          devsData = [{ id: `itch-dev-0`, name: authorName, slug: authorName.toLowerCase().replace(/[^a-z0-9]+/g, "-") }];
-        }
-
-        // Cache this enriched page at Cloudflare Edge CDN (1 day cache, 7 day stale-while-revalidate)
-        Astro.response.headers.set(
-          'Cache-Control',
-          'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800'
-        );
-      } else {
-        // Itch scrape timed out, 429'd, or failed: do NOT crash with 500!
-        itchLoadFailed = true;
-        // Short cache (60s) so error doesn't lock for 30 days and users can retry
-        Astro.response.headers.set('Cache-Control', 'public, max-age=60');
-      }
-    }
-  } else {
-    // Already enriched itch game: ALL metadata is already denormalized in rawGame!
-    // ZERO additional database queries needed!
-    if (rawGame.developerNames) {
-      devsData = [{ id: 'itch-dev-0', name: rawGame.developerNames, slug: rawGame.developerNames.toLowerCase().replace(/[^a-z0-9]+/g, "-") }];
-    }
-    if (rawGame.genreNames) {
-      tagsData = rawGame.genreNames.split(",").map((t, idx) => ({ id: `itch-tag-${idx}`, name: t.trim(), slug: t.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
-    }
-    if (rawGame.platformNames) {
-      platsData = rawGame.platformNames.split(",").map((p, idx) => ({ id: `itch-plat-${idx}`, name: p.trim(), slug: p.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
-    }
-
-    // Cache this rendered page at Cloudflare Edge CDN (1 day cache, 7 day stale-while-revalidate)
-    Astro.response.headers.set(
-      'Cache-Control',
-      'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800'
-    );
+  if (itchLink?.url) {
+    itchDirectUrl = itchLink.url;
   }
+
+  // Fast Hybrid Enrichment:
+  // Tier-1: /data.json (<50ms, ~600B, 0.05ms CPU) for live pricing, author, cover, tags
+  // Tier-2: HTML scrape fallback (<1.5s timeout) for screenshots/description if needed
+  const needsEnrichment = !rawGame.rawgEnriched || !rawGame.summary || !rawGame.screenshots || (Array.isArray(rawGame.screenshots) && rawGame.screenshots.length === 0);
+
+  if (needsEnrichment && itchDirectUrl) {
+    const needScreenshots = !rawGame.screenshots || (Array.isArray(rawGame.screenshots) && rawGame.screenshots.length === 0);
+    const scrapeRes = await fetchItchHybridDetail(itchDirectUrl, {
+      timeoutMs: 1800,
+      needScreenshots,
+    });
+
+    if (scrapeRes.success && scrapeRes.data) {
+      const d = scrapeRes.data;
+      const parsedScreenshots = d.screenshots && d.screenshots.length > 0 
+        ? d.screenshots 
+        : (rawGame.screenshots ? (typeof rawGame.screenshots === "string" ? JSON.parse(rawGame.screenshots) : rawGame.screenshots) : []);
+      const newCover = d.coverUrl || rawGame.coverUrl;
+      const newSummary = d.summary || rawGame.summary;
+      const newRating = d.rating !== undefined ? d.rating : rawGame.rating;
+      const authorName = d.author || rawGame.developerNames || "";
+      const tagNames = (d.tags || []).slice(0, 15).join(", ");
+      const platNames = (d.platforms || []).join(", ");
+
+      // In-memory update for THIS request
+      rawGame.coverUrl = newCover;
+      if (newSummary) rawGame.summary = newSummary;
+      rawGame.screenshots = JSON.stringify(parsedScreenshots);
+      if (newRating !== undefined && newRating !== null) {
+        rawGame.rating = newRating;
+      }
+      if (authorName) rawGame.developerNames = authorName;
+      if (tagNames && !rawGame.genreNames) rawGame.genreNames = tagNames;
+      if (platNames && !rawGame.platformNames) rawGame.platformNames = platNames;
+      rawGame.rawgEnriched = true;
+
+      // Populate in-memory relations for rendering
+      if (d.tags && d.tags.length > 0 && tagsData.length === 0) {
+        tagsData = d.tags.map((t: string, idx: number) => ({ id: `itch-tag-${idx}`, name: t, slug: t.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+      }
+      if (d.platforms && d.platforms.length > 0 && platsData.length === 0) {
+        platsData = d.platforms.map((p: string, idx: number) => ({ id: `itch-plat-${idx}`, name: p, slug: p.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+      }
+      if (authorName && devsData.length === 0) {
+        devsData = [{ id: `itch-dev-0`, name: authorName, slug: authorName.toLowerCase().replace(/[^a-z0-9]+/g, "-") }];
+      }
+
+      // Populate price snapshot if returned from data.json
+      if (d.price !== undefined && d.price !== null && priceSnapshotsData.length === 0) {
+        const dealP = parseFloat(d.price) || 0;
+        priceSnapshotsData = [{
+          id: `snap_${rawGame.id}_itchio_US_direct`,
+          gameId: rawGame.id,
+          storeName: "itch.io",
+          dealPrice: dealP,
+          retailPrice: dealP,
+          discountPercent: 0,
+          dealUrl: itchDirectUrl.replace(/\/purchase$/, "").replace(/\/+$/, ""),
+          currency: "USD",
+          country: "US",
+          provider: "direct",
+        }];
+      }
+
+      // Display-only enrichment queue (KV list) for weekly batch action
+      if (cfCtx?.waitUntil) {
+        cfCtx.waitUntil(queueItchEnrichment(rawGame.slug).catch(() => {}));
+      } else {
+        queueItchEnrichment(rawGame.slug).catch(() => {});
+      }
+    } else {
+      itchLoadFailed = !rawGame.coverUrl;
+    }
+  }
+
+  // Populate any remaining in-memory relations from denormalized strings
+  if (rawGame.developerNames && devsData.length === 0) {
+    devsData = [{ id: 'itch-dev-0', name: rawGame.developerNames, slug: rawGame.developerNames.toLowerCase().replace(/[^a-z0-9]+/g, "-") }];
+  }
+  if (rawGame.genreNames && tagsData.length === 0) {
+    tagsData = rawGame.genreNames.split(",").map((t: string, idx: number) => ({ id: `itch-tag-${idx}`, name: t.trim(), slug: t.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+  }
+  if (rawGame.platformNames && platsData.length === 0) {
+    platsData = rawGame.platformNames.split(",").map((p: string, idx: number) => ({ id: `itch-plat-${idx}`, name: p.trim(), slug: p.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
+  }
+
+  // Cache this rendered page at Cloudflare Edge CDN (1 day cache, 7 day stale-while-revalidate)
+  Astro.response.headers.set(
+    'Cache-Control',
+    'public, max-age=60, s-maxage=86400, stale-while-revalidate=604800'
+  );
 
   // Load price snapshots for this itch game (skip Turso DB query if loaded from pack)
   if (!packGame && priceSnapshotsData.length === 0) {
@@ -412,14 +408,10 @@ const creatorSlugsForRecs = developers.length > 0
   ? developers.map((d: any) => d.slug).filter(Boolean)
   : publishers.map((p: any) => p.slug).filter(Boolean);
 
-let initialCreatorGames: any[] = [];
-if (creatorSlugsForRecs.length > 0) {
-  try {
-    initialCreatorGames = await getGamesByCreatorSlugs(creatorSlugsForRecs, game.id, 4);
-  } catch (e) {
-    console.warn("[Game Slug] Failed to get initial creator games:", e);
-  }
-}
+// Cloudflare Worker 10ms CPU budget optimization:
+// Decompressing 4 MB gzip / parsing 30 MB JSON during SSR exceeds Cloudflare's 10ms CPU limit.
+// Passing initialCreatorGames = [] allows <CreatorGames client:visible /> to fetch asynchronously in the browser when scrolled into view.
+const initialCreatorGames: any[] = [];
 
 const requirements = { min: game.minRequirements, rec: game.recRequirements };
 
