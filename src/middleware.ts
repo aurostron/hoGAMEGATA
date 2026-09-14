@@ -33,7 +33,6 @@ const PUBLIC_PATHS = [
   "/legal",
   "/maintenance",
   "/submit-game",
-  "/search",
   "/api/edits",
   "/api/user/reputation",
   "/api/games/history",
@@ -136,6 +135,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // 1.1. Instant 301 fast-redirect for /directory to GitHub Pages mirror
   if (pathname === "/directory" || pathname === "/directory/") {
     return applySecurityHeaders(redirect("https://project-hgg.github.io", 301));
+  }
+
+  // 1.2. Instant 301 fast-redirect for /search to homepage
+  if (pathname === "/search" || pathname === "/search/") {
+    return applySecurityHeaders(redirect("/", 301));
   }
 
   // 1.5. Cloudflare Edge Cache MATCH check (0 DB reads for cached pages)

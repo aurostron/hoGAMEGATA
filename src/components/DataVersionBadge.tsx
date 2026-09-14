@@ -55,7 +55,7 @@ export default function DataVersionBadge({ initialVersion }: DataVersionBadgePro
         title="View open catalog on GitHub"
         aria-label="GitHub Repository"
       >
-        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 fill-current" width={20} height={20} style={{ width: 20, height: 20, maxWidth: 20, maxHeight: 20 }} viewBox="0 0 24 24">
           <path
             fillRule="evenodd"
             clipRule="evenodd"

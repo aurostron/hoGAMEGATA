@@ -120,7 +120,6 @@ function getActiveId(pathname: string): string {
   if (pathname === "/") return "home";
   if (pathname.startsWith("/games") || pathname.startsWith("/game/") || pathname.startsWith("/directory"))
     return "games";
-  if (pathname.startsWith("/search")) return "search";
   return "home";
 }
 
@@ -207,7 +206,7 @@ export default function BottomNav() {
         if (searchBtn) {
           searchBtn.click();
         } else {
-          window.location.assign("/search");
+          window.location.assign("/games");
         }
         return;
       }

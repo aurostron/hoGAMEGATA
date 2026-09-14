@@ -344,15 +344,6 @@ export default function HeaderSearch() {
               [ No games found ]
             </div>
           )}
-          
-          {import.meta.env.DEV && (
-            <a
-              href="/search"
-              className="w-full text-center block px-4 py-2 bg-[#0c0c0f] hover:bg-white hover:text-black font-mono text-[9px] uppercase tracking-wider text-red-400 font-bold border-t border-white/10 transition-colors"
-            >
-              Try AI Concept Search →
-            </a>
-          )}
         </div>
       )}
     </div>

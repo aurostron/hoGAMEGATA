@@ -34,7 +34,6 @@ const routesConfig = {
   version: 1,
   include: ['/*'],
   exclude: [
-    '/_astro/*',
     '/catalog/*',
     '/icons/*',
     '/images/*',
@@ -76,18 +75,47 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Try static assets first
+    // Fast redirect: Remove /search completely
+    if (url.pathname === '/search' || url.pathname === '/search/') {
+      return Response.redirect(\`\${url.origin}/\`, 301);
+    }
+
+    // 1. Dedicated handler for /_astro/* assets (CSS/JS chunks)
+    // Guarantees styles and scripts NEVER 404 even across version mismatches
+    if (url.pathname.startsWith('/_astro/')) {
+      try {
+        if (env.ASSETS) {
+          const asset = await env.ASSETS.fetch(request);
+          if (asset && asset.status === 200) {
+            return asset;
+          }
+        }
+      } catch (e) {}
+
+      try {
+        const originAssetUrl = \`https://gamegata.xyz\${url.pathname}\`;
+        const originAssetRes = await fetch(originAssetUrl);
+        if (originAssetRes.ok) {
+          const resHeaders = new Headers(originAssetRes.headers);
+          resHeaders.set('Cache-Control', 'public, max-age=31536000, immutable');
+          resHeaders.set('Access-Control-Allow-Origin', '*');
+          return new Response(originAssetRes.body, { status: 200, headers: resHeaders });
+        }
+      } catch (e) {}
+    }
+
+    // 2. Try static assets first
     try {
       if (env.ASSETS) {
         const asset = await env.ASSETS.fetch(request);
-        if (asset && asset.status !== 404) {
+        if (asset && asset.status === 200) {
           return asset;
         }
       }
     } catch (e) {}
 
-    // 2. Check Cloudflare Edge Cache for GET requests
-    const CACHE_VERSION = 'hgg-v4';
+    // 3. Check Cloudflare Edge Cache for GET requests
+    const CACHE_VERSION = 'hgg-v5';
     const cache = typeof caches !== 'undefined' && caches.default;
     const cleanUrl = new URL(request.url);
     const cacheKeyUrl = \`\${cleanUrl.origin}\${cleanUrl.pathname}\${cleanUrl.search}?_cv=\${CACHE_VERSION}\`;
@@ -104,7 +132,7 @@ export default {
       } catch (e) {}
     }
 
-    // 3. Dedicated handler for Image Proxy (/api/image-proxy/*)
+    // 4. Dedicated handler for Image Proxy (/api/image-proxy/*)
     // Ensures covers and screenshots always load and are cached, with direct fallback
     if (url.pathname.startsWith('/api/image-proxy')) {
       const targetUrl = url.searchParams.get('url');
@@ -174,7 +202,7 @@ export default {
       }
     }
 
-    // 4. Route to Primary Site (gamegata.xyz)
+    // 5. Route to Primary Site (gamegata.xyz)
     try {
       const clientIp = request.headers.get('cf-connecting-ip') || '';
       const primaryUrl = \`https://gamegata.xyz\${url.pathname}\${url.search}\`;
@@ -225,21 +253,13 @@ export default {
 
       // If origin returns an error (e.g. rate limit 429, database quota exceeded 500, or temporary outage)
       if (originRes.status >= 500 || originRes.status === 429) {
-        if (url.pathname === '/' || url.pathname === '') {
-          // Serve the offline search catalog directly
-          const fallbackAsset = await env.ASSETS.fetch(new Request(\`\${url.origin}/search/index.html\`));
-          if (fallbackAsset && fallbackAsset.status === 200) {
-            return fallbackAsset;
-          }
-          return Response.redirect(\`\${url.origin}/search/\`, 302);
-        }
         if (url.pathname.startsWith('/api/')) {
           return new Response(JSON.stringify({ games: [], totalCount: 0, isMirrorFallback: true }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
           });
         }
-        return Response.redirect(\`\${url.origin}/search/\`, 302);
+        return Response.redirect(\`\${url.origin}/\`, 302);
       }
 
       // If origin returns any other error (e.g. 404), pass it through
@@ -248,37 +268,8 @@ export default {
         headers: originRes.headers,
       });
     } catch (err) {
-      // 5. Primary site unreachable: provide resilient fallback
-      if (url.pathname === '/' || url.pathname === '') {
-        return Response.redirect(\`\${url.origin}/search/\`, 302);
-      }
-
-      return new Response(
-        \`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>hoGAMEGATA — Offline Backup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { background: #000; color: #fff; font-family: ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 24px; text-align: center; }
-    h1 { font-size: 2rem; font-weight: 300; letter-spacing: 0.05em; margin-bottom: 1rem; }
-    p { color: #888; max-width: 480px; font-weight: 400; line-height: 1.6; margin-bottom: 2rem; }
-    a { border: 1px solid #fff; color: #fff; padding: 14px 28px; text-decoration: none; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.15em; transition: 0.2s; }
-    a:hover { background: #fff; color: #000; }
-  </style>
-</head>
-<body>
-  <h1>Gamegata Offline Backup</h1>
-  <p>The main website is temporarily unreachable. You can continue searching and browsing the backup catalog.</p>
-  <a href="/search/">Browse Games</a>
-</body>
-</html>\`,
-        {
-          status: 200,
-          headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        }
-      );
+      // 6. Primary site unreachable: provide resilient fallback
+      return Response.redirect(\`\${url.origin}/\`, 302);
     }
   },
 };

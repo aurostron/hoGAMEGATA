@@ -64,6 +64,11 @@ export default function RandomWarpOverlay() {
         document.head.appendChild(prefetchLink);
       } catch {}
 
+      if (typeof window !== "undefined" && "fetch" in window) {
+        // Pre-warm the server/CDN cache immediately while animation accelerates
+        fetch(`/game/${game.slug}`, { priority: "high" } as RequestInit).catch(() => {});
+      }
+
       setSelectedGame(game);
       setIsActive(true);
     };
@@ -72,6 +77,9 @@ export default function RandomWarpOverlay() {
     const handlePageShow = () => setIsActive(false);
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (typeof window !== "undefined" && window.stop) {
+          window.stop();
+        }
         setIsActive(false);
       }
     };
@@ -93,17 +101,17 @@ export default function RandomWarpOverlay() {
   useEffect(() => {
     if (!isActive || !selectedGame) return;
 
-    // Navigate at 1050ms during the smooth dark dissolve
+    // Navigate at 750ms once full warp cruising speed is established
     const navTimer = setTimeout(() => {
       if (typeof window !== "undefined") {
         window.location.assign(`/game/${selectedGame.slug}`);
       }
-    }, 1050);
+    }, 750);
 
-    // Failsafe auto-dismiss at 3500ms so screen is never trapped
+    // Failsafe auto-dismiss at 20000ms so screen is never trapped on network failure
     const failsafeTimer = setTimeout(() => {
       setIsActive(false);
-    }, 3500);
+    }, 20000);
 
     return () => {
       clearTimeout(navTimer);
@@ -155,35 +163,40 @@ export default function RandomWarpOverlay() {
     }
 
     const startTime = performance.now();
-    const DURATION = 1500; // ms
+    const RAMP_DURATION = 800; // ms to ramp into full warp speed
 
     ctx.fillStyle = "#09090b";
     ctx.fillRect(0, 0, width, height);
 
     const render = (now: number) => {
       const elapsed = now - startTime;
-      const progress = Math.min(elapsed / DURATION, 1);
 
-      const easeInOutCubic =
-        progress < 0.5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-      const currentSpeed = 12 + easeInOutCubic * 88;
+      // Speed curve: smooth exponential acceleration up to cruising speed, then continuous warp flight
+      let currentSpeed: number;
+      if (elapsed < RAMP_DURATION) {
+        const rampProgress = elapsed / RAMP_DURATION;
+        const easeInCubic = rampProgress * rampProgress * rampProgress;
+        currentSpeed = 14 + easeInCubic * 66; // ramps from 14 to 80
+      } else {
+        // Cruising speed with gentle ambient oscillation
+        currentSpeed = 75 + Math.sin((elapsed - RAMP_DURATION) * 0.003) * 6;
+      }
 
       const cx = width / 2;
       const cy = height / 2;
 
+      // Subtle dark trail for motion blur
       ctx.fillStyle = "rgba(9, 9, 12, 0.24)";
       ctx.fillRect(0, 0, width, height);
 
-      // Ambient core glow
-      const coreRadius = Math.min(width, height) * (0.2 + progress * 0.35);
+      // Ambient cosmic core glow that breathes gently during infinite flight
+      const breathe = Math.sin(elapsed * 0.0025);
+      const coreRadius = Math.min(width, height) * (0.28 + breathe * 0.05);
       const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius);
-      const glowOpacity = Math.sin(progress * Math.PI) * 0.25;
-      gradient.addColorStop(0, `rgba(220, 38, 38, ${glowOpacity * 0.4})`);
+      const glowOpacity = 0.22 + breathe * 0.06;
+      gradient.addColorStop(0, `rgba(220, 38, 38, ${glowOpacity * 0.45})`);
       gradient.addColorStop(0.4, `rgba(139, 92, 246, ${glowOpacity * 0.25})`);
-      gradient.addColorStop(0.8, `rgba(9, 9, 12, ${glowOpacity * 0.1})`);
+      gradient.addColorStop(0.8, `rgba(9, 9, 12, ${glowOpacity * 0.08})`);
       gradient.addColorStop(1, "transparent");
 
       ctx.fillStyle = gradient;
@@ -225,10 +238,9 @@ export default function RandomWarpOverlay() {
         }
 
         const depthFactor = 1 - p.z / MAX_DEPTH;
-        const fadeEnvelope = Math.sin(progress * Math.PI);
         const alpha = Math.min(
           0.85,
-          Math.max(0.05, depthFactor * p.baseAlpha * (0.6 + fadeEnvelope * 0.8))
+          Math.max(0.08, depthFactor * p.baseAlpha * 1.25)
         );
 
         const strokeWidth = Math.max(0.6, p.size * k * 0.85);
@@ -252,16 +264,8 @@ export default function RandomWarpOverlay() {
 
       ctx.globalAlpha = 1;
 
-      // Dark Void Dissolve (Final 15%)
-      if (progress > 0.82) {
-        const darkFade = (progress - 0.82) / 0.18;
-        ctx.fillStyle = `rgba(13, 13, 15, ${darkFade * darkFade})`;
-        ctx.fillRect(0, 0, width, height);
-      }
-
-      if (progress < 1) {
-        animFrameIdRef.current = requestAnimationFrame(render);
-      }
+      // Continuously request animation frame without premature stopping
+      animFrameIdRef.current = requestAnimationFrame(render);
     };
 
     animFrameIdRef.current = requestAnimationFrame(render);
@@ -275,6 +279,9 @@ export default function RandomWarpOverlay() {
   }, [isActive]);
 
   const handleCancel = () => {
+    if (typeof window !== "undefined" && window.stop) {
+      window.stop();
+    }
     setIsActive(false);
   };
 
@@ -305,7 +312,7 @@ export default function RandomWarpOverlay() {
               transition={{ delay: 0.15, duration: 0.4 }}
               className="text-center max-w-lg"
             >
-              <span className="inline-block text-[11px] sm:text-xs font-semibold tracking-[0.25em] text-red-400 uppercase drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] mb-2">
+              <span className="inline-block text-[11px] sm:text-xs font-semibold tracking-[0.25em] text-red-400 uppercase drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] mb-2 animate-pulse">
                 Summoning
               </span>
               <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white/95 drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)] line-clamp-2">
