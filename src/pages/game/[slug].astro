@@ -228,46 +228,46 @@ if (isItchGame) {
     );
   }
 
-  // Load price snapshots for this itch game from Turso DB or fetch via data.json
-  try {
-    const itchSnapshots = await turso
-      .select()
-      .from(priceSnapshotsTable)
-      .where(eq(priceSnapshotsTable.gameId, rawGame.id));
-    if (itchSnapshots.length > 0) {
-      priceSnapshotsData = itchSnapshots;
-    } else {
-      const itchLink = linksData.find((l: any) =>
-        l && ((l.storeName && l.storeName.toLowerCase().includes("itch")) || (l.url && l.url.includes("itch.io")))
-      );
-      const targetUrl = itchLink?.url || itchDirectUrl;
-      if (targetUrl) {
-        const itchData = await fetchItchDataJson(targetUrl);
-        if (itchData.success) {
-          const dealP = itchData.price ?? 0;
-          const retP = itchData.originalPrice ?? dealP;
-          const discP = itchData.discountPercent ?? 0;
-          const snapshot = {
-            id: `snap_${rawGame.id}_itchio_US_direct`,
-            gameId: rawGame.id,
-            storeName: "itch.io",
-            dealPrice: dealP,
-            retailPrice: retP,
-            discountPercent: discP,
-            dealUrl: targetUrl.replace(/\/purchase$/, "").replace(/\/+$/, ""),
-            currency: itchData.currency || "USD",
-            country: "US",
-            provider: "direct",
-            updatedAt: new Date(),
-          };
-          // Display-only (2026-09-09): serve the live data.json deal in-response,
-          // never persist from the request path. The weekly batch owns all writes.
-          priceSnapshotsData = [snapshot];
+  // Load price snapshots for this itch game (skip Turso DB query if loaded from pack)
+  if (!packGame && priceSnapshotsData.length === 0) {
+    try {
+      const itchSnapshots = await turso
+        .select()
+        .from(priceSnapshotsTable)
+        .where(eq(priceSnapshotsTable.gameId, rawGame.id));
+      if (itchSnapshots.length > 0) {
+        priceSnapshotsData = itchSnapshots;
+      } else {
+        const itchLink = linksData.find((l: any) =>
+          l && ((l.storeName && l.storeName.toLowerCase().includes("itch")) || (l.url && l.url.includes("itch.io")))
+        );
+        const targetUrl = itchLink?.url || itchDirectUrl;
+        if (targetUrl) {
+          const itchData = await fetchItchDataJson(targetUrl);
+          if (itchData.success) {
+            const dealP = itchData.price ?? 0;
+            const retP = itchData.originalPrice ?? dealP;
+            const discP = itchData.discountPercent ?? 0;
+            const snapshot = {
+              id: `snap_${rawGame.id}_itchio_US_direct`,
+              gameId: rawGame.id,
+              storeName: "itch.io",
+              dealPrice: dealP,
+              retailPrice: retP,
+              discountPercent: discP,
+              dealUrl: targetUrl.replace(/\/purchase$/, "").replace(/\/+$/, ""),
+              currency: itchData.currency || "USD",
+              country: "US",
+              provider: "direct",
+              updatedAt: new Date(),
+            };
+            priceSnapshotsData = [snapshot];
+          }
         }
       }
+    } catch (e) {
+      console.warn("[Game Slug] Failed to load itch price snapshots:", e);
     }
-  } catch (e) {
-    console.warn("[Game Slug] Failed to load itch price snapshots:", e);
   }
 } else {
   // Standard non-itch game: fetch relations if not already loaded from pack

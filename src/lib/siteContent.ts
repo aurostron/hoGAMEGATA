@@ -79,3 +79,12 @@ export async function getContentMap() {
   }
   return map;
 }
+
+export function getDefaultContentMap(): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const item of DEFAULT_CONTENT) {
+    map[item.key] = item.value;
+  }
+  return map;
+}
+

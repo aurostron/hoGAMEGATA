@@ -78,108 +78,120 @@ export interface CatalogIndexEntry {
 
 const HF_DATASET_BASE = "https://huggingface.co/datasets/aurostron/hogamegata/resolve/main";
 const HF_RAW_URL = `${HF_DATASET_BASE}/catalog.raw`;
-const GH_OFFSETS_URL = "https://raw.githubusercontent.com/project-hgg/project-hgg.github.io/main/docs/public/offsets.json.gz";
+const JSDELIVR_OFFSETS_BASE = "https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/offsets";
+const GH_RAW_OFFSETS_BASE = "https://raw.githubusercontent.com/project-hgg/project-hgg.github.io/main/docs/public/offsets";
 
 // In-memory LRU / Map cache for active worker isolates (protects origin from repeated queries)
 const GAME_MEMORY_CACHE = new Map<string, { data: GameDetail; expiresAt: number }>();
 const MAX_MEMORY_CACHE_ITEMS = 1000;
 const MEMORY_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-// Singleton index maps
-let cachedOffsetsMap: Map<string, [number, number]> | null = null;
-let cachedIndexArray: CatalogIndexEntry[] | null = null;
+// In-memory cache for loaded offset shards (each shard is only ~20-50 KB)
+const SHARD_CACHE = new Map<string, Record<string, [number, number]>>();
 
-function populateOffsetsMap(obj: any): Map<string, [number, number]> {
-  const map = new Map<string, [number, number]>();
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      if (item.s && item.o != null && item.l != null) {
-        map.set(item.s, [item.o, item.l]);
-      }
-    }
-  } else if (obj && typeof obj === "object") {
-    for (const [k, v] of Object.entries(obj)) {
-      if (Array.isArray(v) && v.length >= 2) {
-        map.set(k, [v[0], v[1]]);
-      }
-    }
+/**
+ * Normalizes slug to determine its shard key:
+ * - strips leading "itch-" so itch titles are distributed across letters
+ * - returns 'a'..'z' or '_num'
+ */
+export function getShardKey(slug: string): string {
+  let s = slug.toLowerCase().trim();
+  if (s.startsWith("itch-")) {
+    s = s.slice(5);
   }
-  return map;
+  const firstChar = s.charAt(0);
+  if (!firstChar || !/[a-z]/.test(firstChar)) {
+    return "_num";
+  }
+  return firstChar;
 }
 
 /**
- * Loads the slug -> [offset, length] lookup dictionary with tiered fallbacks
+ * Fast lookup for a single game's byte offset and length in the master catalog.
+ * Uses sharded JSON files (~30 KB each) instead of loading a monolithic 15 MB file.
  */
-export async function getOffsetsMap(): Promise<Map<string, [number, number]>> {
-  if (cachedOffsetsMap && cachedOffsetsMap.size > 0) return cachedOffsetsMap;
+export async function getGameCoords(slugOrId: string): Promise<[number, number] | null> {
+  const shardKey = getShardKey(slugOrId);
 
-  // 1. Try local data-export directory first (Dev/Node mode)
-  try {
-    const localExportPath = path.resolve("data-export/catalog-index.json");
-    if (fs.existsSync(localExportPath)) {
-      const raw = JSON.parse(fs.readFileSync(localExportPath, "utf8"));
-      cachedOffsetsMap = populateOffsetsMap(raw);
-      return cachedOffsetsMap;
-    }
-  } catch {}
-
-  // 2. Try local public catalog offsets
-  try {
-    const localGz = path.resolve("public/catalog/offsets.json.gz");
-    if (fs.existsSync(localGz)) {
-      const buf = fs.readFileSync(localGz);
-      const decompressed = zlib.gunzipSync(buf).toString("utf8");
-      const obj = JSON.parse(decompressed);
-      cachedOffsetsMap = populateOffsetsMap(obj);
-      return cachedOffsetsMap;
-    }
-  } catch {}
-
-  // 3. Fetch from GitHub Pages / raw mirror (Production Cloudflare Worker)
-  try {
-    const res = await fetch(GH_OFFSETS_URL);
-    if (res.ok) {
-      let obj: any = null;
-      if (typeof DecompressionStream !== "undefined") {
-        const stream = res.body!.pipeThrough(new DecompressionStream("gzip"));
-        const text = await new Response(stream).text();
-        obj = JSON.parse(text);
-      } else {
-        const arrayBuf = await res.arrayBuffer();
-        const decompressed = zlib.gunzipSync(Buffer.from(arrayBuf)).toString("utf8");
-        obj = JSON.parse(decompressed);
-      }
-      cachedOffsetsMap = populateOffsetsMap(obj);
-      return cachedOffsetsMap;
-    }
-  } catch (err) {
-    console.warn("Failed to load offsets from GitHub mirror:", err);
+  // 1. Check in-memory isolate shard cache
+  let dict = SHARD_CACHE.get(shardKey);
+  if (dict) {
+    return dict[slugOrId] || null;
   }
 
+  // 2. Try local dev file system (zero network delay)
+  try {
+    const localShardPath = path.resolve(`public/catalog/offsets/${shardKey}.json`);
+    if (fs.existsSync(localShardPath)) {
+      dict = JSON.parse(fs.readFileSync(localShardPath, "utf8"));
+      if (dict) {
+        SHARD_CACHE.set(shardKey, dict);
+        return dict[slugOrId] || null;
+      }
+    }
+  } catch {}
+
+  // 3. Fetch shard via jsDelivr CDN (~15-30ms, globally edge cached)
+  try {
+    const shardUrl = `${JSDELIVR_OFFSETS_BASE}/${shardKey}.json`;
+    const fetchOptions: any = {
+      headers: { Accept: "application/json" },
+    };
+    if (typeof (globalThis as any).caches !== "undefined") {
+      fetchOptions.cf = {
+        cacheEverything: true,
+        cacheTtl: 604800, // 7 days in Cloudflare Edge Cache
+      };
+    }
+
+    const res = await fetch(shardUrl, fetchOptions);
+    if (res.ok) {
+      dict = await res.json();
+      if (dict) {
+        SHARD_CACHE.set(shardKey, dict);
+        return dict[slugOrId] || null;
+      }
+    }
+  } catch (e) {
+    console.warn(`[GamePack] jsDelivr shard fetch error for shard ${shardKey}:`, e);
+  }
+
+  // 4. Fallback to GitHub raw mirror
+  try {
+    const ghUrl = `${GH_RAW_OFFSETS_BASE}/${shardKey}.json`;
+    const res = await fetch(ghUrl);
+    if (res.ok) {
+      dict = await res.json();
+      if (dict) {
+        SHARD_CACHE.set(shardKey, dict);
+        return dict[slugOrId] || null;
+      }
+    }
+  } catch (err) {
+    console.warn(`[GamePack] GitHub raw shard fetch error for shard ${shardKey}:`, err);
+  }
+
+  return null;
+}
+
+/**
+ * Backward-compatible helper for legacy callers
+ */
+export async function getOffsetsMap(): Promise<Map<string, [number, number]>> {
+  // If needed, load the current shard or return empty map (components now use getGameCoords)
   return new Map();
 }
 
 /**
- * Loads the full catalog index into memory
+ * Loads the full catalog index into memory (used in background jobs or dev scripts)
  */
 export async function getCatalogIndex(): Promise<CatalogIndexEntry[]> {
-  if (cachedIndexArray) return cachedIndexArray;
-
-  try {
-    const localJson = path.resolve("data-export/catalog-index.json");
-    if (fs.existsSync(localJson)) {
-      cachedIndexArray = JSON.parse(fs.readFileSync(localJson, "utf8"));
-      return cachedIndexArray!;
-    }
-  } catch {}
-
   try {
     const localGz = path.resolve("public/catalog/catalog-dump.json.gz");
     if (fs.existsSync(localGz)) {
       const buf = fs.readFileSync(localGz);
       const decompressed = zlib.gunzipSync(buf).toString("utf8");
-      cachedIndexArray = JSON.parse(decompressed);
-      return cachedIndexArray!;
+      return JSON.parse(decompressed);
     }
   } catch {}
 
@@ -190,8 +202,9 @@ export async function getCatalogIndex(): Promise<CatalogIndexEntry[]> {
  * Fetches complete game details by slug using an exact HTTP Range request (or local disk slice in dev)
  * Optimizations applied:
  * 1. Isolate memory cache (0.01ms lookup for repeated requests)
- * 2. Cloudflare Edge CDN caching (cf.cacheEverything = true, 7 days TTL)
- * 3. Local disk slicing in dev mode (0ms network)
+ * 2. 27-shard lightweight offset indices (~30 KB vs 15 MB)
+ * 3. Cloudflare Edge CDN caching (cf.cacheEverything = true, 7 days TTL)
+ * 4. Local disk slicing in dev mode (0ms network)
  */
 export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
   // 1. Check in-memory isolate cache
@@ -200,19 +213,15 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
     return cached.data;
   }
 
-  // 2. Lookup byte offset and length
-  if (!cachedOffsetsMap) {
-    await getOffsetsMap();
-  }
-
-  const coords = cachedOffsetsMap?.get(slug);
+  // 2. Lookup byte offset and length via sharded index
+  const coords = await getGameCoords(slug);
   if (!coords) {
     return null;
   }
 
   const [offset, length] = coords;
 
-  // 3. Local dev mode: zero network delay, direct disk slice read
+  // 3. Local dev mode: zero network delay, direct disk slice read if file exists
   try {
     const localRawPath = path.resolve("data-export/catalog.raw");
     if (fs.existsSync(localRawPath)) {
@@ -229,7 +238,6 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
   // 4. Production mode: HTTP Range request to Hugging Face with edge-caching instructions
   const rangeHeader = `bytes=${offset}-${offset + length - 1}`;
 
-  // Cloudflare fetch options for edge-caching 206 Partial Content
   const fetchOptions: any = {
     headers: {
       Range: rangeHeader,
@@ -260,7 +268,6 @@ export async function getGameBySlug(slug: string): Promise<GameDetail | null> {
 
 function setMemoryCache(slug: string, data: GameDetail) {
   if (GAME_MEMORY_CACHE.size >= MAX_MEMORY_CACHE_ITEMS) {
-    // Evict oldest entry
     const firstKey = GAME_MEMORY_CACHE.keys().next().value;
     if (firstKey) GAME_MEMORY_CACHE.delete(firstKey);
   }

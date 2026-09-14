@@ -3,235 +3,51 @@ export const prerender = false;
 
 import Layout from '../layouts/Layout.astro';
 import GameCatalogClient from '../components/GameCatalogClient';
-import { turso } from '../lib/turso';
-import {
-  games,
-  priceSnapshots
-} from '../db/schema';
-import { isNull, isNotNull, desc, asc, and, or, eq, ne, gt, lt, lte, inArray } from 'drizzle-orm';
-import { enrichGamesWithRelations } from '../lib/gameQueries';
-import { getContentMap } from '../lib/siteContent';
+import { getDefaultContentMap } from '../lib/siteContent';
 import { getCatalogStats } from '../lib/catalogMeta';
-import fallbackGames from '../data/homepageFallback.json';
+import defaultFeed from '../data/homepage-feed.json';
 
 // Edge-cache the SSR HTML for 5 min (middleware Cache API) so repeat
-// homepage views cost 0 D1 reads. Page is not personalized server-side.
+// homepage views cost 0 worker CPU / 0 DB reads.
 Astro.response.headers.set(
   'Cache-Control',
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
-function parseScreenshots(val: unknown): string[] {
-  if (Array.isArray(val)) return val.filter((x): x is string => typeof x === 'string');
-  if (typeof val === 'string') {
-    try {
-      const p = JSON.parse(val);
-      if (Array.isArray(p)) return p.filter((x) => typeof x === 'string');
-    } catch {}
-  }
-  return [];
-}
+let feed = defaultFeed as any;
 
-// Zero-read static fallback (bundled JSON) used when D1 is unreachable,
-// throttled, or returns no rows. Never touches node:fs (unavailable in Workers).
-function applyStaticFallback() {
-  const list = (fallbackGames as any[]);
-  heroGames = list.filter((g) => g.screenshots && g.screenshots.length > 0).slice(0, 6);
-  latestGames = list.slice(0, 30);
-  trendingGames = list.filter((g) => g.isTrending).slice(0, 30);
-  if (trendingGames.length === 0) trendingGames = list.slice(0, 30);
-  upcomingGames = list.filter((g) => g.status === 'upcoming').slice(0, 8);
-  topRatedGames = [...list]
-    .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
-    .slice(0, 8);
-}
-
-let stats: { games: number; developers: number; tags: number; deals: number } | null = null;
-let heroGames: any[] = [];
-let latestGames: any[] = [];
-let trendingGames: any[] = [];
-let upcomingGames: any[] = [];
-let topRatedGames: any[] = [];
-let content: Record<string, string> = {};
-
+// Dynamic revalidation via jsDelivr CDN (loads in ~15-30ms, globally edge cached)
 try {
-  // Query site content copy map
-  content = await getContentMap();
-
-  // 1. Fetch precomputed catalog stats (0 Turso reads)
-  const catalogStats = getCatalogStats();
-  stats = {
-    games: catalogStats.totalVisibleGames,
-    developers: catalogStats.totalDevelopers,
-    tags: catalogStats.totalTags,
-    deals: catalogStats.totalDeals,
-  };
-
-  const baseSelect = {
-    id: games.id,
-    title: games.title,
-    slug: games.slug,
-    status: games.status,
-    coverUrl: games.coverUrl,
-    isTrending: games.isTrending,
-    rating: games.rating,
-    popularity: games.popularity,
-    category: games.category,
-    releaseDate: games.releaseDate,
-    developerNames: games.developerNames,
-    platformNames: games.platformNames,
-    rawgEnriched: games.rawgEnriched,
-    esrbRating: games.esrbRating,
-    pegiRating: games.pegiRating,
-    trailerUrl: games.trailerUrl,
-    createdAt: games.createdAt,
-    updatedAt: games.updatedAt,
-  };
-
-  const selectWithScreenshots = {
-    ...baseSelect,
-    screenshots: games.screenshots,
-  };
-
-  // 2. Fetch raw game lists in parallel from Turso (Hardened for zero unindexed scans)
-  const now = new Date();
-  const [
-    heroRaw,
-    latestRaw,
-    trendingRaw,
-    upcomingRaw,
-    topRatedRaw
-  ] = await Promise.all([
-    turso
-      .select(selectWithScreenshots)
-      .from(games)
-      .where(
-        and(
-          isNotNull(games.screenshots),
-          or(isNull(games.status), ne(games.status, "hidden"))
-        )
-      )
-      .orderBy(desc(games.isTrending), desc(games.rating))
-      .limit(15),
-    turso
-      // NOTE: no screenshots column here — list cards use coverUrl.
-      .select(baseSelect)
-      .from(games)
-      .where(
-        and(
-          or(isNull(games.status), ne(games.status, "upcoming")),
-          or(isNull(games.status), ne(games.status, "hidden"))
-        )
-      )
-      .orderBy(desc(games.releaseDate), desc(games.id))
-      .limit(30),
-    turso
-      .select(baseSelect)
-      .from(games)
-      .where(
-        and(
-          or(isNull(games.status), ne(games.status, "upcoming")),
-          or(isNull(games.status), ne(games.status, "hidden"))
-        )
-      )
-      .orderBy(desc(games.isTrending), desc(games.popularity), desc(games.id))
-      .limit(30),
-    turso
-      .select(baseSelect)
-      .from(games)
-      .where(
-        and(
-          gt(games.releaseDate, now),
-          or(isNull(games.status), ne(games.status, "hidden"))
-        )
-      )
-      .orderBy(asc(games.releaseDate), asc(games.id))
-      .limit(8),
-    turso
-      .select(baseSelect)
-      .from(games)
-      .where(
-        and(
-          isNotNull(games.rating),
-          or(isNull(games.status), ne(games.status, "hidden"))
-        )
-      )
-      .orderBy(desc(games.rating))
-      .limit(8)
-  ]);
-
-  // 3. Enrich all groups with tags + purchase links in ONE round-trip
-  // (previously 5 separate enrich calls = 10 queries; now 2 queries total).
-  const allRaw = [...heroRaw, ...latestRaw, ...trendingRaw, ...upcomingRaw, ...topRatedRaw];
-  const seenIds = new Set<string>();
-  const dedupedRaw = allRaw.filter((g: any) => !seenIds.has(g.id) && (seenIds.add(g.id), true));
-  const enrichedAll = await enrichGamesWithRelations(dedupedRaw);
-  const enrichedById = new Map<string, any>(enrichedAll.map((g: any) => [g.id, g]));
-  const attach = (raw: any) => {
-    const e = enrichedById.get(raw.id);
-    return {
-      ...raw,
-      screenshots: parseScreenshots(raw.screenshots),
-      tags: e?.tags ?? [],
-      purchaseLinks: e?.purchaseLinks ?? [],
-    };
-  };
-
-  latestGames = latestRaw.map(attach);
-  trendingGames = trendingRaw.map(attach);
-  upcomingGames = upcomingRaw.map(attach);
-  topRatedGames = topRatedRaw.map(attach);
-  const heroEnriched = heroRaw.map(attach);
-
-  // Filter hero games to ensure screenshots are populated
-  heroGames = heroEnriched
-    .filter((g: any) => g.screenshots && g.screenshots.length > 0)
-    .slice(0, 6);
-
-  // Fallback hero games if we don't have enough
-  if (heroGames.length < 6) {
-    const fallbacks = [...latestGames, ...trendingGames]
-      .filter((g: any) => g.screenshots && g.screenshots.length > 0 && !heroGames.some((hg: any) => hg.id === g.id));
-    heroGames.push(...fallbacks.slice(0, 6 - heroGames.length));
-  }
-
-  // Gather all unique game IDs across all groups to fetch cheapest snapshots
-  const allGames = [...heroGames, ...latestGames, ...trendingGames, ...upcomingGames, ...topRatedGames];
-  const allGameIds = Array.from(new Set(allGames.map((g: any) => g.id)));
-
-  if (allGameIds.length > 0) {
-    const snapshots = await turso
-      .select()
-      .from(priceSnapshots)
-      .where(inArray(priceSnapshots.gameId, allGameIds));
-
-    const snapshotMap = new Map<string, any[]>();
-    for (const row of snapshots) {
-      const { gameId, ...snapshot } = row;
-      if (!snapshotMap.has(gameId)) snapshotMap.set(gameId, []);
-      snapshotMap.get(gameId)!.push(snapshot);
-    }
-    for (const game of allGames) {
-      game.priceSnapshots = snapshotMap.get(game.id) || [];
+  const JSDELIVR_FEED_URL = "https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/homepage-feed.json";
+  const cdnRes = await fetch(JSDELIVR_FEED_URL, {
+    headers: { 'Accept': 'application/json' },
+    cf: { cacheEverything: true, cacheTtl: 3600 } as any,
+    signal: AbortSignal.timeout(1200)
+  });
+  if (cdnRes.ok) {
+    const liveFeed = await cdnRes.json();
+    if (liveFeed && liveFeed.heroGames && liveFeed.heroGames.length > 0) {
+      feed = liveFeed;
     }
   }
-
-  // If D1 returned zero rows across all groups (empty DB / partial outage),
-  // serve the bundled static fallback instead of a blank page.
-  if (
-    heroGames.length === 0 &&
-    latestGames.length === 0 &&
-    trendingGames.length === 0 &&
-    upcomingGames.length === 0 &&
-    topRatedGames.length === 0
-  ) {
-    console.warn("[homepage] D1 returned zero rows; serving static fallback.");
-    applyStaticFallback();
-  }
-} catch (err) {
-  console.warn("[homepage] Database query unavailable (throttled or offline); serving static fallback.");
-  applyStaticFallback();
+} catch {
+  // Silent fallback to bundled feed
 }
+
+const content = getDefaultContentMap();
+const catalogStats = getCatalogStats();
+const stats = {
+  games: feed.stats?.games || catalogStats.totalVisibleGames || 109420,
+  developers: feed.stats?.developers || catalogStats.totalDevelopers || 68034,
+  tags: feed.stats?.tags || catalogStats.totalTags || 15825,
+  deals: feed.stats?.deals || catalogStats.totalDeals || 111168,
+};
+
+const heroGames = feed.heroGames || [];
+const latestGames = feed.latestGames || [];
+const trendingGames = feed.trendingGames || [];
+const upcomingGames = feed.upcomingGames || [];
+const topRatedGames = feed.topRatedGames || [];
 
 // Set up cursor for client-side pagination fallback (Latest tab initial set)
 let nextCursor: string | null = null;
