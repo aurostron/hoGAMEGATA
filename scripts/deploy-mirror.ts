@@ -279,8 +279,14 @@ fs.writeFileSync(path.join(mirrorDir, '_worker.js'), workerContent.trim());
 // 7. Deploy to Cloudflare Pages
 console.log('\n🚀 Deploying to Cloudflare Pages (project: hogamegata)...');
 try {
+  // Clear any cached worker deploy configs that interfere with Pages deploy
+  const wranglerDeployDir = path.join(rootDir, '.wrangler', 'deploy');
+  if (fs.existsSync(wranglerDeployDir)) {
+    fs.rmSync(wranglerDeployDir, { recursive: true, force: true });
+  }
+
   execSync(
-    'npx wrangler pages deploy dist/mirror --project-name=hogamegata --commit-dirty=true',
+    'npx wrangler pages deploy dist/mirror --project-name=hogamegata --commit-dirty=true --no-bundle',
     { stdio: 'inherit' }
   );
   console.log('\n🎉 Deployment to https://hogamegata.pages.dev completed successfully!');
