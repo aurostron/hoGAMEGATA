@@ -1,4 +1,4 @@
-﻿{
+{
   "updatedAt": "2026-09-20T10:48:57.027Z",
   "heroGames": [
     {
@@ -3890,256 +3890,1142 @@
   ],
   "topRatedGames": [
     {
-      "id": "igdb_resident-evil-2-remake",
+      "id": "cmpwg492f00cug4eg5uugmipf",
       "title": "Resident Evil 2",
-      "slug": "resident-evil-2-remake",
+      "slug": "resident-evil-2--1",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rba.jpg",
-      "rating": 93,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1ir3.jpg",
+      "rating": 90,
       "category": null,
-      "esrbRating": "MATURE",
+      "esrbRating": "Mature",
       "pegiRating": "18",
-      "developerNames": "Capcom",
-      "genreNames": "survival-horror, third-person-shooter",
-      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
-      "releaseDate": 1548633600000,
-      "trailerUrl": null,
-      "isTrending": true,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4b9s.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4b9t.jpg"
-      ],
-      "tags": [
-        { "name": "survival-horror", "slug": "survival-horror" },
-        { "name": "third-person", "slug": "third-person" },
-        { "name": "atmospheric", "slug": "atmospheric" },
-        { "name": "zombie", "slug": "zombie" }
-      ],
-      "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/883710" }
-      ],
-      "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 39.99, "retailPrice": 39.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/883710", "currency": "USD", "country": "US" }
-      ]
-    },
-    {
-      "id": "igdb_silent-hill-2-remake",
-      "title": "Silent Hill 2",
-      "slug": "silent-hill-2-remake",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co85ij.jpg",
-      "rating": 91,
-      "category": null,
-      "esrbRating": "MATURE",
-      "pegiRating": "18",
-      "developerNames": "Bloober Team",
-      "genreNames": "survival-horror, psychological-horror",
-      "platformNames": "PC (Microsoft Windows), PlayStation 5",
-      "releaseDate": 1727740800000,
-      "trailerUrl": null,
-      "isTrending": true,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc8oq9.jpg"
-      ],
-      "tags": [
-        { "name": "psychological", "slug": "psychological" },
-        { "name": "survival-horror", "slug": "survival-horror" },
-        { "name": "atmospheric", "slug": "atmospheric" },
-        { "name": "third-person", "slug": "third-person" }
-      ],
-      "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/2130550" }
-      ],
-      "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 59.99, "retailPrice": 59.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/2130550", "currency": "USD", "country": "US" }
-      ]
-    },
-    {
-      "id": "igdb_dead-space-remake",
-      "title": "Dead Space",
-      "slug": "dead-space-remake",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6dn7.jpg",
-      "rating": 89,
-      "category": null,
-      "esrbRating": "MATURE",
-      "pegiRating": "18",
-      "developerNames": "Motive Studio",
-      "genreNames": "survival-horror, third-person-shooter",
-      "platformNames": "PC (Microsoft Windows), PlayStation 5, Xbox Series X|S",
-      "releaseDate": 1674691200000,
-      "trailerUrl": null,
+      "developerNames": "Capcom Development Division 1",
+      "genreNames": "Shooter, Adventure",
+      "platformNames": "Xbox Series X|S, PlayStation 4, PC (Microsoft Windows), iOS, PlayStation 5, Mac, Xbox One",
+      "releaseDate": 1548374400000,
+      "trailerUrl": "https://www.youtube.com/embed/nog956eX-ik",
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9c0g.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/z35arb0woqfqh4vimybc.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/zphoa86shektugz0k8eq.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/eehliwukjmjjtkxtgkjz.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/jpaq6khjbovtyq6bc9jg.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/jvlx4cy48s85achprwin.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/nb51k0xmfrgzxy8vth5p.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/h52l9tjfversysa1kq5y.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/yraljyrfk6pe2sjpc0ij.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/pejumzcrmnf3xg12nhzt.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/rsom777bcyp9nui7ec84.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/cohn1oxcksnuwos6knjz.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/bu1zyil2cav9c7frppda.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sctl99.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sctl9a.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sctl98.jpg"
       ],
       "tags": [
-        { "name": "sci-fi", "slug": "sci-fi" },
-        { "name": "survival-horror", "slug": "survival-horror" },
-        { "name": "atmospheric", "slug": "atmospheric" },
-        { "name": "third-person", "slug": "third-person" }
+        {
+          "name": "Survival Horror",
+          "slug": "survival-horror"
+        },
+        {
+          "name": "Body Horror",
+          "slug": "body-horror"
+        },
+        {
+          "name": "Action Horror",
+          "slug": "action-horror"
+        },
+        {
+          "name": "Zombie & Apocalypse",
+          "slug": "zombie-apocalypse"
+        },
+        {
+          "name": "Urban Decay",
+          "slug": "setting-urban"
+        },
+        {
+          "name": "Third person",
+          "slug": "third-person"
+        }
       ],
       "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/1693980" }
+        {
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/883710/RESIDENT_EVIL_2__BIOHAZARD_RE2"
+        },
+        {
+          "storeName": "PlayStation Store",
+          "url": "https://store.playstation.com/en-us/concept/229500"
+        },
+        {
+          "storeName": "Xbox Store",
+          "url": "https://www.xbox.com/en-us/games/store/resident-evil-2/BWMH951M3G3P"
+        }
       ],
       "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 59.99, "retailPrice": 59.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/1693980", "currency": "USD", "country": "US" }
+        {
+          "storeName": "Steam",
+          "dealPrice": 7.99,
+          "retailPrice": 39.99,
+          "discountPercent": 80,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=wfO%2F2i0XG%2FAvVi9EAI2k%2FBVnHsZMNGA%2FvrDGUw%2BZz7g%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Microsoft Store",
+          "dealPrice": 7.99,
+          "retailPrice": 39.99,
+          "discountPercent": 80,
+          "dealUrl": "https://itad.link/018d9386-b7e5-72af-9986-f4ffc260c8b7/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamersGate",
+          "dealPrice": 8,
+          "retailPrice": 39.99,
+          "discountPercent": 80,
+          "dealUrl": "https://itad.link/01926e6f-8271-73ba-a2b3-d0d5bec2bd4d/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Fanatical",
+          "dealPrice": 8.99,
+          "retailPrice": 9.99,
+          "discountPercent": 10,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=ElXAt%2Fp8eptbnMaqQqLKv%2FhGbhfucyS5hR1TcbTHmxE%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GOG",
+          "dealPrice": 9.99,
+          "retailPrice": 9.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=tNGKD6YiewphrHMEpvtx53di8SFtttBo9%2Bri4nxZ83s%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GameBillet",
+          "dealPrice": 35.17,
+          "retailPrice": 39.99,
+          "discountPercent": 12,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=AzmEN6DbarCkCrDOyzw0KZkZqhlzs0XBtl28ZWE8k0I%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "DLGamer",
+          "dealPrice": 35.19,
+          "retailPrice": 39.99,
+          "discountPercent": 12,
+          "dealUrl": "https://itad.link/01901435-1078-73fd-b38f-427d2fbe2b5c/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamesPlanet US",
+          "dealPrice": 35.99,
+          "retailPrice": 39.99,
+          "discountPercent": 10,
+          "dealUrl": "https://itad.link/018d9386-b7e6-739d-8ea9-54d1466ba744/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "2Game",
+          "dealPrice": 36.39,
+          "retailPrice": 39.99,
+          "discountPercent": 9,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=F4vHLKxItcUNBYKOxgdjJIh9ZSEZlB8npga8HDTOzBY%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
       ]
     },
     {
-      "id": "igdb_outlast",
+      "id": "cmpwg5vej00i5g4egg032hw24",
+      "title": "Silent Hill 2",
+      "slug": "silent-hill-2--1",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/coavaf.jpg",
+      "rating": 89,
+      "category": null,
+      "esrbRating": "Mature",
+      "pegiRating": "18",
+      "developerNames": "Bloober Team",
+      "genreNames": "Puzzle, Adventure",
+      "platformNames": "Xbox Series X|S, PC (Microsoft Windows), PlayStation 5",
+      "releaseDate": 1728345600000,
+      "trailerUrl": "https://www.youtube.com/embed/8qPdInnvMzg",
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfma.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfmb.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfmc.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfmd.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfme.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfmf.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfmh.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjfmg.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scu46k.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scu46l.jpg"
+      ],
+      "tags": [
+        {
+          "name": "Survival Horror",
+          "slug": "survival-horror"
+        },
+        {
+          "name": "Body Horror",
+          "slug": "body-horror"
+        },
+        {
+          "name": "Action Horror",
+          "slug": "action-horror"
+        },
+        {
+          "name": "Psychological Horror",
+          "slug": "psychological"
+        },
+        {
+          "name": "Puzzle Horror",
+          "slug": "puzzle-horror"
+        },
+        {
+          "name": "Photorealistic",
+          "slug": "photorealistic"
+        },
+        {
+          "name": "Third person",
+          "slug": "third-person"
+        }
+      ],
+      "purchaseLinks": [
+        {
+          "storeName": "PlayStation Store",
+          "url": "https://store.playstation.com/en-us/concept/10005529"
+        },
+        {
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/silent_hill_2"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "url": "https://store.epicgames.com/en-US/p/silent-hill-2-4542c7"
+        },
+        {
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/2124490"
+        },
+        {
+          "storeName": "Xbox Store",
+          "url": "https://www.xbox.com/en-US/games/store/silent-hill-2/9PNVDQKPJRQV"
+        },
+        {
+          "storeName": "PlayStation Store (Deluxe Edition)",
+          "url": "https://store.playstation.com/en-us/product/UP0101-PPSA08710_00-DIGITALDELUXE000"
+        },
+        {
+          "storeName": "Steam (Deluxe Edition)",
+          "url": "https://store.steampowered.com/app/2124490/SILENT_HILL_2/"
+        },
+        {
+          "storeName": "GOG (Deluxe Edition)",
+          "url": "https://www.gog.com/en/game/silent_hill_2_deluxe_edition"
+        }
+      ],
+      "priceSnapshots": [
+        {
+          "storeName": "GameBillet",
+          "dealPrice": 27.95,
+          "retailPrice": 69.99,
+          "discountPercent": 60,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=znVMuLCrRSK%2F2bpVXOmqwqD1jzgrDFAkIBusRBquK5g%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Fanatical",
+          "dealPrice": 27.99,
+          "retailPrice": 69.99,
+          "discountPercent": 60,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=zfeA2%2FoiYiQ83FeJ6hsCprlR9ql4yOUR5vlRzQ7oggE%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GreenManGaming",
+          "dealPrice": 28.7,
+          "retailPrice": 69.99,
+          "discountPercent": 59,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=ekahmo%2FYNVSZcj8JScK4IuKN9z2TCv3UJ13QexmWedU%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamesPlanet UK",
+          "dealPrice": 31.44,
+          "retailPrice": 78.95,
+          "discountPercent": 60,
+          "dealUrl": "https://itad.link/018fcdef-2112-7125-aff5-a9a70465efe1/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamesPlanet DE",
+          "dealPrice": 31.57,
+          "retailPrice": 79.37,
+          "discountPercent": 60,
+          "dealUrl": "https://itad.link/018fcdef-3590-71e9-93ec-8da6c677226a/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamesPlanet FR",
+          "dealPrice": 31.57,
+          "retailPrice": 79.37,
+          "discountPercent": 60,
+          "dealUrl": "https://itad.link/018fcdef-1572-7080-8de7-cb9f303cd763/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GOG",
+          "dealPrice": 34.99,
+          "retailPrice": 69.99,
+          "discountPercent": 50,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=7Ckt4i6V2DzXSc%2FHxCxqIyc%2F1h%2FKMFFnpbEx3SKGRd8%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "dealPrice": 56.49,
+          "retailPrice": 69.99,
+          "discountPercent": 19,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=fCdJX%2BKidP5RDvTwUvsRDaIsXVFeaC%2FS4F9XffpVzWs%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Gamesplanet",
+          "dealPrice": 59.49,
+          "retailPrice": 69.99,
+          "discountPercent": 15,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=Umt0gg7SXk34qc%2Bd0cX8NBcmudnOAccWXuoyqx%2BuN70%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamesPlanet US",
+          "dealPrice": 59.49,
+          "retailPrice": 69.99,
+          "discountPercent": 15,
+          "dealUrl": "https://itad.link/019205cf-3650-720e-ab14-5cf1b3c61890/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GamersGate",
+          "dealPrice": 69.99,
+          "retailPrice": 69.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=DJHlcAQbxwuiuxlDRA2tGtLSl87gEnt%2BTyjk1s1wOZ0%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Humble Store",
+          "dealPrice": 69.99,
+          "retailPrice": 69.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=SAM9agD3m1szlAgSYHcAsTAA4T8uD3lsxpMI7f2xIFs%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "IndieGala",
+          "dealPrice": 69.99,
+          "retailPrice": 69.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=LwKTNBZX0yY%2BaAYsX8jgSdad08coz%2Fy5poT4%2B5uKFXE%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Steam",
+          "dealPrice": 69.99,
+          "retailPrice": 69.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=T9mdBH1nxKaK3zs76JwaZIey%2BrRIlXBJ18PeHUMGCaE%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
+      ]
+    },
+    {
+      "id": "cmpwg686i00kvg4egrv18j8c6",
+      "title": "Dead Space",
+      "slug": "dead-space--1",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/cobkv5.jpg",
+      "rating": 87,
+      "category": null,
+      "esrbRating": "Mature",
+      "pegiRating": "18",
+      "developerNames": "Motive Studios",
+      "genreNames": "Shooter, Role-playing (RPG), Adventure",
+      "platformNames": "Xbox Series X|S, PC (Microsoft Windows), PlayStation 5",
+      "releaseDate": 1674777600000,
+      "trailerUrl": "https://www.youtube.com/embed/l5WeBNfX-og",
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scinmc.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scinme.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scinmd.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sckeeq.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sckees.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sckeer.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sckeep.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sckeeo.jpg"
+      ],
+      "tags": [
+        {
+          "name": "Sci-Fi Horror",
+          "slug": "setting-sci-fi"
+        },
+        {
+          "name": "Action Horror",
+          "slug": "action-horror"
+        },
+        {
+          "name": "Psychological Horror",
+          "slug": "psychological"
+        },
+        {
+          "name": "Space Horror",
+          "slug": "setting-space"
+        },
+        {
+          "name": "Third person",
+          "slug": "third-person"
+        }
+      ],
+      "purchaseLinks": [
+        {
+          "storeName": "PlayStation Store",
+          "url": "https://store.playstation.com/en-us/concept/10002958"
+        },
+        {
+          "storeName": "Xbox Store",
+          "url": "https://www.xbox.com/en-us/games/store/dead-space/9NLB6V0GNC9P"
+        },
+        {
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/1693980"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "url": "https://www.epicgames.com/store/p/dead-space"
+        }
+      ],
+      "priceSnapshots": [
+        {
+          "storeName": "Epic Games Store",
+          "dealPrice": 14.99,
+          "retailPrice": 59.99,
+          "discountPercent": 75,
+          "dealUrl": "https://itad.link/018d959d-49f4-72ca-bb48-69a92b79a691/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
+      ]
+    },
+    {
+      "id": "cmpwzlbi801dy9gegvn53klaw",
       "title": "Outlast",
       "slug": "outlast",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rs5.jpg",
-      "rating": 86,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1yat.jpg",
+      "rating": 77,
       "category": null,
-      "esrbRating": "MATURE",
+      "esrbRating": "Mature",
       "pegiRating": "18",
       "developerNames": "Red Barrels",
-      "genreNames": "survival-horror, first-person",
-      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
-      "releaseDate": 1377561600000,
-      "trailerUrl": null,
+      "genreNames": "Adventure, Indie",
+      "platformNames": "PlayStation 4, Linux, PC (Microsoft Windows), Mac, Xbox One, Nintendo Switch",
+      "releaseDate": 1378252800000,
+      "trailerUrl": "https://www.youtube.com/embed/2GPf3MdVOKI",
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4rqq.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/ttchmblgwxki9el4eptq.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/cd3kd3uqohq7cnjmeqpi.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/bkr3mqgzalcpzo259ahm.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc6e8v.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc6e8w.jpg"
       ],
       "tags": [
-        { "name": "first-person", "slug": "first-person" },
-        { "name": "survival-horror", "slug": "survival-horror" },
-        { "name": "stealth", "slug": "stealth" },
-        { "name": "atmospheric", "slug": "atmospheric" }
+        {
+          "name": "Survival Horror",
+          "slug": "survival-horror"
+        },
+        {
+          "name": "Body Horror",
+          "slug": "body-horror"
+        },
+        {
+          "name": "Folk Horror",
+          "slug": "folk-horror"
+        },
+        {
+          "name": "Sci-Fi Horror",
+          "slug": "setting-sci-fi"
+        },
+        {
+          "name": "Action Horror",
+          "slug": "action-horror"
+        },
+        {
+          "name": "Walking Simulator",
+          "slug": "walking-sim"
+        },
+        {
+          "name": "Psychological Horror",
+          "slug": "psychological"
+        },
+        {
+          "name": "First person",
+          "slug": "first-person"
+        },
+        {
+          "name": "Medical Horror",
+          "slug": "setting-medical"
+        },
+        {
+          "name": "Rural Isolation",
+          "slug": "setting-rural"
+        },
+        {
+          "name": "Narrative Horror",
+          "slug": "narrative-horror"
+        },
+        {
+          "name": "Puzzle Horror",
+          "slug": "puzzle-horror"
+        },
+        {
+          "name": "Oppressive",
+          "slug": "oppressive"
+        },
+        {
+          "name": "Jumpscare Heavy",
+          "slug": "jumpscare-heavy"
+        }
       ],
       "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/238320" }
+        {
+          "storeName": "Steam",
+          "url": "https://store.steampowered.com/app/238320"
+        },
+        {
+          "storeName": "PlayStation Store",
+          "url": "https://store.playstation.com/en-us/concept/203196"
+        },
+        {
+          "storeName": "Xbox Store",
+          "url": "https://www.xbox.com/en-us/games/store/outlast/BP3GH4D3HP2H"
+        },
+        {
+          "storeName": "GOG",
+          "url": "https://www.gog.com/game/outlast"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "url": "https://store.epicgames.com/p/outlast"
+        }
       ],
       "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 19.99, "retailPrice": 19.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/238320", "currency": "USD", "country": "US" }
+        {
+          "storeName": "Steam",
+          "dealPrice": 3.74,
+          "retailPrice": 14.99,
+          "discountPercent": 75,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=XU5v9Dm9E%2B2UM4UtgeQArX%2BUP%2BKmmgBXhqN81c2O9JU%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Humble Store",
+          "dealPrice": 3.74,
+          "retailPrice": 14.99,
+          "discountPercent": 75,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=hUoM5ileMAnt4QTjEqmWFgy%2BA%2BRTHPgbgWzep5o7RoE%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GOG",
+          "dealPrice": 3.75,
+          "retailPrice": 14.99,
+          "discountPercent": 75,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=msNSEzEvoY80%2FqQmz9%2Br7uZsgHVR8UiUJH28znnV1Yw%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "GreenManGaming",
+          "dealPrice": 3.75,
+          "retailPrice": 14.99,
+          "discountPercent": 75,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=LIlc2e62Y3tm%2BWK6Fw8Kj14yZEwQHoR9aeNQn2coU9g%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "dealPrice": 4.99,
+          "retailPrice": 19.99,
+          "discountPercent": 75,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=fax2aACkBczyQQJOEGjFQ4cCnhNSBI9WD%2BQYWv1JoB0%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
       ]
     },
     {
-      "id": "igdb_soma",
+      "id": "cmpwzhfvw01dal8egw9nvup3a",
       "title": "SOMA",
       "slug": "soma",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1qd4.jpg",
-      "rating": 85,
+      "coverUrl": "https://images.gog-statics.com/04171b58c59c02140ce3327a3f769b8f06b2c948949331afa17130fd98f26605.png",
+      "rating": 84,
       "category": null,
-      "esrbRating": "MATURE",
-      "pegiRating": "18",
+      "esrbRating": "Mature",
+      "pegiRating": "16",
       "developerNames": "Frictional Games",
-      "genreNames": "survival-horror, sci-fi",
-      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
-      "releaseDate": 1443139200000,
+      "genreNames": "FPP, Horror, Adventure",
+      "platformNames": "PC (Windows), Linux, Mac",
+      "releaseDate": 1442860200000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4a04.jpg"
+        "https://images.gog-statics.com/69aabfd25b2753bc285d11192d598e547be9aaa0cce45fa4125e7a3e08181679.jpg",
+        "https://images.gog-statics.com/95a45a1fa95f6974bf9b762989ce968b6ae10434175991f18c2a7c840b1841b5.jpg",
+        "https://images.gog-statics.com/c2659af53c240bcb7cf56395334eaaf69e8a10bc6a44c7af9ddab18822c663b9.jpg",
+        "https://images.gog-statics.com/45fcb1715b006c7aadf491a961e56c16bfff1309f7d5b943aeda956fd6033191.jpg",
+        "https://images.gog-statics.com/f90a19cfd95d70117f19ad073a14040f9735090f7b48ab391245997168f1eb49.jpg",
+        "https://images.gog-statics.com/6d5321489f2ab4afa8bfff33c3c89c099cd6e71f216cc68cc2a3749ec179de4b.jpg",
+        "https://images.gog-statics.com/b2212518e6c4a175550e43a876e24591ed4581a071712cd56aca34c51d55d78c.jpg",
+        "https://images.gog-statics.com/c9bd09503b22a30a012de6cd6ec3214341455bd85af3a0f14c8ea26fbdce0b86.jpg",
+        "https://images.gog-statics.com/3c027fbbedd21d495165d4ddba792f4050cc152fd275fec67c43f8c419df8ce1.jpg"
       ],
       "tags": [
-        { "name": "sci-fi", "slug": "sci-fi" },
-        { "name": "psychological", "slug": "psychological" },
-        { "name": "first-person", "slug": "first-person" },
-        { "name": "atmospheric", "slug": "atmospheric" }
+        {
+          "name": "Adventure",
+          "slug": "adventure"
+        },
+        {
+          "name": "Story Rich",
+          "slug": "story-rich"
+        },
+        {
+          "name": "Atmospheric",
+          "slug": "atmospheric"
+        },
+        {
+          "name": "Exploration",
+          "slug": "exploration"
+        },
+        {
+          "name": "Puzzle",
+          "slug": "puzzle"
+        },
+        {
+          "name": "Science",
+          "slug": "science"
+        },
+        {
+          "name": "First person",
+          "slug": "first-person"
+        },
+        {
+          "name": "Dark",
+          "slug": "dark"
+        },
+        {
+          "name": "Horror",
+          "slug": "horror"
+        },
+        {
+          "name": "Mystery",
+          "slug": "mystery"
+        },
+        {
+          "name": "FPS",
+          "slug": "fps"
+        },
+        {
+          "name": "Stealth",
+          "slug": "stealth"
+        },
+        {
+          "name": "Survival Horror",
+          "slug": "survival-horror"
+        },
+        {
+          "name": "Walking simulator",
+          "slug": "walking-simulator"
+        },
+        {
+          "name": "Robots",
+          "slug": "robots"
+        },
+        {
+          "name": "Philosophical",
+          "slug": "philosophical"
+        },
+        {
+          "name": "Underwater",
+          "slug": "underwater"
+        },
+        {
+          "name": "Indie",
+          "slug": "indie"
+        },
+        {
+          "name": "Lo-fi",
+          "slug": "lo-fi"
+        },
+        {
+          "name": "Low-poly",
+          "slug": "low-poly"
+        },
+        {
+          "name": "Retro",
+          "slug": "retro"
+        },
+        {
+          "name": "Sci-fi",
+          "slug": "sci-fi"
+        },
+        {
+          "name": "Singleplayer",
+          "slug": "singleplayer"
+        },
+        {
+          "name": "No AI",
+          "slug": "no-ai"
+        }
       ],
       "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/282140" }
+        {
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/soma"
+        }
       ],
       "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 29.99, "retailPrice": 29.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/282140", "currency": "USD", "country": "US" }
+        {
+          "storeName": "GOG",
+          "dealPrice": 10.19,
+          "retailPrice": 29.99,
+          "discountPercent": 19.8,
+          "dealUrl": "https://www.gog.com/en/game/soma",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Steam",
+          "dealPrice": 10.19,
+          "retailPrice": 29.99,
+          "discountPercent": 66,
+          "dealUrl": "https://itad.link/018d9386-cc1f-7322-a9e8-330153e2bfb7/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Humble Store",
+          "dealPrice": 29.99,
+          "retailPrice": 29.99,
+          "discountPercent": 0,
+          "dealUrl": "https://itad.link/018d9386-cc1f-7322-a9e8-3301522f66fd/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "dealPrice": 29.99,
+          "retailPrice": 29.99,
+          "discountPercent": 0,
+          "dealUrl": "https://itad.link/018d959f-81bc-73e6-9cff-463ce6172a85/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
       ]
     },
     {
-      "id": "igdb_amnesia-the-dark-descent",
+      "id": "cmpwzgtoq00ykl8egvstvc4kg",
       "title": "Amnesia: The Dark Descent",
       "slug": "amnesia-the-dark-descent",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rs3.jpg",
+      "coverUrl": "https://images.gog-statics.com/41ce75275bcb835c46f3fbcb5aa8d811edc24fce500b340d23033f103f55ee38.png",
       "rating": 85,
       "category": null,
-      "esrbRating": "MATURE",
+      "esrbRating": "Mature",
       "pegiRating": "16",
       "developerNames": "Frictional Games",
-      "genreNames": "survival-horror, first-person",
-      "platformNames": "PC (Microsoft Windows), Mac, Linux",
-      "releaseDate": 1284422400000,
+      "genreNames": "FPP, Horror, Adventure",
+      "platformNames": "PC (Windows), Linux",
+      "releaseDate": 1283884200000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4rqp.jpg"
+        "https://images.gog-statics.com/2895f2eacdabe62dea4ca6219958d960513b17ee9bed5930f12136102e3e6c83.jpg",
+        "https://images.gog-statics.com/3a6300d2f1c237183dcacf846a547a4bf27de54c9a893c55c2491fe0514d5164.jpg",
+        "https://images.gog-statics.com/5f9007f204bbc4f0600a7c2166c9f4ae9b868cb98dfa5d907f107624156f7f57.jpg",
+        "https://images.gog-statics.com/43a06f2ec30fc53e2b2805f2e3cd791924a850dda88f8123d8cf60f0b38a2400.jpg",
+        "https://images.gog-statics.com/4d8ea2c5a23b465f8384cbcd3b50ff674d04769254624358f58538adf814fc76.jpg",
+        "https://images.gog-statics.com/5993cad10b60321eb2ca29ee5dd7a0ef06b550e09e31a5815aecefa5750d5f86.jpg",
+        "https://images.gog-statics.com/effa983809bb8f911ac3b51fe243b9277043eb2381d1f9a05a5a90a5b7fe94ac.jpg",
+        "https://images.gog-statics.com/08e1051212d79fdd76282e40732a8c84ec990c462c41f127472d13451fa42d88.jpg",
+        "https://images.gog-statics.com/44dc23e15237bc46fb7cac0d32dbf8649af7d53c943ed6b2f48ec84d5a3d9619.jpg",
+        "https://images.gog-statics.com/6508071a7201acef8818518ea510f666f6bdf138621bc065583e57f435f12ebb.jpg",
+        "https://images.gog-statics.com/4574f8f3b8f7a09e15793632c7afb37e14b9d75f5d7b809ce0bd0fb74c371a65.jpg",
+        "https://images.gog-statics.com/d35e0f85c056328d3b08dcf513557d1ab10a193770ad18508f345b8721a83c87.jpg"
       ],
       "tags": [
-        { "name": "first-person", "slug": "first-person" },
-        { "name": "atmospheric", "slug": "atmospheric" },
-        { "name": "survival-horror", "slug": "survival-horror" },
-        { "name": "puzzle-horror", "slug": "puzzle-horror" }
+        {
+          "name": "Adventure",
+          "slug": "adventure"
+        },
+        {
+          "name": "Indie",
+          "slug": "indie"
+        },
+        {
+          "name": "Story Rich",
+          "slug": "story-rich"
+        },
+        {
+          "name": "Atmospheric",
+          "slug": "atmospheric"
+        },
+        {
+          "name": "Exploration",
+          "slug": "exploration"
+        },
+        {
+          "name": "Classic",
+          "slug": "classic"
+        },
+        {
+          "name": "Puzzle",
+          "slug": "puzzle"
+        },
+        {
+          "name": "First person",
+          "slug": "first-person"
+        },
+        {
+          "name": "Dark",
+          "slug": "dark"
+        },
+        {
+          "name": "Great Soundtrack",
+          "slug": "great-soundtrack"
+        },
+        {
+          "name": "Horror",
+          "slug": "horror"
+        },
+        {
+          "name": "Survival",
+          "slug": "survival"
+        },
+        {
+          "name": "Gore",
+          "slug": "gore"
+        },
+        {
+          "name": "FPS",
+          "slug": "fps"
+        },
+        {
+          "name": "Stealth",
+          "slug": "stealth"
+        },
+        {
+          "name": "Survival Horror",
+          "slug": "survival-horror"
+        },
+        {
+          "name": "Physics",
+          "slug": "physics"
+        },
+        {
+          "name": "Lovecraftian",
+          "slug": "lovecraftian"
+        }
       ],
       "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/57300" }
+        {
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/amnesia_the_dark_descent"
+        }
       ],
       "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 19.99, "retailPrice": 19.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/57300", "currency": "USD", "country": "US" }
+        {
+          "storeName": "GOG",
+          "dealPrice": 6.79,
+          "retailPrice": 19.99,
+          "discountPercent": 13.2,
+          "dealUrl": "https://www.gog.com/en/game/amnesia_the_dark_descent",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Steam",
+          "dealPrice": 19.99,
+          "retailPrice": 19.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=pTCh9x5Rxg8oxPuAeApm6MDWpByv%2ByCo%2FxKaahgAl7Q%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Humble Store",
+          "dealPrice": 19.99,
+          "retailPrice": 19.99,
+          "discountPercent": 0,
+          "dealUrl": "https://www.cheapshark.com/redirect?dealID=35Rgcf0qctfLNuBMuQCChUcqdL4fMiaWDOS%2FaL09d9c%3D",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        },
+        {
+          "storeName": "Epic Games Store",
+          "dealPrice": 19.99,
+          "retailPrice": 19.99,
+          "discountPercent": 0,
+          "dealUrl": "https://itad.link/018d959f-2331-7030-8c6e-536ca0f45457/",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
       ]
     },
     {
-      "id": "igdb_bloodborne",
+      "id": "cmpwg465u00c6g4eg3snolj2i",
       "title": "Bloodborne",
       "slug": "bloodborne",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1iqv.jpg",
-      "rating": 92,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/cob99l.jpg",
+      "rating": 91,
       "category": null,
-      "esrbRating": "MATURE",
+      "esrbRating": "Mature",
       "pegiRating": "16",
       "developerNames": "FromSoftware",
-      "genreNames": "action-rpg, gothic-horror",
+      "genreNames": "Role-playing (RPG), Adventure",
       "platformNames": "PlayStation 4",
-      "releaseDate": 1426636800000,
-      "trailerUrl": null,
+      "releaseDate": 1427155200000,
+      "trailerUrl": "https://www.youtube.com/embed/2UJxaWZoK6Y",
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4a9s.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/uqmif3sshdrbbcd0pu8l.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/adssvwsfbaxcrucjolv9.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/hc9nb80b0xni5wxm5zh3.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/aokcsspzrqyaaoug7jnn.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/bklmdxphzoflbgtushg0.jpg"
       ],
       "tags": [
-        { "name": "souls-like", "slug": "souls-like" },
-        { "name": "gothic", "slug": "gothic" },
-        { "name": "atmospheric", "slug": "atmospheric" },
-        { "name": "action-rpg", "slug": "action-rpg" }
+        {
+          "name": "Cosmic & Eldritch",
+          "slug": "cosmic-horror"
+        },
+        {
+          "name": "Body Horror",
+          "slug": "body-horror"
+        },
+        {
+          "name": "Liminal & Surreal",
+          "slug": "liminal-surreal"
+        },
+        {
+          "name": "Folk Horror",
+          "slug": "folk-horror"
+        },
+        {
+          "name": "Sci-Fi Horror",
+          "slug": "setting-sci-fi"
+        },
+        {
+          "name": "Action Horror",
+          "slug": "action-horror"
+        },
+        {
+          "name": "Supernatural Horror",
+          "slug": "supernatural"
+        },
+        {
+          "name": "Zombie & Apocalypse",
+          "slug": "zombie-apocalypse"
+        },
+        {
+          "name": "Creature Horror",
+          "slug": "creature-horror"
+        },
+        {
+          "name": "Medical Horror",
+          "slug": "setting-medical"
+        },
+        {
+          "name": "Urban Decay",
+          "slug": "setting-urban"
+        },
+        {
+          "name": "Third person",
+          "slug": "third-person"
+        }
       ],
-      "purchaseLinks": [],
+      "purchaseLinks": [
+        {
+          "storeName": "PlayStation Store",
+          "url": "https://store.playstation.com/en-us/concept/200520"
+        }
+      ],
       "priceSnapshots": []
     },
     {
-      "id": "igdb_the-evil-within-2",
+      "id": "cmpwzhhv501e2l8ege5vwq451",
       "title": "The Evil Within 2",
       "slug": "the-evil-within-2",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r9u.jpg",
+      "coverUrl": "https://images.gog-statics.com/a516f57bcb67a8abd90322cdf49f1586526f913ce41e35c5d334abd73c23bf7d.png",
       "rating": 82,
       "category": null,
-      "esrbRating": "MATURE",
+      "esrbRating": "Mature",
       "pegiRating": "18",
       "developerNames": "Tango Gameworks",
-      "genreNames": "survival-horror, third-person",
-      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
-      "releaseDate": 1508025600000,
+      "genreNames": "Action, Horror, Survival",
+      "platformNames": "PC (Windows)",
+      "releaseDate": 1507746600000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4a2n.jpg"
+        "https://images.gog-statics.com/e74a15c84076c5a423b0e7d1f114d7f4b5bce459154e249a9243446f81b7c232.jpg",
+        "https://images.gog-statics.com/8b871c79bf4389c94cd69f8012d20547cfbb3ba96bf1f2ffa097a0202ef618b4.jpg",
+        "https://images.gog-statics.com/102af9f185ce0729292f7ffe121e6e4027498df919b2f1810aa00190015eee29.jpg",
+        "https://images.gog-statics.com/6f76bd246cc4b4d2e6514d19a6eaefeff1489d7ca1800fe9e609277d5c7e87cd.jpg",
+        "https://images.gog-statics.com/cbc7eff69a3a8329aec03982abedd1a81986ea63364e5cfeebc73e888b36e66e.jpg",
+        "https://images.gog-statics.com/d74ce4ca16d60f2058c21da7ef34d1ff408ac0064946228abab54552bfd2f329.jpg",
+        "https://images.gog-statics.com/6e758871ac8a8a5cbb205f2281918591fc5e40cfe29eb1ecdee59687650b6162.jpg",
+        "https://images.gog-statics.com/5c965696dfd56bb4e7dfdcda486daf8e5997e1fefa386ce64c993559fc4909b6.jpg",
+        "https://images.gog-statics.com/8a828443a7c95500ec43274c10976eb7d4cc8fa4286773305b8676140d8f3d28.jpg",
+        "https://images.gog-statics.com/4db633ec1ab55ae0a7cf6f33b663b8db88cf684f72347c9a7ab207aeac37658c.jpg",
+        "https://images.gog-statics.com/8981c6d6c9929e7ef26d042f1440af7e58a096bd5dca0c8b37f33dc01ccef7d7.jpg",
+        "https://images.gog-statics.com/e3f5b512d5c1f3b5b98fa196fd71637d1692b300eb6201578388d353fd81b20c.jpg"
       ],
       "tags": [
-        { "name": "survival-horror", "slug": "survival-horror" },
-        { "name": "third-person", "slug": "third-person" },
-        { "name": "atmospheric", "slug": "atmospheric" },
-        { "name": "psychological", "slug": "psychological" }
+        {
+          "name": "Action",
+          "slug": "action"
+        },
+        {
+          "name": "Story Rich",
+          "slug": "story-rich"
+        },
+        {
+          "name": "Atmospheric",
+          "slug": "atmospheric"
+        },
+        {
+          "name": "Dark",
+          "slug": "dark"
+        },
+        {
+          "name": "Horror",
+          "slug": "horror"
+        },
+        {
+          "name": "Third person",
+          "slug": "third-person"
+        },
+        {
+          "name": "Survival",
+          "slug": "survival"
+        },
+        {
+          "name": "Violent",
+          "slug": "violent"
+        },
+        {
+          "name": "Gore",
+          "slug": "gore"
+        },
+        {
+          "name": "Stealth",
+          "slug": "stealth"
+        },
+        {
+          "name": "Survival Horror",
+          "slug": "survival-horror"
+        }
       ],
       "purchaseLinks": [
-        { "storeName": "Steam", "url": "https://store.steampowered.com/app/601430" }
+        {
+          "storeName": "GOG",
+          "url": "https://www.gog.com/en/game/the_evil_within_2"
+        }
       ],
       "priceSnapshots": [
-        { "storeName": "Steam", "dealPrice": 39.99, "retailPrice": 39.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/601430", "currency": "USD", "country": "US" }
+        {
+          "storeName": "GOG",
+          "dealPrice": 7.99,
+          "retailPrice": 39.99,
+          "discountPercent": 32,
+          "dealUrl": "https://www.gog.com/en/game/the_evil_within_2",
+          "currency": "USD",
+          "country": "US",
+          "provider": "direct"
+        }
       ]
     }
   ],
