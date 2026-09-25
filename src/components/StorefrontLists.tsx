@@ -193,7 +193,7 @@ export default function StorefrontLists({
           <div className="relative w-16 h-20 bg-neutral-900 border border-white/10 shrink-0 overflow-hidden">
             {game.coverUrl ? (
               <img
-                src={getCloudinaryFetchUrl(game.coverUrl) || undefined}
+                src={getCloudinaryFetchUrl(game.coverUrl, false, game.slug, "cover") || undefined}
                 alt=""
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
@@ -327,7 +327,7 @@ export default function StorefrontLists({
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="font-sans text-sm sm:text-base font-bold uppercase tracking-wider text-white flex items-center gap-2.5">
-              <span className="w-1.5 h-4.5 sm:h-5 bg-red-500 rounded-xs inline-block shrink-0" /> LATEST DEPLOYMENTS
+              <span className="w-1.5 h-4.5 sm:h-5 bg-red-500 rounded-xs inline-block shrink-0" /> RECENT RELEASES
             </h3>
             <button
               onClick={onExplore}

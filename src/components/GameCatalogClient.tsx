@@ -210,7 +210,7 @@ function ListRow({ game, index, findCheapestDeal, onClick }: Omit<GameCardProps,
       <div className="relative shrink-0 w-[115px] sm:w-[140px] h-full overflow-hidden bg-neutral-950 border-r border-white/10">
         {game.coverUrl ? (
           <img
-            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending) || ""}
+            src={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending, game.slug, "cover") || ""}
             alt={game.title}
             className="object-cover object-top w-full h-full transition-transform duration-500 ease-out group-hover:scale-105"
             loading={index < 6 ? undefined : "lazy"}
@@ -441,7 +441,7 @@ function GameCard({ game, index, activeRegion, findCheapestDeal, mobileLayout = 
       <div className={`relative bg-neutral-950 overflow-hidden shrink-0 flex items-center justify-center w-full border-b border-white/10 ${game.slug.startsWith("itch-") ? "aspect-[5/4]" : "aspect-[3/4]"}`}>
         <HoverTrailer
           trailerUrl={game.trailerUrl}
-          coverUrl={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending)}
+          coverUrl={getCloudinaryFetchUrl(getHighResCoverUrl(game.coverUrl), game.isTrending, game.slug, "cover")}
           altText={game.title}
           aspectClass="w-full h-full"
         />
@@ -569,6 +569,7 @@ interface GameCatalogClientProps {
   trendingGames?: any[];
   upcomingGames?: any[];
   topRatedGames?: any[];
+  itchGames?: any[];
   catalogueTitle?: string;
   catalogueDesc?: string;
   supportTitle?: string;
@@ -584,6 +585,7 @@ function GameCatalogClientInner({
   trendingGames = [],
   upcomingGames = [],
   topRatedGames = [],
+  itchGames = [],
   catalogueTitle,
   catalogueDesc,
   supportTitle,
@@ -892,11 +894,14 @@ function GameCatalogClientInner({
   };
 
   const showStorefront = !debouncedSearch && !isBrowseAll;
+  const effectiveHeroGames = (heroGames && heroGames.length > 0)
+    ? heroGames
+    : trendingGames.filter((g: any) => g.screenshots && g.screenshots.length > 0);
 
   return (
     <div className="space-y-8">
-      {showStorefront && heroGames && heroGames.length > 0 && (
-        <HeroCarousel games={heroGames} activeRegion={activeRegion} />
+      {showStorefront && effectiveHeroGames && effectiveHeroGames.length > 0 && (
+        <HeroCarousel games={effectiveHeroGames} activeRegion={activeRegion} />
       )}
 
       {/* ── Search Section (Code kept for future use) ── */}
@@ -1091,6 +1096,7 @@ function GameCatalogClientInner({
               trending={trendingGames}
               upcoming={upcomingGames}
               topRated={topRatedGames}
+              itchGames={itchGames}
               activeRegion={activeRegion}
               onBrowseAll={handleBrowseAll}
             />

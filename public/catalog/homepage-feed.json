@@ -1,24 +1,99 @@
-{
-  "updatedAt": "2026-09-14T11:48:43.996Z",
+﻿{
+  "updatedAt": "2026-09-20T10:48:57.027Z",
   "heroGames": [
     {
-      "id": "cmpwg432100bfg4egr75fktwo",
-      "title": "Silent Hill 2",
-      "slug": "silent-hill-2--2",
+      "id": "cmpwg3yt000atg4egr1p38k60",
+      "title": "Species: Unknown",
+      "slug": "species-unknown",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5wkr.jpg",
-      "rating": 92.2523761324933,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co9v28.jpg",
+      "rating": 94,
+      "category": null,
+      "esrbRating": null,
+      "pegiRating": null,
+      "developerNames": "WanadevStudio",
+      "genreNames": "shooter, indie",
+      "platformNames": "PC (Microsoft Windows)",
+      "releaseDate": 1761177600000,
+      "trailerUrl": null,
+      "isTrending": true,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scwz62.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scwz64.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scwz68.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scwz69.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scwz6a.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scwz6b.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc103e8.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc103e9.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc103ea.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc103eb.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc103ec.jpg"
+      ],
+      "tags": [
+        {
+          "name": "survival-horror",
+          "slug": "survival-horror"
+        },
+        {
+          "name": "co-op",
+          "slug": "co-op"
+        },
+        {
+          "name": "action-horror",
+          "slug": "action-horror"
+        },
+        {
+          "name": "first-person",
+          "slug": "first-person"
+        },
+        {
+          "name": "creature-horror",
+          "slug": "creature-horror"
+        },
+        {
+          "name": "isolated",
+          "slug": "isolated"
+        }
+      ],
+      "purchaseLinks": [
+        {
+          "storeName": "itch.io",
+          "url": "https://wanadevstudio.itch.io/species-unknown"
+        }
+      ],
+      "priceSnapshots": [
+        {
+          "storeName": "itch.io",
+          "dealPrice": 9.99,
+          "retailPrice": 9.99,
+          "discountPercent": 0,
+          "dealUrl": "https://wanadevstudio.itch.io/species-unknown",
+          "currency": "USD",
+          "country": "US"
+        }
+      ]
+    },
+    {
+      "id": "cmpwg436e00blg4egws1ffeac",
+      "title": "Resident Evil 4",
+      "slug": "resident-evil-4--1",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6bo0.jpg",
+      "rating": 92.468868764867,
       "category": null,
       "esrbRating": "Mature",
-      "pegiRating": null,
-      "developerNames": "Hijinx Studios",
-      "genreNames": "Puzzle, Adventure",
-      "platformNames": "PlayStation 3, Xbox 360",
-      "releaseDate": 1332201600,
-      "trailerUrl": null,
+      "pegiRating": "18",
+      "developerNames": "Capcom Development Division 1",
+      "genreNames": "Shooter, Puzzle, Adventure",
+      "platformNames": "Xbox Series X|S, PlayStation 4, PC (Microsoft Windows), iOS, PlayStation 5, Mac",
+      "releaseDate": 1679616000000,
+      "trailerUrl": "https://www.youtube.com/embed/cMzJv0LOJYo",
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scjg5v.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sch7rk.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sch7rl.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sch7rm.jpg"
       ],
       "tags": [],
       "purchaseLinks": [],
@@ -37,188 +112,13 @@
       "developerNames": "Team Silent",
       "genreNames": "Puzzle, Adventure",
       "platformNames": "PC (Microsoft Windows), PlayStation 2",
-      "releaseDate": 1053648000,
+      "releaseDate": 1053648000000,
       "trailerUrl": "https://www.youtube.com/embed/MLo2WtNN69Q",
       "isTrending": false,
       "screenshots": [
         "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8903.jpg",
         "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8900.jpg",
         "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8902.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwzmt7y028z9gegjrqdrydm",
-      "title": "Silent Hill 4: The Room",
-      "slug": "silent-hill-4-the-room",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2vyk.jpg",
-      "rating": 74.1626744242906,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": "18",
-      "developerNames": "Team Silent",
-      "genreNames": "Adventure",
-      "platformNames": "Xbox, PlayStation 3, PC (Microsoft Windows), PlayStation 2",
-      "releaseDate": 1087430400,
-      "trailerUrl": "https://www.youtube.com/embed/GW_is7yL6_U",
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc890o.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc890p.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc890t.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwg436e00blg4egws1ffeac",
-      "title": "Resident Evil 4",
-      "slug": "resident-evil-4--1",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6bo0.jpg",
-      "rating": 92.468868764867,
-      "category": null,
-      "esrbRating": "Mature",
-      "pegiRating": "18",
-      "developerNames": "Capcom Development Division 1",
-      "genreNames": "Shooter, Puzzle, Adventure",
-      "platformNames": "Xbox Series X|S, PlayStation 4, PC (Microsoft Windows), iOS, PlayStation 5, Mac",
-      "releaseDate": 1679616000,
-      "trailerUrl": "https://www.youtube.com/embed/cMzJv0LOJYo",
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sch7rk.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sch7rl.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sch7rm.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwg492f00cug4eg5uugmipf",
-      "title": "Resident Evil 2",
-      "slug": "resident-evil-2--1",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1ir3.jpg",
-      "rating": 90.1046798585603,
-      "category": null,
-      "esrbRating": "Mature",
-      "pegiRating": "18",
-      "developerNames": "Capcom Development Division 1",
-      "genreNames": "Shooter, Adventure",
-      "platformNames": "Xbox Series X|S, PlayStation 4, PC (Microsoft Windows), iOS, PlayStation 5, Mac, Xbox One",
-      "releaseDate": 1548374400,
-      "trailerUrl": "https://www.youtube.com/embed/nog956eX-ik",
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/z35arb0woqfqh4vimybc.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/zphoa86shektugz0k8eq.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/eehliwukjmjjtkxtgkjz.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwg5qg200heg4egu83alwjz",
-      "title": "Resident Evil 7: Biohazard - Collector's Edition",
-      "slug": "resident-evil-7-biohazard-collectors-edition",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co5tqc.jpg",
-      "rating": 89,
-      "category": null,
-      "esrbRating": "Mature",
-      "pegiRating": null,
-      "developerNames": "Capcom",
-      "genreNames": "Shooter, Adventure",
-      "platformNames": "PlayStation 4, PC (Microsoft Windows), Xbox One",
-      "releaseDate": 1514678400,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/q5auso9ih72slossjkm9.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8x98.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8x99.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwzgeta00sjl8egno9g4dpu",
-      "title": "Resident Evil Village",
-      "slug": "resident-evil-village",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/coab9q.jpg",
-      "rating": 85.3036121777697,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": "18",
-      "developerNames": "Capcom Development Division 1",
-      "genreNames": "Shooter, Adventure",
-      "platformNames": "Google Stadia, Xbox Series X|S, PlayStation 4, Nintendo Switch 2, PC (Microsoft Windows), iOS, PlayStation 5, Mac, Xbox One",
-      "releaseDate": 1620259200,
-      "trailerUrl": "https://www.youtube.com/embed/26tay8lMZW4",
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8zrh.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc99kk.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc99kl.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwzhxvb01o2l8egdmc68ule",
-      "title": "Resident Evil 3: Nemesis",
-      "slug": "resident-evil-3-nemesis",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2vvb.jpg",
-      "rating": 80.6611028166109,
-      "category": null,
-      "esrbRating": "Mature",
-      "pegiRating": "16",
-      "developerNames": "Capcom Planning Room 2",
-      "genreNames": "Shooter, Adventure",
-      "platformNames": "PlayStation 3, Nintendo GameCube, PC (Microsoft Windows), PlayStation, PlayStation Portable, Dreamcast",
-      "releaseDate": 937958400,
-      "trailerUrl": "https://www.youtube.com/embed/w4NQHEd65Fs",
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/jfcrdcguoxfuldo5blr3.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/v5taxpsxbengllwhep6n.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/ngjabdx9cx5zpwi8p3ea.jpg"
-      ],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "cmpwg601800j4g4eg7c914b5i",
-      "title": "Dead Space 2",
-      "slug": "dead-space-2",
-      "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co20xq.jpg",
-      "rating": 88.2284713795571,
-      "category": null,
-      "esrbRating": "Mature",
-      "pegiRating": "18",
-      "developerNames": "Visceral Games",
-      "genreNames": "Shooter, Adventure",
-      "platformNames": "PlayStation 3, PC (Microsoft Windows), Xbox 360",
-      "releaseDate": 1295913600,
-      "trailerUrl": "https://www.youtube.com/embed/EtEEa4PU7ok",
-      "isTrending": false,
-      "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/wkypfjptjgqn6s0qrkbe.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/s7y8lukfvl3vwfhobksu.jpg",
-        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/yadkllvjpd1lnqlixxso.jpg"
       ],
       "tags": [],
       "purchaseLinks": [],
@@ -237,7 +137,7 @@
       "developerNames": "The Creative Assembly",
       "genreNames": "Adventure",
       "platformNames": "PlayStation 3, PlayStation 4, Linux, PC (Microsoft Windows), Mac, Xbox 360, Xbox One",
-      "releaseDate": 1413244800,
+      "releaseDate": 1413244800000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
@@ -250,25 +150,50 @@
       "priceSnapshots": []
     },
     {
-      "id": "cmpwzgtoq00ykl8egvstvc4kg",
-      "title": "Amnesia: The Dark Descent",
-      "slug": "amnesia-the-dark-descent",
+      "id": "cmpwg4vy600fbg4egwe4hrlwh",
+      "title": "Alan Wake II",
+      "slug": "alan-wake-ii",
       "status": "released",
-      "coverUrl": "https://images.gog-statics.com/41ce75275bcb835c46f3fbcb5aa8d811edc24fce500b340d23033f103f55ee38.png",
-      "rating": null,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6jar.jpg",
+      "rating": 89.9725588367173,
       "category": null,
       "esrbRating": "Mature",
-      "pegiRating": "16",
-      "developerNames": "Frictional Games",
-      "genreNames": "FPP, Horror, Adventure",
-      "platformNames": "PC (Windows), Linux",
-      "releaseDate": 1283884200,
-      "trailerUrl": null,
+      "pegiRating": "18",
+      "developerNames": "Remedy Entertainment",
+      "genreNames": "Shooter, Adventure",
+      "platformNames": "Xbox Series X|S, PC (Microsoft Windows), PlayStation 5",
+      "releaseDate": 1698364800000,
+      "trailerUrl": "https://www.youtube.com/embed/zyJvCq4HvQ4",
       "isTrending": false,
       "screenshots": [
-        "https://images.gog-statics.com/2895f2eacdabe62dea4ca6219958d960513b17ee9bed5930f12136102e3e6c83.jpg",
-        "https://images.gog-statics.com/3a6300d2f1c237183dcacf846a547a4bf27de54c9a893c55c2491fe0514d5164.jpg",
-        "https://images.gog-statics.com/5f9007f204bbc4f0600a7c2166c9f4ae9b868cb98dfa5d907f107624156f7f57.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scmnci.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scmncj.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scmnck.jpg"
+      ],
+      "tags": [],
+      "purchaseLinks": [],
+      "priceSnapshots": []
+    },
+    {
+      "id": "cmpwg601800j4g4eg7c914b5i",
+      "title": "Dead Space 2",
+      "slug": "dead-space-2",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co20xq.jpg",
+      "rating": 88.2284713795571,
+      "category": null,
+      "esrbRating": "Mature",
+      "pegiRating": "18",
+      "developerNames": "Visceral Games",
+      "genreNames": "Shooter, Adventure",
+      "platformNames": "PlayStation 3, PC (Microsoft Windows), Xbox 360",
+      "releaseDate": 1295913600000,
+      "trailerUrl": "https://www.youtube.com/embed/EtEEa4PU7ok",
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/wkypfjptjgqn6s0qrkbe.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/s7y8lukfvl3vwfhobksu.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/yadkllvjpd1lnqlixxso.jpg"
       ],
       "tags": [],
       "purchaseLinks": [],
@@ -287,7 +212,7 @@
       "developerNames": "Frictional Games",
       "genreNames": "FPP, Horror, Adventure",
       "platformNames": "PC (Windows)",
-      "releaseDate": 1685989800,
+      "releaseDate": 1685989800000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
@@ -298,27 +223,102 @@
       "tags": [],
       "purchaseLinks": [],
       "priceSnapshots": []
+    },
+    {
+      "id": "cmpwzgeta00sjl8egno9g4dpu",
+      "title": "Resident Evil Village",
+      "slug": "resident-evil-village",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/coab9q.jpg",
+      "rating": 85.3036121777697,
+      "category": null,
+      "esrbRating": null,
+      "pegiRating": "18",
+      "developerNames": "Capcom Development Division 1",
+      "genreNames": "Shooter, Adventure",
+      "platformNames": "Google Stadia, Xbox Series X|S, PlayStation 4, Nintendo Switch 2, PC (Microsoft Windows), iOS, PlayStation 5, Mac, Xbox One",
+      "releaseDate": 1620259200000,
+      "trailerUrl": "https://www.youtube.com/embed/26tay8lMZW4",
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc8zrh.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc99kk.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/sc99kl.jpg"
+      ],
+      "tags": [],
+      "purchaseLinks": [],
+      "priceSnapshots": []
+    },
+    {
+      "id": "cmpwzh3og017ml8egkthwy8mo",
+      "title": "Signalis",
+      "slug": "signalis",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co62ig.jpg",
+      "rating": 83.0920948904766,
+      "category": null,
+      "esrbRating": null,
+      "pegiRating": "16",
+      "developerNames": "rose-engine",
+      "genreNames": "Adventure, Indie",
+      "platformNames": "Xbox Series X|S, PlayStation 4, PC (Microsoft Windows), Xbox One, Nintendo Switch",
+      "releaseDate": 1666828800000,
+      "trailerUrl": "https://www.youtube.com/embed/qxvpJ1g54sY",
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/x8wm6icrxrsyxfm5nqof.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/fofzalqb3kyoh5j25kqx.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/zigwxybzsknlbwcblj9r.jpg"
+      ],
+      "tags": [],
+      "purchaseLinks": [],
+      "priceSnapshots": []
+    },
+    {
+      "id": "cmpwzgj1y00uol8egv2i5pxd6",
+      "title": "Mouthwashing",
+      "slug": "mouthwashing",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co70oi.jpg",
+      "rating": 84.9998600775855,
+      "category": null,
+      "esrbRating": null,
+      "pegiRating": null,
+      "developerNames": "Wrong Organ",
+      "genreNames": "Adventure, Indie",
+      "platformNames": "Xbox Series X|S, PC (Microsoft Windows), PlayStation 5, Nintendo Switch",
+      "releaseDate": 1727308800000,
+      "trailerUrl": "https://www.youtube.com/embed/zUXapDkoLss",
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scu0sk.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scu0sl.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/scu0sm.jpg"
+      ],
+      "tags": [],
+      "purchaseLinks": [],
+      "priceSnapshots": []
     }
   ],
   "latestGames": [
     {
-      "id": "itch_8e13f31c14a1d414",
-      "title": "Horror: Halcyon Refund Services",
-      "slug": "itch-horror-halcyon-refund-services",
+      "id": "itch_f199e9d47bba1a07",
+      "title": "Ä¦É†ÅÅ Sáµ¾ÉŒVÉ†ÉŽ",
+      "slug": "itch-s-v",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ4NzQ0LnBuZw==/315x250%23c/GdVcty.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDg3NTE0LmpwZw==/315x250%23c/RRyb03.jpg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "deadfrogOfficial",
+      "developerNames": "Timezâ˜‘",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ4NzQ0LnBuZw==/315x250%23c/GdVcty.png"
+        "https://img.itch.zone/aW1nLzMwMDg3NTE0LmpwZw==/315x250%23c/RRyb03.jpg"
       ],
       "tags": [
         {
@@ -334,23 +334,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_a8537675b4d73756",
-      "title": "Midnight Loan Officer",
-      "slug": "itch-midnight-loan-officer",
+      "id": "itch_38c1c6ab1254adef",
+      "title": "Sprunki 18-shifted Jafriâ€™s take",
+      "slug": "itch-sprunki-18-shifted-jafri-s-take",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTU0MTAxLnBuZw==/315x250%23c/R%2FmrgB.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDg3MTU1LmpwZWc=/315x250%23c/gY8dfo.jpeg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Emgoing",
+      "developerNames": "Jafri the hedgehog",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTU0MTAxLnBuZw==/315x250%23c/R%2FmrgB.png"
+        "https://img.itch.zone/aW1nLzMwMDg3MTU1LmpwZWc=/315x250%23c/gY8dfo.jpeg"
       ],
       "tags": [
         {
@@ -366,23 +366,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_c155d79d0a305c02",
-      "title": "The Shape of a Forgotten Memory",
-      "slug": "itch-the-shape-of-a-forgotten-memory",
+      "id": "itch_84f4a8e6bbe77f34",
+      "title": "MalaPieza",
+      "slug": "itch-malapieza",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUzODI0LmdpZg==/original/5kw8Ev.gif",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDg2Mzg1LmpwZw==/315x250%23c/9hi%2F5d.jpg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "kazaaa6",
+      "developerNames": "SebasuGD",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUzODI0LmdpZg==/original/5kw8Ev.gif"
+        "https://img.itch.zone/aW1nLzMwMDg2Mzg1LmpwZw==/315x250%23c/9hi%2F5d.jpg"
       ],
       "tags": [
         {
@@ -398,23 +398,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_180d6f01b03c274b",
-      "title": "Sprunki but its Actually Reversed",
-      "slug": "itch-sprunki-but-its-actually-reversed",
+      "id": "itch_374667c27776ad11",
+      "title": "1996 Recriation (TuGLuCK's Take)",
+      "slug": "itch-1996-recriation-tugluck-s-take",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTU0MTkzLnBuZw==/315x250%23c/092WWJ.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDg0OTgxLmpwZw==/315x250%23c/Puc8ZA.jpg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "InsertNametagHere",
+      "developerNames": "TuGLuCK",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTU0MTkzLnBuZw==/315x250%23c/092WWJ.png"
+        "https://img.itch.zone/aW1nLzMwMDg0OTgxLmpwZw==/315x250%23c/Puc8ZA.jpg"
       ],
       "tags": [
         {
@@ -430,23 +430,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_a71b6424ac6fcaf1",
-      "title": "Imitated Love: The Last Imitator",
-      "slug": "itch-imitated-love-the-last-imitator",
+      "id": "itch_3c594d661880ed30",
+      "title": "A Totally Serious Backrooms Game: Nostalgia",
+      "slug": "itch-a-totally-serious-backrooms-game-nostalgia",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5Njg2MzY1LnBuZw==/315x250%23c/TsltLp.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDg0MzI0LmpwZw==/315x250%23c/%2Fy96eQ.jpg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "★Humiquiti★",
+      "developerNames": "Slimy Abomination Interactive",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5Njg2MzY1LnBuZw==/315x250%23c/TsltLp.png"
+        "https://img.itch.zone/aW1nLzMwMDg0MzI0LmpwZw==/315x250%23c/%2Fy96eQ.jpg"
       ],
       "tags": [
         {
@@ -462,23 +462,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_ec98c24411a8fcfb",
-      "title": "Scary Swat Frog Simulator: 2",
-      "slug": "itch-scary-swat-frog-simulator-2",
+      "id": "itch_418f82ef9b603d24",
+      "title": "(My) Mirror Image",
+      "slug": "itch-my-mirror-image",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUyODI0LnBuZw==/315x250%23c/CI%2FiXu.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDgzODI3LnBuZw==/315x250%23c/Pcg0vz.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Rexington_YT",
+      "developerNames": "songwings",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUyODI0LnBuZw==/315x250%23c/CI%2FiXu.png"
+        "https://img.itch.zone/aW1nLzMwMDgzODI3LnBuZw==/315x250%23c/Pcg0vz.png"
       ],
       "tags": [
         {
@@ -494,23 +494,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_8ff0fe12e2a25308",
-      "title": "Demon Corp",
-      "slug": "itch-demon-corp",
+      "id": "itch_005440eef0ff00bc",
+      "title": "Stagnation Demo",
+      "slug": "itch-stagnation-demo",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQzNTM2LnBuZw==/315x250%23c/pSvuVV.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDgyNDM2LnBuZw==/315x250%23c/kqaf3j.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Core_Game_Studios",
+      "developerNames": "Jordan Tomkins",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789787584000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQzNTM2LnBuZw==/315x250%23c/pSvuVV.png"
+        "https://img.itch.zone/aW1nLzMwMDgyNDM2LnBuZw==/315x250%23c/kqaf3j.png"
       ],
       "tags": [
         {
@@ -526,23 +526,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_03a4cb3ea17b0aee",
-      "title": "deepfried platformer",
-      "slug": "itch-deepfried-platformer",
+      "id": "itch_74f9bbf18abfb914",
+      "title": "FinAle Demo",
+      "slug": "itch-finale-demo",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUyMTk2LnBuZw==/315x250%23c/mN75G6.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDc4Mzg4LnBuZw==/315x250%23c/A9xgo5.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "buckypeanut",
+      "developerNames": "Lots of Skulls Studios",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUyMTk2LnBuZw==/315x250%23c/mN75G6.png"
+        "https://img.itch.zone/aW1nLzMwMDc4Mzg4LnBuZw==/315x250%23c/A9xgo5.png"
       ],
       "tags": [
         {
@@ -558,23 +558,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_fd2ff75587b09d68",
-      "title": "BACKROOMS: Find The Noclip Wall",
-      "slug": "itch-backrooms-find-the-noclip-wall",
+      "id": "itch_88b55aa06a4a58f5",
+      "title": "AguarÃ¡ GuazÃº: El llamado",
+      "slug": "itch-aguara-guazu-el-llamado",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5ODQzNDI5LmpwZw==/315x250%23c/K1lfWp.jpg",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDgwNTY4LnBuZw==/315x250%23c/JSL9d3.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "wamo",
+      "developerNames": "Jenn Jones - Baby.Orlok",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5ODQzNDI5LmpwZw==/315x250%23c/K1lfWp.jpg"
+        "https://img.itch.zone/aW1nLzMwMDgwNTY4LnBuZw==/315x250%23c/JSL9d3.png"
       ],
       "tags": [
         {
@@ -590,23 +590,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_f5a84ac77ccb4693",
-      "title": "incredibox - shame",
-      "slug": "itch-incredibox-shame",
+      "id": "itch_7c3b2488973366f6",
+      "title": "GST sunset 5 + opt emc fix",
+      "slug": "itch-gst-sunset-5-opt-emc-fix",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUxNzIwLnBuZw==/315x250%23c/IbBjun.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDgwMTc2LnBuZw==/315x250%23c/owhZwA.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Sphixless",
+      "developerNames": "zennnnnnnnnnnnnnn",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUxNzIwLnBuZw==/315x250%23c/IbBjun.png"
+        "https://img.itch.zone/aW1nLzMwMDgwMTc2LnBuZw==/315x250%23c/owhZwA.png"
       ],
       "tags": [
         {
@@ -622,23 +622,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_b539b9391b673fa5",
-      "title": "Turophobia",
-      "slug": "itch-turophobia",
+      "id": "itch_5137266d684873bd",
+      "title": "No Murders in Grimwick",
+      "slug": "itch-no-murders-in-grimwick",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUwNzEzLnBuZw==/315x250%23c/GZ89Ev.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzI5OTc4MjUwLnBuZw==/315x250%23c/ZuFnlK.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "typeit",
+      "developerNames": "Bee & Boo Games",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUwNzEzLnBuZw==/315x250%23c/GZ89Ev.png"
+        "https://img.itch.zone/aW1nLzI5OTc4MjUwLnBuZw==/315x250%23c/ZuFnlK.png"
       ],
       "tags": [
         {
@@ -654,23 +654,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_3a7f197a836932cf",
-      "title": "HE IS IN THE DARK",
-      "slug": "itch-he-is-in-the-dark",
+      "id": "itch_ffee02429d458841",
+      "title": "Pale Moon",
+      "slug": "itch-pale-moon",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUxMjA4LnBuZw==/315x250%23c/D2moJf.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDc5MDUwLnBuZw==/315x250%23c/eGLdF9.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "mreverett",
+      "developerNames": "Savage Code",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUxMjA4LnBuZw==/315x250%23c/D2moJf.png"
+        "https://img.itch.zone/aW1nLzMwMDc5MDUwLnBuZw==/315x250%23c/eGLdF9.png"
       ],
       "tags": [
         {
@@ -686,23 +686,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_2546c5dd2cb6c390",
-      "title": "Emergency Alert System Demo",
-      "slug": "itch-emergency-alert-system-demo",
+      "id": "itch_6e2653eb24297d36",
+      "title": "Bluesun Land",
+      "slug": "itch-bluesun-land",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI4MjEzMjU2LnBuZw==/315x250%23c/Fauf8s.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzI5MTgyNzg2LnBuZw==/315x250%23c/TMQfQq.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Tigerstudios800",
+      "developerNames": "Topylodon",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI4MjEzMjU2LnBuZw==/315x250%23c/Fauf8s.png"
+        "https://img.itch.zone/aW1nLzI5MTgyNzg2LnBuZw==/315x250%23c/TMQfQq.png"
       ],
       "tags": [
         {
@@ -718,23 +718,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_b90429d61476a5c6",
-      "title": "Detour in Alabama (Open Beta)",
-      "slug": "itch-detour-in-alabama-open-beta",
+      "id": "itch_dd17633f5f3b3d82",
+      "title": "à¸™à¸±à¸à¸ªà¸·à¸šà¸—à¸£à¸‡à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡ (Ghost Detective)",
+      "slug": "itch-ghost-detective",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTUwMTI4LnBuZw==/315x250%23c/Wmp9U3.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDc0NDI1LnBuZw==/315x250%23c/5m3kVa.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Pootato Publications",
+      "developerNames": "pengineerartstudio",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789763178000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTUwMTI4LnBuZw==/315x250%23c/Wmp9U3.png"
+        "https://img.itch.zone/aW1nLzMwMDc0NDI1LnBuZw==/315x250%23c/5m3kVa.png"
       ],
       "tags": [
         {
@@ -750,23 +750,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_bb6b623d50a8f8f0",
-      "title": "FREE THE AI",
-      "slug": "itch-free-the-ai",
+      "id": "itch_7e57e3ef4d677879",
+      "title": "The House of DedÃ©",
+      "slug": "itch-the-house-of-dede",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTI3OTA5LnBuZw==/315x250%23c/dFNQ%2F7.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDc2OTM5LnBuZw==/315x250%23c/Kk7EJC.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Nina",
+      "developerNames": "Gene-Z Games",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTI3OTA5LnBuZw==/315x250%23c/dFNQ%2F7.png"
+        "https://img.itch.zone/aW1nLzMwMDc2OTM5LnBuZw==/315x250%23c/Kk7EJC.png"
       ],
       "tags": [
         {
@@ -782,23 +782,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_f6f3d891dd4aac58",
-      "title": "Ben132231's Madness (Old Unity Version)",
-      "slug": "itch-ben132231-s-madness-old-unity-version",
+      "id": "itch_f255e9ec06850880",
+      "title": "I went there to fish",
+      "slug": "itch-i-went-there-to-fish",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ4ODQwLnBuZw==/315x250%23c/lTitlp.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzI5OTYzMjg3LnBuZw==/315x250%23c/Wqk3fK.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Ben132231",
+      "developerNames": "computerdwarf",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ4ODQwLnBuZw==/315x250%23c/lTitlp.png"
+        "https://img.itch.zone/aW1nLzI5OTYzMjg3LnBuZw==/315x250%23c/Wqk3fK.png"
       ],
       "tags": [
         {
@@ -814,23 +814,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_70de91fbca519ae6",
-      "title": "The Last Shift At Aurora Station",
-      "slug": "itch-the-last-shift-at-aurora-station",
+      "id": "itch_3f69e71e6ada1d23",
+      "title": "The Woeful Rose & The Bitter Crow",
+      "slug": "itch-the-woeful-rose-the-bitter-crow",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ3OTQwLmpwZw==/315x250%23c/eFxGxk.jpg",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDcxOTIyLnBuZw==/315x250%23c/RzrdrY.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "JSR Games",
+      "developerNames": "sshabnaoe",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ3OTQwLmpwZw==/315x250%23c/eFxGxk.jpg"
+        "https://img.itch.zone/aW1nLzMwMDcxOTIyLnBuZw==/315x250%23c/RzrdrY.png"
       ],
       "tags": [
         {
@@ -846,23 +846,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_943786a255e7a9bc",
-      "title": "L.D.F.0.2",
-      "slug": "itch-l-d-f-0-2",
+      "id": "itch_5b310e468eca463e",
+      "title": "ã‚¦ã‚¶ã„åºƒå‘Šã‚’æ¶ˆã™ã ã‘",
+      "slug": "itch-game-5b310e468eca463e",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ5MDM5LnBuZw==/315x250%23c/4Dr8cL.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzI5OTYyNjI3LnBuZw==/315x250%23c/MTGJkg.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "X47games",
+      "developerNames": "oyamada_ten",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ5MDM5LnBuZw==/315x250%23c/4Dr8cL.png"
+        "https://img.itch.zone/aW1nLzI5OTYyNjI3LnBuZw==/315x250%23c/MTGJkg.png"
       ],
       "tags": [
         {
@@ -878,23 +878,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_54a6e2b6bccafa34",
-      "title": "Ghosts, Inc.",
-      "slug": "itch-ghosts-inc",
+      "id": "itch_de955dc0f0beec36",
+      "title": "Rose Ripper",
+      "slug": "itch-rose-ripper",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzE4MjI0MDQzLnBuZw==/315x250%23c/e24ZKR.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDc0MzA0LnBuZw==/315x250%23c/oIdC35.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "cricketHunter",
+      "developerNames": "m m",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzE4MjI0MDQzLnBuZw==/315x250%23c/e24ZKR.png"
+        "https://img.itch.zone/aW1nLzMwMDc0MzA0LnBuZw==/315x250%23c/oIdC35.png"
       ],
       "tags": [
         {
@@ -910,23 +910,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_2aa2fae1fedaacf6",
-      "title": "It Was Your Choice",
-      "slug": "itch-it-was-your-choice",
+      "id": "itch_fb06283c35702a0f",
+      "title": "THE PRINCE IS A 10, BUT... (Prologue)",
+      "slug": "itch-the-prince-is-a-10-but-prologue",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ2MDE3LnBuZw==/315x250%23c/ARpesW.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDczMjU4LnBuZw==/315x250%23c/%2FHQD4l.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "robotsmoke",
+      "developerNames": "renjantk8",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ2MDE3LnBuZw==/315x250%23c/ARpesW.png"
+        "https://img.itch.zone/aW1nLzMwMDczMjU4LnBuZw==/315x250%23c/%2FHQD4l.png"
       ],
       "tags": [
         {
@@ -942,23 +942,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_d8ecefccf92d86e6",
-      "title": "Midnight Pawn",
-      "slug": "itch-midnight-pawn",
+      "id": "itch_f0a8fbec2adfed57",
+      "title": "Midnight on the Milky Way",
+      "slug": "itch-midnight-on-the-milky-way",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ4NDYzLnBuZw==/315x250%23c/I6pLAF.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDczMTMzLmpwZw==/315x250%23c/DCcrIC.jpg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "pechenka.dev",
+      "developerNames": "kunnidevi761",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ4NDYzLnBuZw==/315x250%23c/I6pLAF.png"
+        "https://img.itch.zone/aW1nLzMwMDczMTMzLmpwZw==/315x250%23c/DCcrIC.jpg"
       ],
       "tags": [
         {
@@ -974,23 +974,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_145677e47f635230",
-      "title": "Bear5: Terror",
-      "slug": "itch-bear5-terror",
+      "id": "itch_ff936aed27f2c6e8",
+      "title": "Blood & Play",
+      "slug": "itch-blood-play",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTI4Njk1LnBuZw==/315x250%23c/hsngIo.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDcyMjQ4LnBuZw==/315x250%23c/yUCyKL.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Felipe Q.",
+      "developerNames": "indirana913",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTI4Njk1LnBuZw==/315x250%23c/hsngIo.png"
+        "https://img.itch.zone/aW1nLzMwMDcyMjQ4LnBuZw==/315x250%23c/yUCyKL.png"
       ],
       "tags": [
         {
@@ -1006,23 +1006,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_db15dba488aa0c2c",
-      "title": "Chthonic Plant​",
-      "slug": "itch-chthonic-plant",
+      "id": "itch_01913ef454063fc1",
+      "title": "Lack of Rooms",
+      "slug": "itch-lack-of-rooms",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ3Njk4LnBuZw==/315x250%23c/Iagyxn.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDczMDgyLnBuZw==/315x250%23c/TNiqJ5.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "DiElecktrik",
+      "developerNames": "| Kunyk |",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ3Njk4LnBuZw==/315x250%23c/Iagyxn.png"
+        "https://img.itch.zone/aW1nLzMwMDczMDgyLnBuZw==/315x250%23c/TNiqJ5.png"
       ],
       "tags": [
         {
@@ -1038,23 +1038,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_2a70d4fd3f638453",
-      "title": "XVII Near (Demo)",
-      "slug": "itch-xvii-near-demo",
+      "id": "itch_d1321499b5efed48",
+      "title": "EdifÃ­cio Centenario",
+      "slug": "itch-edificio-centenario",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5ODgxOTYzLnBuZw==/315x250%23c/rFbmI2.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDU2MjkzLnBuZw==/315x250%23c/aPRZhQ.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "WatermelonOwl",
+      "developerNames": "LPL-Games",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5ODgxOTYzLnBuZw==/315x250%23c/rFbmI2.png"
+        "https://img.itch.zone/aW1nLzMwMDU2MjkzLnBuZw==/315x250%23c/aPRZhQ.png"
       ],
       "tags": [
         {
@@ -1070,23 +1070,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_b11c5e44407be208",
-      "title": "Dracula — ZX Spectrum Illustrated Edition",
-      "slug": "itch-dracula-zx-spectrum-illustrated-edition",
+      "id": "itch_a84dbf0cf6013756",
+      "title": "RELIQUARY: Last Collection",
+      "slug": "itch-reliquary-last-collection",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ0MTY3LnBuZw==/315x250%23c/6E6XDS.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDczMDM0LnBuZw==/315x250%23c/cpGtfP.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "DJSoft",
+      "developerNames": "kimchistan",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ0MTY3LnBuZw==/315x250%23c/6E6XDS.png"
+        "https://img.itch.zone/aW1nLzMwMDczMDM0LnBuZw==/315x250%23c/cpGtfP.png"
       ],
       "tags": [
         {
@@ -1102,23 +1102,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_c30bf51a17a38102",
-      "title": "They are Flesh",
-      "slug": "itch-they-are-flesh",
+      "id": "itch_0ea5f360825e835a",
+      "title": "OUT OF PATTERN",
+      "slug": "itch-out-of-pattern",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ2ODk2LnBuZw==/315x250%23c/IoQ%2FpJ.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDcyNDg5LnBuZw==/315x250%23c/bUK9Es.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Optimus_beg",
+      "developerNames": "kimchistan",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ2ODk2LnBuZw==/315x250%23c/IoQ%2FpJ.png"
+        "https://img.itch.zone/aW1nLzMwMDcyNDg5LnBuZw==/315x250%23c/bUK9Es.png"
       ],
       "tags": [
         {
@@ -1134,23 +1134,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_983a2d39e47cf2aa",
-      "title": "Order Driving 13 (DEMO)",
-      "slug": "itch-order-driving-13-demo",
+      "id": "itch_136516b639ed50d5",
+      "title": "Z-Hunt",
+      "slug": "itch-z-hunt",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI4NjU4ODI0LmpwZw==/315x250%23c/5beEO3.jpg",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDcyMTc2LmpwZw==/315x250%23c/sSb3xp.jpg",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "SeenThai",
+      "developerNames": "shadowleafgames55-code",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI4NjU4ODI0LmpwZw==/315x250%23c/5beEO3.jpg"
+        "https://img.itch.zone/aW1nLzMwMDcyMTc2LmpwZw==/315x250%23c/sSb3xp.jpg"
       ],
       "tags": [
         {
@@ -1166,23 +1166,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_edeb34417c930a6e",
-      "title": "WGTH OLD VERSIONS",
-      "slug": "itch-wgth-old-versions",
+      "id": "itch_5f1a007842b9a849",
+      "title": "Fantasy Monsters â€” 30 Animated Pixel Art Characters",
+      "slug": "itch-fantasy-monsters-30-animated-pixel-art-characters",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ1MTI2LnBuZw==/315x250%23c/kv7Q%2Fg.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDcxOTQzLnBuZw==/315x250%23c/s9uNA5.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Wowz_gt",
+      "developerNames": "spajx123c",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ1MTI2LnBuZw==/315x250%23c/kv7Q%2Fg.png"
+        "https://img.itch.zone/aW1nLzMwMDcxOTQzLnBuZw==/315x250%23c/s9uNA5.png"
       ],
       "tags": [
         {
@@ -1198,23 +1198,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_652b0472768b2cde",
-      "title": "Weigh Station",
-      "slug": "itch-weigh-station",
+      "id": "itch_bd8fb434497d9f29",
+      "title": "De Noctis Natura",
+      "slug": "itch-de-noctis-natura",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5OTQ0MTU2LnBuZw==/315x250%23c/xgTvnQ.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzI5NTc4NjMzLnBuZw==/315x250%23c/OF3MdB.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "MidknightFire",
+      "developerNames": "Miss Matanza 1",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789746731000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5OTQ0MTU2LnBuZw==/315x250%23c/xgTvnQ.png"
+        "https://img.itch.zone/aW1nLzI5NTc4NjMzLnBuZw==/315x250%23c/OF3MdB.png"
       ],
       "tags": [
         {
@@ -1230,23 +1230,23 @@
       "priceSnapshots": []
     },
     {
-      "id": "itch_7a0a4c4addfd0efe",
-      "title": "monkey eaters beta",
-      "slug": "itch-monkey-eaters-beta",
+      "id": "itch_5bdcf1b0cb432e07",
+      "title": "BackhomeXL-Demo",
+      "slug": "itch-backhomexl-demo",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzI5NTM4NzExLnBuZw==/315x250%23c/9Jou8R.png",
+      "coverUrl": "https://img.itch.zone/aW1nLzMwMDY5NjY3LnBuZw==/315x250%23c/uCDY%2FL.png",
       "rating": null,
       "category": 0,
       "esrbRating": null,
       "pegiRating": null,
-      "developerNames": "Myquelbigdog",
+      "developerNames": "yiyinshi1984",
       "genreNames": "horror",
       "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1789284143000,
+      "releaseDate": 1789727804000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzI5NTM4NzExLnBuZw==/315x250%23c/9Jou8R.png"
+        "https://img.itch.zone/aW1nLzMwMDY5NjY3LnBuZw==/315x250%23c/uCDY%2FL.png"
       ],
       "tags": [
         {
@@ -3890,1133 +3890,261 @@
   ],
   "topRatedGames": [
     {
-      "id": "cmpwg3pmo00a6g4egq780nha6",
-      "title": "Arches",
-      "slug": "arches",
+      "id": "igdb_resident-evil-2-remake",
+      "title": "Resident Evil 2",
+      "slug": "resident-evil-2-remake",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2x5e.jpg",
-      "rating": 100,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rba.jpg",
+      "rating": 93,
       "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Echo Project",
-      "genreNames": "indie, visual-novel",
-      "platformNames": "Linux, Android, PC (Microsoft Windows), Mac",
-      "releaseDate": 1728259200000,
+      "esrbRating": "MATURE",
+      "pegiRating": "18",
+      "developerNames": "Capcom",
+      "genreNames": "survival-horror, third-person-shooter",
+      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
+      "releaseDate": 1548633600000,
+      "trailerUrl": null,
+      "isTrending": true,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4b9s.jpg",
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4b9t.jpg"
+      ],
+      "tags": [
+        { "name": "survival-horror", "slug": "survival-horror" },
+        { "name": "third-person", "slug": "third-person" },
+        { "name": "atmospheric", "slug": "atmospheric" },
+        { "name": "zombie", "slug": "zombie" }
+      ],
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/883710" }
+      ],
+      "priceSnapshots": [
+        { "storeName": "Steam", "dealPrice": 39.99, "retailPrice": 39.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/883710", "currency": "USD", "country": "US" }
+      ]
+    },
+    {
+      "id": "igdb_silent-hill-2-remake",
+      "title": "Silent Hill 2",
+      "slug": "silent-hill-2-remake",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co85ij.jpg",
+      "rating": 91,
+      "category": null,
+      "esrbRating": "MATURE",
+      "pegiRating": "18",
+      "developerNames": "Bloober Team",
+      "genreNames": "survival-horror, psychological-horror",
+      "platformNames": "PC (Microsoft Windows), PlayStation 5",
+      "releaseDate": 1727740800000,
+      "trailerUrl": null,
+      "isTrending": true,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc8oq9.jpg"
+      ],
+      "tags": [
+        { "name": "psychological", "slug": "psychological" },
+        { "name": "survival-horror", "slug": "survival-horror" },
+        { "name": "atmospheric", "slug": "atmospheric" },
+        { "name": "third-person", "slug": "third-person" }
+      ],
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/2130550" }
+      ],
+      "priceSnapshots": [
+        { "storeName": "Steam", "dealPrice": 59.99, "retailPrice": 59.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/2130550", "currency": "USD", "country": "US" }
+      ]
+    },
+    {
+      "id": "igdb_dead-space-remake",
+      "title": "Dead Space",
+      "slug": "dead-space-remake",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co6dn7.jpg",
+      "rating": 89,
+      "category": null,
+      "esrbRating": "MATURE",
+      "pegiRating": "18",
+      "developerNames": "Motive Studio",
+      "genreNames": "survival-horror, third-person-shooter",
+      "platformNames": "PC (Microsoft Windows), PlayStation 5, Xbox Series X|S",
+      "releaseDate": 1674691200000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_cover_big/co2x5e.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc9c0g.jpg"
       ],
       "tags": [
-        {
-          "name": "co-op",
-          "slug": "co-op"
-        },
-        {
-          "name": "walking-sim",
-          "slug": "walking-sim"
-        },
-        {
-          "name": "supernatural",
-          "slug": "supernatural"
-        },
-        {
-          "name": "psychological",
-          "slug": "psychological"
-        },
-        {
-          "name": "visual-novel",
-          "slug": "visual-novel"
-        },
-        {
-          "name": "photorealistic",
-          "slug": "photorealistic"
-        },
-        {
-          "name": "text",
-          "slug": "text"
-        }
+        { "name": "sci-fi", "slug": "sci-fi" },
+        { "name": "survival-horror", "slug": "survival-horror" },
+        { "name": "atmospheric", "slug": "atmospheric" },
+        { "name": "third-person", "slug": "third-person" }
       ],
-      "purchaseLinks": [],
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/1693980" }
+      ],
       "priceSnapshots": [
-        {
-          "storeName": "itch.io",
-          "dealPrice": 3.49,
-          "retailPrice": 3.49,
-          "discountPercent": 0,
-          "dealUrl": null,
-          "currency": "USD",
-          "country": "US"
-        }
+        { "storeName": "Steam", "dealPrice": 59.99, "retailPrice": 59.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/1693980", "currency": "USD", "country": "US" }
       ]
     },
     {
-      "id": "cmpwg3pmp00a8g4egqoo80doq",
-      "title": "Bubsy 3D: Bubsy Visits the James Turrell Retrospective",
-      "slug": "bubsy-3d-bubsy-visits-the-james-turrell-retrospective",
+      "id": "igdb_outlast",
+      "title": "Outlast",
+      "slug": "outlast",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co2htw.jpg",
-      "rating": 100,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rs5.jpg",
+      "rating": 86,
       "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Arcane Kids",
-      "genreNames": "platform",
-      "platformNames": "Web browser, PC (Microsoft Windows), Mac",
-      "releaseDate": 1380844800000,
+      "esrbRating": "MATURE",
+      "pegiRating": "18",
+      "developerNames": "Red Barrels",
+      "genreNames": "survival-horror, first-person",
+      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
+      "releaseDate": 1377561600000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_cover_big/co2htw.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4rqq.jpg"
       ],
       "tags": [
-        {
-          "name": "supernatural",
-          "slug": "supernatural"
-        },
-        {
-          "name": "psychological",
-          "slug": "psychological"
-        },
-        {
-          "name": "puzzle-horror",
-          "slug": "puzzle-horror"
-        },
-        {
-          "name": "third-person",
-          "slug": "third-person"
-        }
+        { "name": "first-person", "slug": "first-person" },
+        { "name": "survival-horror", "slug": "survival-horror" },
+        { "name": "stealth", "slug": "stealth" },
+        { "name": "atmospheric", "slug": "atmospheric" }
       ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/238320" }
+      ],
+      "priceSnapshots": [
+        { "storeName": "Steam", "dealPrice": 19.99, "retailPrice": 19.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/238320", "currency": "USD", "country": "US" }
+      ]
     },
     {
-      "id": "cmqql7jgs008dkoegrzo6nwhc",
-      "title": "Shipwrecked 64",
-      "slug": "shipwrecked-64--2",
+      "id": "igdb_soma",
+      "title": "SOMA",
+      "slug": "soma",
       "status": "released",
-      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co7oa2.jpg",
-      "rating": 100,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1qd4.jpg",
+      "rating": 85,
       "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Squeaks D'Corgeh, Cogware Games",
-      "genreNames": "adventure, platform, indie, strategy",
-      "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1704153600000,
+      "esrbRating": "MATURE",
+      "pegiRating": "18",
+      "developerNames": "Frictional Games",
+      "genreNames": "survival-horror, sci-fi",
+      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
+      "releaseDate": 1443139200000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://images.igdb.com/igdb/image/upload/t_cover_big/co7oa2.jpg"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4a04.jpg"
       ],
       "tags": [
-        {
-          "name": "body-horror",
-          "slug": "body-horror"
-        },
-        {
-          "name": "co-op",
-          "slug": "co-op"
-        },
-        {
-          "name": "narrative-horror",
-          "slug": "narrative-horror"
-        },
-        {
-          "name": "puzzle-horror",
-          "slug": "puzzle-horror"
-        },
-        {
-          "name": "unsettling",
-          "slug": "unsettling"
-        },
-        {
-          "name": "chaotic-panic",
-          "slug": "chaotic-panic"
-        },
-        {
-          "name": "third-person",
-          "slug": "third-person"
-        }
+        { "name": "sci-fi", "slug": "sci-fi" },
+        { "name": "psychological", "slug": "psychological" },
+        { "name": "first-person", "slug": "first-person" },
+        { "name": "atmospheric", "slug": "atmospheric" }
       ],
-      "purchaseLinks": [],
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/282140" }
+      ],
       "priceSnapshots": [
-        {
-          "storeName": "itch.io",
-          "dealPrice": 400,
-          "retailPrice": 400,
-          "discountPercent": 0,
-          "dealUrl": null,
-          "currency": "USD",
-          "country": "US"
-        }
+        { "storeName": "Steam", "dealPrice": 29.99, "retailPrice": 29.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/282140", "currency": "USD", "country": "US" }
       ]
     },
     {
-      "id": "32e1f885-6d07-41bb-839e-787a12ee81c1",
-      "title": " ceilings",
-      "slug": " 4096 colors",
+      "id": "igdb_amnesia-the-dark-descent",
+      "title": "Amnesia: The Dark Descent",
+      "slug": "amnesia-the-dark-descent",
       "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": 19,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Ion Storm",
-      "genreNames": "turn-based-strategy-tbs, horror",
-      "platformNames": "PC (Microsoft Windows)",
-      "releaseDate": 1345368000,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_38e5e018b460215e",
-      "title": "Where Eternity Sleeps",
-      "slug": "itch-where-eternity-sleeps",
-      "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzIxMzIyOTk2LnBuZw==/original/ep276p.png",
-      "rating": 100,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1rs3.jpg",
+      "rating": 85,
       "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Livingslime",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
+      "esrbRating": "MATURE",
+      "pegiRating": "16",
+      "developerNames": "Frictional Games",
+      "genreNames": "survival-horror, first-person",
+      "platformNames": "PC (Microsoft Windows), Mac, Linux",
+      "releaseDate": 1284422400000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzIxMzIyOTk2LnBuZw==/original/ep276p.png"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4rqp.jpg"
       ],
       "tags": [
-        {
-          "name": "amare",
-          "slug": "amare"
-        },
-        {
-          "name": "anime",
-          "slug": "anime"
-        },
-        {
-          "name": "dark-fantasy",
-          "slug": "dark-fantasy"
-        },
-        {
-          "name": "dating-sim",
-          "slug": "dating-sim"
-        },
-        {
-          "name": "fantasy",
-          "slug": "fantasy"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "otome",
-          "slug": "otome"
-        },
-        {
-          "name": "romance",
-          "slug": "romance"
-        },
-        {
-          "name": "yandere",
-          "slug": "yandere"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
+        { "name": "first-person", "slug": "first-person" },
+        { "name": "atmospheric", "slug": "atmospheric" },
+        { "name": "survival-horror", "slug": "survival-horror" },
+        { "name": "puzzle-horror", "slug": "puzzle-horror" }
       ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/57300" }
+      ],
+      "priceSnapshots": [
+        { "storeName": "Steam", "dealPrice": 19.99, "retailPrice": 19.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/57300", "currency": "USD", "country": "US" }
+      ]
     },
     {
-      "id": "itch_dff2dd81399e19d5",
-      "title": "Demon Slayer",
-      "slug": "itch-demon-slayer",
+      "id": "igdb_bloodborne",
+      "title": "Bloodborne",
+      "slug": "bloodborne",
       "status": "released",
-      "coverUrl": "https://img.itch.zone/aW1nLzYxNTI5NzIuZ2lm/original/O0duob.gif",
-      "rating": 100,
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1iqv.jpg",
+      "rating": 92,
       "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Zenteku",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
+      "esrbRating": "MATURE",
+      "pegiRating": "16",
+      "developerNames": "FromSoftware",
+      "genreNames": "action-rpg, gothic-horror",
+      "platformNames": "PlayStation 4",
+      "releaseDate": 1426636800000,
       "trailerUrl": null,
       "isTrending": false,
       "screenshots": [
-        "https://img.itch.zone/aW1nLzYxNTI5NzIuZ2lm/original/O0duob.gif"
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4a9s.jpg"
       ],
       "tags": [
-        {
-          "name": "survival",
-          "slug": "survival"
-        },
-        {
-          "name": "2d",
-          "slug": "2d"
-        },
-        {
-          "name": "fantasy",
-          "slug": "fantasy"
-        },
-        {
-          "name": "gamemaker",
-          "slug": "gamemaker"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "pixel-art",
-          "slug": "pixel-art"
-        },
-        {
-          "name": "retro",
-          "slug": "retro"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
+        { "name": "souls-like", "slug": "souls-like" },
+        { "name": "gothic", "slug": "gothic" },
+        { "name": "atmospheric", "slug": "atmospheric" },
+        { "name": "action-rpg", "slug": "action-rpg" }
       ],
       "purchaseLinks": [],
+      "priceSnapshots": []
+    },
+    {
+      "id": "igdb_the-evil-within-2",
+      "title": "The Evil Within 2",
+      "slug": "the-evil-within-2",
+      "status": "released",
+      "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co1r9u.jpg",
+      "rating": 82,
+      "category": null,
+      "esrbRating": "MATURE",
+      "pegiRating": "18",
+      "developerNames": "Tango Gameworks",
+      "genreNames": "survival-horror, third-person",
+      "platformNames": "PC (Microsoft Windows), PlayStation 4, Xbox One",
+      "releaseDate": 1508025600000,
+      "trailerUrl": null,
+      "isTrending": false,
+      "screenshots": [
+        "https://images.igdb.com/igdb/image/upload/t_screenshot_big/sc4a2n.jpg"
+      ],
+      "tags": [
+        { "name": "survival-horror", "slug": "survival-horror" },
+        { "name": "third-person", "slug": "third-person" },
+        { "name": "atmospheric", "slug": "atmospheric" },
+        { "name": "psychological", "slug": "psychological" }
+      ],
+      "purchaseLinks": [
+        { "storeName": "Steam", "url": "https://store.steampowered.com/app/601430" }
+      ],
       "priceSnapshots": [
-        {
-          "storeName": "itch.io",
-          "dealPrice": 11.99,
-          "retailPrice": 11.99,
-          "discountPercent": 0,
-          "dealUrl": null,
-          "currency": "USD",
-          "country": "US"
-        }
+        { "storeName": "Steam", "dealPrice": 39.99, "retailPrice": 39.99, "discountPercent": 0, "dealUrl": "https://store.steampowered.com/app/601430", "currency": "USD", "country": "US" }
       ]
-    },
-    {
-      "id": "itch_bb648652cbcc2ae5",
-      "title": "Enkhirydion: Testament of Shadows",
-      "slug": "itch-enkhirydion-testament-of-shadows",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Lemonade Soft",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "exploration",
-          "slug": "exploration"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "magic",
-          "slug": "magic"
-        },
-        {
-          "name": "medieval",
-          "slug": "medieval"
-        },
-        {
-          "name": "metroidvania",
-          "slug": "metroidvania"
-        },
-        {
-          "name": "pixel-art",
-          "slug": "pixel-art"
-        },
-        {
-          "name": "skeletons",
-          "slug": "skeletons"
-        },
-        {
-          "name": "souls-like",
-          "slug": "souls-like"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": [
-        {
-          "storeName": "itch.io",
-          "dealPrice": 9,
-          "retailPrice": 9,
-          "discountPercent": 0,
-          "dealUrl": null,
-          "currency": "USD",
-          "country": "US"
-        }
-      ]
-    },
-    {
-      "id": "itch_d18502a572d64af0",
-      "title": "My Vampire Boyfriend Smokes Lucky Strikes",
-      "slug": "itch-my-vampire-boyfriend-smokes-lucky-strikes",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "justacarrot",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "dark-humor",
-          "slug": "dark-humor"
-        },
-        {
-          "name": "dating-sim",
-          "slug": "dating-sim"
-        },
-        {
-          "name": "gay",
-          "slug": "gay"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "lgbt",
-          "slug": "lgbt"
-        },
-        {
-          "name": "romance",
-          "slug": "romance"
-        },
-        {
-          "name": "vampire",
-          "slug": "vampire"
-        },
-        {
-          "name": "yandere",
-          "slug": "yandere"
-        },
-        {
-          "name": "yaoi",
-          "slug": "yaoi"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_fa7be927f0b46326",
-      "title": "(PRE-ALPHA) WARHEART",
-      "slug": "itch-pre-alpha-warheart",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "codewar",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "interactive-fiction",
-          "slug": "interactive-fiction"
-        },
-        {
-          "name": "dark-fantasy",
-          "slug": "dark-fantasy"
-        },
-        {
-          "name": "fantasy",
-          "slug": "fantasy"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "medieval",
-          "slug": "medieval"
-        },
-        {
-          "name": "mystery",
-          "slug": "mystery"
-        },
-        {
-          "name": "twine",
-          "slug": "twine"
-        },
-        {
-          "name": "war",
-          "slug": "war"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": [
-        {
-          "storeName": "itch.io",
-          "dealPrice": 7,
-          "retailPrice": 7,
-          "discountPercent": 0,
-          "dealUrl": null,
-          "currency": "USD",
-          "country": "US"
-        }
-      ]
-    },
-    {
-      "id": "itch_b3c5cafec8c80763",
-      "title": "Touch of Madness Demo",
-      "slug": "itch-touch-of-madness-demo",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "NLT Productions",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "2d",
-          "slug": "2d"
-        },
-        {
-          "name": "creepy",
-          "slug": "creepy"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "indie",
-          "slug": "indie"
-        },
-        {
-          "name": "minimalist",
-          "slug": "minimalist"
-        },
-        {
-          "name": "monsters",
-          "slug": "monsters"
-        },
-        {
-          "name": "short",
-          "slug": "short"
-        },
-        {
-          "name": "singleplayer",
-          "slug": "singleplayer"
-        },
-        {
-          "name": "survival-horror",
-          "slug": "survival-horror"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_6df106a956911c16",
-      "title": "kaschei",
-      "slug": "itch-kaschei",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Independent Creator",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "atmospheric",
-          "slug": "atmospheric"
-        },
-        {
-          "name": "coming-of-age",
-          "slug": "coming-of-age"
-        },
-        {
-          "name": "female-protagonist",
-          "slug": "female-protagonist"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "lesbian",
-          "slug": "lesbian"
-        },
-        {
-          "name": "lgbt",
-          "slug": "lgbt"
-        },
-        {
-          "name": "queer",
-          "slug": "queer"
-        },
-        {
-          "name": "story-rich",
-          "slug": "story-rich"
-        },
-        {
-          "name": "transgender",
-          "slug": "transgender"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_c43f8f5bedc69232",
-      "title": "The Cardinal Park Case - Chapters 1-4",
-      "slug": "itch-the-cardinal-park-case-chapters-1-4",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "LiminAce",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "atmospheric",
-          "slug": "atmospheric"
-        },
-        {
-          "name": "creepy",
-          "slug": "creepy"
-        },
-        {
-          "name": "dark-humor",
-          "slug": "dark-humor"
-        },
-        {
-          "name": "drama",
-          "slug": "drama"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "noir",
-          "slug": "noir"
-        },
-        {
-          "name": "rpg-maker",
-          "slug": "rpg-maker"
-        },
-        {
-          "name": "story-rich",
-          "slug": "story-rich"
-        },
-        {
-          "name": "thriller",
-          "slug": "thriller"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_cc2bb3afb629d1af",
-      "title": "INCREDIBOX - sprunki remastered cancelled build",
-      "slug": "itch-incredibox-sprunki-remastered-cancelled-build",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "NyankoBfLol",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "rhythm",
-          "slug": "rhythm"
-        },
-        {
-          "name": "fangame",
-          "slug": "fangame"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "incredibox",
-          "slug": "incredibox"
-        },
-        {
-          "name": "sprunki",
-          "slug": "sprunki"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_424253c9a141676c",
-      "title": "Nightmare of the Attic",
-      "slug": "itch-nightmare-of-the-attic",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "ShootingStarrfish",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "interactive-fiction",
-          "slug": "interactive-fiction"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        },
-        {
-          "name": "pixel-art",
-          "slug": "pixel-art"
-        },
-        {
-          "name": "rpg-maker",
-          "slug": "rpg-maker"
-        },
-        {
-          "name": "short",
-          "slug": "short"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_a58267cb45521b8c",
-      "title": "protoViolence - Definitive Edition",
-      "slug": "itch-protoviolence-definitive-edition",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Mado",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "anime",
-          "slug": "anime"
-        },
-        {
-          "name": "dark",
-          "slug": "dark"
-        },
-        {
-          "name": "female-protagonist",
-          "slug": "female-protagonist"
-        },
-        {
-          "name": "futuristic",
-          "slug": "futuristic"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "interactive-fiction",
-          "slug": "interactive-fiction"
-        },
-        {
-          "name": "narrative",
-          "slug": "narrative"
-        },
-        {
-          "name": "sci-fi",
-          "slug": "sci-fi"
-        },
-        {
-          "name": "story-rich",
-          "slug": "story-rich"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_681a630fa827c749",
-      "title": "Bem Feito (2020 Legacy Edition)",
-      "slug": "itch-bem-feito-2020-legacy-edition",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "oiCabie",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "arg",
-          "slug": "arg"
-        },
-        {
-          "name": "creepypasta",
-          "slug": "creepypasta"
-        },
-        {
-          "name": "cute",
-          "slug": "cute"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "pixel-art",
-          "slug": "pixel-art"
-        },
-        {
-          "name": "retro",
-          "slug": "retro"
-        },
-        {
-          "name": "singleplayer",
-          "slug": "singleplayer"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": [
-        {
-          "storeName": "itch.io",
-          "dealPrice": 3,
-          "retailPrice": 3,
-          "discountPercent": 0,
-          "dealUrl": null,
-          "currency": "USD",
-          "country": "US"
-        }
-      ]
-    },
-    {
-      "id": "itch_f9e1987794c0d96d",
-      "title": "King's Field ll Remade",
-      "slug": "itch-kings-field-ll-remade",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Rotmill Dev",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "3d",
-          "slug": "3d"
-        },
-        {
-          "name": "action-rpg",
-          "slug": "action-rpg"
-        },
-        {
-          "name": "dungeon-crawler",
-          "slug": "dungeon-crawler"
-        },
-        {
-          "name": "first-person",
-          "slug": "first-person"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "metroidvania",
-          "slug": "metroidvania"
-        },
-        {
-          "name": "retro",
-          "slug": "retro"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_17e8cb5d2630aa2d",
-      "title": "Trenches VR Demo - WW1 Horror Survival Game",
-      "slug": "itch-trenches-vr-demo-ww1-horror-survival-game",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Steelkrill Studio",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "atmospheric",
-          "slug": "atmospheric"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "indie",
-          "slug": "indie"
-        },
-        {
-          "name": "scary",
-          "slug": "scary"
-        },
-        {
-          "name": "survival",
-          "slug": "survival"
-        },
-        {
-          "name": "survival-horror",
-          "slug": "survival-horror"
-        },
-        {
-          "name": "virtual-reality-vr",
-          "slug": "virtual-reality-vr"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_8ebe3782ac277531",
-      "title": "Catalyst: Blind Faith",
-      "slug": "itch-catalyst-blind-faith",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "Just Write Studios",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "dark-fantasy",
-          "slug": "dark-fantasy"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "indie",
-          "slug": "indie"
-        },
-        {
-          "name": "male-protagonist",
-          "slug": "male-protagonist"
-        },
-        {
-          "name": "meaningful-choices",
-          "slug": "meaningful-choices"
-        },
-        {
-          "name": "monsters",
-          "slug": "monsters"
-        },
-        {
-          "name": "multiple-endings",
-          "slug": "multiple-endings"
-        },
-        {
-          "name": "story-rich",
-          "slug": "story-rich"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
-    },
-    {
-      "id": "itch_201fbdbe1fc66fe0",
-      "title": "Good Morning, Gogy",
-      "slug": "itch-good-morning-gogy",
-      "status": "released",
-      "coverUrl": null,
-      "rating": 100,
-      "category": null,
-      "esrbRating": null,
-      "pegiRating": null,
-      "developerNames": "AsterHours",
-      "genreNames": "horror, indie",
-      "platformNames": "PC",
-      "releaseDate": null,
-      "trailerUrl": null,
-      "isTrending": false,
-      "screenshots": [],
-      "tags": [
-        {
-          "name": "cute",
-          "slug": "cute"
-        },
-        {
-          "name": "horror",
-          "slug": "horror"
-        },
-        {
-          "name": "multiple-endings",
-          "slug": "multiple-endings"
-        },
-        {
-          "name": "storygame",
-          "slug": "storygame"
-        },
-        {
-          "name": "no-ai",
-          "slug": "no-ai"
-        }
-      ],
-      "purchaseLinks": [],
-      "priceSnapshots": []
     }
   ],
   "stats": {
-    "games": 109420,
+    "games": 109651,
     "developers": 68034,
     "tags": 15825,
     "deals": 111168

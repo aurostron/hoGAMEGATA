@@ -1,27 +1,20 @@
 ---
-export const prerender = false;
+export const prerender = true;
 
 import Layout from '../layouts/Layout.astro';
 import GameCatalogClient from '../components/GameCatalogClient';
 import { getDefaultContentMap } from '../lib/siteContent';
 import { getCatalogStats } from '../lib/catalogMeta';
 import defaultFeed from '../data/homepage-feed.json';
-
-// Edge-cache the SSR HTML for 5 min (middleware Cache API) so repeat
-// homepage views cost 0 worker CPU / 0 DB reads.
-Astro.response.headers.set(
-  'Cache-Control',
-  'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
-);
+import fallbackGames from '../data/homepageFallback.json';
 
 let feed = defaultFeed as any;
 
-// Dynamic revalidation via jsDelivr CDN (loads in ~15-30ms, globally edge cached)
+// Optional build-time revalidation via jsDelivr CDN
 try {
   const JSDELIVR_FEED_URL = "https://cdn.jsdelivr.net/gh/project-hgg/project-hgg.github.io@main/docs/public/homepage-feed.json";
   const cdnRes = await fetch(JSDELIVR_FEED_URL, {
     headers: { 'Accept': 'application/json' },
-    cf: { cacheEverything: true, cacheTtl: 3600 } as any,
     signal: AbortSignal.timeout(1200)
   });
   if (cdnRes.ok) {
@@ -43,11 +36,33 @@ const stats = {
   deals: feed.stats?.deals || catalogStats.totalDeals || 111168,
 };
 
-const heroGames = feed.heroGames || [];
+const heroGames = (feed.heroGames && feed.heroGames.length > 0)
+  ? feed.heroGames
+  : (fallbackGames as any[]).filter((g: any) => g.screenshots && g.screenshots.length > 0).slice(0, 10);
 const latestGames = feed.latestGames || [];
 const trendingGames = feed.trendingGames || [];
 const upcomingGames = feed.upcomingGames || [];
 const topRatedGames = feed.topRatedGames || [];
+
+// Extract dedicated itch horror games from feed arrays (100% static, no DB calls)
+const allFeedGames = [
+  ...(feed.heroGames || []),
+  ...(feed.trendingGames || []),
+  ...(feed.latestGames || []),
+  ...(feed.topRatedGames || []),
+  ...(feed.upcomingGames || []),
+  ...(fallbackGames as any[] || [])
+];
+const itchSeen = new Set<string>();
+const itchGames = allFeedGames.filter((g: any) => {
+  if (!g || !g.id || itchSeen.has(g.id)) return false;
+  const isItch = g.slug?.startsWith("itch-");
+  if (isItch) {
+    itchSeen.add(g.id);
+    return true;
+  }
+  return false;
+}).slice(0, 8);
 
 // Set up cursor for client-side pagination fallback (Latest tab initial set)
 let nextCursor: string | null = null;
@@ -77,6 +92,7 @@ if (latestGames.length > 0) {
       trendingGames={trendingGames}
       upcomingGames={upcomingGames}
       topRatedGames={topRatedGames}
+      itchGames={itchGames}
       catalogueTitle={content.catalogue_title}
       catalogueDesc={content.catalogue_desc}
       supportTitle={content.support_title}
