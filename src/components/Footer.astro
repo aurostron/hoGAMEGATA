@@ -2,9 +2,10 @@
 import SciFiLogo from './SciFiLogo';
 import { BugReportTrigger } from './bugs/BugReportTrigger';
 import SystemStatusIndicator from './SystemStatusIndicator';
+import MatrixAsciiBanner from './MatrixAsciiBanner';
 ---
-<footer class="w-full border-t border-white/10 bg-[#0a0a0c] text-neutral-400 font-sans mt-16 sm:mt-24 lg:mt-32 py-12 lg:py-16 px-4 sm:px-6 md:px-12">
-  <div class="w-full max-w-[1440px] mx-auto">
+<footer class="w-full border-t border-white/10 bg-[#0a0a0c] text-neutral-400 font-sans mt-16 sm:mt-24 lg:mt-32">
+  <div class="w-full max-w-[1440px] mx-auto py-12 lg:py-16 px-4 sm:px-6 md:px-12">
 
     <!-- Columns Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 lg:gap-8">
@@ -96,6 +97,7 @@ import SystemStatusIndicator from './SystemStatusIndicator';
         </span>
         <nav class="flex flex-col gap-2">
           <a href="/about" class="text-sm text-neutral-300 hover:text-white transition-colors py-0.5">About the Project</a>
+          <a href="/pending-space" class="text-sm text-neutral-300 hover:text-white transition-colors py-0.5">Pending Space</a>
           <a href="/about#rubric" class="text-sm text-neutral-300 hover:text-white transition-colors py-0.5">How We Rate Games</a>
           <a href="/about#scare-profile" class="text-sm text-neutral-300 hover:text-white transition-colors py-0.5">7D Scare Profile</a>
           <a href="/about#sub-feelings" class="text-sm text-neutral-300 hover:text-white transition-colors py-0.5">21 Feelings of Fear</a>
@@ -131,6 +133,9 @@ import SystemStatusIndicator from './SystemStatusIndicator';
     </div>
 
   </div>
+
+  <!-- Matrix ASCII Art Banner — an aurostron Project -->
+  <MatrixAsciiBanner client:visible />
 
   <!-- Security Honeypot Decoys: Real users cannot see or interact with these; automated scrapers are trapped -->
   <a href="/api/games/dump" rel="nofollow" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;" aria-hidden="true" tabindex="-1">Export Data</a>
