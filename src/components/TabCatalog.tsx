@@ -8,6 +8,7 @@ import type { HeroGameData } from "./HeroCarousel";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import HoverTrailer from "./HoverTrailer";
+import SurvivalHorrorsSection from "./SurvivalHorrorsSection";
 
 interface TabCatalogProps {
   latest: HeroGameData[];
@@ -624,6 +625,9 @@ export default function TabCatalog({
           </div>
         </section>
       )}
+
+      {/* ── Section 5: SurvivalHorrors.com Collection (Official Collab) ── */}
+      <SurvivalHorrorsSection />
 
     </div>
   );
